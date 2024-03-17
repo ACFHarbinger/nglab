@@ -7,8 +7,11 @@ Nothing Gambles Like A Bot (NGLAB), a Multimodal Deep Reinforcement Learning bot
 
 ### Newspaper Data
 [BBC news articles from 2004 to 2005](http://mlg.ucd.ie/datasets/bbc.html?trk=article-ssr-frontend-pulse_little-text-block)
+
 [Australia news headlines from 2003 t0 2021](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/SYBGZL&trk=article-ssr-frontend-pulse_little-text-block)
+
 [World politics news dataset](https://newsdata.io/files/datasets/world-politics-news)
+
 [Global news dataset](https://www.kaggle.com/datasets/everydaycodings/global-news-dataset)
 
 ### Social Media Data
