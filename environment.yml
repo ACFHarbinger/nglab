@@ -1,0 +1,26 @@
+# run: conda env create --file environment.yml
+name: NGLAB
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+  - anaconda
+dependencies:
+  - cuda-cudart=11.7
+  - cudatoolkit=11.7
+  - ipykernel=6.25
+  - matplotlib=3.7
+  - numpy=1.24
+  - numpy-base=1.24
+  - pandas=2.0
+  - python=3.11
+  - pytorch=2.0
+  - pytorch-lightning=2.0
+  - torchaudio=2.0
+  - torchmetrics=0.11
+  - torchvision=0.15
+  - tqdm=4.65
+  - wandb=0.15
+  - yfinance=0.2
+  - pip=23.3
