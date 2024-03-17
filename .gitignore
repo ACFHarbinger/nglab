@@ -398,5 +398,7 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Datasets
-data/KaggleSMD_01.04.2020
+data/news/*
+data/social_media/*
+data/stock_market/*
 data/*.zip
