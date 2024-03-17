@@ -399,3 +399,4 @@ FodyWeavers.xsd
 
 # Datasets
 data/KaggleSMD_01.04.2020
+data/*.zip
