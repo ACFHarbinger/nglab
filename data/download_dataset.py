@@ -14,10 +14,9 @@ def download_file_from_gdrive(file_id, dest):
                 if chunk:  # filter out keep-alive new chunks
                     f.write(chunk)
                     
-    URL = f"https://drive.google.com/file/d/{file_id}/view?usp=drive_link"
+    URL = "https://docs.google.com/uc?export=download"
 
     session = requests.Session()
-
     resp = session.get(url=URL, params={'id': file_id}, stream=True)
     token = get_confirm_token(response=resp)
 
