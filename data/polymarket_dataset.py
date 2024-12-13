@@ -35,6 +35,8 @@ class PolymarketDataset(torch.utils.data.Dataset):
         metadata_path = os.path.join(self.dataset_dir, "metadata.json")
         metadata = read_json(metadata_path, lock)
         sorted(metadata, key=lambda x: x['id'])
+        self.dataset['Price'] = torch.full((1, self.seq_len), 0.5)
+        self.dataset['Labels'] = torch.full((1, self.pred_len), 0.5)
         for md in metadata:
             filepath = os.path.join(self.dataset_dir, md['filename'])
             df = read_csv(filepath, lock)
@@ -49,8 +51,8 @@ class PolymarketDataset(torch.utils.data.Dataset):
                     new_tensor = torch.nn.ConstantPad1d((0, size_diff), pad_value)(new_tensor)
 
                 reshaped = new_tensor.view(-1, self.seq_len + self.pred_len)
-                self.dataset['Price'] = reshaped[:, :self.seq_len]
-                self.dataset['Labels'] = reshaped[:, self.seq_len:]
+                self.dataset['Price'] = torch.cat((self.dataset['Price'], reshaped[:, :self.seq_len]))
+                self.dataset['Labels'] = torch.cat((self.dataset['Labels'], reshaped[:, self.seq_len:]))
 
     def __getitem__(self, index):
         data = dict.fromkeys(self.dataset.keys())
