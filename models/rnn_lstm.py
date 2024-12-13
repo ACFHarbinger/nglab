@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+import torch.nn as nn
 
-from torch import nn
 
-class RNNLSTM(nn.Module):
+class RNN(nn.Module):
     def __init__(self, input_dim, hidden_dim, latent_dim, dropout_rate=0.2):
-        super(RNNLSTM, self).__init__()
+        super(RNN, self).__init__()
         self.hidden_dim = hidden_dim
         self.feature_extractor = nn.Sequential(
             nn.LSTMCell(input_dim, hidden_dim),
