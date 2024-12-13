@@ -10,8 +10,7 @@ from utils.masking import TriangularCausalMask, ProbMask
 # Adapted from the Time-Series-Library (https://github.com/thuml/Time-Series-Library/blob/main/layers/SelfAttention_Family.py)
 class DSAttention(nn.Module):
     '''De-stationary Attention'''
-
-    def __init__(self, mask_flag=True, factor=5, scale=None, attention_dropout=0.1, output_attention=False):
+    def __init__(self, mask_flag=True, attention_dropout=0.1, output_attention=False, scale=None):
         super(DSAttention, self).__init__()
         self.scale = scale
         self.mask_flag = mask_flag
