@@ -397,6 +397,9 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# Temporary files
+*.~lock.*.*#
+
 # Datasets
 data/news/*
 data/social_media/*

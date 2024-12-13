@@ -1,5 +1,6 @@
 [
     {
+        "id": 0,
         "filename": "polymarket-price-data-03-12-2024-09-12-2024-1734097171475.csv",
         "title": "Daniel Penny found guilty?",
         "category": "Justice",
@@ -15,6 +16,7 @@
         "minutes_filename": null
     },
     {
+        "id": 1,
         "filename": "polymarket-price-data-21-11-2024-13-12-2024-1734097154767.csv",
         "title": "Michel Barnier out as prime minister of France in 2024?",
         "category": "Politics",
@@ -28,6 +30,7 @@
         "minutes_filename": "polymarket-price-data-11-12-2024-13-12-2024-1734099882566.csv"
     },
     {
+        "id": 2,
         "filename": "polymarket-price-data-03-12-2024-13-12-2024-1734097139510.csv",
         "title": "South Korean President impeached in 2024?",
         "category": "Politics",
@@ -42,6 +45,7 @@
         "minutes_filename": "polymarket-price-data-11-12-2024-13-12-2024-1734099631129.csv"
     },
     {
+        "id": 3,
         "filename": "polymarket-price-data-18-11-2024-08-12-2024-1734097322668.csv",
         "title": "Will Assad remain President of Syria through 2024?",
         "category": "Politics",
@@ -55,6 +59,7 @@
         "minutes_filename": null
     },
     {
+        "id": 4,
         "filename": "polymarket-price-data-03-12-2024-13-12-2024-1734097949406.csv",
         "title": "Yoon out as president of South Korea in 2024?",
         "category": "Politics",
@@ -68,6 +73,7 @@
         "minutes_filename": "polymarket-price-data-11-12-2024-13-12-2024-1734099785147.csv"
     },
     {
+        "id": 5,
         "filename": "polymarket-price-data-25-10-2024-13-12-2024-1734098142958.csv",
         "title": "Will >= 2% of votes go to 3rd Party candidates?",
         "category": "Politics",
@@ -83,6 +89,7 @@
         "minutes_filename": "polymarket-price-data-11-12-2024-13-12-2024-1734099989668.csv"
     },
     {
+        "id": 6,
         "filename": "polymarket-price-data-12-09-2024-12-11-2024-1734098321876.csv",
         "title": "Popular Vote Winner 2024",
         "category": "Politics",
@@ -98,6 +105,7 @@
         "minutes_filename": null
     },
     {
+        "id": 7,
         "filename": "polymarket-price-data-18-11-2024-07-12-2024-1734099053295.csv",
         "title": "Next coin listed on Coinbase?",
         "category": "Cryptocurrency",

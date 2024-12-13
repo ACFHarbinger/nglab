@@ -32,10 +32,11 @@ def process_arguments():
     training_parser.add_argument('--no_cuda', action='store_true', help='Disable CUDA')
 
     # Other
+    training_parser.add_argument('--data_dir', help='Path to data directory')
     training_parser.add_argument('--log_dir', default='logs', help='Directory to write TensorBoard information to')
     training_parser.add_argument('--run_name', default='run', help='Name to identify the run')
     training_parser.add_argument('--output_dir', default='results', help='Directory to write output models to')
-    training_parser.add_argument('--data_dir', help='Path to data directory')
+    training_parser.add_argument('--load_path', default=None, help='Path to load model parameters and optimizer state from')
 
     crawler_parser = subparsers.add_parser("webcrawler", aliases=["crawler"])
     crawler_parser.add_argument('--website', '--url', type=str, help='URL of the website to crawl for data.')
