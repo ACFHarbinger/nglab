@@ -1,5 +1,6 @@
-# run: conda env create --file environment.yml
-name: NGLAB
+# run: conda env create --file environment.yml -y
+# del: conda remove -n nglab --all -y
+name: nglab
 channels:
   - pytorch
   - nvidia
