@@ -50,7 +50,7 @@ def process_arguments():
         args['run_name'] = "{}_{}".format(args['run_name'], time.strftime("%Y%m%dT%H%M%S"))
         args['save_dir'] = os.path.join(
             args['output_dir'],
-            "{}_{}".format(args['problem'], args['graph_size']),
+            "{}_{}".format(args['data_dir'], args['model']),
             args['run_name']
         )
         return command, args

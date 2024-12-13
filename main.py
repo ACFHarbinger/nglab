@@ -7,6 +7,7 @@ import pprint as pp
 from models import LSTM, NSTransformer
 from utils.command_parser import process_arguments
 from utils.train import get_inner_model
+from utils.data_utils import load_data
 
 
 def train_model(opts):
@@ -31,7 +32,7 @@ def train_model(opts):
 
     # Load data
     data_dir = os.path.join(os.getcwd(), "data", opts['data_dir'])
-    
+    data = load_data(data_dir)
 
     sys.exit(0)
 

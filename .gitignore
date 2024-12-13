@@ -402,3 +402,6 @@ data/news/*
 data/social_media/*
 data/stock_market/*
 data/*.zip
+
+# Local directories
+results/
