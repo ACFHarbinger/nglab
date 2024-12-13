@@ -1,1 +1,2 @@
-from models.transformer import Transformer
+from models.rnn_lstm import LSTM
+from models.nstransformer import NSTransformer
