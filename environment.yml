@@ -25,3 +25,6 @@ dependencies:
   - wandb=0.15
   - yfinance=0.2
   - pip=23.3
+  - pip:
+    - tensorboard_logger==0.1
+    - torch-tb-profiler==0.4.3

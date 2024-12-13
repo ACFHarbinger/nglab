@@ -37,6 +37,9 @@ def process_arguments():
     training_parser.add_argument('--run_name', default='run', help='Name to identify the run')
     training_parser.add_argument('--output_dir', default='results', help='Directory to write output models to')
     training_parser.add_argument('--load_path', default=None, help='Path to load model parameters and optimizer state from')
+    training_parser.add_argument('--epoch_start', type=int, default=0, help='Start at epoch # (relevant for learning rate decay)')
+    training_parser.add_argument('--no_tensorboard', action='store_true', help='Disable logging TensorBoard files')
+    training_parser.add_argument('--no_progress_bar', action='store_true', help='Disable progress bar')
 
     crawler_parser = subparsers.add_parser("webcrawler", aliases=["crawler"])
     crawler_parser.add_argument('--website', '--url', type=str, help='URL of the website to crawl for data.')

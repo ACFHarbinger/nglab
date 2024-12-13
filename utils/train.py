@@ -22,5 +22,5 @@ def rollout(model, dataset, opts):
     ], 0)
 
 
-def train_epoch(model, optimizer, epoch, dataset, opts):
+def train_epoch(model, optimizer, lr_scheduler, epoch, data, metadata, tb_logger, opts):
     return 0

@@ -5,10 +5,12 @@ import torch
 import pprint as pp
 import torch.optim as optim
 
+from tensorboard_logger import Logger as TbLogger
 from models import (
     LSTM, NSTransformer,
     NoBaseline
 )
+from utils.train import train_epoch
 from utils.data_utils import load_data
 from utils.functions import torch_load_cpu
 from utils.model_utils import get_inner_model
@@ -22,8 +24,14 @@ def train_model(opts):
     # Set the random seed
     torch.manual_seed(opts['seed'])
 
+    # Optionally configure tensorboard
+    tb_logger = None
+    if not opts['no_tensorboard']:
+        tb_logger = TbLogger(os.path.join(opts['log_dir'], "{}_{}".format(opts['data_dir'], opts['model']), opts['run_name']))
+
+    # Create required directories
     try:
-        os.makedirs(opts['save_dir'])
+        os.makedirs(opts['save_dir'], exist_ok=True)
     except Exception as e:
         print(e)
 
@@ -81,6 +89,13 @@ def train_model(opts):
                 # if isinstance(v, torch.Tensor):
                 if torch.is_tensor(v):
                     state[k] = v.to(opts['device'])
+
+    # Initialize learning rate scheduler, decay by lr_decay once per epoch!
+    lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lambda epoch: opts['lr_decay'] ** epoch)
+    
+    # Start the actual training loop
+    for epoch in range(opts['epoch_start'], opts['epoch_start'] + opts['n_epochs']):
+        train_epoch(model, optimizer, lr_scheduler, epoch, data, metadata, tb_logger, opts)
     sys.exit(0)
 
 

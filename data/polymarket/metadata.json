@@ -17,7 +17,7 @@
     },
     {
         "id": 1,
-        "filename": "polymarket-price-data-21-11-2024-13-12-2024-1734097154767.csv",
+        "filename": "polymarket-price-data-21-11-2024-13-12-2024-1734121881827.csv",
         "title": "Michel Barnier out as prime minister of France in 2024?",
         "category": "Politics",
         "about": [
@@ -26,7 +26,7 @@
         ],
         "volume": 598135,
         "options": ["Yes", "No"],
-        "outcome": null,
+        "outcome": "No",
         "minutes_filename": "polymarket-price-data-11-12-2024-13-12-2024-1734099882566.csv"
     },
     {
