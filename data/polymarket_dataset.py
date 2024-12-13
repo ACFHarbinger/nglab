@@ -24,6 +24,9 @@ class PolymarketDataset(torch.utils.data.Dataset):
 
     def _download(self):
         raise NotImplementedError
+    
+    def __len__(self):
+        return self.dataset_len
 
     def _get_name(self):
         return self.name
@@ -53,6 +56,9 @@ class PolymarketDataset(torch.utils.data.Dataset):
                 reshaped = new_tensor.view(-1, self.seq_len + self.pred_len)
                 self.dataset['Price'] = torch.cat((self.dataset['Price'], reshaped[:, :self.seq_len]))
                 self.dataset['Labels'] = torch.cat((self.dataset['Labels'], reshaped[:, self.seq_len:]))
+        self.dataset['Price'] = self.dataset['Price'].unsqueeze(-1)
+        #self.dataset['Labels'] = self.dataset['Labels'].unsqueeze(-1)
+        self.dataset_len = self.dataset['Price'].size()[0]
 
     def __getitem__(self, index):
         data = dict.fromkeys(self.dataset.keys())
@@ -67,10 +73,4 @@ class PolymarketDataset(torch.utils.data.Dataset):
         if self.transform is not None:
             data = self.transform(data)
 
-        if self.adv_attack is not None:
-            if self.labels is not None:
-                data = self.adv_attack(data, labels)
-            else:
-                data = self.adv_attack(data, data)
-
-        return data, labels
+        return data

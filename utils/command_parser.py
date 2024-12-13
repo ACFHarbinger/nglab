@@ -32,6 +32,7 @@ def process_arguments():
     training_parser.add_argument('--lr_decay', type=float, default=1.0, help='Learning rate decay per epoch')
     training_parser.add_argument('--seed', type=int, default=1234, help='Random seed to use')
     training_parser.add_argument('--no_cuda', action='store_true', help='Disable CUDA')
+    training_parser.add_argument('--max_grad_norm', type=float, default=1.0, help='Maximum L2 norm for gradient clipping, default 1.0 (0 to disable clipping)')
 
     # Other
     training_parser.add_argument('--data_dir', help='Path to data directory')

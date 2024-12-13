@@ -47,7 +47,6 @@ def train_model(opts):
     cur_dir = os.getcwd()
     data_dir = os.path.join(cur_dir, "data", opts['data_dir'])
     dataset = PolymarketDataset('polymarket', data_dir, opts['seq_len'], opts['pred_len'])
-    sys.exit(0)
 
     # Initialize the model
     model_class = {
@@ -56,7 +55,6 @@ def train_model(opts):
     }.get(opts['model'], None)
     assert model_class is not None, "Unknown model: {}".format(model_class)
     model = model_class(opts['seq_len'], opts['hidden_dim'], opts['n_encode_layers'], opts['pred_len']).to(opts['device'])
-
     if use_cuda and torch.cuda.device_count() > 1:
         model = torch.nn.DataParallel(model)
 

@@ -77,6 +77,10 @@ class WarmupBaseline(Baseline):
 
 
 class NoBaseline(Baseline):
+    def __init__(self):
+        super().__init__()
+        self.loss = torch.nn.MSELoss()
+
     def eval(self, x, c):
         return 0, 0  # No baseline, no loss
 
