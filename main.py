@@ -10,8 +10,8 @@ from models import (
     LSTM, NSTransformer,
     NoBaseline
 )
+from data import PolymarketDataset
 from utils.train import train_epoch
-from utils.data_utils import load_data
 from utils.functions import torch_load_cpu
 from utils.model_utils import get_inner_model
 from utils.command_parser import process_arguments
@@ -46,7 +46,8 @@ def train_model(opts):
     # Load data
     cur_dir = os.getcwd()
     data_dir = os.path.join(cur_dir, "data", opts['data_dir'])
-    data, metadata = load_data(data_dir)
+    dataset = PolymarketDataset('polymarket', data_dir, opts['seq_len'], opts['pred_len'])
+    sys.exit(0)
 
     # Initialize the model
     model_class = {
@@ -54,7 +55,7 @@ def train_model(opts):
         'nstransformer': NSTransformer
     }.get(opts['model'], None)
     assert model_class is not None, "Unknown model: {}".format(model_class)
-    model = model_class(24, opts['hidden_dim'], opts['n_encode_layers'], 6).to(opts['device'])
+    model = model_class(opts['seq_len'], opts['hidden_dim'], opts['n_encode_layers'], opts['pred_len']).to(opts['device'])
 
     if use_cuda and torch.cuda.device_count() > 1:
         model = torch.nn.DataParallel(model)
@@ -95,7 +96,7 @@ def train_model(opts):
     
     # Start the actual training loop
     for epoch in range(opts['epoch_start'], opts['epoch_start'] + opts['n_epochs']):
-        train_epoch(model, optimizer, lr_scheduler, epoch, data, metadata, tb_logger, opts)
+        train_epoch(model, optimizer, baseline, lr_scheduler, epoch, dataset, tb_logger, opts)
     sys.exit(0)
 
 

@@ -18,14 +18,16 @@ def process_arguments():
 
     # Model
     training_parser.add_argument('--model', default='lstm', help="Model, 'lstm' or 'nstransformer'")
+    training_parser.add_argument('--seq_len', type=int, default=21, help='Dimension of input sequence')
+    training_parser.add_argument('--pred_len', type=int, default=3, help='Dimension of output sequence')
     training_parser.add_argument('--embedding_dim', type=int, default=128, help='Dimension of input embedding')
     training_parser.add_argument('--hidden_dim', type=int, default=128, help='Dimension of hidden layers in Enc/Dec')
     training_parser.add_argument('--n_encode_layers', type=int, default=3, help='Number of layers in the encoder network')
     #training_parser.add_argument('--n_decode_layers', type=int, default=3, help='Number of layers in the decoder network')
 
     # Training
-    training_parser.add_argument('--n_epochs', type=int, default=20, help='The number of epochs to train')
-    training_parser.add_argument('--batch_size', type=int, default=256, help='Number of instances per batch during training')
+    training_parser.add_argument('--n_epochs', type=int, default=50, help='The number of epochs to train')
+    training_parser.add_argument('--batch_size', type=int, default=64, help='Number of instances per batch during training')
     training_parser.add_argument('--lr_model', type=float, default=1e-4, help="Set the learning rate for the actor network")
     training_parser.add_argument('--lr_decay', type=float, default=1.0, help='Learning rate decay per epoch')
     training_parser.add_argument('--seed', type=int, default=1234, help='Random seed to use')
