@@ -18,11 +18,12 @@ def process_arguments():
 
     # Model
     training_parser.add_argument('--model', default='lstm', help="Model, 'lstm' or 'nstransformer'")
+    training_parser.add_argument('--n_seq', type=int, default=1, help='Number of input sequences')
     training_parser.add_argument('--seq_len', type=int, default=21, help='Dimension of input sequence')
     training_parser.add_argument('--pred_len', type=int, default=3, help='Dimension of output sequence')
     training_parser.add_argument('--embedding_dim', type=int, default=128, help='Dimension of input embedding')
     training_parser.add_argument('--hidden_dim', type=int, default=128, help='Dimension of hidden layers in Enc/Dec')
-    training_parser.add_argument('--n_encode_layers', type=int, default=3, help='Number of layers in the encoder network')
+    training_parser.add_argument('--n_encode_layers', type=int, default=2, help='Number of layers in the encoder network')
     #training_parser.add_argument('--n_decode_layers', type=int, default=3, help='Number of layers in the decoder network')
 
     # Training

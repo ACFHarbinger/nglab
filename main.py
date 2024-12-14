@@ -54,7 +54,7 @@ def train_model(opts):
         'nstransformer': NSTransformer
     }.get(opts['model'], None)
     assert model_class is not None, "Unknown model: {}".format(model_class)
-    model = model_class(opts['seq_len'], opts['hidden_dim'], opts['n_encode_layers'], opts['pred_len']).to(opts['device'])
+    model = model_class(opts['n_seq'], opts['hidden_dim'], opts['embedding_dim'], opts['n_encode_layers'], opts['pred_len']).to(opts['device'])
     if use_cuda and torch.cuda.device_count() > 1:
         model = torch.nn.DataParallel(model)
 
@@ -95,7 +95,6 @@ def train_model(opts):
     # Start the actual training loop
     for epoch in range(opts['epoch_start'], opts['epoch_start'] + opts['n_epochs']):
         train_epoch(model, optimizer, baseline, lr_scheduler, epoch, dataset, tb_logger, opts)
-    sys.exit(0)
 
 
 def main(args):
