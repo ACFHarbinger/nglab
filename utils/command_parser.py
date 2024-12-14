@@ -27,7 +27,7 @@ def process_arguments():
     #training_parser.add_argument('--n_decode_layers', type=int, default=3, help='Number of layers in the decoder network')
 
     # Training
-    training_parser.add_argument('--n_epochs', type=int, default=50, help='The number of epochs to train')
+    training_parser.add_argument('--n_epochs', type=int, default=100, help='The number of epochs to train')
     training_parser.add_argument('--batch_size', type=int, default=64, help='Number of instances per batch during training')
     training_parser.add_argument('--lr_model', type=float, default=1e-4, help="Set the learning rate for the actor network")
     training_parser.add_argument('--lr_decay', type=float, default=1.0, help='Learning rate decay per epoch')
@@ -44,6 +44,8 @@ def process_arguments():
     training_parser.add_argument('--epoch_start', type=int, default=0, help='Start at epoch # (relevant for learning rate decay)')
     training_parser.add_argument('--no_tensorboard', action='store_true', help='Disable logging TensorBoard files')
     training_parser.add_argument('--no_progress_bar', action='store_true', help='Disable progress bar')
+    training_parser.add_argument('--checkpoint_epochs', type=int, default=100, help='Save checkpoint every n epochs, 0 to save no checkpoints')
+    training_parser.add_argument('--log_step', type=int, default=1, help='Log info every log_step steps')
 
     crawler_parser = subparsers.add_parser("webcrawler", aliases=["crawler"])
     crawler_parser.add_argument('--website', '--url', type=str, help='URL of the website to crawl for data.')

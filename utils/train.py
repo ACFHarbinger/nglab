@@ -1,10 +1,12 @@
+import os
 import time
 import math
 import torch
 
 from tqdm import tqdm
 from utils.functions import move_to
-#from utils.model_utils import set_decode_type
+from utils.log_utils import log_timeseries_values
+from utils.model_utils import get_inner_model
 
 
 def rollout(model, dataset, opts):
@@ -52,21 +54,36 @@ def train_epoch(model, optimizer, baseline, lr_scheduler, epoch, dataset, tb_log
         tb_logger.log_value('learnrate_pg0', optimizer.param_groups[0]['lr'], epoch)
     
     # Put model in train mode and setup dataloader
+    step = epoch * opts['batch_size']
     model.train()
     training_dataloader = training_dataloader = torch.utils.data.DataLoader(dataset, batch_size=opts['batch_size'])
     for batch_id, batch in enumerate(tqdm(training_dataloader, disable=opts['no_progress_bar'])):
-        train_batch(model, optimizer, baseline, epoch, batch_id, batch, tb_logger, opts)
+        train_batch(model, optimizer, baseline, epoch, batch_id, batch, step, tb_logger, opts)
+        step += 1
 
     epoch_duration = time.time() - start_time
     print("Finished epoch {}, took {} s".format(epoch, time.strftime('%H:%M:%S', time.gmtime(epoch_duration))))
     if is_cuda:
         torch.cuda.empty_cache()
 
+    if (opts['checkpoint_epochs'] != 0 and epoch % opts['checkpoint_epochs'] == 0) or epoch == opts['n_epochs'] - 1:
+        print('Saving model and state...')
+        torch.save(
+            {
+                'model': get_inner_model(model).state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'rng_state': torch.get_rng_state(),
+                'cuda_rng_state': torch.cuda.get_rng_state_all(),
+                'baseline': baseline.state_dict()
+            },
+            os.path.join(opts['save_dir'], 'epoch-{}.pt'.format(epoch))
+        )
+
     # lr_scheduler should be called at end of epoch
     lr_scheduler.step()
 
 
-def train_batch(model, optimizer, baseline, epoch, batch_id, batch, tb_logger, opts):
+def train_batch(model, optimizer, baseline, epoch, batch_id, batch, step, tb_logger, opts):
     batch = move_to(batch, opts['device'])
     x = batch['Price']
     y = batch['Labels']
@@ -82,4 +99,7 @@ def train_batch(model, optimizer, baseline, epoch, batch_id, batch, tb_logger, o
     # Clip gradient norms and get (clipped) gradient norms for logging
     grad_norms = clip_grad_norms(optimizer.param_groups, opts['max_grad_norm'])
     optimizer.step()
-    print("Loss:", loss)
+    
+    # Logging
+    if step % int(opts['log_step']) == 0:
+        log_timeseries_values(loss, grad_norms, epoch, batch_id, step, output, tb_logger, opts)
