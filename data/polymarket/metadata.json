@@ -119,5 +119,20 @@
         "options": ["$POPCAT", "$Mog", "$Pnut", "$MOODENG", "$NEIRO", "$FWOG", "$BITCOIN", "None of the above in 2024"],
         "outcome": "$MOODENG",
         "minutes_filename": null
+    },
+    {
+        "id": 8,
+        "filename": "polymarket-price-data-13-09-2024-14-12-2024-1734142430379.csv",
+        "title": "Israel x Hamas ceasefire in 2024?",
+        "category": "Politics",
+        "about": [
+            "This market will resolve to 'Yes' if there is an official ceasefire agreement, defined as a publicly announced and mutually agreed halt in military engagement, between Israel and Hamas between August 6 and December 31, 2024, 11:59 PM ET.",
+            "An official ceasefire agreement requires public recognition by both parties. Any form of informal, unratified, or verbal agreement will not be considered an official ceasefire. The ceasefire must last at least 24 hours and have begun before the resolution date. For example, if the ceasefire begins on December 31, this market would resolve to 'Yes' if the ceasefire continues for 24 hours.",
+            "This market's resolution will be based on official government announcements from both Israel and Hamas, or reports from credible media source."
+        ],
+        "volume": 1045093,
+        "options": ["Yes", "No"],
+        "outcome": null,
+        "minutes_filename": null
     }
 ]

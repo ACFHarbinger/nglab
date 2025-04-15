@@ -13,8 +13,8 @@ from models import (
 from data import PolymarketDataset
 from utils.train import train_epoch
 from utils.functions import torch_load_cpu
-from utils.model_utils import get_inner_model
 from utils.command_parser import process_arguments
+from utils.model_utils import get_inner_model, setup_model
 
 
 def train_model(opts):
@@ -97,11 +97,26 @@ def train_model(opts):
         train_epoch(model, optimizer, baseline, lr_scheduler, epoch, dataset, tb_logger, opts)
 
 
+def inference(opts):
+    # Pretty print the run args
+    pp.pprint(opts)
+
+    # Set the random seed
+    torch.manual_seed(opts['seed'])
+
+    # Load model and params
+    cur_dir = os.getcwd()
+    device = torch.device("cpu" if not torch.cuda.is_available() else f"cuda:{torch.cuda.device_count()-1}")
+    model, args = setup_model(opts['model'], cur_dir), device
+
+
 def main(args):
     comm, opts = args
     print(comm)
     if comm == 'train':
         train_model(opts)
+    elif comm == 'inference':
+        inference(opts)
     sys.exit(0)
 
 if __name__ == "__main__":

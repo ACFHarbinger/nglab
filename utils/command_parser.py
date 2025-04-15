@@ -47,20 +47,30 @@ def process_arguments():
     training_parser.add_argument('--checkpoint_epochs', type=int, default=100, help='Save checkpoint every n epochs, 0 to save no checkpoints')
     training_parser.add_argument('--log_step', type=int, default=1, help='Log info every log_step steps')
 
+    # Inference
+    inference_parser = subparsers.add_parser('inference')
+    inference_parser.add_argument('--model', default='lstm', help="Model, 'lstm' or 'nstransformer'")
+    inference_parser.add_argument('--data_dir', help='Path to data directory')
+    inference_parser.add_argument('--load_path', help='Path to load model parameters and optimizer state from')
+    inference_parser.add_argument('--id', help='ID of time series to predict')
+    inference_parser.add_argument('--seed', type=int, default=1234, help='Random seed to use')
+
     crawler_parser = subparsers.add_parser("webcrawler", aliases=["crawler"])
     crawler_parser.add_argument('--website', '--url', type=str, help='URL of the website to crawl for data.')
 
     args = vars(parser.parse_args())
-
-    if args['command'] == 'webcrawler':
+    command = args.pop('command')
+    if command == 'webcrawler':
         sys.exit(0)
 
-    if args['command'] == 'train':
-        command = args.pop('command')
+    if command == 'train':
         args['run_name'] = "{}_{}".format(args['run_name'], time.strftime("%Y%m%dT%H%M%S"))
         args['save_dir'] = os.path.join(
             args['output_dir'],
             "{}_{}".format(args['data_dir'], args['model']),
             args['run_name']
         )
+        return command, args
+    
+    if command == 'inference':
         return command, args
