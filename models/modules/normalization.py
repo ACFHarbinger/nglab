@@ -1,17 +1,36 @@
 import math
 import torch.nn as nn
 
+from typing import Optional
+
 
 class Normalization(nn.Module):
-    def __init__(self, embed_dim, normalization='batch'):
+    def __init__(self, 
+                embed_dim: int, 
+                norm_name: str='batch', 
+                eps_alpha: float=1e-05, 
+                learn_affine: Optional[bool]=True, 
+                track_stats: Optional[bool]=False,  
+                mbval: Optional[float]=None, 
+                n_groups: Optional[int]=None, 
+                kval: Optional[float]=None,
+                bias: Optional[bool]=True):
         super(Normalization, self).__init__()
-        normalizer_class = {'batch': nn.BatchNorm1d, 'instance': nn.InstanceNorm1d, 'layer': nn.LayerNorm}.get(normalization, None)
-        self.normalizer = normalizer_class(embed_dim, affine=True)
-        # Normalization by default initializes affine parameters with bias 0 and weight unif(0,1) which is too large!
-        # self.init_parameters()
+        self.normalizer = {
+            'instance': nn.InstanceNorm1d(embed_dim, eps=eps_alpha, affine=learn_affine, track_running_stats=track_stats, momentum=mbval),
+            'batch': nn.BatchNorm1d(embed_dim, eps=eps_alpha, affine=learn_affine, track_running_stats=track_stats, momentum=mbval),
+            'layer': nn.LayerNorm(embed_dim, eps=eps_alpha, elementwise_affine=learn_affine, bias=bias),
+            'group': nn.GroupNorm(n_groups, eps=eps_alpha, num_channels=embed_dim, affine=learn_affine),
+            'local_response': nn.LocalResponseNorm(embed_dim, alpha=eps_alpha, beta=mbval, k=kval)
+        }.get(norm_name, None)
+        assert self.normalizer is not None, "Unknown normalization method: {}".format(norm_name)
+
+        # Normalization by default initializes affine parameters with bias 0 and weight unif(0, 1) which is too large!
+        if learn_affine:
+            self.init_parameters()
 
     def init_parameters(self):
-        for name, param in self.named_parameters():
+        for param in self.parameters():
             stdv = 1. / math.sqrt(param.size(-1))
             param.data.uniform_(-stdv, stdv)
 
@@ -23,5 +42,4 @@ class Normalization(nn.Module):
         elif isinstance(self.normalizer, nn.LayerNorm):
             return self.normalizer(input).view(*input.size())
         else:
-            assert self.normalizer is None, "Unknown normalizer type"
             return input
