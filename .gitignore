@@ -397,6 +397,9 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# VSCode
+.vscode/
+
 # Temporary files
 *.~lock.*.*#
 
@@ -408,3 +411,7 @@ data/*.zip
 
 # Local directories
 results/
+
+# Added by cargo
+
+/target

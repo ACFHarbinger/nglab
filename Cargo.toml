@@ -1,0 +1,11 @@
+[package]
+name = "nglab"
+version = "0.1.0"
+edition = "2024"
+description = "A Multimodal Deep Reinforcement Learning bot to assist you in all your gambling (stock market) needs"
+repository = "https://github.com/ACFHarbinger/nglab"
+documentation = "https://docs.rs/my_project"
+
+[dependencies]
+maturin = "1.11.0"
+tokio = { version = "1.42", features = ["full"] }
