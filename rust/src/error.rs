@@ -1,0 +1,40 @@
+//! Error types for the arena
+
+use thiserror::Error;
+
+/// Main error type for the arena
+#[derive(Error, Debug)]
+pub enum ArenaError {
+    #[error("Order book error: {0}")]
+    OrderBook(String),
+
+    #[error("Invalid order: {0}")]
+    InvalidOrder(String),
+
+    #[error("Insufficient balance: required {required}, available {available}")]
+    InsufficientBalance { required: f64, available: f64 },
+
+    #[error("Invalid price: {0}")]
+    InvalidPrice(f64),
+
+    #[error("Invalid quantity: {0}")]
+    InvalidQuantity(f64),
+
+    #[error("Market not found: {0}")]
+    MarketNotFound(String),
+
+    #[error("Data loading error: {0}")]
+    DataLoading(String),
+
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+
+    #[error("CSV error: {0}")]
+    Csv(#[from] csv::Error),
+
+    #[error("JSON error: {0}")]
+    Json(#[from] serde_json::Error),
+}
+
+/// Result type alias for arena operations
+pub type ArenaResult<T> = Result<T, ArenaError>;

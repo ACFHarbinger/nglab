@@ -1,0 +1,13 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+# Features to activate for the Rust crate
+features = ["pyo3/extension-module"]
+# Python interpreter to use for building
+python-source = "environment"
+# Module name in Python
+module-name = "nglab._nglab"
+# Build target
+bindings = "pyo3"

@@ -5,6 +5,7 @@ description = "A Multimodal Deep Reinforcement Learning bot to assist you in all
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "gymnasium>=1.2.3",
     "ipykernel==6.25",
     "matplotlib==3.7",
     "maturin>=1.10.2",
