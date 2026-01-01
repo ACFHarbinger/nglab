@@ -23,3 +23,13 @@ dependencies = [
     "wandb==0.15",
     "yfinance==0.2.66",
 ]
+
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "nglab._nglab"
+bindings = "pyo3"
+

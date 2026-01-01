@@ -47,8 +47,9 @@ pub struct StepResult {
 pub struct StepInfo {
     pub portfolio_value: f64,
     pub position: f64,
-    pub pnl: f64,
+    pub cash: f64,
     pub sharpe_ratio: f64,
+    pub total_steps: u64,
 }
 
 /// Observation buffer for zero-copy access
@@ -164,37 +165,67 @@ impl TradingEnv {
         action: i32,
     ) -> (Bound<'py, PyArray2<f64>>, f64, bool, bool, PyObject) {
         let action_type = ActionType::from(action);
+        let lookback = self.lookback;
+        let num_features = self.num_features;
 
-        // Execute action
-        let trade_cost = self.execute_action(action_type);
+        // Run simulation logic without GIL
+        let (reward, terminated, truncated, obs_data, step_info) = py.allow_threads(move || {
+            // Execute action
+            let trade_cost = self.execute_action(action_type);
 
-        // Advance time
-        self.current_step += 1;
-        self.total_steps += 1;
+            // Advance time
+            self.current_step += 1;
+            self.total_steps += 1;
 
-        // Calculate reward
-        let portfolio_value = self.portfolio_value();
-        let returns = (portfolio_value - self.prev_portfolio_value) / self.prev_portfolio_value;
-        self.returns.push(returns);
-        self.prev_portfolio_value = portfolio_value;
+            // Calculate reward
+            let portfolio_value = self.portfolio_value();
+            let returns = (portfolio_value - self.prev_portfolio_value) / self.prev_portfolio_value;
+            self.returns.push(returns);
+            self.prev_portfolio_value = portfolio_value;
 
-        // Risk-adjusted reward (Sharpe-like)
-        let reward = self.calculate_reward(returns, trade_cost);
+            // Risk-adjusted reward (Sharpe-like)
+            let reward = self.calculate_reward(returns, trade_cost);
 
-        // Check termination
-        let terminated = portfolio_value <= 0.0 || self.current_step >= self.prices.len() - 1;
-        let truncated = self.current_step - self.lookback >= self.max_steps;
+            // Check termination
+            let terminated = portfolio_value <= 0.0 || self.current_step >= self.prices.len() - 1;
+            let truncated = self.current_step - self.lookback >= self.max_steps;
 
-        // Build info dict
-        let info = self.build_info(py);
+            // Generate observation data
+            let obs_data = self.generate_observation_data();
 
-        let obs = self.get_observation(py);
+            // Collect info data
+            let step_info = StepInfo {
+                portfolio_value,
+                position: self.position,
+                cash: self.cash,
+                sharpe_ratio: self.calculate_sharpe(30),
+                total_steps: self.total_steps,
+            };
+
+            (reward, terminated, truncated, obs_data, step_info)
+        });
+
+        // Build info dict (needs GIL)
+        let dict = PyDict::new_bound(py);
+        dict.set_item("portfolio_value", step_info.portfolio_value)
+            .unwrap();
+        dict.set_item("position", step_info.position).unwrap();
+        dict.set_item("cash", step_info.cash).unwrap();
+        dict.set_item("sharpe_ratio", step_info.sharpe_ratio)
+            .unwrap();
+        dict.set_item("total_steps", step_info.total_steps).unwrap();
+        let info = dict.into();
+
+        // Create numpy array (needs GIL)
+        let obs_array = ndarray::Array2::from_shape_vec((lookback, num_features), obs_data)
+            .expect("Invalid shape");
+        let obs = obs_array.to_pyarray_bound(py);
 
         (obs, reward, terminated, truncated, info)
     }
 
-    /// Get current observation as numpy array
-    pub fn get_observation<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
+    /// Internal method to generate observation data (pure Rust, no GIL)
+    fn generate_observation_data(&self) -> Vec<f64> {
         let mut obs = vec![0.0f64; self.lookback * self.num_features];
 
         for i in 0..self.lookback {
@@ -217,9 +248,15 @@ impl TradingEnv {
                 obs[row_start + 5] = self.cash / self.initial_capital; // Normalized cash
             }
         }
+        obs
+    }
+
+    /// Get current observation as numpy array
+    pub fn get_observation<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
+        let obs_data = self.generate_observation_data();
 
         // Reshape to (lookback, features)
-        let array = ndarray::Array2::from_shape_vec((self.lookback, self.num_features), obs)
+        let array = ndarray::Array2::from_shape_vec((self.lookback, self.num_features), obs_data)
             .expect("Invalid shape");
 
         array.to_pyarray_bound(py)
