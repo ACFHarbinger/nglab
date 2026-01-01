@@ -1,0 +1,71 @@
+use crate::orderbook::OrderBook;
+
+use rerun::archetypes::{Points2D, Scalars};
+use rerun::{RecordingStream, RecordingStreamBuilder};
+
+pub struct RerunLogger {
+    rec: Option<RecordingStream>,
+}
+
+impl RerunLogger {
+    pub fn new(enabled: bool) -> Self {
+        if !enabled {
+            return Self { rec: None };
+        }
+        // Save to file for robust logging in headless/CI environments
+        let rec = RecordingStreamBuilder::new("nglab_arena")
+            .save("arena_log.rrd")
+            .unwrap();
+
+        eprintln!("Rerun logging initialized to arena_log.rrd");
+
+        Self { rec: Some(rec) }
+    }
+
+    pub fn log_step(&self, step: u64, orderbook: &OrderBook, portfolio_value: f64) {
+        if let Some(rec) = &self.rec {
+            rec.set_time_sequence("step", step as i64);
+
+            // Log portfolio metrics
+            rec.log("portfolio/value", &Scalars::new([portfolio_value]))
+                .ok();
+
+            // Log Market Bests
+            if let Some(bid) = orderbook.best_bid() {
+                rec.log("market/bid", &Scalars::new([bid])).ok();
+            }
+            if let Some(ask) = orderbook.best_ask() {
+                rec.log("market/ask", &Scalars::new([ask])).ok();
+            }
+
+            // Log Imbalance
+            let imbalance = orderbook.imbalance();
+            rec.log("market/imbalance", &Scalars::new([imbalance])).ok();
+
+            // Log Order Book Depth (Top 10 levels)
+            let bids = orderbook.bid_depth(10);
+            let asks = orderbook.ask_depth(10);
+
+            // Convert to 2D points (Price, Volume)
+            let bid_points: Vec<[f32; 2]> =
+                bids.iter().map(|(p, v)| [*p as f32, *v as f32]).collect();
+            let ask_points: Vec<[f32; 2]> =
+                asks.iter().map(|(p, v)| [*p as f32, *v as f32]).collect();
+
+            if !bid_points.is_empty() {
+                rec.log(
+                    "market/depth/bids",
+                    &Points2D::new(bid_points).with_colors([0x00FF00FF]),
+                )
+                .ok();
+            }
+            if !ask_points.is_empty() {
+                rec.log(
+                    "market/depth/asks",
+                    &Points2D::new(ask_points).with_colors([0xFF0000FF]),
+                )
+                .ok();
+            }
+        }
+    }
+}

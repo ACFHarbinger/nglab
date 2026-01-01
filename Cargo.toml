@@ -36,6 +36,7 @@ indexmap = "2.7"
 thiserror = "2.0"
 rand = "0.8"
 chrono = { version = "0.4", features = ["serde"] }
+rerun = "0.28.1"
 
 [dev-dependencies]
 criterion = "0.5"

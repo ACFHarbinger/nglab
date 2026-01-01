@@ -102,6 +102,8 @@ pub struct TradingEnv {
     max_steps: usize,
     /// Total steps taken
     total_steps: u64,
+    /// Rerun logger for visualization
+    logger: crate::visualizer::RerunLogger,
 }
 
 #[pymethods]
@@ -128,6 +130,7 @@ impl TradingEnv {
             prev_portfolio_value: initial_capital,
             max_steps,
             total_steps: 0,
+            logger: crate::visualizer::RerunLogger::new(true), // Enable by default for now
         }
     }
 
@@ -201,6 +204,10 @@ impl TradingEnv {
                 sharpe_ratio: self.calculate_sharpe(30),
                 total_steps: self.total_steps,
             };
+
+            // Log simulation state (thread-safe)
+            self.logger
+                .log_step(self.total_steps, &self.orderbook, portfolio_value);
 
             (reward, terminated, truncated, obs_data, step_info)
         });

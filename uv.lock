@@ -1030,6 +1030,18 @@ wheels = [
 ]
 
 [[package]]
+name = "loss-landscapes"
+version = "3.0.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/66/d0/549d0011eb045d57f2ff0f5cca3eb8ee9b7c0943f0e687a648acbb5a9a91/loss_landscapes-3.0.6.tar.gz", hash = "sha256:880c17ae77dfa9497666033a86b072e0dc19c92c7dd2ff8258c679a3b870565f", size = 18475, upload-time = "2019-08-30T18:07:49.161Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/84/20/bfa571a797a80788101dba6b848c2b8b3c1480a40f37e52e7df983c4bc04/loss_landscapes-3.0.6-py3-none-any.whl", hash = "sha256:691952b8353dc3fc061de08ce759b66efbe8768fb5f9c4f8830f5a7131fc7552", size = 72027, upload-time = "2019-08-30T18:07:46.714Z" },
+]
+
+[[package]]
 name = "markdown"
 version = "3.10"
 source = { registry = "https://pypi.org/simple" }
@@ -1329,6 +1341,7 @@ source = { editable = "." }
 dependencies = [
     { name = "gymnasium" },
     { name = "ipykernel" },
+    { name = "loss-landscapes" },
     { name = "matplotlib" },
     { name = "maturin" },
     { name = "numpy" },
@@ -1350,6 +1363,7 @@ dependencies = [
 requires-dist = [
     { name = "gymnasium", specifier = ">=1.2.3" },
     { name = "ipykernel", specifier = "==6.25" },
+    { name = "loss-landscapes", specifier = ">=3.0.6" },
     { name = "matplotlib", specifier = "==3.7" },
     { name = "maturin", specifier = ">=1.10.2" },
     { name = "numpy", specifier = "==1.24" },

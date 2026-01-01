@@ -9,6 +9,7 @@ pub mod error;
 pub mod gym;
 pub mod orderbook;
 pub mod polymarket;
+pub mod visualizer;
 
 pub use error::{ArenaError, ArenaResult};
 
@@ -39,7 +40,7 @@ impl Default for Arena {
 
 /// Python module entry point
 #[pymodule]
-fn nglab(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn _nglab(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Arena>()?;
     m.add_class::<orderbook::OrderBook>()?;
     m.add_class::<polymarket::PolymarketArena>()?;
