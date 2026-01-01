@@ -412,6 +412,10 @@ data/*.zip
 # Local directories
 results/
 
-# Added by cargo
+# Rust and Python intermediate files
+*.so
+*.pyc
+*.zip
 
+# Added by cargo
 /target
