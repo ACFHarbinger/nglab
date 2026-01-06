@@ -68,7 +68,7 @@ impl Order {
 }
 
 /// Price level containing orders at the same price
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct PriceLevel {
     pub price: f64,
     pub orders: VecDeque<Order>,
@@ -116,7 +116,7 @@ pub struct Trade {
 
 /// Central Limit Order Book
 #[pyclass]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderBook {
     /// Bids ordered by price (highest first) - IndexMap preserves insertion order
     /// Key is price as integer (price * 10000 for precision)

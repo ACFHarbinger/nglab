@@ -156,7 +156,7 @@ impl PolymarketArena {
         #[derive(Deserialize)]
         struct MarketMeta {
             id: u32,
-            filename: String,
+            _filename: String,
             title: String,
             category: String,
             options: Vec<String>,
@@ -225,7 +225,7 @@ impl PolymarketArena {
         }
 
         self.account.collateral -= total_cost;
-        let (yes, no) = self
+        let (yes, _no) = self
             .account
             .positions
             .entry(market_id.to_string())
@@ -254,7 +254,7 @@ impl PolymarketArena {
         }
 
         self.account.collateral -= total_cost;
-        let (yes, no) = self
+        let (_yes, no) = self
             .account
             .positions
             .entry(market_id.to_string())

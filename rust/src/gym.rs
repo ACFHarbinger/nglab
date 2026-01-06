@@ -33,7 +33,7 @@ impl From<i32> for ActionType {
 }
 
 /// Step result returned to Python
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct StepResult {
     pub observation: Vec<f64>,
     pub reward: f64,
@@ -43,7 +43,7 @@ pub struct StepResult {
 }
 
 /// Additional info for each step
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct StepInfo {
     pub portfolio_value: f64,
     pub position: f64,
@@ -231,33 +231,6 @@ impl TradingEnv {
         (obs, reward, terminated, truncated, info)
     }
 
-    /// Internal method to generate observation data (pure Rust, no GIL)
-    fn generate_observation_data(&self) -> Vec<f64> {
-        let mut obs = vec![0.0f64; self.lookback * self.num_features];
-
-        for i in 0..self.lookback {
-            let idx = self.current_step - self.lookback + i;
-            if idx < self.prices.len() {
-                let price = self.prices[idx];
-                let prev_price = if idx > 0 { self.prices[idx - 1] } else { price };
-                let returns = if prev_price > 0.0 {
-                    (price - prev_price) / prev_price
-                } else {
-                    0.0
-                };
-
-                let row_start = i * self.num_features;
-                obs[row_start] = price / self.prices[0]; // Normalized price
-                obs[row_start + 1] = returns; // Returns
-                obs[row_start + 2] = 0.0; // Volume (placeholder)
-                obs[row_start + 3] = self.orderbook.imbalance(); // Order book imbalance
-                obs[row_start + 4] = self.position / self.initial_capital; // Normalized position
-                obs[row_start + 5] = self.cash / self.initial_capital; // Normalized cash
-            }
-        }
-        obs
-    }
-
     /// Get current observation as numpy array
     pub fn get_observation<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
         let obs_data = self.generate_observation_data();
@@ -288,6 +261,84 @@ impl TradingEnv {
     /// Get total steps taken
     pub fn get_total_steps(&self) -> u64 {
         self.total_steps
+    }
+}
+
+impl TradingEnv {
+    /// Get reference to orderbook
+    pub fn orderbook(&self) -> &OrderBook {
+        &self.orderbook
+    }
+
+    /// Pure Rust step function (no Python dependency)
+    pub fn step_rs(&mut self, action: i32) -> (Vec<f64>, f64, bool, bool, StepInfo) {
+        let action_type = ActionType::from(action);
+
+        // Execute action
+        let trade_cost = self.execute_action(action_type);
+
+        // Advance time
+        self.current_step += 1;
+        self.total_steps += 1;
+
+        // Calculate reward
+        let portfolio_value = self.portfolio_value();
+        let returns = (portfolio_value - self.prev_portfolio_value) / self.prev_portfolio_value;
+        self.returns.push(returns);
+        self.prev_portfolio_value = portfolio_value;
+
+        // Risk-adjusted reward (Sharpe-like)
+        let reward = self.calculate_reward(returns, trade_cost);
+
+        // Check termination
+        let terminated =
+            portfolio_value <= 0.0 || self.current_step >= self.prices.len().saturating_sub(1);
+        let truncated = self.current_step - self.lookback >= self.max_steps;
+
+        // Generate observation data
+        let obs_data = self.generate_observation_data();
+
+        // Collect info data
+        let step_info = StepInfo {
+            portfolio_value,
+            position: self.position,
+            cash: self.cash,
+            sharpe_ratio: self.calculate_sharpe(30),
+            total_steps: self.total_steps,
+        };
+
+        // Log simulation state (thread-safe)
+        self.logger
+            .log_step(self.total_steps, &self.orderbook, portfolio_value);
+
+        (obs_data, reward, terminated, truncated, step_info)
+    }
+
+    /// Internal method to generate observation data (pure Rust, no GIL)
+    fn generate_observation_data(&self) -> Vec<f64> {
+        let mut obs = vec![0.0f64; self.lookback * self.num_features];
+
+        for i in 0..self.lookback {
+            let idx = self.current_step - self.lookback + i;
+            if idx < self.prices.len() {
+                let price = self.prices[idx];
+                let prev_price = if idx > 0 { self.prices[idx - 1] } else { price };
+                let returns = if prev_price > 0.0 {
+                    (price - prev_price) / prev_price
+                } else {
+                    0.0
+                };
+
+                let row_start = i * self.num_features;
+                obs[row_start] = price / self.prices[0]; // Normalized price
+                obs[row_start + 1] = returns; // Returns
+                obs[row_start + 2] = 0.0; // Volume (placeholder)
+                obs[row_start + 3] = self.orderbook.imbalance(); // Order book imbalance
+                obs[row_start + 4] = self.position / self.initial_capital; // Normalized position
+                obs[row_start + 5] = self.cash / self.initial_capital; // Normalized cash
+            }
+        }
+        obs
     }
 }
 
@@ -395,6 +446,7 @@ impl TradingEnv {
     }
 
     /// Build info dictionary for Python
+    #[allow(dead_code)]
     fn build_info(&self, py: Python<'_>) -> PyObject {
         let dict = PyDict::new_bound(py);
         dict.set_item("portfolio_value", self.portfolio_value())
