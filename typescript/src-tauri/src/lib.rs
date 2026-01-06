@@ -1,4 +1,4 @@
-use nglab::gym::{StepInfo, TradingEnv};
+use nglab::gym::TradingEnv;
 use nglab::orderbook::OrderBook;
 use std::sync::Mutex;
 use tauri::{Emitter, Manager, State};
@@ -25,11 +25,8 @@ fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
     }
     *running = true;
 
-    // Clone state to move into async task
-    // State<T> is a wrapper around Arc<T>, so this is cheap
-    let state = state.clone();
-
     tauri::async_runtime::spawn(async move {
+        let state = app.state::<ArenaState>();
         loop {
             // Check if we should keep running
             {

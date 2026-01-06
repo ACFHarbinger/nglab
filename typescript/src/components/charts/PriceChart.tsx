@@ -1,4 +1,4 @@
-import { createChart, ColorType, IChartApi, ISeriesApi } from 'lightweight-charts';
+import { createChart, ColorType, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 import { ArenaUpdate } from '../../hooks/useArena';
 
@@ -32,13 +32,13 @@ export function PriceChart({ data }: ChartProps) {
             }
         });
 
-        const priceSeries = chart.addLineSeries({
+        const priceSeries = chart.addSeries(LineSeries, {
             color: '#22c55e',
             lineWidth: 2,
             title: 'Price',
         });
 
-        const portfolioSeries = chart.addLineSeries({
+        const portfolioSeries = chart.addSeries(LineSeries, {
             color: '#3b82f6',
             lineWidth: 2,
             title: 'Portfolio',

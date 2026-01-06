@@ -1,14 +1,27 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri + React + Typescript</title>
-  </head>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nglab Arena</title>
+  <!-- 
+      Add this shim to prevent "global is not defined" errors 
+      common in financial/RL libraries within Vite environments.
+    -->
+  <script>
+    window.global = window;
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <!-- 
+      Ensure absolute pathing starting with / for Tauri's 
+      custom protocol to resolve correctly.
+    -->
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>
