@@ -114,5 +114,5 @@ cargo run --bin nglab-cli
 
 If instead you prefer to use the Graphical User Interface (GUI), you can use the following command:
 ```bash
-pnpm --prefix typescript tauri dev
+npm run tauri dev
 ```
