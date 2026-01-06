@@ -7,6 +7,7 @@ use tokio::time::{sleep, Duration};
 struct ArenaState {
     env: Mutex<TradingEnv>,
     running: Mutex<bool>,
+    task_handle: Mutex<Option<tauri::async_runtime::JoinHandle<()>>>,
 }
 
 #[derive(serde::Serialize, Clone)]
@@ -25,7 +26,7 @@ fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
     }
     *running = true;
 
-    tauri::async_runtime::spawn(async move {
+    let handle = tauri::async_runtime::spawn(async move {
         let state = app.state::<ArenaState>();
         loop {
             // Check if we should keep running
@@ -54,12 +55,14 @@ fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
             };
 
             // Emit event to frontend
-            // We ignore errors if frontend is closed/not listening
             let _ = app.emit("arena-update", &update);
 
             sleep(Duration::from_millis(100)).await;
         }
     });
+
+    let mut task_handle = state.task_handle.lock().unwrap();
+    *task_handle = Some(handle);
 }
 
 #[tauri::command]
@@ -76,12 +79,33 @@ pub fn run() {
     let state = ArenaState {
         env: Mutex::new(env),
         running: Mutex::new(false),
+        task_handle: Mutex::new(None),
     };
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .manage(state)
         .invoke_handler(tauri::generate_handler![start_simulation, stop_simulation])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app_handle, event| match event {
+            tauri::RunEvent::ExitRequested { .. } => {
+                let state = app_handle.state::<ArenaState>();
+                
+                // Stop the loop
+                {
+                    let mut running = state.running.lock().unwrap();
+                    *running = false;
+                }
+                
+                // Abort the task if it's still running
+                {
+                    let mut task_handle = state.task_handle.lock().unwrap();
+                    if let Some(handle) = task_handle.take() {
+                        handle.abort();
+                    }
+                }
+            }
+            _ => {}
+        });
 }

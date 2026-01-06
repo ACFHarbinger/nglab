@@ -6,8 +6,11 @@
 //! - Risk-adjusted reward functions
 
 use crate::orderbook::{OrderBook, Side};
+#[cfg(feature = "python")]
 use numpy::{PyArray2, ToPyArray};
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
+#[cfg(feature = "python")]
 use pyo3::types::PyDict;
 
 /// Action space types
@@ -74,7 +77,7 @@ impl ObservationBuffer {
 }
 
 /// Trading environment with Gymnasium interface
-#[pyclass]
+#[cfg_attr(feature = "python", pyclass)]
 pub struct TradingEnv {
     /// Order book for simulation
     orderbook: OrderBook,
@@ -106,10 +109,20 @@ pub struct TradingEnv {
     logger: crate::visualizer::RerunLogger,
 }
 
-#[pymethods]
+#[cfg_attr(feature = "python", pymethods)]
 impl TradingEnv {
-    #[new]
-    #[pyo3(signature = (initial_capital=10000.0, transaction_cost=0.001, lookback=30, max_steps=1000))]
+    #[cfg(feature = "python")]
+    #[cfg_attr(feature = "python", new)]
+    #[cfg_attr(feature = "python", pyo3(signature = (initial_capital=10000.0, transaction_cost=0.001, lookback=30, max_steps=1000)))]
+    pub fn new_py(
+        initial_capital: f64,
+        transaction_cost: f64,
+        lookback: usize,
+        max_steps: usize,
+    ) -> Self {
+        Self::new(initial_capital, transaction_cost, lookback, max_steps)
+    }
+
     pub fn new(
         initial_capital: f64,
         transaction_cost: f64,
@@ -149,8 +162,15 @@ impl TradingEnv {
         3
     }
 
+    #[cfg(feature = "python")]
     /// Reset the environment
     pub fn reset<'py>(&mut self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
+        self.reset_rs();
+        self.get_observation(py)
+    }
+
+    /// Pure Rust reset (no Python dependency)
+    pub fn reset_rs(&mut self) -> Vec<f64> {
         self.current_step = self.lookback;
         self.position = 0.0;
         self.cash = self.initial_capital;
@@ -158,9 +178,10 @@ impl TradingEnv {
         self.prev_portfolio_value = self.initial_capital;
         self.orderbook.clear();
 
-        self.get_observation(py)
+        self.generate_observation_data()
     }
 
+    #[cfg(feature = "python")]
     /// Take a step in the environment
     pub fn step<'py>(
         &mut self,
@@ -191,7 +212,7 @@ impl TradingEnv {
 
             // Check termination
             let terminated = portfolio_value <= 0.0 || self.current_step >= self.prices.len() - 1;
-            let truncated = self.current_step - self.lookback >= self.max_steps;
+            let truncated = self.current_step.saturating_sub(self.lookback) >= self.max_steps;
 
             // Generate observation data
             let obs_data = self.generate_observation_data();
@@ -231,6 +252,7 @@ impl TradingEnv {
         (obs, reward, terminated, truncated, info)
     }
 
+    #[cfg(feature = "python")]
     /// Get current observation as numpy array
     pub fn get_observation<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
         let obs_data = self.generate_observation_data();
@@ -293,7 +315,7 @@ impl TradingEnv {
         // Check termination
         let terminated =
             portfolio_value <= 0.0 || self.current_step >= self.prices.len().saturating_sub(1);
-        let truncated = self.current_step - self.lookback >= self.max_steps;
+        let truncated = self.current_step.saturating_sub(self.lookback) >= self.max_steps;
 
         // Generate observation data
         let obs_data = self.generate_observation_data();
@@ -319,7 +341,7 @@ impl TradingEnv {
         let mut obs = vec![0.0f64; self.lookback * self.num_features];
 
         for i in 0..self.lookback {
-            let idx = self.current_step - self.lookback + i;
+            let idx = self.current_step.saturating_sub(self.lookback).saturating_add(i);
             if idx < self.prices.len() {
                 let price = self.prices[idx];
                 let prev_price = if idx > 0 { self.prices[idx - 1] } else { price };
@@ -445,6 +467,7 @@ impl TradingEnv {
         }
     }
 
+    #[cfg(feature = "python")]
     /// Build info dictionary for Python
     #[allow(dead_code)]
     fn build_info(&self, py: Python<'_>) -> PyObject {

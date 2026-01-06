@@ -6,6 +6,7 @@
 //! - NegRisk accounting for cross-collateralization
 
 use crate::error::{ArenaError, ArenaResult};
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -71,7 +72,7 @@ impl Account {
 }
 
 /// Polymarket trading arena
-#[pyclass]
+#[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone)]
 pub struct PolymarketArena {
     /// Available markets
@@ -88,10 +89,10 @@ pub struct PolymarketArena {
     taker_fee: f64,
 }
 
-#[pymethods]
+#[cfg_attr(feature = "python", pymethods)]
 impl PolymarketArena {
-    #[new]
-    #[pyo3(signature = (initial_collateral=10000.0, taker_fee=0.001))]
+    #[cfg_attr(feature = "python", new)]
+    #[cfg_attr(feature = "python", pyo3(signature = (initial_collateral=10000.0, taker_fee=0.001)))]
     pub fn new(initial_collateral: f64, taker_fee: f64) -> Self {
         PolymarketArena {
             markets: HashMap::new(),

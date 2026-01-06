@@ -105,3 +105,14 @@ scripts\setup_env.bat <selected_method>
 ```
 
 Note: the selected_method variable shoud be replaced with -> uv|conda|venv
+
+## Execute Program
+To execute the program using the Terminal User Interface (TUI), you can use the following command:
+```bash
+cargo run --bin nglab-cli
+```
+
+If instead you prefer to use the Graphical User Interface (GUI), you can use the following command:
+```bash
+pnpm --prefix typescript tauri dev
+```

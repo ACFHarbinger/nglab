@@ -3,6 +3,7 @@
 //! This crate provides a Rust-based simulation engine for reinforcement learning
 //! in financial markets, with Python bindings via PyO3.
 
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
 
 pub mod error;
@@ -14,14 +15,14 @@ pub mod visualizer;
 pub use error::{ArenaError, ArenaResult};
 
 /// Arena - The main simulation environment
-#[pyclass]
+#[cfg_attr(feature = "python", pyclass)]
 pub struct Arena {
     step_count: u64,
 }
 
-#[pymethods]
+#[cfg_attr(feature = "python", pymethods)]
 impl Arena {
-    #[new]
+    #[cfg_attr(feature = "python", new)]
     pub fn new() -> Self {
         Arena { step_count: 0 }
     }
@@ -39,6 +40,7 @@ impl Default for Arena {
 }
 
 /// Python module entry point
+#[cfg(feature = "python")]
 #[pymodule]
 fn _nglab(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Arena>()?;

@@ -17,8 +17,8 @@ path = "rust/src/main.rs"
 
 [dependencies]
 # Python bindings
-pyo3 = { version = "0.22", features = ["extension-module"] }
-numpy = "0.22"
+pyo3 = { version = "0.22", optional = true }
+numpy = { version = "0.22", optional = true }
 
 # Async runtime
 tokio = { version = "1.42", features = ["full"] }
@@ -37,8 +37,13 @@ thiserror = "2.0"
 rand = "0.8"
 chrono = { version = "0.4", features = ["serde"] }
 rerun = "0.28.1"
+ratatui = "0.29"
+crossterm = { version = "0.28", features = ["event-stream"] }
+color-eyre = "0.6"
+
+[features]
+extension-module = ["pyo3/extension-module"]
+python = ["dep:pyo3", "dep:numpy"]
 
 [dev-dependencies]
 criterion = "0.5"
-
-

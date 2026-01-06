@@ -6,6 +6,7 @@
 //! - Queue position tracking for realistic HFT simulation
 
 use indexmap::IndexMap;
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
@@ -115,7 +116,7 @@ pub struct Trade {
 }
 
 /// Central Limit Order Book
-#[pyclass]
+#[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderBook {
     /// Bids ordered by price (highest first) - IndexMap preserves insertion order
@@ -137,9 +138,9 @@ impl Default for OrderBook {
     }
 }
 
-#[pymethods]
+#[cfg_attr(feature = "python", pymethods)]
 impl OrderBook {
-    #[new]
+    #[cfg_attr(feature = "python", new)]
     pub fn new() -> Self {
         OrderBook {
             bids: IndexMap::new(),
