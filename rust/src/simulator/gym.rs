@@ -5,7 +5,7 @@
 //! - Normalized observations via zero-copy numpy arrays
 //! - Risk-adjusted reward functions
 
-use crate::orderbook::{OrderBook, Side};
+use crate::simulator::orderbook::{OrderBook, Side};
 #[cfg(feature = "python")]
 use numpy::{PyArray2, ToPyArray};
 #[cfg(feature = "python")]
@@ -121,7 +121,13 @@ impl TradingEnv {
         max_steps: usize,
         enable_logging: bool,
     ) -> Self {
-        Self::new(initial_capital, transaction_cost, lookback, max_steps, enable_logging)
+        Self::new(
+            initial_capital,
+            transaction_cost,
+            lookback,
+            max_steps,
+            enable_logging,
+        )
     }
 
     pub fn new(
@@ -343,7 +349,10 @@ impl TradingEnv {
         let mut obs = vec![0.0f64; self.lookback * self.num_features];
 
         for i in 0..self.lookback {
-            let idx = self.current_step.saturating_sub(self.lookback).saturating_add(i);
+            let idx = self
+                .current_step
+                .saturating_sub(self.lookback)
+                .saturating_add(i);
             if idx < self.prices.len() {
                 let price = self.prices[idx];
                 let prev_price = if idx > 0 { self.prices[idx - 1] } else { price };

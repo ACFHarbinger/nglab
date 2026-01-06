@@ -1,4 +1,4 @@
-use crate::orderbook::OrderBook;
+use crate::simulator::orderbook::OrderBook;
 
 #[cfg(feature = "logging")]
 use rerun::archetypes::{Points2D, Scalars};

@@ -4,7 +4,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use nglab::gym::{ActionType, StepInfo, TradingEnv};
+use nglab::simulator::gym::{ActionType, StepInfo, TradingEnv};
 use ratatui::{
     prelude::*,
     widgets::{block::*, *},
@@ -23,7 +23,7 @@ struct App {
 impl App {
     fn new() -> Self {
         let mut env = TradingEnv::new(10000.0, 0.001, 30, 2000, true);
-        
+
         // Generate dummy price data for demonstration
         let mut prices = Vec::new();
         let mut p = 100.0;
@@ -32,9 +32,9 @@ impl App {
             prices.push(p);
         }
         env.load_prices(prices);
-        
+
         env.reset_rs();
-        
+
         App {
             env,
             info: StepInfo::default(),
@@ -48,21 +48,22 @@ impl App {
         let (obs, _reward, _term, _trunc, info) = self.env.step_rs(action);
         self.info = info;
         // The first feature in our observation is normalized price
-        // Let's get the absolute price from the environment logic if available, 
+        // Let's get the absolute price from the environment logic if available,
         // or just use the last value from dummy prices for viz.
         if let Some(price) = obs.get(obs.len() - 6) {
-             // This is normalized, but for sparkline it's fine
-             self.price_history.push(*price);
+            // This is normalized, but for sparkline it's fine
+            self.price_history.push(*price);
         }
         if self.price_history.len() > 100 {
             self.price_history.remove(0);
         }
-        
+
         self.last_action = match ActionType::from(action) {
             ActionType::Hold => "Hold",
             ActionType::Buy => "Buy",
             ActionType::Sell => "Sell",
-        }.to_string();
+        }
+        .to_string();
     }
 }
 
@@ -77,7 +78,7 @@ fn main() -> Result<()> {
 
     // Create app
     let mut app = App::new();
-    
+
     // Initial step to populate data
     app.step(0);
 
@@ -129,9 +130,19 @@ fn ui(f: &mut Frame, app: &App) {
 
     // Header
     let header_widget = Paragraph::new(Line::from(vec![
-        Span::styled(" nglab ", Style::default().add_modifier(Modifier::BOLD).fg(Color::Yellow)),
+        Span::styled(
+            " nglab ",
+            Style::default()
+                .add_modifier(Modifier::BOLD)
+                .fg(Color::Yellow),
+        ),
         Span::raw("- High Frequency Trading Arena "),
-        Span::styled("v0.1.0", Style::default().fg(Color::DarkGray).add_modifier(Modifier::ITALIC)),
+        Span::styled(
+            "v0.1.0",
+            Style::default()
+                .fg(Color::DarkGray)
+                .add_modifier(Modifier::ITALIC),
+        ),
     ]))
     .block(Block::bordered().border_type(BorderType::Rounded))
     .alignment(Alignment::Left);
@@ -151,33 +162,63 @@ fn ui(f: &mut Frame, app: &App) {
     let stats_text = vec![
         Line::from(vec![
             Span::raw("Portfolio Value: "),
-            Span::styled(format!("{:.2}", app.info.portfolio_value), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+            Span::styled(
+                format!("{:.2}", app.info.portfolio_value),
+                Style::default()
+                    .fg(Color::Yellow)
+                    .add_modifier(Modifier::BOLD),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Cash:            "),
-            Span::styled(format!("{:.2}", app.info.cash), Style::default().fg(Color::Green)),
+            Span::styled(
+                format!("{:.2}", app.info.cash),
+                Style::default().fg(Color::Green),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Position:        "),
-            Span::styled(format!("{:.4}", app.info.position), Style::default().fg(Color::Magenta)),
+            Span::styled(
+                format!("{:.4}", app.info.position),
+                Style::default().fg(Color::Magenta),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Sharpe Ratio:    "),
-            Span::styled(format!("{:.4}", app.info.sharpe_ratio), Style::default().fg(Color::Blue)),
+            Span::styled(
+                format!("{:.4}", app.info.sharpe_ratio),
+                Style::default().fg(Color::Blue),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Total Steps:     "),
-            Span::styled(format!("{}", app.info.total_steps), Style::default().fg(Color::Gray)),
+            Span::styled(
+                format!("{}", app.info.total_steps),
+                Style::default().fg(Color::Gray),
+            ),
         ]),
         Line::from(""),
         Line::from(vec![
             Span::raw("Last Action:     "),
-            Span::styled(&app.last_action, Style::default().fg(if app.last_action == "Buy" { Color::Green } else if app.last_action == "Sell" { Color::Red } else { Color::Gray })),
+            Span::styled(
+                &app.last_action,
+                Style::default().fg(if app.last_action == "Buy" {
+                    Color::Green
+                } else if app.last_action == "Sell" {
+                    Color::Red
+                } else {
+                    Color::Gray
+                }),
+            ),
         ]),
     ];
 
     let stats = Paragraph::new(stats_text)
-        .block(Block::default().title(" Portfolio Stats ").borders(Borders::ALL))
+        .block(
+            Block::default()
+                .title(" Portfolio Stats ")
+                .borders(Borders::ALL),
+        )
         .alignment(Alignment::Left);
     f.render_widget(stats, body_chunks[0]);
 
@@ -207,8 +248,13 @@ fn ui(f: &mut Frame, app: &App) {
     // Mid Price
     if let Some(mid) = book.mid_price() {
         book_rows.push(Row::new(vec![
-            Cell::from(" Mid ->").style(Style::default().fg(Color::Cyan).add_modifier(Modifier::DIM)),
-            Cell::from(format!("{:.2}", mid)).style(Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+            Cell::from(" Mid ->")
+                .style(Style::default().fg(Color::Cyan).add_modifier(Modifier::DIM)),
+            Cell::from(format!("{:.2}", mid)).style(
+                Style::default()
+                    .fg(Color::Cyan)
+                    .add_modifier(Modifier::BOLD),
+            ),
             Cell::from("").style(Style::default()),
         ]));
     }
@@ -230,14 +276,26 @@ fn ui(f: &mut Frame, app: &App) {
         ],
     )
     .block(Block::default().title(" Order Book ").borders(Borders::ALL))
-    .header(Row::new(vec!["Bids Vol", "Price", "Asks Vol"]).style(Style::default().add_modifier(Modifier::BOLD)));
+    .header(
+        Row::new(vec!["Bids Vol", "Price", "Asks Vol"])
+            .style(Style::default().add_modifier(Modifier::BOLD)),
+    );
 
     f.render_widget(table, right_chunks[0]);
 
     // Price Chart (Sparkline)
     let sparkline = Sparkline::default()
-        .block(Block::default().title(" Price Action (Lookback) ").borders(Borders::ALL))
-        .data(&app.price_history.iter().map(|v| (v * 10.0) as u64).collect::<Vec<_>>()) // Scale for visibility
+        .block(
+            Block::default()
+                .title(" Price Action (Lookback) ")
+                .borders(Borders::ALL),
+        )
+        .data(
+            &app.price_history
+                .iter()
+                .map(|v| (v * 10.0) as u64)
+                .collect::<Vec<_>>(),
+        ) // Scale for visibility
         .style(Style::default().fg(Color::Green));
     f.render_widget(sparkline, right_chunks[1]);
 

@@ -7,10 +7,9 @@
 use pyo3::prelude::*;
 
 pub mod error;
-pub mod gym;
-pub mod orderbook;
-pub mod polymarket;
+pub mod simulator;
 pub mod visualizer;
+pub mod web;
 
 pub use error::{ArenaError, ArenaResult};
 
@@ -44,9 +43,9 @@ impl Default for Arena {
 #[pymodule]
 fn _nglab(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<Arena>()?;
-    m.add_class::<orderbook::OrderBook>()?;
-    m.add_class::<polymarket::PolymarketArena>()?;
-    m.add_class::<gym::TradingEnv>()?;
+    m.add_class::<simulator::orderbook::OrderBook>()?;
+    m.add_class::<simulator::polymarket::PolymarketArena>()?;
+    m.add_class::<simulator::gym::TradingEnv>()?;
     Ok(())
 }
 

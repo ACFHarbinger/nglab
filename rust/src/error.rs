@@ -34,6 +34,9 @@ pub enum ArenaError {
 
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
+
+    #[error("Network error: {0}")]
+    Network(#[from] reqwest::Error),
 }
 
 /// Result type alias for arena operations
