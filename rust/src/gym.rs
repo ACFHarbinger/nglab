@@ -113,14 +113,15 @@ pub struct TradingEnv {
 impl TradingEnv {
     #[cfg(feature = "python")]
     #[cfg_attr(feature = "python", new)]
-    #[cfg_attr(feature = "python", pyo3(signature = (initial_capital=10000.0, transaction_cost=0.001, lookback=30, max_steps=1000)))]
+    #[cfg_attr(feature = "python", pyo3(signature = (initial_capital=10000.0, transaction_cost=0.001, lookback=30, max_steps=1000, enable_logging=true)))]
     pub fn new_py(
         initial_capital: f64,
         transaction_cost: f64,
         lookback: usize,
         max_steps: usize,
+        enable_logging: bool,
     ) -> Self {
-        Self::new(initial_capital, transaction_cost, lookback, max_steps)
+        Self::new(initial_capital, transaction_cost, lookback, max_steps, enable_logging)
     }
 
     pub fn new(
@@ -128,6 +129,7 @@ impl TradingEnv {
         transaction_cost: f64,
         lookback: usize,
         max_steps: usize,
+        enable_logging: bool,
     ) -> Self {
         TradingEnv {
             orderbook: OrderBook::new(),
@@ -143,7 +145,7 @@ impl TradingEnv {
             prev_portfolio_value: initial_capital,
             max_steps,
             total_steps: 0,
-            logger: crate::visualizer::RerunLogger::new(true), // Enable by default for now
+            logger: crate::visualizer::RerunLogger::new(enable_logging),
         }
     }
 
@@ -489,7 +491,7 @@ mod tests {
 
     #[test]
     fn test_env_creation() {
-        let env = TradingEnv::new(10000.0, 0.001, 30, 1000);
+        let env = TradingEnv::new(10000.0, 0.001, 30, 1000, true);
         assert_eq!(env.portfolio_value(), 10000.0);
         assert_eq!(env.observation_shape(), (30, 6));
     }

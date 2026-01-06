@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "com.pkhunter.tauri-app",
   "build": {
-    "beforeDevCommand": "pnpm dev",
+    "beforeDevCommand": "pnpm dev || true",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist",

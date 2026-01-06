@@ -14,6 +14,7 @@ path = "rust/src/lib.rs"
 [[bin]]
 name = "nglab-cli"
 path = "rust/src/main.rs"
+required-features = ["tui"]
 
 [dependencies]
 # Python bindings
@@ -36,14 +37,16 @@ indexmap = { version = "2.7", features = ["serde"] }
 thiserror = "2.0"
 rand = "0.8"
 chrono = { version = "0.4", features = ["serde"] }
-rerun = "0.28.1"
-ratatui = "0.29"
-crossterm = { version = "0.28", features = ["event-stream"] }
-color-eyre = "0.6"
+rerun = { version = "0.28.1", optional = true }
+ratatui = { version = "0.29", optional = true }
+crossterm = { version = "0.28", features = ["event-stream"], optional = true }
+color-eyre = { version = "0.6", optional = true }
 
 [features]
 extension-module = ["pyo3/extension-module"]
 python = ["dep:pyo3", "dep:numpy"]
+tui = ["dep:ratatui", "dep:crossterm", "dep:color-eyre", "logging"]
+logging = ["dep:rerun"]
 
 [dev-dependencies]
 criterion = "0.5"

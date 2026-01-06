@@ -7,7 +7,6 @@ use tokio::time::{sleep, Duration};
 struct ArenaState {
     env: Mutex<TradingEnv>,
     running: Mutex<bool>,
-    task_handle: Mutex<Option<tauri::async_runtime::JoinHandle<()>>>,
 }
 
 #[derive(serde::Serialize, Clone)]
@@ -26,7 +25,7 @@ fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
     }
     *running = true;
 
-    let handle = tauri::async_runtime::spawn(async move {
+    tauri::async_runtime::spawn(async move {
         let state = app.state::<ArenaState>();
         loop {
             // Check if we should keep running
@@ -60,9 +59,6 @@ fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
             sleep(Duration::from_millis(100)).await;
         }
     });
-
-    let mut task_handle = state.task_handle.lock().unwrap();
-    *task_handle = Some(handle);
 }
 
 #[tauri::command]
@@ -74,12 +70,11 @@ fn stop_simulation(state: State<ArenaState>) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Initialize TradingEnv with default parameters
-    let env = TradingEnv::new(10000.0, 0.001, 30, 1000);
+    let env = TradingEnv::new(10000.0, 0.001, 30, 1000, false);
 
     let state = ArenaState {
         env: Mutex::new(env),
         running: Mutex::new(false),
-        task_handle: Mutex::new(None),
     };
 
     tauri::Builder::default()
@@ -90,20 +85,8 @@ pub fn run() {
         .expect("error while building tauri application")
         .run(|app_handle, event| match event {
             tauri::RunEvent::ExitRequested { .. } => {
-                let state = app_handle.state::<ArenaState>();
-                
-                // Stop the loop
-                {
-                    let mut running = state.running.lock().unwrap();
+                if let Ok(mut running) = app_handle.state::<ArenaState>().running.lock() {
                     *running = false;
-                }
-                
-                // Abort the task if it's still running
-                {
-                    let mut task_handle = state.task_handle.lock().unwrap();
-                    if let Some(handle) = task_handle.take() {
-                        handle.abort();
-                    }
                 }
             }
             _ => {}

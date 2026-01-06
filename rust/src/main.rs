@@ -22,7 +22,7 @@ struct App {
 
 impl App {
     fn new() -> Self {
-        let mut env = TradingEnv::new(10000.0, 0.001, 30, 2000);
+        let mut env = TradingEnv::new(10000.0, 0.001, 30, 2000, true);
         
         // Generate dummy price data for demonstration
         let mut prices = Vec::new();

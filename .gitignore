@@ -419,3 +419,6 @@ results/
 
 # Added by cargo
 /target
+
+# Added by pnpm
+/**/*.rrd

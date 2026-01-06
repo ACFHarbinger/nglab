@@ -1,13 +1,17 @@
 use crate::orderbook::OrderBook;
 
+#[cfg(feature = "logging")]
 use rerun::archetypes::{Points2D, Scalars};
+#[cfg(feature = "logging")]
 use rerun::{RecordingStream, RecordingStreamBuilder};
 
 pub struct RerunLogger {
+    #[cfg(feature = "logging")]
     rec: Option<RecordingStream>,
 }
 
 impl RerunLogger {
+    #[cfg(feature = "logging")]
     pub fn new(enabled: bool) -> Self {
         if !enabled {
             return Self { rec: None };
@@ -22,6 +26,12 @@ impl RerunLogger {
         Self { rec: Some(rec) }
     }
 
+    #[cfg(not(feature = "logging"))]
+    pub fn new(_enabled: bool) -> Self {
+        Self {}
+    }
+
+    #[cfg(feature = "logging")]
     pub fn log_step(&self, step: u64, orderbook: &OrderBook, portfolio_value: f64) {
         if let Some(rec) = &self.rec {
             rec.set_time_sequence("step", step as i64);
@@ -67,5 +77,10 @@ impl RerunLogger {
                 .ok();
             }
         }
+    }
+
+    #[cfg(not(feature = "logging"))]
+    pub fn log_step(&self, _step: u64, _orderbook: &OrderBook, _portfolio_value: f64) {
+        // No-op when logging feature is disabled
     }
 }
