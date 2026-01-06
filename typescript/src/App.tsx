@@ -2,15 +2,16 @@ import { useState, useEffect } from "react";
 import { PriceChart } from "./components/charts/PriceChart";
 import { OrderBook } from "./components/dashboard/OrderBook";
 import ScraperTab from "./components/ScraperTab";
+import AnalysisTab from "./components/AnalysisTab";
 import { useArena } from "./hooks/useArena";
-import { Play, Square, RotateCcw, Activity, LineChart, Download } from "lucide-react";
+import { Play, Square, RotateCcw, Activity, LineChart, Download, PieChart } from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
 import clsx from "clsx";
 
 function App() {
   const { data: arenaData, history, isRunning, start, stop } = useArena();
   const [logs, setLogs] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<'simulation' | 'scraper'>('simulation');
+  const [activeTab, setActiveTab] = useState<'simulation' | 'scraper' | 'analysis'>('simulation');
 
   // Listen for logs
   useEffect(() => {
@@ -42,31 +43,6 @@ function App() {
             <Activity className="text-indigo-400 w-8 h-8" />
             <h1 className="text-xl font-bold tracking-tight">nglab <span className="text-indigo-400">Arena</span></h1>
           </div>
-
-          <nav className="flex items-center gap-1 bg-slate-900 rounded-lg p-1 border border-slate-800">
-            <button
-              onClick={() => setActiveTab('simulation')}
-              className={clsx(
-                "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
-                activeTab === 'simulation'
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
-              )}
-            >
-              <LineChart size={16} /> Simulation
-            </button>
-            <button
-              onClick={() => setActiveTab('scraper')}
-              className={clsx(
-                "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
-                activeTab === 'scraper'
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800"
-              )}
-            >
-              <Download size={16} /> Scraper
-            </button>
-          </nav>
         </div>
 
         {activeTab === 'simulation' && (
@@ -93,10 +69,50 @@ function App() {
         )}
       </header>
 
+      {/* Navigation Tabs */}
+      {/* Navigation Tabs */}
+      <div className="border-b border-slate-800 bg-slate-950 w-full">
+        <nav className="flex items-center w-full">
+          <button
+            onClick={() => setActiveTab('simulation')}
+            className={clsx(
+              "flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all border-b-2",
+              activeTab === 'simulation'
+                ? "border-indigo-500 text-white bg-slate-900/50"
+                : "border-transparent text-slate-400 hover:text-white hover:bg-slate-900/30"
+            )}
+          >
+            <LineChart size={16} /> Simulation
+          </button>
+          <button
+            onClick={() => setActiveTab('scraper')}
+            className={clsx(
+              "flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all border-b-2",
+              activeTab === 'scraper'
+                ? "border-indigo-500 text-white bg-slate-900/50"
+                : "border-transparent text-slate-400 hover:text-white hover:bg-slate-900/30"
+            )}
+          >
+            <Download size={16} /> Scraper
+          </button>
+          <button
+            onClick={() => setActiveTab('analysis')}
+            className={clsx(
+              "flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all border-b-2",
+              activeTab === 'analysis'
+                ? "border-indigo-500 text-white bg-slate-900/50"
+                : "border-transparent text-slate-400 hover:text-white hover:bg-slate-900/30"
+            )}
+          >
+            <PieChart size={16} /> Analysis
+          </button>
+        </nav>
+      </div>
+
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden p-4">
+      <main className="flex-1 overflow-hidden relative">
         {activeTab === 'simulation' ? (
-          <div className="grid grid-cols-12 gap-6 h-full">
+          <div className="grid grid-cols-12 gap-6 h-full p-4">
             {/* Left: Charts & Orderbook */}
             <div className="col-span-8 flex flex-col gap-6 h-full overflow-hidden">
               <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex-1 relative overflow-hidden flex flex-col">
@@ -145,10 +161,12 @@ function App() {
               </div>
             </div>
           </div>
-        ) : (
+        ) : activeTab === 'scraper' ? (
           <div className="h-full bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
             <ScraperTab />
           </div>
+        ) : (
+          <AnalysisTab />
         )}
       </main>
     </div>
