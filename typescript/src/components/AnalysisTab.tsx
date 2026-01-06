@@ -34,6 +34,7 @@ function AnalysisTab() {
     const [spreadPair, setSpreadPair] = useState<[string, string]>(['', '']);
     const [primaryCandidate, setPrimaryCandidate] = useState<string>('');
     const [timeframe, setTimeframe] = useState<'1D' | '1W' | '1M' | 'All'>('All');
+    const [indicators, setIndicators] = useState({ sma: false, macd: false, rsi: false });
 
     // Re-generate chart when type or data changes
     useEffect(() => {
@@ -42,7 +43,7 @@ function AnalysisTab() {
         } else if (rawData.length === 0 && chartOptions) {
             setChartOptions(null);
         }
-    }, [rawData, chartType, loading, error, selectedSeries, spreadPair, primaryCandidate, timeframe]);
+    }, [rawData, chartType, loading, error, selectedSeries, spreadPair, primaryCandidate, timeframe, indicators]);
 
 
     const handleOpenFile = async () => {
@@ -299,15 +300,10 @@ function AnalysisTab() {
             const endTime = Math.max(...validSeries.map(pts => pts[pts.length - 1][0]));
             if (!isFinite(startTime) || !isFinite(endTime)) return;
 
-            // Calculate bucket size
             const bucketSize = (endTime - startTime) / numBuckets;
 
             const heatmapData: any[] = [];
             const yCategories: string[] = [];
-
-            for (let i = 0; i < numBuckets; i++) {
-                // No categories needed for datetime axis
-            }
 
             let currentY = 0;
             selectedSeries.forEach((name) => {
@@ -376,7 +372,7 @@ function AnalysisTab() {
                     gridLineWidth: 0,
                     lineWidth: 0,
                     reversed: true,
-                    opposite: false // Force axis to left side (Stock default is right)
+                    opposite: false
                 },
                 colorAxis: {
                     stops: [[0, '#f43f5e'], [0.5, '#1e293b'], [1, '#10b981']],
@@ -422,15 +418,85 @@ function AnalysisTab() {
                 rangeSelector: {
                     enabled: true,
                     inputEnabled: false,
-                    selected: 4, // All
-                    buttons: [], // Hide buttons to avoid conflict with our custom ones, or keep them? User said "lower bar", possibly slider.
-                    buttonTheme: { visibility: 'hidden' }, // Hide built-in buttons, keep our custom UI clean
+                    selected: 4,
+                    buttons: [],
+                    buttonTheme: { visibility: 'hidden' },
                     labelStyle: { visibility: 'hidden' }
                 },
                 scrollbar: { enabled: true, barBackgroundColor: '#334155', trackBackgroundColor: '#1e293b' },
                 credits: { enabled: false }
             });
             return;
+        }
+
+        const yAxisConfig: any[] = [];
+        if (type === 'price' || type === 'candlestick') {
+            let mainHeight = 100;
+            const panes: any[] = [];
+            if (indicators.macd) panes.push('macd');
+            if (indicators.rsi) panes.push('rsi');
+
+            if (panes.length > 0) {
+                mainHeight = 60;
+                if (panes.length === 2) mainHeight = 50;
+            }
+
+            yAxisConfig.push({
+                height: `${mainHeight}%`,
+                gridLineColor: '#334155',
+                labels: { style: { color: '#94a3b8' } },
+                plotLines: [{ value: 0, width: 2, color: '#334155' }],
+                resize: { enabled: true }
+            });
+
+            let currentTop = mainHeight + 5;
+            const paneHeight = (100 - currentTop) / panes.length;
+
+            panes.forEach((p) => {
+                yAxisConfig.push({
+                    top: `${currentTop}%`,
+                    height: `${paneHeight}%`,
+                    offset: 0,
+                    gridLineColor: '#334155',
+                    labels: { style: { color: '#94a3b8' } },
+                    title: { text: p.toUpperCase(), style: { color: '#94a3b8' } }
+                });
+                currentTop += paneHeight;
+            });
+
+            if (seriesData.length > 0) {
+                seriesData[0].id = 'main-series';
+
+                if (indicators.sma) {
+                    seriesData.push({
+                        type: 'sma',
+                        linkedTo: 'main-series',
+                        zIndex: 1,
+                        marker: { enabled: false },
+                        params: { period: 14 }
+                    });
+                }
+                if (indicators.macd) {
+                    seriesData.push({
+                        type: 'macd',
+                        linkedTo: 'main-series',
+                        yAxis: 1,
+                        zIndex: 0,
+                        params: { shortPeriod: 12, longPeriod: 26, signalPeriod: 9, period: 26 }
+                    });
+                }
+                if (indicators.rsi) {
+                    seriesData.push({
+                        type: 'rsi',
+                        linkedTo: 'main-series',
+                        yAxis: indicators.macd ? 2 : 1,
+                        zIndex: 0,
+                        params: { period: 14 }
+                    });
+                }
+            }
+        } else {
+            yAxisConfig.push({ gridLineColor: '#334155', labels: { style: { color: '#94a3b8' } }, plotLines: [{ value: 0, width: 2, color: '#334155' }] });
         }
 
         setChartOptions({
@@ -452,7 +518,7 @@ function AnalysisTab() {
                 buttons: [{ type: 'day', count: 1, text: '1D' }, { type: 'week', count: 1, text: '1W' }, { type: 'month', count: 1, text: '1M' }, { type: 'all', text: 'All' }]
             },
             xAxis: { type: 'datetime', gridLineColor: '#334155', labels: { style: { color: '#94a3b8' } }, lineColor: '#334155', tickColor: '#334155' },
-            yAxis: { gridLineColor: '#334155', labels: { style: { color: '#94a3b8' } }, plotLines: [{ value: 0, width: 2, color: '#334155' }] },
+            yAxis: yAxisConfig,
             plotOptions: { series: { showInNavigator: true } },
             tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', style: { color: '#f8fafc' }, borderWidth: 0, shadow: false },
             credits: { enabled: false },
@@ -557,6 +623,22 @@ function AnalysisTab() {
                                             ))}
                                         </select>
                                     </div>
+                                    <div className="pt-4 border-t border-slate-800">
+                                        <h4 className="text-xs font-medium text-slate-400 mb-2">Indicators</h4>
+                                        <div className="space-y-2">
+                                            {(['sma', 'macd', 'rsi'] as const).map(ind => (
+                                                <label key={ind} className="flex items-center gap-2 cursor-pointer group">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={indicators[ind]}
+                                                        onChange={(e) => setIndicators(prev => ({ ...prev, [ind]: e.target.checked }))}
+                                                        className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500"
+                                                    />
+                                                    <span className="text-xs font-medium text-slate-300 group-hover:text-white uppercase">{ind}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             ) : chartType === 'spread' ? (
                                 <div className="space-y-4">
@@ -625,6 +707,24 @@ function AnalysisTab() {
                                             </label>
                                         ))}
                                     </div>
+                                    {chartType === 'price' && (
+                                        <div className="pt-4 border-t border-slate-800 mt-4">
+                                            <h4 className="text-xs font-medium text-slate-400 mb-2">Indicators</h4>
+                                            <div className="space-y-2">
+                                                {(['sma', 'macd', 'rsi'] as const).map(ind => (
+                                                    <label key={ind} className="flex items-center gap-2 cursor-pointer group">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={indicators[ind]}
+                                                            onChange={(e) => setIndicators(prev => ({ ...prev, [ind]: e.target.checked }))}
+                                                            className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500"
+                                                        />
+                                                        <span className="text-xs font-medium text-slate-300 group-hover:text-white uppercase">{ind}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
