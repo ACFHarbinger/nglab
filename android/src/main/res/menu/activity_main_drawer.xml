@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_system_tools"
+            android:icon="@android:drawable/ic_menu_preferences"
+            android:title="System Tools" />
+        <item
+            android:id="@+id/nav_web_integration"
+            android:icon="@android:drawable/ic_menu_upload"
+            android:title="Web Integration" />
+        <item
+            android:id="@+id/nav_deep_learning"
+            android:icon="@android:drawable/ic_media_play"
+            android:title="Deep Learning" />
+    </group>
+    
+    <item android:title="Application">
+        <menu>
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@android:drawable/ic_menu_manage"
+                android:title="Settings" />
+        </menu>
+    </item>
+</menu>

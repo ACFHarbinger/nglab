@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_system_tools">
+
+    <fragment
+        android:id="@+id/nav_system_tools"
+        android:name="com.personal.nglab.ui.CategoryHostFragment"
+        android:label="System Tools"
+        tools:layout="@layout/fragment_category_host">
+        <argument
+            android:name="category"
+            android:defaultValue="SYSTEM_TOOLS" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_web_integration"
+        android:name="com.personal.nglab.ui.CategoryHostFragment"
+        android:label="Web Integration"
+        tools:layout="@layout/fragment_category_host">
+        <argument
+            android:name="category"
+            android:defaultValue="WEB_INTEGRATION" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_deep_learning"
+        android:name="com.personal.nglab.ui.CategoryHostFragment"
+        android:label="Deep Learning"
+        tools:layout="@layout/fragment_category_host">
+        <argument
+            android:name="category"
+            android:defaultValue="DEEP_LEARNING" />
+    </fragment>
+
+    <!-- Settings is a standalone DialogFragment -->
+    <dialog
+        android:id="@+id/nav_settings"
+        android:name="com.personal.nglab.ui.windows.SettingsFragment"
+        android:label="Settings" />
+
+</navigation>

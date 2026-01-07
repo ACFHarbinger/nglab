@@ -420,5 +420,8 @@ results/
 # Added by cargo
 /target
 
-# Added by pnpm
+# Added by simulator
 /**/*.rrd
+
+# Added by gradle
+/.gradle
