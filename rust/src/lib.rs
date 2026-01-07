@@ -7,6 +7,7 @@
 use pyo3::prelude::*;
 
 pub mod error;
+pub mod models;
 pub mod simulator;
 pub mod visualizer;
 pub mod web;

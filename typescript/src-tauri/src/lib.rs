@@ -228,6 +228,42 @@ async fn resolve_polymarket_id(
     .map_err(|e| format!("Task failed: {}", e))?
 }
 
+#[tauri::command]
+async fn pricing_rbergomi(
+    params: nglab::models::rough_bergomi::RBergomiParams,
+) -> Result<nglab::models::rough_bergomi::RBergomiResult, String> {
+    tauri::async_runtime::spawn_blocking(move || nglab::models::rough_bergomi::simulate(params))
+        .await
+        .map_err(|e| format!("Simulation task failed: {}", e))?
+}
+
+#[tauri::command]
+async fn pricing_black_scholes(
+    params: nglab::models::black_scholes::BlackScholesParams,
+) -> Result<nglab::models::black_scholes::BlackScholesResult, String> {
+    tauri::async_runtime::spawn_blocking(move || nglab::models::black_scholes::price(params))
+        .await
+        .map_err(|e| format!("Pricing task failed: {}", e))
+}
+
+#[tauri::command]
+async fn pricing_credit_risk(
+    params: nglab::models::credit_risk::CreditRiskParams,
+) -> Result<nglab::models::credit_risk::CreditRiskResult, String> {
+    tauri::async_runtime::spawn_blocking(move || nglab::models::credit_risk::price(params))
+        .await
+        .map_err(|e| format!("Pricing task failed: {}", e))?
+}
+
+#[tauri::command]
+async fn pricing_rough_heston(
+    params: nglab::models::rough_heston::RoughHestonParams,
+) -> Result<nglab::models::rough_heston::RoughHestonResult, String> {
+    tauri::async_runtime::spawn_blocking(move || nglab::models::rough_heston::simulate(params))
+        .await
+        .map_err(|e| format!("Simulation task failed: {}", e))?
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Initialize TradingEnv with default parameters
@@ -247,7 +283,11 @@ pub fn run() {
             start_simulation,
             stop_simulation,
             scrape_polymarket,
-            resolve_polymarket_id
+            resolve_polymarket_id,
+            pricing_rbergomi,
+            pricing_black_scholes,
+            pricing_credit_risk,
+            pricing_rough_heston
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
