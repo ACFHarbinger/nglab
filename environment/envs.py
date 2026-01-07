@@ -2,23 +2,31 @@
 Gymnasium-compatible environments wrapping the Rust arena
 """
 
+from typing import Any
 import numpy as np
 import gymnasium as gym
+from numpy.typing import NDArray
 
 from gymnasium import spaces
 
 # Import Rust bindings (will be available after maturin build)
 # For now, we provide a pure-Python fallback
+RustTradingEnv = None
+RustOrderBook = None
+RustPolymarketArena = None
+
 try:
     from nglab._nglab import TradingEnv as RustTradingEnv
     from nglab._nglab import OrderBook as RustOrderBook
     from nglab._nglab import PolymarketArena as RustPolymarketArena
-    HAS_RUST = True
+    _has_rust = True
 except ImportError:
-    HAS_RUST = False
+    _has_rust = False
+
+HAS_RUST = _has_rust
 
 
-class TradingEnv(gym.Env):
+class TradingEnv(gym.Env[NDArray[np.float64], int]):
     """
     Trading environment for RL agents.
     
@@ -38,11 +46,11 @@ class TradingEnv(gym.Env):
         Risk-adjusted return with drawdown penalty
     """
     
-    metadata: dict[str, object] = {"render_modes": ["human"]}
+    metadata: dict[str, Any] = {"render_modes": ["human"]}
     
     def __init__(
         self,
-        prices: np.ndarray | None = None,
+        prices: NDArray[Any] | None = None,
         initial_capital: float = 10000.0,
         transaction_cost: float = 0.001,
         lookback: int = 30,
@@ -74,11 +82,12 @@ class TradingEnv(gym.Env):
         self.current_step = lookback
         self.position = 0.0
         self.cash = initial_capital
-        self.returns_history: list = []
+        self.returns_history: list[float] = []
         self.prev_portfolio_value = initial_capital
         
         # Initialize Rust backend if available
         if HAS_RUST:
+            assert RustTradingEnv is not None
             self._rust_env = RustTradingEnv(
                 initial_capital=initial_capital,
                 transaction_cost=transaction_cost,
@@ -91,9 +100,10 @@ class TradingEnv(gym.Env):
     
     def reset(
         self,
+        *,
         seed: int | None = None,
-        options: dict[str, object] | None = None,
-    ) -> tuple[np.ndarray, dict[str, object]]:
+        options: dict[str, Any] | None = None,
+    ) -> tuple[NDArray[Any], dict[str, Any]]:
         super().reset(seed=seed)
         
         if self._rust_env is not None:
@@ -111,7 +121,7 @@ class TradingEnv(gym.Env):
     
     def step(
         self, action: int
-    ) -> tuple[np.ndarray, float, bool, bool, dict[str, object]]:
+    ) -> tuple[NDArray[Any], float, bool, bool, dict[str, Any]]:
         if self._rust_env is not None:
             obs, reward, terminated, truncated, info = self._rust_env.step(action)
             return np.array(obs), reward, terminated, truncated, dict(info)
@@ -143,7 +153,7 @@ class TradingEnv(gym.Env):
         
         return self._get_observation(), reward, terminated, truncated, info
     
-    def _get_observation(self) -> np.ndarray:
+    def _get_observation(self) -> NDArray[Any]:
         obs = np.zeros((self.lookback, self.num_features))
         
         for i in range(self.lookback):
@@ -223,12 +233,13 @@ class ClobEnv(TradingEnv):
         super().__init__(**kwargs)
         
         if HAS_RUST:
+            assert RustOrderBook is not None
             self._orderbook = RustOrderBook()
         else:
             self._orderbook = None
 
 
-class PolymarketEnv(gym.Env):
+class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
     """
     Polymarket prediction market environment.
     
@@ -239,11 +250,11 @@ class PolymarketEnv(gym.Env):
         MultiDiscrete for each market: 0=Hold, 1=Buy Yes, 2=Buy No, 3=Sell Yes, 4=Sell No
     """
     
-    metadata: dict[str, object] = {"render_modes": ["human"]}
+    metadata: dict[str, Any] = {"render_modes": ["human"]}
     
     def __init__(
         self,
-        market_ids: list | None = None,
+        market_ids: list[str] | None = None,
         initial_collateral: float = 10000.0,
         taker_fee: float = 0.001,
         render_mode: str | None = None,
@@ -270,6 +281,7 @@ class PolymarketEnv(gym.Env):
         self.action_space = spaces.MultiDiscrete([5] * num_markets)
         
         if HAS_RUST:
+            assert RustPolymarketArena is not None
             self._arena = RustPolymarketArena(
                 initial_collateral=initial_collateral,
                 taker_fee=taker_fee,
@@ -282,9 +294,10 @@ class PolymarketEnv(gym.Env):
     
     def reset(
         self,
+        *,
         seed: int | None = None,
-        options: dict[str, object] | None = None,
-    ) -> tuple[np.ndarray, dict[str, object]]:
+        options: dict[str, Any] | None = None,
+    ) -> tuple[NDArray[Any], dict[str, Any]]:
         super().reset(seed=seed)
         
         if self._arena is not None:
@@ -298,8 +311,8 @@ class PolymarketEnv(gym.Env):
         return self._get_observation(), {}
     
     def step(
-        self, action: np.ndarray
-    ) -> tuple[np.ndarray, float, bool, bool, dict[str, object]]:
+        self, action: NDArray[Any]
+    ) -> tuple[NDArray[Any], float, bool, bool, dict[str, Any]]:
         # Process actions for each market
         prev_value = self._account_value()
         
@@ -320,7 +333,7 @@ class PolymarketEnv(gym.Env):
         
         return self._get_observation(), reward, terminated, truncated, info
     
-    def _get_observation(self) -> np.ndarray:
+    def _get_observation(self) -> NDArray[Any]:
         if self._arena is not None:
             collateral = self._arena.collateral()
             pnl = self._arena.realized_pnl()

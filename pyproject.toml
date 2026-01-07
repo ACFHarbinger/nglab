@@ -36,3 +36,23 @@ features = ["pyo3/extension-module"]
 module-name = "nglab._nglab"
 bindings = "pyo3"
 
+[tool.basedpyright]
+typeCheckingMode = "basic"
+include = ["python", "environment"]
+reportUnusedImport = "warning"
+
+# Create an override for __init__.py files
+ignore = ["**/__init__.py"]
+
+# Disables the "None is not assignable to type X" errors
+reportOptionalSubscript = "none"
+reportOptionalMemberAccess = "none"
+reportOptionalCall = "none"
+reportOptionalIterable = "none"
+
+# Disable function calls, attribute access, operator issues and type checking
+reportAttributeAccessIssue = "none"
+reportGeneralTypeIssues = "none"
+reportOperatorIssue = "none"
+reportArgumentType = "none"
+reportCallIssue = "none"
