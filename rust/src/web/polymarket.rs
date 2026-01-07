@@ -1,4 +1,4 @@
-use crate::error::{ArenaError, ArenaResult};
+use crate::errors::{ArenaError, ArenaResult};
 use crate::web::scraper::WebScraper;
 use chrono::{DateTime, Utc};
 use reqwest::blocking::Client;

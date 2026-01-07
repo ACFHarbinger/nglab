@@ -106,7 +106,7 @@ pub struct TradingEnv {
     /// Total steps taken
     total_steps: u64,
     /// Rerun logger for visualization
-    logger: crate::visualizer::RerunLogger,
+    logger: crate::utils::visualizer::RerunLogger,
 }
 
 #[cfg_attr(feature = "python", pymethods)]
@@ -151,7 +151,7 @@ impl TradingEnv {
             prev_portfolio_value: initial_capital,
             max_steps,
             total_steps: 0,
-            logger: crate::visualizer::RerunLogger::new(enable_logging),
+            logger: crate::utils::visualizer::RerunLogger::new(enable_logging),
         }
     }
 

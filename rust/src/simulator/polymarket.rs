@@ -5,7 +5,7 @@
 //! - Merge/Split mechanics
 //! - NegRisk accounting for cross-collateralization
 
-use crate::error::{ArenaError, ArenaResult};
+use crate::errors::{ArenaError, ArenaResult};
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};

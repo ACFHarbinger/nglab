@@ -6,13 +6,13 @@
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 
-pub mod error;
+pub mod errors;
 pub mod models;
 pub mod simulator;
-pub mod visualizer;
+pub mod utils;
 pub mod web;
 
-pub use error::{ArenaError, ArenaResult};
+pub use errors::{ArenaError, ArenaResult};
 
 /// Arena - The main simulation environment
 #[cfg_attr(feature = "python", pyclass)]

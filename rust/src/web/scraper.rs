@@ -1,4 +1,4 @@
-use crate::error::ArenaResult;
+use crate::errors::ArenaResult;
 
 /// Trait for web scrapers
 pub trait WebScraper {
