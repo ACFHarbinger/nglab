@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Brain, Loader2 } from 'lucide-react';
+import { Calculator, Loader2 } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 
 const clampNumber = (value: number, min?: number, max?: number) => {
@@ -42,7 +42,7 @@ type RoughHestonResult = {
   steps: number;
 };
 
-function PredictionTab() {
+function PricingTab() {
   const [model, setModel] = useState<'bsm' | 'rbergomi' | 'rough-heston' | 'credit'>('bsm');
 
   const [spot, setSpot] = useState(100);
@@ -193,7 +193,7 @@ function PredictionTab() {
       <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/20">
         <div className="flex items-center gap-6">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Prediction Lab</h2>
+            <h2 className="text-2xl font-bold tracking-tight">Pricing Lab</h2>
             <p className="text-slate-400 text-sm">Traditional stochastic pricing and risk overlays.</p>
           </div>
           <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
@@ -214,7 +214,7 @@ function PredictionTab() {
           </div>
         </div>
         <div className="flex items-center gap-2 text-sm text-indigo-300">
-          <Brain size={18} />
+          <Calculator size={18} />
           <span>Traditional Stochastics</span>
         </div>
       </div>
@@ -638,4 +638,4 @@ function PredictionTab() {
   );
 }
 
-export default PredictionTab;
+export default PricingTab;

@@ -3,9 +3,9 @@ import { PriceChart } from "./components/charts/PriceChart";
 import { OrderBook } from "./components/dashboard/OrderBook";
 import ScraperTab from "./components/ScraperTab";
 import AnalysisTab from "./components/AnalysisTab";
-import PredictionTab from "./components/PredictionTab";
+import PricingTab from "./components/PricingTab";
 import { useArena } from "./hooks/useArena";
-import { Play, Square, RotateCcw, Activity, LineChart, Download, PieChart, Brain } from "lucide-react";
+import { Play, Square, RotateCcw, Activity, LineChart, Download, PieChart, Calculator } from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
 import clsx from "clsx";
 
@@ -116,7 +116,7 @@ function App() {
                 : "border-transparent text-slate-400 hover:text-white hover:bg-slate-900/30"
             )}
           >
-            <Brain size={16} /> Prediction
+            <Calculator size={16} /> Pricing
           </button>
         </nav>
       </div>
@@ -180,7 +180,7 @@ function App() {
         ) : activeTab === 'analysis' ? (
           <AnalysisTab />
         ) : (
-          <PredictionTab />
+          <PricingTab />
         )}
       </main>
     </div>
