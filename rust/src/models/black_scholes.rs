@@ -31,8 +31,7 @@ fn erf(x: f64) -> f64 {
     let p = 0.327_591_1;
 
     let t = 1.0 / (1.0 + p * abs_x);
-    let y = 1.0
-        - (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t) * (-abs_x * abs_x).exp();
+    let y = 1.0 - (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t) * (-abs_x * abs_x).exp();
     sign * y
 }
 
@@ -44,17 +43,18 @@ pub fn price(params: BlackScholesParams) -> BlackScholesResult {
     let safe_vol = params.volatility.max(1e-8);
     let safe_mat = params.maturity.max(1e-8);
     let sqrt_t = safe_mat.sqrt();
-    let d1 = (params.spot / params.strike).ln()
-        + (params.rate + 0.5 * safe_vol * safe_vol) * safe_mat;
+    let d1 =
+        (params.spot / params.strike).ln() + (params.rate + 0.5 * safe_vol * safe_vol) * safe_mat;
     let d1 = d1 / (safe_vol * sqrt_t);
     let d2 = d1 - safe_vol * sqrt_t;
 
-    let call = params.spot * norm_cdf(d1)
-        - params.strike * (-params.rate * safe_mat).exp() * norm_cdf(d2);
+    let call =
+        params.spot * norm_cdf(d1) - params.strike * (-params.rate * safe_mat).exp() * norm_cdf(d2);
     let put = params.strike * (-params.rate * safe_mat).exp() * norm_cdf(-d2)
         - params.spot * norm_cdf(-d1);
     let delta = norm_cdf(d1);
-    let gamma = (-0.5 * d1 * d1).exp() / (params.spot * safe_vol * sqrt_t * (2.0 * std::f64::consts::PI).sqrt());
+    let gamma = (-0.5 * d1 * d1).exp()
+        / (params.spot * safe_vol * sqrt_t * (2.0 * std::f64::consts::PI).sqrt());
     let vega = params.spot * (-0.5 * d1 * d1).exp() * sqrt_t / (2.0 * std::f64::consts::PI).sqrt();
 
     BlackScholesResult {

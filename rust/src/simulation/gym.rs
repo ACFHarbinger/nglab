@@ -5,7 +5,7 @@
 //! - Normalized observations via zero-copy numpy arrays
 //! - Risk-adjusted reward functions
 
-use crate::simulator::orderbook::{OrderBook, Side};
+use crate::simulation::orderbook::{OrderBook, Side};
 #[cfg(feature = "python")]
 use numpy::{PyArray2, ToPyArray};
 #[cfg(feature = "python")]

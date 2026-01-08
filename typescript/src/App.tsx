@@ -4,15 +4,16 @@ import { OrderBook } from "./components/dashboard/OrderBook";
 import ScraperTab from "./components/ScraperTab";
 import AnalysisTab from "./components/AnalysisTab";
 import PricingTab from "./components/PricingTab";
+import PredictionTab from "./components/PredictionTab";
 import { useArena } from "./hooks/useArena";
-import { Play, Square, RotateCcw, Activity, LineChart, Download, PieChart, Calculator } from "lucide-react";
+import { Play, Square, RotateCcw, Activity, LineChart, Download, PieChart, Brain, Calculator } from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
 import clsx from "clsx";
 
 function App() {
   const { data: arenaData, history, isRunning, start, stop } = useArena();
   const [logs, setLogs] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<'simulation' | 'scraper' | 'analysis' | 'prediction'>('simulation');
+  const [activeTab, setActiveTab] = useState<'simulation' | 'scraper' | 'analysis' | 'prediction' | 'pricing'>('simulation');
 
   // Listen for logs
   useEffect(() => {
@@ -97,6 +98,17 @@ function App() {
             <Download size={16} /> Scraper
           </button>
           <button
+            onClick={() => setActiveTab('prediction')}
+            className={clsx(
+              "flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all border-b-2",
+              activeTab === 'prediction'
+                ? "border-indigo-500 text-white bg-slate-900/50"
+                : "border-transparent text-slate-400 hover:text-white hover:bg-slate-900/30"
+            )}
+          >
+            <Brain size={16} /> Prediction
+          </button>
+          <button
             onClick={() => setActiveTab('analysis')}
             className={clsx(
               "flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all border-b-2",
@@ -108,10 +120,10 @@ function App() {
             <PieChart size={16} /> Analysis
           </button>
           <button
-            onClick={() => setActiveTab('prediction')}
+            onClick={() => setActiveTab('pricing')}
             className={clsx(
               "flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all border-b-2",
-              activeTab === 'prediction'
+              activeTab === 'pricing'
                 ? "border-indigo-500 text-white bg-slate-900/50"
                 : "border-transparent text-slate-400 hover:text-white hover:bg-slate-900/30"
             )}
@@ -179,6 +191,8 @@ function App() {
           </div>
         ) : activeTab === 'analysis' ? (
           <AnalysisTab />
+        ) : activeTab === 'prediction' ? (
+          <PredictionTab />
         ) : (
           <PricingTab />
         )}

@@ -4,7 +4,7 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-use nglab::simulator::gym::{ActionType, StepInfo, TradingEnv};
+use nglab::simulation::gym::{ActionType, StepInfo, TradingEnv};
 use ratatui::{
     prelude::*,
     widgets::{block::*, *},

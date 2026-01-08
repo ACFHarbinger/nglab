@@ -1,5 +1,5 @@
-use nglab::simulator::gym::TradingEnv;
-use nglab::simulator::orderbook::OrderBook;
+use nglab::simulation::gym::TradingEnv;
+use nglab::simulation::orderbook::OrderBook;
 use nglab::web::polymarket::{Frequency, PolymarketScraper};
 use nglab::web::scraper::WebScraper;
 use std::sync::Mutex;
@@ -264,6 +264,24 @@ async fn pricing_rough_heston(
         .map_err(|e| format!("Simulation task failed: {}", e))?
 }
 
+#[tauri::command]
+async fn predict_arima(
+    params: nglab::moon::arima::ArimaParams,
+) -> Result<nglab::moon::arima::ArimaResult, String> {
+    tauri::async_runtime::spawn_blocking(move || nglab::moon::arima::simulate(params))
+        .await
+        .map_err(|e| format!("Simulation task failed: {}", e))?
+}
+
+#[tauri::command]
+async fn predict_garch(
+    params: nglab::moon::garch::GarchParams,
+) -> Result<nglab::moon::garch::GarchResult, String> {
+    tauri::async_runtime::spawn_blocking(move || nglab::moon::garch::simulate(params))
+        .await
+        .map_err(|e| format!("Simulation task failed: {}", e))?
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Initialize TradingEnv with default parameters
@@ -287,7 +305,9 @@ pub fn run() {
             pricing_rbergomi,
             pricing_black_scholes,
             pricing_credit_risk,
-            pricing_rough_heston
+            pricing_rough_heston,
+            predict_arima,
+            predict_garch
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
