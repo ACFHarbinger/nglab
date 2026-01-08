@@ -35,6 +35,7 @@ build-backend = "maturin"
 features = ["pyo3/extension-module"]
 module-name = "nglab._nglab"
 bindings = "pyo3"
+manifest-path = "rust/Cargo.toml"
 
 [tool.basedpyright]
 typeCheckingMode = "basic"

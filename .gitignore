@@ -419,6 +419,7 @@ results/
 
 # Added by cargo
 /target
+/build
 
 # Added by simulator
 /**/*.rrd
