@@ -1,7 +1,7 @@
 use rand_distr::{Distribution, StandardNormal};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ArimaParams {
     pub ar: Vec<f64>, // AR coefficients (phi)
     pub ma: Vec<f64>, // MA coefficients (theta)
@@ -15,16 +15,18 @@ pub struct ArimaParams {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ArimaResult {
     pub path: Vec<f64>,
+    pub used_seed: Option<u64>,
 }
 
 pub fn simulate(params: ArimaParams) -> Result<ArimaResult, String> {
-    let mut rng = if let Some(s) = params.seed {
-        use rand::SeedableRng;
-        rand::rngs::StdRng::seed_from_u64(s)
+    let seed = if let Some(s) = params.seed {
+        s
     } else {
-        use rand::SeedableRng;
-        rand::rngs::StdRng::from_entropy()
+        rand::thread_rng().next_u64()
     };
+
+    use rand::{RngCore, SeedableRng};
+    let mut rng = rand::rngs::StdRng::seed_from_u64(seed);
 
     let p = params.ar.len();
     let q = params.ma.len();
@@ -112,6 +114,7 @@ pub fn simulate(params: ArimaParams) -> Result<ArimaResult, String> {
         }
         Ok(ArimaResult {
             path: current_predictions,
+            used_seed: Some(seed),
         })
     } else {
         let mut integrated_x = result_x;
@@ -125,6 +128,44 @@ pub fn simulate(params: ArimaParams) -> Result<ArimaResult, String> {
             integrated_x = integrated;
         }
         let result_path = integrated_x.into_iter().skip(n - params.steps).collect();
-        Ok(ArimaResult { path: result_path })
+        Ok(ArimaResult {
+            path: result_path,
+            used_seed: Some(seed),
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_arima_determinism() {
+        let params = ArimaParams {
+            ar: vec![0.5],
+            ma: vec![0.5],
+            d: 1,
+            steps: 10,
+            sigma: 1.0,
+            seed: Some(42),
+            data: None,
+        };
+
+        let result1 = simulate(ArimaParams {
+            seed: Some(42),
+            ..params.clone()
+        })
+        .unwrap();
+        let result2 = simulate(ArimaParams {
+            seed: Some(42),
+            ..params
+        })
+        .unwrap();
+
+        assert_eq!(
+            result1.path, result2.path,
+            "ARIMA simulation should be deterministic with fixed seed"
+        );
+        assert_eq!(result1.used_seed, Some(42));
     }
 }

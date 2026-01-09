@@ -8,6 +8,7 @@ import Papa from 'papaparse';
 
 type ArimaResult = {
     path: number[];
+    used_seed?: number;
 };
 
 type GarchResult = {
@@ -17,7 +18,7 @@ type GarchResult = {
 
 export default function PredictionTab() {
     const [activeModel, setActiveModel] = useState<'arima' | 'garch'>('arima');
-    
+
     // Data State
     const [rawData, setRawData] = useState<any[]>([]);
     const [fileName, setFileName] = useState('');
@@ -38,6 +39,9 @@ export default function PredictionTab() {
     const [beta, setBeta] = useState('0.8');
     const [garchSteps, setGarchSteps] = useState(200);
     const [isGarchLoading, setIsGarchLoading] = useState(false);
+
+    // Common State
+    const [seed, setSeed] = useState<number | ''>('');
 
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<IChartApi | null>(null);
@@ -93,12 +97,46 @@ export default function PredictionTab() {
     // Update chart when selected column or raw data changes
     useEffect(() => {
         if (rawData.length > 0 && selectedColumn && pastSeriesRef.current) {
-            const data = rawData.map((row, i) => ({
-                time: i as any,
-                value: parseFloat(row[selectedColumn])
-            })).filter(d => !isNaN(d.value));
-            pastSeriesRef.current.setData(data);
-            chartRef.current?.timeScale().fitContent();
+            try {
+                // Determine mode based on first element (rawData is homogeneous from handleOpenFile)
+                const hasDates = !isNaN(rawData[0]._ts);
+
+                let data = rawData.map((row, i) => {
+                    let time: any;
+                    if (hasDates) {
+                        // Strict Date Mode
+                        time = row._ts / 1000;
+                    } else {
+                        // Strict Index Mode
+                        time = i;
+                    }
+
+                    return {
+                        time: time,
+                        value: parseFloat(row[selectedColumn])
+                    };
+                })
+                    .filter(d => !isNaN(d.value) && d.value !== null && !isNaN(d.time))
+                    .sort((a, b) => (a.time as number) - (b.time as number));
+
+                // Deduplicate timestamps (LWC requires strictly ascending unique times)
+                const uniqueData = [];
+                if (data.length > 0) {
+                    uniqueData.push(data[0]);
+                    for (let i = 1; i < data.length; i++) {
+                        if (data[i].time > data[i - 1].time) {
+                            uniqueData.push(data[i]);
+                        }
+                    }
+                }
+
+                if (uniqueData.length > 0) {
+                    pastSeriesRef.current.setData(uniqueData);
+                    chartRef.current?.timeScale().fitContent();
+                }
+            } catch (err) {
+                console.error("Failed to render chart data:", err);
+            }
         }
     }, [rawData, selectedColumn]);
 
@@ -118,12 +156,107 @@ export default function PredictionTab() {
                     dynamicTyping: true,
                     skipEmptyLines: true,
                     complete: (results) => {
-                        const data = results.data as any[];
-                        if (data.length > 0) {
-                            setRawData(data);
-                            const cols = Object.keys(data[0]);
+                        const raw = results.data as any[];
+                        if (raw.length > 0) {
+                            const firstRowKeys = Object.keys(raw[0]);
+                            const dateKey = firstRowKeys.find(k => k.toLowerCase().includes('date') || k.toLowerCase().includes('time') || k.toLowerCase() === 'timestamp');
+
+                            // Heuristic Detection of Date Format
+                            let isEU = false; // DD/MM/YYYY
+                            let isUS = false; // MM/DD/YYYY
+
+                            if (dateKey) {
+                                for (const row of raw) {
+                                    const val = row[dateKey];
+                                    if (typeof val === 'string') {
+                                        // Normalize and split date/time
+                                        const cleanVal = val.trim().replace('T', ' ');
+                                        const datePart = cleanVal.split(' ')[0];
+
+                                        // Check for / or - separators
+                                        const parts = datePart.split(/[/\-]/);
+                                        if (parts.length === 3) {
+                                            const p0 = parseInt(parts[0]);
+                                            const p1 = parseInt(parts[1]);
+
+                                            // Ensure p0/p1 are numbers
+                                            if (!isNaN(p0) && !isNaN(p1)) {
+                                                if (p0 > 12) isEU = true;
+                                                if (p1 > 12) isUS = true;
+                                            }
+                                        }
+                                    }
+                                    if (isEU || isUS) break; // Found a decisive row
+                                }
+                            }
+
+                            // Start processing with detected format preference
+                            let processed = raw.map(row => {
+                                let timestamp: number = NaN;
+
+                                if (dateKey && row[dateKey]) {
+                                    const val = row[dateKey];
+                                    if (typeof val === 'number') {
+                                        timestamp = val < 10000000000 ? val * 1000 : val;
+                                    } else {
+                                        const dStr = String(val).trim().replace('T', ' ');
+                                        const [datePart, ...timeParts] = dStr.split(' ');
+                                        const timePart = timeParts.join(' ');
+
+                                        // Try manual parse if format detected
+                                        const parts = datePart.split(/[/\-]/);
+                                        if (parts.length === 3) {
+                                            // Check YYYY-MM-DD (ISO) first - often parts[0] is year
+                                            if (parts[0].length === 4) {
+                                                timestamp = new Date(dStr).getTime();
+                                            }
+                                            else {
+                                                let dateString = datePart; // Start with just the date part
+                                                if (isEU) {
+                                                    // Force DD/MM/YYYY -> YYYY/MM/DD or MM/DD/YYYY
+                                                    // Construct YYYY/MM/DD which is robust
+                                                    dateString = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                                                }
+                                                else if (isUS) {
+                                                    // Force MM/DD/YYYY
+                                                    dateString = `${parts[2]}/${parts[0]}/${parts[1]}`;
+                                                }
+
+                                                if (timePart) {
+                                                    dateString += ' ' + timePart;
+                                                }
+                                                timestamp = new Date(dateString).getTime();
+                                            }
+                                        } else {
+                                            // Fallback
+                                            timestamp = new Date(dStr).getTime();
+                                        }
+
+                                        // Final fallback if manual failed
+                                        if (isNaN(timestamp)) {
+                                            timestamp = new Date(dStr).getTime();
+                                        }
+                                    }
+                                }
+                                return { ...row, _ts: timestamp };
+                            });
+
+                            // Check if we found valid dates
+                            const validDateCount = processed.filter(r => !isNaN(r._ts)).length;
+                            const hasValidDates = validDateCount > 0;
+
+                            if (hasValidDates) {
+                                // DATE MODE: Filter out rows with invalid dates to prevent 1970 (0) artifacts
+                                processed = processed.filter(r => !isNaN(r._ts));
+                                processed.sort((a, b) => a._ts - b._ts);
+                            } else {
+                                // INDEX MODE: Ensure _ts is NaN so we fall back continuously
+                                processed = processed.map(r => ({ ...r, _ts: NaN }));
+                            }
+
+                            setRawData(processed);
+                            const cols = firstRowKeys.filter(k => k !== dateKey && k !== '_ts');
                             setColumns(cols);
-                            // Try to find a good default column
                             const defaultCol = cols.find(c => c.toLowerCase().includes('price') || c.toLowerCase().includes('close')) || cols[0];
                             setSelectedColumn(defaultCol);
                         }
@@ -140,10 +273,20 @@ export default function PredictionTab() {
         try {
             const arCoeffs = ar.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
             const maCoeffs = ma.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
-            
+
             let dataInput = null;
+            let lastTimeIdx = -1;
+
             if (rawData.length > 0 && selectedColumn) {
-                dataInput = rawData.map(row => parseFloat(row[selectedColumn])).filter(n => !isNaN(n));
+                const validPoints = rawData.map((row, i) => ({
+                    idx: i,
+                    val: parseFloat(row[selectedColumn])
+                })).filter(d => !isNaN(d.val));
+
+                if (validPoints.length > 0) {
+                    dataInput = validPoints.map(d => d.val);
+                    lastTimeIdx = validPoints[validPoints.length - 1].idx;
+                }
             }
 
             const result = await invoke<ArimaResult>('predict_arima', {
@@ -153,14 +296,56 @@ export default function PredictionTab() {
                     d,
                     steps: arimaSteps,
                     sigma: arimaSigma,
-                    seed: null,
+                    seed: seed === '' ? null : seed,
                     data: dataInput
                 }
             });
-            
+
             if (predictionSeriesRef.current) {
-                const startIdx = dataInput ? dataInput.length : 0;
-                predictionSeriesRef.current.setData(result.path.map((v, i) => ({ time: (startIdx + i) as any, value: v })));
+                console.log("ARIMA used seed:", result.used_seed);
+
+                // Calculate time interval
+                let interval = 86400; // Default 1 day in seconds
+                let lastTime = lastTimeIdx >= 0 && rawData[lastTimeIdx]._ts
+                    ? rawData[lastTimeIdx]._ts / 1000
+                    : lastTimeIdx; // Fallback to index if no date
+
+                // If we have at least 2 points, try to infer interval
+                if (dataInput && dataInput.length >= 2 && !isNaN(rawData[0]._ts)) {
+                    // Find the typical difference between the last few points
+                    // or just take the last diff
+                    // But we used filtered data for input, need filtered timestamps too
+                    // Let's reconstruct valid timestamps
+                    const validTimes = rawData
+                        .filter(row => !isNaN(parseFloat(row[selectedColumn])))
+                        .map(row => row._ts / 1000)
+                        .filter(t => !isNaN(t));
+
+                    if (validTimes.length >= 2) {
+                        const last = validTimes[validTimes.length - 1];
+                        const prev = validTimes[validTimes.length - 2];
+                        interval = last - prev;
+                        lastTime = last;
+                    }
+                }
+
+                // If using indices (lastTime < 1e9), interval should be 1
+                if (lastTime < 100000000) {
+                    interval = 1;
+                }
+
+                let pathData = result.path.map((v, i) => ({
+                    time: (lastTime + (interval * (i + 1))) as any,
+                    value: v
+                }));
+
+                if (dataInput && dataInput.length > 0) {
+                    const lastHistory = dataInput[dataInput.length - 1];
+                    // Stitch: Add the point at lastTime to connect the lines
+                    pathData = [{ time: lastTime as any, value: lastHistory }, ...pathData];
+                }
+
+                predictionSeriesRef.current.setData(pathData);
                 chartRef.current?.timeScale().fitContent();
             }
         } catch (err) {
@@ -175,16 +360,32 @@ export default function PredictionTab() {
         try {
             const alphaCoeffs = alpha.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
             const betaCoeffs = beta.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
-            
+
             let dataInput = null;
+            let lastTimeIdx = -1;
+
             if (rawData.length > 0 && selectedColumn) {
                 // For GARCH we usually need returns
-                const prices = rawData.map(row => parseFloat(row[selectedColumn])).filter(n => !isNaN(n));
-                if (prices.length > 1) {
+                // We calculate returns based on ADJACENT valid price points in rawData
+                // This assumes rawData is sorted by time but might have NaNs
+                // We'll trust that filtered validPoints are temporally ordered
+                const validPoints = rawData.map((row, i) => ({
+                    idx: i,
+                    val: parseFloat(row[selectedColumn])
+                })).filter(d => !isNaN(d.val));
+
+                if (validPoints.length > 1) {
                     dataInput = [];
-                    for(let i=1; i<prices.length; i++) {
-                        dataInput.push(Math.log(prices[i] / prices[i-1]));
+                    // Returns consume 1 point, so the "time" of the return is usually the time of the *current* price (idx)
+                    // or previous? Usually r_t = ln(p_t / p_{t-1}). Time t.
+                    // So we track the index of the second price.
+
+                    for (let i = 1; i < validPoints.length; i++) {
+                        const p_t = validPoints[i].val;
+                        const p_prev = validPoints[i - 1].val;
+                        dataInput.push(Math.log(p_t / p_prev));
                     }
+                    lastTimeIdx = validPoints[validPoints.length - 1].idx;
                 }
             }
 
@@ -194,15 +395,42 @@ export default function PredictionTab() {
                     alpha: alphaCoeffs,
                     beta: betaCoeffs,
                     steps: garchSteps,
-                    seed: null,
+                    seed: seed === '' ? null : seed,
                     data: dataInput
                 }
             });
-            
+
             if (predictionSeriesRef.current) {
-                const startIdx = dataInput ? dataInput.length : 0;
-                // Visualize volatility for GARCH
-                predictionSeriesRef.current.setData(result.volatility.map((v, i) => ({ time: (startIdx + i) as any, value: v })));
+                // Calculate time interval
+                let interval = 86400; // Default 1 day
+                let lastTime = lastTimeIdx >= 0 && rawData[lastTimeIdx]._ts
+                    ? rawData[lastTimeIdx]._ts / 1000
+                    : lastTimeIdx;
+
+                if (dataInput && dataInput.length >= 2 && !isNaN(rawData[0]._ts)) {
+                    const validTimes = rawData
+                        .filter(row => !isNaN(parseFloat(row[selectedColumn])))
+                        .map(row => row._ts / 1000)
+                        .filter(t => !isNaN(t));
+
+                    if (validTimes.length >= 2) {
+                        const last = validTimes[validTimes.length - 1];
+                        const prev = validTimes[validTimes.length - 2];
+                        interval = last - prev;
+                        lastTime = last;
+                    }
+                }
+
+                if (lastTime < 100000000) {
+                    interval = 1;
+                }
+
+                const pathData = result.volatility.map((v, i) => ({
+                    time: (lastTime + (interval * (i + 1))) as any,
+                    value: v
+                }));
+
+                predictionSeriesRef.current.setData(pathData);
                 chartRef.current?.timeScale().fitContent();
             }
         } catch (err) {
@@ -279,9 +507,9 @@ export default function PredictionTab() {
                                 <div className="space-y-3">
                                     <label className="block text-xs text-slate-400">
                                         AR Coefficients (phi)
-                                        <input 
-                                            type="text" 
-                                            value={ar} 
+                                        <input
+                                            type="text"
+                                            value={ar}
                                             onChange={e => setAr(e.target.value)}
                                             className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
                                             placeholder="0.5, -0.2"
@@ -289,9 +517,9 @@ export default function PredictionTab() {
                                     </label>
                                     <label className="block text-xs text-slate-400">
                                         MA Coefficients (theta)
-                                        <input 
-                                            type="text" 
-                                            value={ma} 
+                                        <input
+                                            type="text"
+                                            value={ma}
                                             onChange={e => setMa(e.target.value)}
                                             className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
                                             placeholder="0.3"
@@ -300,18 +528,18 @@ export default function PredictionTab() {
                                     <div className="grid grid-cols-2 gap-3">
                                         <label className="text-xs text-slate-400">
                                             d (Integration)
-                                            <input 
-                                                type="number" 
-                                                value={d} 
+                                            <input
+                                                type="number"
+                                                value={d}
                                                 onChange={e => setD(parseInt(e.target.value))}
                                                 className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
                                             />
                                         </label>
                                         <label className="text-xs text-slate-400">
                                             Noise Sigma
-                                            <input 
-                                                type="number" 
-                                                value={arimaSigma} 
+                                            <input
+                                                type="number"
+                                                value={arimaSigma}
                                                 onChange={e => setArimaSigma(parseFloat(e.target.value))}
                                                 step="0.001"
                                                 className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
@@ -320,10 +548,20 @@ export default function PredictionTab() {
                                     </div>
                                     <label className="block text-xs text-slate-400">
                                         Steps
-                                        <input 
-                                            type="number" 
-                                            value={arimaSteps} 
+                                        <input
+                                            type="number"
+                                            value={arimaSteps}
                                             onChange={e => setArimaSteps(parseInt(e.target.value))}
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        />
+                                    </label>
+                                    <label className="block text-xs text-slate-400">
+                                        Random Seed (Optional)
+                                        <input
+                                            type="number"
+                                            value={seed}
+                                            onChange={e => setSeed(e.target.value === '' ? '' : parseInt(e.target.value))}
+                                            placeholder="Random"
                                             className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
                                         />
                                     </label>
@@ -344,9 +582,9 @@ export default function PredictionTab() {
                                 <div className="space-y-3">
                                     <label className="block text-xs text-slate-400">
                                         Omega (Constant)
-                                        <input 
-                                            type="number" 
-                                            value={omega} 
+                                        <input
+                                            type="number"
+                                            value={omega}
                                             onChange={e => setOmega(parseFloat(e.target.value))}
                                             step="0.000001"
                                             className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
@@ -354,28 +592,38 @@ export default function PredictionTab() {
                                     </label>
                                     <label className="block text-xs text-slate-400">
                                         Alpha (ARCH coeffs)
-                                        <input 
-                                            type="text" 
-                                            value={alpha} 
+                                        <input
+                                            type="text"
+                                            value={alpha}
                                             onChange={e => setAlpha(e.target.value)}
                                             className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
                                         />
                                     </label>
                                     <label className="block text-xs text-slate-400">
                                         Beta (GARCH coeffs)
-                                        <input 
-                                            type="text" 
-                                            value={beta} 
+                                        <input
+                                            type="text"
+                                            value={beta}
                                             onChange={e => setBeta(e.target.value)}
                                             className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
                                         />
                                     </label>
                                     <label className="block text-xs text-slate-400">
                                         Steps
-                                        <input 
-                                            type="number" 
-                                            value={garchSteps} 
+                                        <input
+                                            type="number"
+                                            value={garchSteps}
                                             onChange={e => setGarchSteps(parseInt(e.target.value))}
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        />
+                                    </label>
+                                    <label className="block text-xs text-slate-400">
+                                        Random Seed (Optional)
+                                        <input
+                                            type="number"
+                                            value={seed}
+                                            onChange={e => setSeed(e.target.value === '' ? '' : parseInt(e.target.value))}
+                                            placeholder="Random"
                                             className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
                                         />
                                     </label>
@@ -415,12 +663,12 @@ export default function PredictionTab() {
                     <div className="h-32 bg-slate-900/30 border border-slate-800 rounded-xl p-4 text-sm text-slate-400 overflow-y-auto">
                         {activeModel === 'arima' ? (
                             <p>
-                                ARIMA (AutoRegressive Integrated Moving Average) models can now use <b>historical data</b>. 
+                                ARIMA (AutoRegressive Integrated Moving Average) models can now use <b>historical data</b>.
                                 The model initializes its state using your CSV data, ensuring the prediction starts exactly where your data ends.
                             </p>
                         ) : (
                             <p>
-                                GARCH models use historical returns to estimate initial conditional variance. 
+                                GARCH models use historical returns to estimate initial conditional variance.
                                 This allows for more realistic volatility forecasting based on recent market regimes found in your data.
                             </p>
                         )}
