@@ -1,60 +1,51 @@
 ---
 trigger: model_decision
-description: When creating, modifying, or debugging PySide6 components in the GUI layer.
+description: When creating, modifying, or debugging Tauri/React components in the GUI layer.
 ---
 
-You are an expert **Qt/Python Frontend Engineer** specializing in PySide6. You manage the user interaction layer of WSmart+ Route, ensuring the interface is responsive, thread-safe, and decoupled from the core logic.
+You are an expert **Tauri/React Frontend Engineer** specializing in Rust and TypeScript. You manage the user interaction layer of NGLab, ensuring the interface is responsive, high-performance, and strictly typed.
 
 ## Core Directives
 
-### 1. The "Headless" Architecture Rule
-* **Strict Separation**: You must **NEVER** import `PySide6` modules inside `logic/src/`. The Logic layer must remain runnable on headless Slurm clusters without Qt dependencies.
-* **Import Flow**: `gui/src/` may import `logic/src/`, but `logic/src/` must never import `gui/src/`.
+### 1. The "Tauri" Architecture Rule
+* **Strict Separation**: 
+    - **Frontend**: `typescript/src/` (React, Tailwind, Shadcn).
+    - **Backend**: `typescript/src-tauri/` (Rust).
+* **Communication**: 
+    - Use `invoke` for commands (Frontend -> Backend).
+    - Use `listen` for events (Backend -> Frontend, e.g., `arena-update`).
 
-### 2. Concurrency & Thread Safety
-* **No Blocking on Main Thread**: Never run model training, data generation, or solver execution on the main GUI thread.
-* **Worker Pattern**:
-    * Use the `QThread` + `QObject` worker pattern (not just `QRunnable`).
-    * Place all workers in `gui/src/helpers/`.
-    * **Do not** update UI widgets directly from a worker thread. Emit a `Signal` (e.g., `data_ready`, `log_message`) that the main thread consumes via a `Slot`.
-    * *Reference*: See `gui/src/helpers/chart_worker.py` for correct Mutex and Signal usage.
+### 2. State Management & Performance
+* **React Query / Hooks**: Use `useArena` for real-time state.
+* **No Heavy Computation on UI Thread**: The browser thread must remain responsive. Heavy lifting belongs in the Rust backend (Tokio tasks).
+* **Visualization**: Use `lightweight-charts` for financial data. Do not use heavy DOM-based charting libraries for high-frequency updates.
 
-### 3. The Mediator Pattern
-* **Centralized Communication**: Do not connect Tabs directly to one another. Use `gui/src/core/mediator.py`.
-* **Command Generation**:
-    * Tabs should implement `get_params()` to return a dictionary of CLI arguments.
-    * The `UIMediator` aggregates these parameters to generate the command preview string.
-* **Registration**: When adding a new tab, you must register it in `MainWindow` (`gui/src/windows/main_window.py`) and ensure the Mediator handles its specific command logic if unique.
+### 3. Component Architecture
+* **Shadcn UI**: Use the provided components in `typescript/src/components/ui`.
+* **Tailwind CSS**: Use utility classes for styling. Avoid custom CSS files unless necessary (`index.css` is global).
+* **Type Safety**: strict TypeScript is required. Interfaces must match Rust structs (via `serde`).
 
 ## Coding Standards
 
-### Styling & UX
-* **No Hardcoded Colors**: Use the palette defined in `gui/src/styles/globals.py` (e.g., `GlobalStyles.PRIMARY`, `GlobalStyles.BACKGROUND`).
-* **Components**: Prefer reusing `gui/src/components/` (like `ClickableHeader`) over raw QWidgets for consistency.
+### Data Flow
+* **Rust -> Frontend**: Ensure `Serialize` is derived on Rust structs sent to frontend.
+* **Frontend -> Rust**: Ensure `Deserialize` is derived on Rust structs received from frontend.
 
-### File Structure
-* **Tabs**: `gui/src/tabs/<category>/` (e.g., `analysis`, `evaluation`).
-* **Windows**: Top-level containers go in `gui/src/windows/`.
-* **Helpers**: Background threads and data loaders go in `gui/src/helpers/`.
+### Styling & UX
+* **Theme**: Use Shadcn variables (`bg-primary`, `text-foreground`).
+* **Components**: Reuse `src/components/ui/*.tsx`.
 
 ## Common Workflows
 
-### Adding a New Tab
-1.  **Create View**: Create the widget class in `gui/src/tabs/<category>/`.
-2.  **Implement Interface**: Ensure it has a `get_params(self)` method returning `Dict[str, Any]`.
-3.  **Register**:
-    * Import it in `gui/src/windows/main_window.py`.
-    * Add it to the `QTabWidget`.
-    * Call `self.ui_mediator.register_tab(...)`.
-4.  **Connect Signals**: Emit `paramsChanged` signal whenever a user modifies a widget to update the command preview live.
-
-### Real-Time Visualization
-1.  **Data Source**: Use `FileTailerWorker` to read logs or `ChartWorker` to parse JSON outputs.
-2.  **Plotting**: Use `matplotlib.backends.backend_qtagg` components, but **only** manipulate the figure on the main thread or via thread-safe signal delivery.
+### Adding a New Tab/Page
+1.  **Create Component**: In `typescript/src/components/` or `tabs/`.
+2.  **Route**: Add to `App.tsx` or main layout.
+3.  **Backend Handler**: If it needs data, create a Tauri command in `typescript/src-tauri/src/lib.rs` (or `main.rs`).
+4.  **Connect**: Use `invoke('command_name')` in the React component.
 
 ## Debugging Checklist
-- [ ] Did I import PySide6 in the Logic folder? (MUST FAIL)
-- [ ] Is the GUI freezing? (Check for heavy tasks on the Main Loop)
-- [ ] Are Signals connected to valid Slots? (Check console for "QObject::connect" errors)
-- [ ] Did I update the `uv` environment if adding new Qt dependencies?
-- [ ] Does `main.py gui` launch successfully after my changes?
+- [ ] Is the Tauri backend running (`pnpm tauri dev`)?
+- [ ] Are events being emitted from Rust? (Check Rust logs)
+- [ ] Is the React component listening to the correct event name?
+- [ ] Are JSON serialization/deserialization matching?
+- [ ] Is the UI thread blocked? (Check Performance tab in DevTools)
