@@ -1,3 +1,7 @@
+"""
+Non-stationary Transformer for Time Series Forecasting.
+Adapted from the Time-Series-Library.
+"""
 import torch
 import torch.nn as nn
 
@@ -29,6 +33,16 @@ class Projector(nn.Module):
         self.backbone = nn.Sequential(*layers)
 
     def forward(self, x, stats):
+        """
+        Forward pass for the Projector.
+
+        Args:
+            x (Tensor): Input sequence.
+            stats (Tensor): Statistics (e.g., mean/std).
+
+        Returns:
+            Tensor: Projection output.
+        """
         # x:     B x S x E
         # stats: B x 1 x E
         # y:     B x O
@@ -43,7 +57,29 @@ class Projector(nn.Module):
 
 # Based on https://github.com/thuml/Nonstationary_Transformers
 class NSTransformer(nn.Module):
+    """
+    Non-stationary Transformer Model.
+    """
     def __init__(self, pred_len, seq_len, input_dim, embed_dim, hidden_dim, output_dim, learner_dims, embed_type='fixed', freq='h', n_enc_layers=2, n_dec_layers=2, n_learner_layers=2, n_heads=8, dropout_rate=0.1):
+        """
+        Initialize the NSTransformer.
+
+        Args:
+            pred_len (int): Prediction sequence length.
+            seq_len (int): Input sequence length.
+            input_dim (int): Input dimension.
+            embed_dim (int): Embedding dimension.
+            hidden_dim (int): Hidden dimension.
+            output_dim (int): Output dimension.
+            learner_dims (list): Dimensions for the stationary learner.
+            embed_type (str): Type of embedding.
+            freq (str): Frequency of time features.
+            n_enc_layers (int): Number of encoder layers.
+            n_dec_layers (int): Number of decoder layers.
+            n_learner_layers (int): Number of learner layers.
+            n_heads (int): Number of attention heads.
+            dropout_rate (float): Dropout rate.
+        """
         super().__init__()
         self.pred_len = pred_len
         self.seq_len = seq_len
@@ -66,6 +102,9 @@ class NSTransformer(nn.Module):
         self.delta_learner = Projector(input_dim, seq_len, learner_dims, n_learner_layers, output_dim=seq_len)
 
     def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
+        """
+        Forecasting function.
+        """
         x_raw = x_enc.clone().detach()
 
         # Normalization
@@ -90,5 +129,8 @@ class NSTransformer(nn.Module):
         return dec_out
 
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
+        """
+        Forward pass for the NSTransformer.
+        """
         dec_out = self.forecast(x_enc, x_mark_enc, x_dec, x_mark_dec)
         return dec_out[:, -self.pred_len:, :]  # [B, L, D]

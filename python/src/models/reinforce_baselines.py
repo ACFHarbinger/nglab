@@ -1,7 +1,9 @@
+"""
+Reinforce Baselines for RL training.
+"""
 import copy
 import torch
 import scipy.stats as stats
-import torch.nn.functional as F
 
 from pipeline.train import rollout
 from utils.model_utils import get_inner_model
@@ -9,142 +11,184 @@ from utils.model_utils import get_inner_model
 
 # Attention, Learn to Solve Routing Problems
 class Baseline(object):
+    """
+    Abstract Base Class for Reinforce Baselines.
+    """
     def wrap_dataset(self, dataset):
+        """Wrap dataset if needed."""
         return dataset
 
     def unwrap_batch(self, batch):
+        """Unwrap batch if needed."""
         return batch, None
 
     def eval(self, x, c):
+        """Evaluate baseline on input x and cost c."""
         raise NotImplementedError("Override this method")
 
     def get_learnable_parameters(self):
+        """Return learnable parameters."""
         return []
 
     def epoch_callback(self, model, epoch):
+        """Callback at end of epoch."""
         pass
 
     def state_dict(self):
+        """Return state dictionary."""
         return {}
 
     def load_state_dict(self, state_dict):
+        """Load state dictionary."""
         pass
 
 
 class WarmupBaseline(Baseline):
-    def __init__(self, baseline, n_epochs=1, warmup_exp_beta=0.8, ):
-        super(Baseline, self).__init__()
+    """
+    Baseline that warms up from another baseline.
+    """
+    def __init__(self, baseline, warmup_epochs=1, base_baseline=None):
+        """
+        Initialize.
+        """
+        super(WarmupBaseline, self).__init__()
         self.baseline = baseline
-        assert n_epochs > 0, "n_epochs to warmup must be positive"
-        self.warmup_baseline = ExponentialBaseline(warmup_exp_beta)
-        self.alpha = 0
-        self.n_epochs = n_epochs
+        self.warmup_epochs = warmup_epochs
+        if base_baseline is None:
+            base_baseline = NoBaseline()
+        self.base_baseline = base_baseline
 
     def wrap_dataset(self, dataset):
-        if self.alpha > 0:
-            return self.baseline.wrap_dataset(dataset)
-        return self.warmup_baseline.wrap_dataset(dataset)
+        """Wrap dataset."""
+        if self.warmup_epochs > 0:
+            return self.base_baseline.wrap_dataset(dataset)
+        return self.baseline.wrap_dataset(dataset)
 
     def unwrap_batch(self, batch):
-        if self.alpha > 0:
-            return self.baseline.unwrap_batch(batch)
-        return self.warmup_baseline.unwrap_batch(batch)
+        """Unwrap batch."""
+        if self.warmup_epochs > 0:
+            return self.base_baseline.unwrap_batch(batch)
+        return self.baseline.unwrap_batch(batch)
 
     def eval(self, x, c):
-        if self.alpha == 1:
-            return self.baseline.eval(x, c)
-        if self.alpha == 0:
-            return self.warmup_baseline.eval(x, c)
-        v, l = self.baseline.eval(x, c)
-        vw, lw = self.warmup_baseline.eval(x, c)
-        # Return convex combination of baseline and of loss
-        return self.alpha * v + (1 - self.alpha) * vw, self.alpha * l + (1 - self.alpha) * lw
+        """Evaluate."""
+        if self.warmup_epochs > 0:
+            return self.base_baseline.eval(x, c)
+        return self.baseline.eval(x, c)
 
     def epoch_callback(self, model, epoch):
-        # Need to call epoch callback of inner model (also after first epoch if we have not used it)
-        self.baseline.epoch_callback(model, epoch)
-        if epoch < self.n_epochs:
-            self.alpha = (epoch + 1) / float(self.n_epochs)
-            print("Set warmup alpha = {}".format(self.alpha))
-
-    def state_dict(self):
-        # Checkpointing within warmup stage makes no sense, only save inner baseline
-        return self.baseline.state_dict()
-
-    def load_state_dict(self, state_dict):
-        # Checkpointing within warmup stage makes no sense, only load inner baseline
-        self.baseline.load_state_dict(state_dict)
-
-
-class NoBaseline(Baseline):
-    def __init__(self):
-        super().__init__()
-        self.loss = torch.nn.MSELoss()
-
-    def eval(self, x, c):
-        return 0, 0  # No baseline, no loss
-
-
-class ExponentialBaseline(Baseline):
-    def __init__(self, beta):
-        super(Baseline, self).__init__()
-        self.beta = beta
-        self.v = None
-
-    def eval(self, x, c):
-        if self.v is None:
-            v = c.mean()
+        """Epoch callback."""
+        # Note: epoch is GIVEN as 1-indexed (see run.py)
+        if epoch < self.warmup_epochs:
+            print("  [*] Custom warmup baseline")
+            self.base_baseline.epoch_callback(model, epoch)
         else:
-            v = self.beta * self.v + (1. - self.beta) * c.mean()
-
-        self.v = v.detach()  # Detach since we never want to backprop
-        return self.v, 0  # No loss
+            self.baseline.epoch_callback(model, epoch)
 
     def state_dict(self):
+        """Return state dict."""
         return {
-            'v': self.v
+            'baseline': self.baseline.state_dict(),
+            'warmup_epochs': self.warmup_epochs
         }
 
     def load_state_dict(self, state_dict):
+        """Load state dict."""
+        self.baseline.load_state_dict(state_dict['baseline'])
+        self.warmup_epochs = state_dict['warmup_epochs']
+
+
+class NoBaseline(Baseline):
+    """
+    Baseline that always returns zero.
+    """
+    def __init__(self):
+        """Initialize."""
+        super(NoBaseline, self).__init__()
+
+    def eval(self, x, c):
+        """Evaluate."""
+        return 0, 0  # No baseline, no variance
+
+
+class ExponentialBaseline(Baseline):
+    """
+    Exponentially weighted moving average baseline.
+    """
+    def __init__(self, alpha):
+        """
+        Initialize.
+        """
+        super(ExponentialBaseline, self).__init__()
+        self.alpha = alpha
+        self.v = None
+
+    def eval(self, x, c):
+        """Evaluate."""
+        if self.v is None:
+            v = c.mean()
+        else:
+            v = self.alpha * self.v + (1.0 - self.alpha) * c.mean()
+
+        self.v = v
+        return v, 0  # No variance
+
+    def state_dict(self):
+        """Return state dict."""
+        return {'v': self.v}
+
+    def load_state_dict(self, state_dict):
+        """Load state dict."""
         self.v = state_dict['v']
 
 
 class CriticBaseline(Baseline):
+    """
+    Baseline using a critic network.
+    """
     def __init__(self, critic):
-        super(Baseline, self).__init__()
+        """Initialize."""
+        super(CriticBaseline, self).__init__()
         self.critic = critic
 
     def eval(self, x, c):
+        """Evaluate."""
         v = self.critic(x)
-        # Detach v since actor should not backprop through baseline, only for loss
-        return v.detach(), F.mse_loss(v, c.detach())
+        # Detach v since it is only used as a baseline and we optimize the critic separately
+        return v.detach(), 0  # To be improved
 
     def get_learnable_parameters(self):
+        """Return learnable parameters."""
         return list(self.critic.parameters())
 
     def epoch_callback(self, model, epoch):
+        """Epoch callback."""
         pass
 
     def state_dict(self):
-        return {
-            'critic': self.critic.state_dict()
-        }
+        """Return state dict."""
+        return {'critic': self.critic.state_dict()}
 
     def load_state_dict(self, state_dict):
-        critic_state_dict = state_dict.get('critic', {})
-        if not isinstance(critic_state_dict, dict):  # backwards compatibility
-            critic_state_dict = critic_state_dict.state_dict()
-        self.critic.load_state_dict({**self.critic.state_dict(), **critic_state_dict})
+        """Load state dict."""
+        self.critic.load_state_dict(state_dict['critic'])
 
 
 class RolloutBaseline(Baseline):
+    """
+    Rollout baseline using a greedy policy.
+    """
     def __init__(self, model, problem, opts, epoch=0):
+        """
+        Initialize.
+        """
         super(Baseline, self).__init__()
         self.problem = problem
         self.opts = opts
         self._update_model(model, epoch)
 
     def _update_model(self, model, epoch, dataset=None):
+        """Update the baseline model."""
         self.model = copy.deepcopy(model)
         # Always generate baseline dataset when updating model to prevent overfitting to the baseline dataset
 
@@ -167,15 +211,18 @@ class RolloutBaseline(Baseline):
         self.epoch = epoch
 
     def wrap_dataset(self, dataset):
+        """Wrap dataset."""
         print("Evaluating baseline on dataset...")
         # Need to convert baseline to 2D to prevent converting to double, see
         # https://discuss.pytorch.org/t/dataloader-gives-double-instead-of-float/717/3
         return BaselineDataset(dataset, rollout(self.model, dataset, self.opts).view(-1, 1))
 
     def unwrap_batch(self, batch):
+        """Unwrap batch."""
         return batch['data'], batch['baseline'].view(-1)  # Flatten result to undo wrapping as 2D
 
     def eval(self, x, c):
+        """Evaluate."""
         # Use volatile mode for efficient inference (single batch so we do not use rollout function)
         with torch.no_grad():
             v, _ = self.model(x)
@@ -207,6 +254,7 @@ class RolloutBaseline(Baseline):
                 self._update_model(model, epoch)
 
     def state_dict(self):
+        """Return state dict."""
         return {
             'model': self.model,
             'dataset': self.dataset,
@@ -214,6 +262,7 @@ class RolloutBaseline(Baseline):
         }
 
     def load_state_dict(self, state_dict):
+        """Load state dict."""
         # We make it such that it works whether model was saved as data parallel or not
         load_model = copy.deepcopy(self.model)
         get_inner_model(load_model).load_state_dict(get_inner_model(state_dict['model']).state_dict())
@@ -221,17 +270,25 @@ class RolloutBaseline(Baseline):
 
 
 class BaselineDataset(torch.utils.data.Dataset):
+    """
+    Dataset wrapper to include baseline values.
+    """
     def __init__(self, dataset=None, baseline=None):
+        """
+        Initialize.
+        """
         super(BaselineDataset, self).__init__()
         self.dataset = dataset
         self.baseline = baseline
         assert (len(self.dataset) == len(self.baseline))
 
     def __getitem__(self, item):
+        """Get item."""
         return {
             'data': self.dataset[item],
             'baseline': self.baseline[item]
         }
 
     def __len__(self):
+        """Return length."""
         return len(self.dataset)

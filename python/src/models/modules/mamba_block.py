@@ -1,3 +1,6 @@
+"""
+Mamba Block implementation for state-space model layers.
+"""
 import math
 import torch
 import torch.nn as nn
@@ -10,6 +13,15 @@ class MambaBlock(nn.Module):
     Ref: Section 4.3.1 of the provided text.
     """
     def __init__(self, d_model, d_state=16, d_conv=4, expand=2):
+        """
+        Initialize the Mamba block.
+
+        Args:
+            d_model (int): Model dimension.
+            d_state (int): State dimension.
+            d_conv (int): Convolution kernel size.
+            expand (int): Expansion factor.
+        """
         super().__init__()
         self.d_model = d_model
         self.d_inner = int(expand * d_model)
@@ -77,6 +89,9 @@ class MambaBlock(nn.Module):
         return torch.stack(ys, dim=1) 
 
     def forward(self, x):
+        """
+        Forward pass.
+        """
         batch_size, seq_len, _ = x.shape
         
         # 1. Project inputs

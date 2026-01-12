@@ -1,3 +1,6 @@
+"""
+Workflow for generating and visualizing reward landscapes.
+"""
 import torch
 import torch.nn as nn
 import numpy as np
@@ -40,7 +43,13 @@ def evaluate_model(model, env, num_steps=100):
     return -total_reward
 
 class SimplePolicy(nn.Module):
+    """
+    Simple 2-layer MLP policy for landscape analysis.
+    """
     def __init__(self, input_dim=6, hidden_dim=64, output_dim=3):
+        """
+        Initialize.
+        """
         super().__init__()
         self.net = nn.Sequential(
             nn.Flatten(),
@@ -50,9 +59,15 @@ class SimplePolicy(nn.Module):
         )
         
     def forward(self, x):
+        """
+        Forward pass.
+        """
         return self.net(x)
 
 def run_landscape_analysis():
+    """
+    Main function to run the landscape analysis and save a plot.
+    """
     print("Initializing environment...")
     env = TradingEnv(lookback=30, max_steps=100)
     

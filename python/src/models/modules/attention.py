@@ -1,3 +1,6 @@
+"""
+Attention mechanisms for Time Series Models.
+"""
 import torch
 import numpy as np
 import torch.nn as nn
@@ -8,8 +11,19 @@ from utils.masking import TriangularCausalMask, ProbMask
 
 # Adapted from the Time-Series-Library (https://github.com/thuml/Time-Series-Library/blob/main/layers/SelfAttention_Family.py)
 class DSAttention(nn.Module):
-    '''De-stationary Attention'''
+    """
+    De-stationary Attention mechanism.
+    """
     def __init__(self, mask_flag=True, attention_dropout=0.1, output_attention=False, scale=None):
+        """
+        Initialize.
+
+        Args:
+            mask_flag (bool): Whether to use masking.
+            attention_dropout (float): Dropout probability.
+            output_attention (bool): Whether to return attention weights.
+            scale (float): Scaling factor for scores.
+        """
         super(DSAttention, self).__init__()
         self.scale = scale
         self.mask_flag = mask_flag
@@ -17,6 +31,9 @@ class DSAttention(nn.Module):
         self.dropout = nn.Dropout(attention_dropout)
 
     def forward(self, queries, keys, values, attn_mask, tau=None, delta=None):
+        """
+        Forward pass.
+        """
         B, L, H, E = queries.shape
         _, S, _, D = values.shape
         scale = self.scale or 1. / sqrt(E)
@@ -45,7 +62,13 @@ class DSAttention(nn.Module):
 
 
 class FullAttention(nn.Module):
+    """
+    Standard Full Attention.
+    """
     def __init__(self, mask_flag=True, factor=5, scale=None, attention_dropout=0.1, output_attention=False):
+        """
+        Initialize.
+        """
         super(FullAttention, self).__init__()
         self.scale = scale
         self.mask_flag = mask_flag
@@ -53,6 +76,9 @@ class FullAttention(nn.Module):
         self.dropout = nn.Dropout(attention_dropout)
 
     def forward(self, queries, keys, values, attn_mask, tau=None, delta=None):
+        """
+        Forward pass.
+        """
         B, L, H, E = queries.shape
         _, S, _, D = values.shape
         scale = self.scale or 1. / sqrt(E)
@@ -75,7 +101,13 @@ class FullAttention(nn.Module):
 
 
 class ProbAttention(nn.Module):
+    """
+    Informer-style Probabilistic Attention.
+    """
     def __init__(self, mask_flag=True, factor=5, scale=None, attention_dropout=0.1, output_attention=False):
+        """
+        Initialize.
+        """
         super(ProbAttention, self).__init__()
         self.factor = factor
         self.scale = scale
@@ -144,6 +176,9 @@ class ProbAttention(nn.Module):
             return context_in, None
 
     def forward(self, queries, keys, values, attn_mask, tau=None, delta=None):
+        """
+        Forward pass.
+        """
         B, L_Q, H, D = queries.shape
         _, L_K, _, _ = keys.shape
 
@@ -176,8 +211,21 @@ class ProbAttention(nn.Module):
 
 
 class AttentionLayer(nn.Module):
+    """
+    Attention Layer wrapping inner attention mechanisms.
+    """
     def __init__(self, attention, d_model, n_heads, d_keys=None,
                  d_values=None):
+        """
+        Initialize.
+
+        Args:
+            attention (nn.Module): Inner attention mechanism.
+            d_model (int): Model dimension.
+            n_heads (int): Number of heads.
+            d_keys (int): Key dimension.
+            d_values (int): Value dimension.
+        """
         super(AttentionLayer, self).__init__()
 
         d_keys = d_keys or (d_model // n_heads)
@@ -191,6 +239,9 @@ class AttentionLayer(nn.Module):
         self.n_heads = n_heads
 
     def forward(self, queries, keys, values, attn_mask, tau=None, delta=None):
+        """
+        Forward pass.
+        """
         B, L, _ = queries.shape
         _, S, _ = keys.shape
         H = self.n_heads

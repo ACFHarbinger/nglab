@@ -1,3 +1,6 @@
+"""
+Neural network modules and layers for time series models.
+"""
 from .normalization import Normalization
 from .activation_function import ActivationFunction
 from .normalized_activation_function import NormalizedActivationFunction

@@ -1,3 +1,6 @@
+"""
+Time Series Mamba implementation.
+"""
 import torch
 import torch.nn as nn
 
@@ -9,6 +12,16 @@ class TSMamba(nn.Module):
     Time Series Forecasting Model using Mamba Blocks.
     """
     def __init__(self, input_dim, output_dim, d_model=64, n_layers=2, forecast_horizon=1):
+        """
+        Initialize the TSMamba model.
+
+        Args:
+            input_dim (int): Number of input features.
+            output_dim (int): Number of output features per time step.
+            d_model (int): Model hidden dimension.
+            n_layers (int): Number of Mamba blocks.
+            forecast_horizon (int): Prediction offset/horizon.
+        """
         super().__init__()
         
         # Encoder to project continuous time series values to d_model
@@ -27,6 +40,9 @@ class TSMamba(nn.Module):
         self.head = nn.Linear(d_model, output_dim * forecast_horizon)
 
     def forward(self, x):
+        """
+        Forward pass for forecasting.
+        """
         # x shape: (Batch, Seq_Len, Input_Dim)
         x = self.encoder(x)
         

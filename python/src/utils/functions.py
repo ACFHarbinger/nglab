@@ -1,19 +1,29 @@
+"""
+Functional utilities for model loading and tensor manipulation.
+"""
 import os
 import json
 import torch
 
 
 def torch_load_cpu(load_path):
+    """Load torch tensors on CPU."""
     return torch.load(load_path, map_location=lambda storage, loc: storage)  # Load on CPU
 
 
 def move_to(var, device):
+    """
+    Recursively move tensors in a dictionary to a device.
+    """
     if isinstance(var, dict):
         return {k: move_to(v, device) for k, v in var.items()}
     return var.to(device)
 
 
 def load_args(filename):
+    """
+    Load arguments from a JSON file with backwards compatibility.
+    """
     with open(filename, 'r') as f:
         args = json.load(f)
 
@@ -28,7 +38,16 @@ def load_args(filename):
 
 
 def _load_model_file(load_path, model):
-    """Loads the model with parameters from the file and returns optimizer state dict if it is in the file"""
+    """
+    Loads model parameters from a file.
+
+    Args:
+        load_path (str): Path to the saved model.
+        model (nn.Module): The model instance to load weights into.
+
+    Returns:
+        tuple: (model, optimizer_state_dict)
+    """
     # Load the model parameters from a saved state
     load_optimizer_state_dict = None
     print('  [*] Loading model from {}'.format(load_path))
@@ -51,6 +70,16 @@ def _load_model_file(load_path, model):
 
 
 def load_model(path, epoch=None):
+    """
+    Load a model and its configuration from a directory or specific file.
+
+    Args:
+        path (str): File or directory path.
+        epoch (int): Specific epoch to load if path is a directory.
+
+    Returns:
+        tuple: (model, args)
+    """
     from models import LSTM, NSTransformer
 
     if os.path.isfile(path):

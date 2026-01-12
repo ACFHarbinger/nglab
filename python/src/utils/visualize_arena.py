@@ -1,4 +1,6 @@
-
+"""
+Verification script for the Trading Arena environment.
+"""
 import sys
 import os
 

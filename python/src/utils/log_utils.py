@@ -1,6 +1,22 @@
+"""
+Logging utilities for TensorBoard and console output.
+"""
 
 
 def log_timeseries_values(loss, grad_norms, epoch, batch_id, step, output, tb_logger, opts):
+    """
+    Log training metrics to console and TensorBoard.
+
+    Args:
+        loss (float): Current loss value.
+        grad_norms (tuple): (unclipped_grad_norm, clipped_grad_norm).
+        epoch (int): Current epoch number.
+        batch_id (int): Current batch ID.
+        step (int): Current global step.
+        output (Tensor): Model output predictions.
+        tb_logger: TensorBoard logger instance.
+        opts (dict): Configuration options.
+    """
     grad_norms, grad_norms_clipped = grad_norms
 
     # Log values to screen

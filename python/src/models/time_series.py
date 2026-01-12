@@ -1,4 +1,6 @@
-import torch
+"""
+Unified Backbone for Time Series Models.
+"""
 import torch.nn as nn
 from .nstransformer import NSTransformer 
 
@@ -11,6 +13,12 @@ class TimeSeriesBackbone(nn.Module):
     Wraps specific implementations (Transformer, LSTM, etc).
     """
     def __init__(self, cfg):
+        """
+        Initialize the backbone.
+
+        Args:
+            cfg (dict): Configuration dictionary containing model name and parameters.
+        """
         super().__init__()
         self.cfg = cfg
         model_name = cfg.get('name', 'NSTransformer')
@@ -39,6 +47,15 @@ class TimeSeriesBackbone(nn.Module):
             raise ValueError(f"Unknown model: {model_name}")
 
     def forward(self, x):
+        """
+        Forward pass.
+
+        Args:
+            x (Tensor or TensorDict): Input data.
+
+        Returns:
+            Tensor: Output embeddings.
+        """
         # Handle TensorDict input if x is TensorDict
         if hasattr(x, 'get'): 
             x = x.get('observation')

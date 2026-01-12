@@ -1,3 +1,6 @@
+"""
+Polymarket Dataset for time series training.
+"""
 import os
 import torch
 
@@ -5,7 +8,21 @@ from .data_utils import read_json, read_csv, df_to_torch
 
 
 class PolymarketDataset(torch.utils.data.Dataset):
+    """
+    Dataset class for Polymarket prediction data.
+    """
     def __init__(self, name, dataset_dir, seq_len, pred_len, download=False, transform=None):
+        """
+        Initialize the dataset.
+
+        Args:
+            name (str): Dataset name.
+            dataset_dir (str): Directory containing the data.
+            seq_len (int): Input sequence length.
+            pred_len (int): Prediction sequence length.
+            download (bool): Whether to download data (not implemented).
+            transform (callable): Optional transform to apply.
+        """
         super().__init__()
         if download:
             self._download()
@@ -26,6 +43,7 @@ class PolymarketDataset(torch.utils.data.Dataset):
         raise NotImplementedError
     
     def __len__(self):
+        """Return the total number of samples."""
         return self.dataset_len
 
     def _get_name(self):
@@ -61,6 +79,9 @@ class PolymarketDataset(torch.utils.data.Dataset):
         self.dataset_len = self.dataset['Price'].size()[0]
 
     def __getitem__(self, index):
+        """
+        Get a sample by index.
+        """
         data = dict.fromkeys(self.dataset.keys())
         for key in data.keys():
             data[key] = self.dataset[key][index].type(torch.cuda.FloatTensor)

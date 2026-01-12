@@ -5,8 +5,6 @@ Adapts the standard Gymnasium TradingEnv for use within the TorchRL framework,
 handling TensorDict mapping and spec inference.
 """
 from torchrl.envs import GymWrapper
-from torchrl.data import TensorSpec
-import torch
 import gymnasium as gym
 from env.trading_env import TradingEnv
 

@@ -1,3 +1,6 @@
+"""
+Utility functions for data loading and processing.
+"""
 import os
 import json
 import torch
@@ -5,6 +8,16 @@ import pandas as pd
 
 
 def read_json(json_path, lock=None):
+    """
+    Read a JSON file.
+
+    Args:
+        json_path (str): Path to the JSON file.
+        lock (threading.Lock): Optional lock for thread-safe reading.
+
+    Returns:
+        dict: The loaded JSON data.
+    """
     if lock is not None:
         lock.acquire(timeout=10)
     with open(json_path) as json_file:
@@ -15,6 +28,16 @@ def read_json(json_path, lock=None):
 
 
 def read_csv(csv_path, lock=None):
+    """
+    Read a CSV file into a pandas DataFrame.
+
+    Args:
+        csv_path (str): Path to the CSV file.
+        lock (threading.Lock): Optional lock for thread-safe reading.
+
+    Returns:
+        pd.DataFrame: The loaded DataFrame, or None if the file doesn't exist.
+    """
     if lock is not None:
         lock.acquire(timeout=10)
     df = pd.read_csv(csv_path) if os.path.isfile(csv_path) else None
@@ -24,6 +47,17 @@ def read_csv(csv_path, lock=None):
 
 
 def df_to_torch(df, key_avoid, fill_nan=0):
+    """
+    Convert a pandas DataFrame to a dictionary of torch tensors.
+
+    Args:
+        df (pd.DataFrame): Input DataFrame.
+        key_avoid (str): Columns containing this string will be ignored.
+        fill_nan (float): Value to fill NaNs with.
+
+    Returns:
+        dict: Dictionary mapping column names to torch Tensors.
+    """
     torch_dict = {}
     if fill_nan is not None:
         df = df.fillna(fill_nan)

@@ -1,3 +1,6 @@
+"""
+Command line argument parsing for training and inference.
+"""
 import os
 import sys
 import time
@@ -5,13 +8,23 @@ import argparse
 
 
 class ConfigsParser(argparse.ArgumentParser):
+    """
+    Custom ArgumentParser with error handling.
+    """
     def error(self, message):
+        """Handle parsing errors."""
         print(message, end=' ')
         self.print_help()
         sys.exit(2)
 
 
 def process_arguments():
+    """
+    Parse and process command line arguments.
+
+    Returns:
+        tuple: (command, arguments_dict)
+    """
     parser = ConfigsParser(description="Nothing Gambles Like A Bot, your personal stock market assistant!")
     subparsers = parser.add_subparsers(help="command", dest="command")
     training_parser = subparsers.add_parser('train')
