@@ -1,3 +1,8 @@
+//! Polymarket data scraper.
+//!
+//! Fetches market metadata and historical price data
+//! from the Polymarket API.
+
 use crate::errors::{ArenaError, ArenaResult};
 use crate::web::scraper::WebScraper;
 use chrono::{DateTime, Utc};
@@ -38,6 +43,7 @@ pub struct MarketMetadata {
     pub outcomes: Vec<OutcomeInfo>,
 }
 
+/** Scraper for Polymarket data. */
 pub struct PolymarketScraper {
     client: Client,
     token_ids: Vec<String>,

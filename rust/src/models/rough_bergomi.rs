@@ -1,3 +1,8 @@
+//! Rough Bergomi (rBergomi) stochastic volatility model.
+//!
+//! Implements the rough volatility model for option pricing
+//! using Monte Carlo simulation and Cholesky decomposition.
+
 use ndarray::{Array1, Array2};
 use rand_distr::{Distribution, StandardNormal};
 use serde::{Deserialize, Serialize};
@@ -22,6 +27,9 @@ pub struct RBergomiResult {
     pub mean_terminal: f64,
 }
 
+/**
+ * Perform Cholesky decomposition on a covariance matrix.
+ */
 pub fn cholesky_decomposition(matrix: &Array2<f64>) -> Result<Array2<f64>, String> {
     let n = matrix.nrows();
     let mut l = Array2::zeros((n, n));
@@ -65,6 +73,9 @@ pub fn generate_fbm_cholesky(n: usize, h: f64, dt: f64) -> Result<Array2<f64>, S
     cholesky_decomposition(&cov)
 }
 
+/**
+ * Simulate price paths under the rBergomi model.
+ */
 pub fn simulate(params: RBergomiParams) -> Result<RBergomiResult, String> {
     let dt = params.t / (params.steps as f64);
 

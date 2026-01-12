@@ -1,3 +1,8 @@
+//! Credit risk modeling and CVA calculation.
+//!
+//! Implements basic Merton-style structural credit risk models
+//! to adjust derivative prices for counterparty risk.
+
 use serde::{Deserialize, Serialize};
 
 use crate::models::black_scholes::{price as bsm_price, BlackScholesParams};
@@ -22,6 +27,9 @@ pub struct CreditRiskResult {
     pub cva: f64,
 }
 
+/**
+ * Calculate credit-adjusted price and CVA.
+ */
 pub fn price(params: CreditRiskParams) -> Result<CreditRiskResult, String> {
     let bsm = bsm_price(BlackScholesParams {
         spot: params.spot,

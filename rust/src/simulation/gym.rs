@@ -13,14 +13,14 @@ use pyo3::prelude::*;
 #[cfg(feature = "python")]
 use pyo3::types::PyDict;
 
-/// Action space types
+/** Action space types */
 #[derive(Debug, Clone, Copy)]
 pub enum ActionType {
-    /// Hold current position
+    /** Hold current position */
     Hold,
-    /// Buy (long)
+    /** Buy (long) */
     Buy,
-    /// Sell (short)
+    /** Sell (short) */
     Sell,
 }
 
@@ -35,7 +35,7 @@ impl From<i32> for ActionType {
     }
 }
 
-/// Step result returned to Python
+/** Step result returned to Python */
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct StepResult {
     pub observation: Vec<f64>,
@@ -45,7 +45,7 @@ pub struct StepResult {
     pub info: StepInfo,
 }
 
-/// Additional info for each step
+/** Additional info for each step */
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct StepInfo {
     pub portfolio_value: f64,
@@ -55,7 +55,7 @@ pub struct StepInfo {
     pub total_steps: u64,
 }
 
-/// Observation buffer for zero-copy access
+/** Observation buffer for zero-copy access */
 pub struct ObservationBuffer {
     data: Vec<f64>,
     shape: (usize, usize),
@@ -76,36 +76,37 @@ impl ObservationBuffer {
     }
 }
 
-/// Trading environment with Gymnasium interface
+/** Trading environment with Gymnasium interface */
 #[cfg_attr(feature = "python", pyclass)]
+/** Trading environment for reinforcement learning. */
 pub struct TradingEnv {
-    /// Order book for simulation
+    /** Order book for simulation */
     orderbook: OrderBook,
-    /// Price history for backtesting
+    /** Price history for backtesting */
     prices: Vec<f64>,
-    /// Current step index
+    /** Current step index */
     current_step: usize,
-    /// Current position (positive = long, negative = short)
+    /** Current position (positive = long, negative = short) */
     position: f64,
-    /// Current cash balance
+    /** Current cash balance */
     cash: f64,
-    /// Initial capital
+    /** Initial capital */
     initial_capital: f64,
-    /// Transaction cost rate
+    /** Transaction cost rate */
     transaction_cost: f64,
-    /// Lookback window for observations
+    /** Lookback window for observations */
     lookback: usize,
-    /// Number of features per timestep
+    /** Number of features per timestep */
     num_features: usize,
-    /// Returns history for Sharpe calculation
+    /** Returns history for Sharpe calculation */
     returns: Vec<f64>,
-    /// Previous portfolio value for return calculation
+    /** Previous portfolio value for return calculation */
     prev_portfolio_value: f64,
-    /// Maximum steps before truncation
+    /** Maximum steps before truncation */
     max_steps: usize,
-    /// Total steps taken
+    /** Total steps taken */
     total_steps: u64,
-    /// Rerun logger for visualization
+    /** Rerun logger for visualization */
     logger: crate::utils::visualizer::RerunLogger,
 }
 
@@ -155,29 +156,29 @@ impl TradingEnv {
         }
     }
 
-    /// Load price data for backtesting
+    /** Load price data for backtesting */
     pub fn load_prices(&mut self, prices: Vec<f64>) {
         self.prices = prices;
     }
 
-    /// Get observation space shape
+    /** Get observation space shape */
     pub fn observation_shape(&self) -> (usize, usize) {
         (self.lookback, self.num_features)
     }
 
-    /// Get action space size (discrete: 0=hold, 1=buy, 2=sell)
+    /** Get action space size (discrete: 0=hold, 1=buy, 2=sell) */
     pub fn action_space_size(&self) -> usize {
         3
     }
 
     #[cfg(feature = "python")]
-    /// Reset the environment
+    /** Reset the environment */
     pub fn reset<'py>(&mut self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
         self.reset_rs();
         self.get_observation(py)
     }
 
-    /// Pure Rust reset (no Python dependency)
+    /** Pure Rust reset (no Python dependency) */
     pub fn reset_rs(&mut self) -> Vec<f64> {
         self.current_step = self.lookback;
         self.position = 0.0;
@@ -190,7 +191,7 @@ impl TradingEnv {
     }
 
     #[cfg(feature = "python")]
-    /// Take a step in the environment
+    /** Take a step in the environment */
     pub fn step<'py>(
         &mut self,
         py: Python<'py>,
@@ -261,7 +262,7 @@ impl TradingEnv {
     }
 
     #[cfg(feature = "python")]
-    /// Get current observation as numpy array
+    /** Get current observation as numpy array */
     pub fn get_observation<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
         let obs_data = self.generate_observation_data();
 
@@ -272,35 +273,35 @@ impl TradingEnv {
         array.to_pyarray_bound(py)
     }
 
-    /// Get current portfolio value
+    /** Get current portfolio value */
     pub fn portfolio_value(&self) -> f64 {
         let price = self.current_price().unwrap_or(0.0);
         self.cash + self.position * price
     }
 
-    /// Get current position
+    /** Get current position */
     pub fn current_position(&self) -> f64 {
         self.position
     }
 
-    /// Get current cash
+    /** Get current cash */
     pub fn current_cash(&self) -> f64 {
         self.cash
     }
 
-    /// Get total steps taken
+    /** Get total steps taken */
     pub fn get_total_steps(&self) -> u64 {
         self.total_steps
     }
 }
 
 impl TradingEnv {
-    /// Get reference to orderbook
+    /** Get reference to orderbook */
     pub fn orderbook(&self) -> &OrderBook {
         &self.orderbook
     }
 
-    /// Pure Rust step function (no Python dependency)
+    /** Pure Rust step function (no Python dependency) */
     pub fn step_rs(&mut self, action: i32) -> (Vec<f64>, f64, bool, bool, StepInfo) {
         let action_type = ActionType::from(action);
 
@@ -344,7 +345,7 @@ impl TradingEnv {
         (obs_data, reward, terminated, truncated, step_info)
     }
 
-    /// Internal method to generate observation data (pure Rust, no GIL)
+    /** Internal method to generate observation data (pure Rust, no GIL) */
     fn generate_observation_data(&self) -> Vec<f64> {
         let mut obs = vec![0.0f64; self.lookback * self.num_features];
 
@@ -363,7 +364,7 @@ impl TradingEnv {
                 };
 
                 let row_start = i * self.num_features;
-                obs[row_start] = price / self.prices[0]; // Normalized price
+                obs[row_start] = price / self.prices[0]; // Normalized price?
                 obs[row_start + 1] = returns; // Returns
                 obs[row_start + 2] = 0.0; // Volume (placeholder)
                 obs[row_start + 3] = self.orderbook.imbalance(); // Order book imbalance
@@ -376,12 +377,12 @@ impl TradingEnv {
 }
 
 impl TradingEnv {
-    /// Get current price
+    /** Get current price */
     fn current_price(&self) -> Option<f64> {
         self.prices.get(self.current_step).copied()
     }
 
-    /// Execute a trading action
+    /** Execute a trading action */
     fn execute_action(&mut self, action: ActionType) -> f64 {
         let price = match self.current_price() {
             Some(p) => p,
@@ -425,7 +426,7 @@ impl TradingEnv {
         cost
     }
 
-    /// Calculate risk-adjusted reward
+    /** Calculate risk-adjusted reward */
     fn calculate_reward(&self, returns: f64, trade_cost: f64) -> f64 {
         // Simple reward: returns minus transaction costs
         let base_reward = returns * 100.0; // Scale up small returns
@@ -454,7 +455,7 @@ impl TradingEnv {
         base_reward - cost_penalty - drawdown_penalty
     }
 
-    /// Calculate rolling Sharpe ratio
+    /** Calculate rolling Sharpe ratio */
     fn calculate_sharpe(&self, window: usize) -> f64 {
         if self.returns.len() < 2 {
             return 0.0;
@@ -479,7 +480,7 @@ impl TradingEnv {
     }
 
     #[cfg(feature = "python")]
-    /// Build info dictionary for Python
+    /** Build info dictionary for Python */
     #[allow(dead_code)]
     fn build_info(&self, py: Python<'_>) -> PyObject {
         let dict = PyDict::new_bound(py);

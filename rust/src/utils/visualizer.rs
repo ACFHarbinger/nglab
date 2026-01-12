@@ -1,3 +1,8 @@
+//! Visualization and logging utilities using Rerun.
+//!
+//! Provides real-time and post-simulation data logging
+//! for order books, account stats, and model parameters.
+
 use crate::simulation::orderbook::OrderBook;
 
 #[cfg(feature = "logging")]
@@ -5,6 +10,7 @@ use rerun::archetypes::{Points2D, Scalars};
 #[cfg(feature = "logging")]
 use rerun::{RecordingStream, RecordingStreamBuilder};
 
+/** Logger that streams simulation events to Rerun. */
 pub struct RerunLogger {
     #[cfg(feature = "logging")]
     rec: Option<RecordingStream>,

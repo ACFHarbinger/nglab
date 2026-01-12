@@ -15,7 +15,7 @@ pub mod web;
 
 pub use errors::{ArenaError, ArenaResult};
 
-/// Arena - The main simulation environment
+/** Arena - The main simulation environment */
 #[cfg_attr(feature = "python", pyclass)]
 pub struct Arena {
     step_count: u64,
@@ -28,7 +28,7 @@ impl Arena {
         Arena { step_count: 0 }
     }
 
-    /// Get the current step count
+    /** Get the current step count */
     pub fn step_count(&self) -> u64 {
         self.step_count
     }
@@ -40,7 +40,7 @@ impl Default for Arena {
     }
 }
 
-/// Python module entry point
+/** Python module entry point */
 #[cfg(feature = "python")]
 #[pymodule]
 fn _nglab(m: &Bound<'_, PyModule>) -> PyResult<()> {

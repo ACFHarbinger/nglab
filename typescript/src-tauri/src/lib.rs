@@ -1,3 +1,8 @@
+//! Tauri backend logic for the NGLab dashboard.
+//!
+//! This module coordinates the interaction between the Rust simulation
+//! arena and the React frontend via Tauri commands and events.
+
 use nglab::simulation::gym::TradingEnv;
 use nglab::simulation::orderbook::OrderBook;
 use nglab::web::polymarket::{Frequency, PolymarketScraper};
@@ -6,11 +11,13 @@ use std::sync::Mutex;
 use tauri::{Emitter, Manager, State};
 use tokio::time::{sleep, Duration};
 
+/** Shared application state for the Tauri backend. */
 struct ArenaState {
     env: Mutex<TradingEnv>,
     running: Mutex<bool>,
 }
 
+/** Real-time update event emitted to the frontend. */
 #[derive(serde::Serialize, Clone)]
 struct ArenaUpdate {
     step: u64,
@@ -19,6 +26,9 @@ struct ArenaUpdate {
     orderbook: OrderBook,
 }
 
+/**
+ * Command to start the simulation loop in the background.
+ */
 #[tauri::command]
 fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
     let mut running = state.running.lock().unwrap();
@@ -63,12 +73,18 @@ fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
     });
 }
 
+/**
+ * Command to stop the active simulation loop.
+ */
 #[tauri::command]
 fn stop_simulation(state: State<ArenaState>) {
     let mut running = state.running.lock().unwrap();
     *running = false;
 }
 
+/**
+ * Command to scrape Polymarket data for multiple tokens.
+ */
 #[tauri::command]
 async fn scrape_polymarket(
     market_source: Option<String>,
@@ -194,6 +210,9 @@ async fn scrape_polymarket(
     .map_err(|e| format!("Task failed: {}", e))?
 }
 
+/**
+ * Command to resolve a Polymarket market SLUG or URL into metadata.
+ */
 #[tauri::command]
 async fn resolve_polymarket_id(
     input: String,
@@ -228,6 +247,9 @@ async fn resolve_polymarket_id(
     .map_err(|e| format!("Task failed: {}", e))?
 }
 
+/**
+ * Command to price options using the Rough Bergomi model.
+ */
 #[tauri::command]
 async fn pricing_rbergomi(
     params: nglab::models::rough_bergomi::RBergomiParams,
@@ -237,6 +259,9 @@ async fn pricing_rbergomi(
         .map_err(|e| format!("Simulation task failed: {}", e))?
 }
 
+/**
+ * Command to price options using the Black-Scholes model.
+ */
 #[tauri::command]
 async fn pricing_black_scholes(
     params: nglab::models::black_scholes::BlackScholesParams,
@@ -246,6 +271,9 @@ async fn pricing_black_scholes(
         .map_err(|e| format!("Pricing task failed: {}", e))
 }
 
+/**
+ * Command to calculate Credit Valuation Adjustment (CVA).
+ */
 #[tauri::command]
 async fn pricing_credit_risk(
     params: nglab::models::credit_risk::CreditRiskParams,
@@ -255,6 +283,9 @@ async fn pricing_credit_risk(
         .map_err(|e| format!("Pricing task failed: {}", e))?
 }
 
+/**
+ * Command to price options using the Rough Heston model.
+ */
 #[tauri::command]
 async fn pricing_rough_heston(
     params: nglab::models::rough_heston::RoughHestonParams,
@@ -264,6 +295,9 @@ async fn pricing_rough_heston(
         .map_err(|e| format!("Simulation task failed: {}", e))?
 }
 
+/**
+ * Command to predict future prices using ARIMA.
+ */
 #[tauri::command]
 async fn predict_arima(
     params: nglab::moon::arima::ArimaParams,
@@ -273,6 +307,9 @@ async fn predict_arima(
         .map_err(|e| format!("Simulation task failed: {}", e))?
 }
 
+/**
+ * Command to predict future prices using GARCH.
+ */
 #[tauri::command]
 async fn predict_garch(
     params: nglab::moon::garch::GarchParams,
@@ -282,6 +319,9 @@ async fn predict_garch(
         .map_err(|e| format!("Simulation task failed: {}", e))?
 }
 
+/**
+ * Command to predict future prices using Holt-Winters (Exponential Smoothing).
+ */
 #[tauri::command]
 async fn predict_holt_winters(
     params: nglab::moon::es::HoltWintersParams,
@@ -291,6 +331,9 @@ async fn predict_holt_winters(
         .map_err(|e| format!("Simulation task failed: {}", e))?
 }
 
+/**
+ * Command to predict future prices using the Prophet model.
+ */
 #[tauri::command]
 async fn predict_prophet(
     params: nglab::moon::prophet::ProphetParams,
@@ -300,6 +343,9 @@ async fn predict_prophet(
         .map_err(|e| format!("Simulation task failed: {}", e))?
 }
 
+/**
+ * Entry point for the Tauri application.
+ */
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Initialize TradingEnv with default parameters

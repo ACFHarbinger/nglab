@@ -1,3 +1,8 @@
+//! Rough Heston stochastic volatility model.
+//!
+//! Implements the rough Heston model for price paths
+//! with fractional Brownian motion in the volatility process.
+
 use ndarray::Array1;
 use rand_distr::{Distribution, StandardNormal};
 use serde::{Deserialize, Serialize};
@@ -59,6 +64,9 @@ fn percentile(values: &[f64], p: f64) -> f64 {
     }
 }
 
+/**
+ * Simulate price paths under the rough Heston model.
+ */
 pub fn simulate(params: RoughHestonParams) -> Result<RoughHestonResult, String> {
     let steps = params.steps.max(16).min(512);
     let paths = params.paths.max(100).min(10_000);

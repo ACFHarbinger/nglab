@@ -19,6 +19,17 @@ class Projector(nn.Module):
     Paper link: https://openreview.net/pdf?id=ucNDIDRNjjv
     '''
     def __init__(self, enc_in, seq_len, hidden_dims, hidden_layers, output_dim, kernel_size=3):
+        """
+        Initialize the Projector.
+
+        Args:
+            enc_in (int): Number of input channels.
+            seq_len (int): Input sequence length.
+            hidden_dims (list): List of hidden layer dimensions.
+            hidden_layers (int): Number of hidden layers.
+            output_dim (int): Output dimension.
+            kernel_size (int): Convolution kernel size.
+        """
         super(Projector, self).__init__()
 
         padding = 1 if torch.__version__ >= '1.5.0' else 2

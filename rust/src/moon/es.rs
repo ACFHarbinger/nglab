@@ -1,3 +1,8 @@
+//! Exponential Smoothing (ES) and Holt-Winters forecasting.
+//!
+//! Provides statistical methods for trend and seasonality
+//! decomposition in time series data.
+
 use rand_distr::{Distribution, StandardNormal};
 use serde::{Deserialize, Serialize};
 
@@ -7,6 +12,7 @@ pub enum SeasonalType {
     Multiplicative,
 }
 
+/** Parameters for Exponential Smoothing. */
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct HoltWintersParams {
     pub alpha: f64, // Level smoothing (0-1)
@@ -20,12 +26,16 @@ pub struct HoltWintersParams {
     pub data: Option<Vec<f64>>, // Historical data for initialization
 }
 
+/** Result of Exponential Smoothing. */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct HoltWintersResult {
     pub path: Vec<f64>,
     pub used_seed: Option<u64>,
 }
 
+/**
+ * Simulate/Forecast using Exponential Smoothing.
+ */
 pub fn simulate(params: HoltWintersParams) -> Result<HoltWintersResult, String> {
     let seed = if let Some(s) = params.seed {
         s

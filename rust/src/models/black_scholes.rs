@@ -1,3 +1,8 @@
+//! Black-Scholes-Merton option pricing.
+//!
+//! Provides closed-form solutions for European vanilla options
+//! and their Greeks (Delta, Gamma, Vega).
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -39,6 +44,9 @@ fn norm_cdf(x: f64) -> f64 {
     0.5 * (1.0 + erf(x / 2.0_f64.sqrt()))
 }
 
+/**
+ * Price European vanilla options and calculate Greeks.
+ */
 pub fn price(params: BlackScholesParams) -> BlackScholesResult {
     let safe_vol = params.volatility.max(1e-8);
     let safe_mat = params.maturity.max(1e-8);

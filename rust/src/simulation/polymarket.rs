@@ -4,6 +4,7 @@
 //! - Binary outcome markets (Yes/No)
 //! - Merge/Split mechanics
 //! - NegRisk accounting for cross-collateralization
+//! - Market resolution and price replay.
 
 use crate::errors::{ArenaError, ArenaResult};
 #[cfg(feature = "python")]
@@ -11,7 +12,7 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// A prediction market with binary outcomes
+/** A prediction market with binary outcomes */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Market {
     pub id: String,
@@ -22,25 +23,26 @@ pub struct Market {
     pub outcome: Option<String>,
 }
 
-/// Price tick data for a market
+/** A price update for a market */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PriceTick {
     pub timestamp: u64,
     pub price: f64,
 }
 
-/// Account holding conditional tokens
+/** Account holding conditional tokens */
 #[derive(Debug, Clone, Default)]
 pub struct Account {
-    /// USDC collateral balance
+    /** USDC collateral balance */
     pub collateral: f64,
-    /// Holdings: market_id -> (yes_tokens, no_tokens)
+    /** Holdings: market_id -> (yes_tokens, no_tokens) */
     pub positions: HashMap<String, (f64, f64)>,
-    /// Realized PnL
+    /** Realized PnL */
     pub realized_pnl: f64,
 }
 
 impl Account {
+    /** Create a new account with initial collateral */
     pub fn new(initial_collateral: f64) -> Self {
         Account {
             collateral: initial_collateral,
@@ -49,12 +51,12 @@ impl Account {
         }
     }
 
-    /// Get position in a specific market
+    /** Get position in a specific market */
     pub fn get_position(&self, market_id: &str) -> (f64, f64) {
         self.positions.get(market_id).copied().unwrap_or((0.0, 0.0))
     }
 
-    /// Calculate unrealized PnL given current prices
+    /** Calculate unrealized PnL given current prices */
     pub fn unrealized_pnl(&self, prices: &HashMap<String, f64>) -> f64 {
         let mut pnl = 0.0;
         for (market_id, (yes_tokens, no_tokens)) in &self.positions {
@@ -71,21 +73,21 @@ impl Account {
     }
 }
 
-/// Polymarket trading arena
+/** Polymarket trading arena */
 #[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone)]
 pub struct PolymarketArena {
-    /// Available markets
+    /** Available markets */
     markets: HashMap<String, Market>,
-    /// Price history for each market
+    /** Price history for each market */
     price_history: HashMap<String, Vec<PriceTick>>,
-    /// Current price index (for replay)
+    /** Resolved outcome index (0=Yes, 1=No typically) */
     current_index: usize,
-    /// Agent's account
+    /** Agent's account */
     account: Account,
-    /// Current step
+    /** Current step */
     step: u64,
-    /// Taker fee rate (e.g., 0.001 = 0.1%)
+    /** Taker fee rate (e.g., 0.001 = 0.1%) */
     taker_fee: f64,
 }
 
@@ -104,34 +106,34 @@ impl PolymarketArena {
         }
     }
 
-    /// Get current collateral balance
+    /** Get current collateral balance */
     pub fn collateral(&self) -> f64 {
         self.account.collateral
     }
 
-    /// Get current step
+    /** Get current step */
     pub fn current_step(&self) -> u64 {
         self.step
     }
 
-    /// Get number of loaded markets
+    /** Get number of loaded markets */
     pub fn num_markets(&self) -> usize {
         self.markets.len()
     }
 
-    /// Get current price for a market (Yes token price)
+    /** Get current price for a market (Yes token price) */
     pub fn get_price(&self, market_id: &str) -> Option<f64> {
         self.price_history
             .get(market_id)
             .and_then(|history| history.get(self.current_index).map(|tick| tick.price))
     }
 
-    /// Get position in a market as (yes_tokens, no_tokens)
+    /** Get position in a market as (yes_tokens, no_tokens) */
     pub fn get_position(&self, market_id: &str) -> (f64, f64) {
         self.account.get_position(market_id)
     }
 
-    /// Get total account value at current prices
+    /** Get total account value at current prices */
     pub fn account_value(&self) -> f64 {
         let mut value = self.account.collateral;
 
@@ -145,14 +147,14 @@ impl PolymarketArena {
         value
     }
 
-    /// Get realized PnL
+    /** Get realized PnL */
     pub fn realized_pnl(&self) -> f64 {
         self.account.realized_pnl
     }
 }
 
 impl PolymarketArena {
-    /// Load market metadata from JSON
+    /** Load market metadata from JSON */
     pub fn load_markets(&mut self, json_data: &str) -> ArenaResult<()> {
         #[derive(Deserialize)]
         struct MarketMeta {
@@ -181,7 +183,7 @@ impl PolymarketArena {
         Ok(())
     }
 
-    /// Load price history from CSV data
+    /** Load price history from CSV data */
     pub fn load_price_history(&mut self, market_id: &str, csv_data: &str) -> ArenaResult<()> {
         let mut reader = csv::Reader::from_reader(csv_data.as_bytes());
         let mut history = Vec::new();
@@ -199,7 +201,7 @@ impl PolymarketArena {
         Ok(())
     }
 
-    /// Get the total number of price ticks across all markets
+    /** Get the total number of price ticks across all markets */
     pub fn total_ticks(&self) -> usize {
         self.price_history
             .values()
@@ -208,7 +210,7 @@ impl PolymarketArena {
             .unwrap_or(0)
     }
 
-    /// Buy Yes tokens for a market
+    /** Buy Yes tokens for a market */
     pub fn buy_yes(&mut self, market_id: &str, amount: f64) -> ArenaResult<f64> {
         let price = self
             .get_price(market_id)
@@ -236,7 +238,7 @@ impl PolymarketArena {
         Ok(total_cost)
     }
 
-    /// Buy No tokens for a market
+    /** Buy No tokens for a market */
     pub fn buy_no(&mut self, market_id: &str, amount: f64) -> ArenaResult<f64> {
         let yes_price = self
             .get_price(market_id)
@@ -265,7 +267,7 @@ impl PolymarketArena {
         Ok(total_cost)
     }
 
-    /// Sell Yes tokens
+    /** Sell Yes tokens */
     pub fn sell_yes(&mut self, market_id: &str, amount: f64) -> ArenaResult<f64> {
         let price = self
             .get_price(market_id)
@@ -295,7 +297,7 @@ impl PolymarketArena {
         Ok(net_proceeds)
     }
 
-    /// Merge complete sets back to collateral (1 Yes + 1 No = $1)
+    /** Merge complete sets back to collateral (1 Yes + 1 No = $1) */
     pub fn merge(&mut self, market_id: &str, amount: f64) -> ArenaResult<f64> {
         let (yes, no) = self
             .account
@@ -318,7 +320,7 @@ impl PolymarketArena {
         Ok(can_merge)
     }
 
-    /// Split collateral into complete sets ($1 = 1 Yes + 1 No)
+    /** Split collateral into complete sets ($1 = 1 Yes + 1 No) */
     pub fn split(&mut self, market_id: &str, amount: f64) -> ArenaResult<f64> {
         if self.account.collateral < amount {
             return Err(ArenaError::InsufficientBalance {
@@ -339,7 +341,7 @@ impl PolymarketArena {
         Ok(amount)
     }
 
-    /// Advance to next time step
+    /** Advance to next time step */
     pub fn advance(&mut self) -> bool {
         if self.current_index + 1 < self.total_ticks() {
             self.current_index += 1;
@@ -350,7 +352,7 @@ impl PolymarketArena {
         }
     }
 
-    /// Reset the arena to initial state
+    /** Reset the arena to initial state */
     pub fn reset(&mut self, initial_collateral: f64) {
         self.current_index = 0;
         self.step = 0;
@@ -371,6 +373,7 @@ mod tests {
 
     #[test]
     fn test_arena_creation() {
+        // User account for the Polymarket arena
         let arena = PolymarketArena::new(10000.0, 0.001);
         assert_eq!(arena.collateral(), 10000.0);
         assert_eq!(arena.num_markets(), 0);

@@ -11,21 +11,21 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 
-/// Order side (bid or ask)
+/** Order side: Bid or Ask */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Side {
     Bid,
     Ask,
 }
 
-/// Order type
+/** Order type */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OrderType {
     Limit,
     Market,
 }
 
-/// A single order in the book
+/** A single order in the book */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Order {
     pub id: u64,
@@ -57,18 +57,18 @@ impl Order {
         }
     }
 
-    /// Remaining quantity to be filled
+    /** Remaining quantity to be filled */
     pub fn remaining(&self) -> f64 {
         self.quantity - self.filled
     }
 
-    /// Check if order is fully filled
+    /** Check if order is fully filled */
     pub fn is_filled(&self) -> bool {
         self.filled >= self.quantity
     }
 }
 
-/// Price level containing orders at the same price
+/** A price level in the book, containing multiple orders */
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct PriceLevel {
     pub price: f64,
@@ -85,11 +85,13 @@ impl PriceLevel {
         }
     }
 
+    /** Add an order to the price level */
     pub fn add_order(&mut self, order: Order) {
         self.total_quantity += order.remaining();
         self.orders.push_back(order);
     }
 
+    /** Remove the front order from the price level */
     pub fn remove_front(&mut self) -> Option<Order> {
         if let Some(order) = self.orders.pop_front() {
             self.total_quantity -= order.remaining();
@@ -99,12 +101,13 @@ impl PriceLevel {
         }
     }
 
+    /** Check if the price level is empty */
     pub fn is_empty(&self) -> bool {
         self.orders.is_empty()
     }
 }
 
-/// Trade execution result
+/** Trade execution result */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Trade {
     pub maker_order_id: u64,
@@ -115,20 +118,20 @@ pub struct Trade {
     pub timestamp: u64,
 }
 
-/// Central Limit Order Book
+/** Central Limit Order Book */
 #[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderBook {
-    /// Bids ordered by price (highest first) - IndexMap preserves insertion order
-    /// Key is price as integer (price * 10000 for precision)
+    /** Bids ordered by price (highest first) - IndexMap preserves insertion order */
+    /** Key is price as integer (price * 10000 for precision) */
     bids: IndexMap<i64, PriceLevel>,
-    /// Asks ordered by price (lowest first)
+    /** Asks ordered by price (lowest first) */
     asks: IndexMap<i64, PriceLevel>,
-    /// Next order ID
+    /** Next order ID */
     next_order_id: u64,
-    /// Current timestamp
+    /** Current timestamp */
     timestamp: u64,
-    /// Price precision multiplier
+    /** Price precision multiplier */
     price_precision: f64,
 }
 
@@ -151,7 +154,7 @@ impl OrderBook {
         }
     }
 
-    /// Get the best bid price
+    /** Get the best bid price */
     pub fn best_bid(&self) -> Option<f64> {
         self.bids
             .keys()
@@ -159,7 +162,7 @@ impl OrderBook {
             .map(|&p| p as f64 / self.price_precision)
     }
 
-    /// Get the best ask price
+    /** Get the best ask price */
     pub fn best_ask(&self) -> Option<f64> {
         self.asks
             .keys()
@@ -167,7 +170,7 @@ impl OrderBook {
             .map(|&p| p as f64 / self.price_precision)
     }
 
-    /// Get the mid price
+    /** Get the mid price */
     pub fn mid_price(&self) -> Option<f64> {
         match (self.best_bid(), self.best_ask()) {
             (Some(bid), Some(ask)) => Some((bid + ask) / 2.0),
@@ -175,7 +178,7 @@ impl OrderBook {
         }
     }
 
-    /// Get the spread
+    /** Get the spread */
     pub fn spread(&self) -> Option<f64> {
         match (self.best_bid(), self.best_ask()) {
             (Some(bid), Some(ask)) => Some(ask - bid),
@@ -183,7 +186,7 @@ impl OrderBook {
         }
     }
 
-    /// Get bid depth at top N levels
+    /** Get bid depth at top N levels */
     pub fn bid_depth(&self, levels: usize) -> Vec<(f64, f64)> {
         let mut sorted_prices: Vec<_> = self.bids.keys().copied().collect();
         sorted_prices.sort_by(|a, b| b.cmp(a)); // Descending for bids
@@ -202,7 +205,7 @@ impl OrderBook {
             .collect()
     }
 
-    /// Get ask depth at top N levels
+    /** Get ask depth at top N levels */
     pub fn ask_depth(&self, levels: usize) -> Vec<(f64, f64)> {
         let mut sorted_prices: Vec<_> = self.asks.keys().copied().collect();
         sorted_prices.sort(); // Ascending for asks
@@ -221,17 +224,17 @@ impl OrderBook {
             .collect()
     }
 
-    /// Total volume on bid side
+    /** Total volume on bid side */
     pub fn total_bid_volume(&self) -> f64 {
         self.bids.values().map(|level| level.total_quantity).sum()
     }
 
-    /// Total volume on ask side
+    /** Total volume on ask side */
     pub fn total_ask_volume(&self) -> f64 {
         self.asks.values().map(|level| level.total_quantity).sum()
     }
 
-    /// Order book imbalance (-1 to 1, positive means more bids)
+    /** Order book imbalance (-1 to 1, positive means more bids) */
     pub fn imbalance(&self) -> f64 {
         let bid_vol = self.total_bid_volume();
         let ask_vol = self.total_ask_volume();
@@ -243,19 +246,19 @@ impl OrderBook {
         }
     }
 
-    /// Set the current timestamp
+    /** Set the current timestamp */
     pub fn set_timestamp(&mut self, timestamp: u64) {
         self.timestamp = timestamp;
     }
 }
 
 impl OrderBook {
-    /// Convert price to integer key for indexing
+    /** Convert price to integer key for indexing */
     fn price_to_key(&self, price: f64) -> i64 {
         (price * self.price_precision).round() as i64
     }
 
-    /// Submit a limit order and return any trades that result
+    /** Submit a limit order and return any trades that result */
     pub fn submit_limit_order(
         &mut self,
         price: f64,
@@ -278,7 +281,7 @@ impl OrderBook {
         (order_id, trades)
     }
 
-    /// Submit a market order and return trades
+    /** Submit a market order and return trades */
     pub fn submit_market_order(&mut self, quantity: f64, side: Side) -> (u64, Vec<Trade>) {
         let order_id = self.next_order_id;
         self.next_order_id += 1;
@@ -302,7 +305,7 @@ impl OrderBook {
         (order_id, trades)
     }
 
-    /// Match an incoming order against the book
+    /** Match an incoming order against the book */
     fn match_order(&mut self, mut order: Order) -> Vec<Trade> {
         let mut trades = Vec::new();
 
@@ -433,7 +436,7 @@ impl OrderBook {
         trades
     }
 
-    /// Cancel an order by ID
+    /** Cancel an order by ID */
     pub fn cancel_order(&mut self, order_id: u64) -> bool {
         // Search in bids
         for level in self.bids.values_mut() {
@@ -460,7 +463,7 @@ impl OrderBook {
         false
     }
 
-    /// Clear the entire order book
+    /** Clear the entire order book */
     pub fn clear(&mut self) {
         self.bids.clear();
         self.asks.clear();
