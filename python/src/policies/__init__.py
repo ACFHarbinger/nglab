@@ -1,3 +1,6 @@
+"""
+Trading Policies for NGLab.
+"""
 from .base import Policy
 from .black_scholes import BlackScholesPolicy
 from .threshold import ThresholdPolicy

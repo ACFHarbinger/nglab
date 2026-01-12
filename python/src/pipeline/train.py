@@ -1,3 +1,9 @@
+"""
+Training Utilities for NGLab.
+
+Provides high-level functions for rolling out models, training epochs,
+and handling gradient clipping.
+"""
 import os
 import time
 import math
@@ -10,11 +16,25 @@ from utils.model_utils import get_inner_model
 
 
 def rollout(model, dataset, opts):
+    """
+    Perform evaluation rollout on a dataset.
+
+    Args:
+        model (nn.Module): The model to evaluate.
+        dataset (Dataset): The dataset to roll out on.
+        opts (Dict): Evaluation options.
+
+    Returns:
+        torch.Tensor: Concatenated results from the rollout.
+    """
     # Put in greedy evaluation mode!
     #set_decode_type(model, "greedy")
     model.eval()
 
     def eval_model_bat(bat):
+        """
+        Evaluate a single batch.
+        """
         with torch.no_grad():
             cost, _ = model(move_to(bat, opts['device']))
         return cost.data.cpu()
@@ -47,6 +67,9 @@ def clip_grad_norms(param_groups, max_norm=math.inf):
 
 
 def train_epoch(model, optimizer, baseline, lr_scheduler, epoch, dataset, tb_logger, opts):
+    """
+    Train the model for one epoch.
+    """
     print("Start train epoch {}, lr={} for run {}".format(epoch, optimizer.param_groups[0]['lr'], opts['run_name']))
     is_cuda = torch.cuda.is_available()
     start_time = time.time()
@@ -84,6 +107,9 @@ def train_epoch(model, optimizer, baseline, lr_scheduler, epoch, dataset, tb_log
 
 
 def train_batch(model, optimizer, baseline, epoch, batch_id, batch, step, tb_logger, opts):
+    """
+    Train the model on a single batch.
+    """
     batch = move_to(batch, opts['device'])
     x = batch['Price']
     y = batch['Labels']

@@ -1,3 +1,9 @@
+"""
+Trading Environment for NGLab.
+
+Provides a Gymnasium-compatible interface for simulating trading scenarios,
+serving as the primary interface between agents and the market simulator.
+"""
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
@@ -9,6 +15,14 @@ class TradingEnv(gym.Env):
     metadata = {'render_modes': ['human']}
 
     def __init__(self, lookback=30, max_steps=1000, feature_dim=12):
+        """
+        Initialize the trading environment.
+
+        Args:
+            lookback (int): Number of historical steps in observation.
+            max_steps (int): Maximum steps per episode.
+            feature_dim (int): Number of features per step.
+        """
         super(TradingEnv, self).__init__()
         self.lookback = lookback
         self.max_steps = max_steps
@@ -26,6 +40,9 @@ class TradingEnv(gym.Env):
         self.current_step = 0
 
     def reset(self, seed=None, options=None):
+        """
+        Reset the environment state.
+        """
         super().reset(seed=seed)
         self.current_step = 0
         observation = self.observation_space.sample() # Placeholder
@@ -33,6 +50,9 @@ class TradingEnv(gym.Env):
         return observation, info
 
     def step(self, action):
+        """
+        Execute one step in the environment.
+        """
         self.current_step += 1
         terminated = self.current_step >= self.max_steps
         truncated = False
@@ -42,7 +62,13 @@ class TradingEnv(gym.Env):
         return observation, reward, terminated, truncated, info
 
     def render(self, mode='human'):
+        """
+        Render the environment.
+        """
         pass
 
     def close(self):
+        """
+        Close the environment.
+        """
         pass

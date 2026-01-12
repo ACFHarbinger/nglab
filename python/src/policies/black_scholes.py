@@ -1,3 +1,9 @@
+"""
+Black-Scholes Policy for NGLab.
+
+Implements a trading strategy based on the Black-Scholes option pricing model,
+buying or selling based on deviations from the theoretical fair value.
+"""
 import numpy as np
 from scipy.stats import norm
 from .base import Policy
@@ -8,17 +14,29 @@ class BlackScholesPolicy(Policy):
     Decides to buy or sell based on the theoretical price vs market price.
     """
     def __init__(self, cfg=None):
+        """
+        Initialize Black-Scholes policy.
+
+        Args:
+            cfg (Dict, optional): Configuration containing risk-free rate and volatility.
+        """
         super().__init__(cfg)
         self.risk_free_rate = self.cfg.get('risk_free_rate', 0.05)
         self.volatility = self.cfg.get('volatility', 0.2)
         
     def _black_scholes_call(self, S, K, T, r, sigma):
+        """
+        Calculate the Black-Scholes call price.
+        """
         d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
         d2 = d1 - sigma * np.sqrt(T)
         call_price = S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2)
         return call_price
 
     def act(self, observation):
+        """
+        Determine action based on Black-Scholes fair value.
+        """
         # Observation is expected to be a dict or object with:
         # price, strike, time_to_maturity
         

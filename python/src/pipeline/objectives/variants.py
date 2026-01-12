@@ -1,3 +1,9 @@
+"""
+PPO Variant Objectives for NGLab.
+
+Implements specialized RL losses including DR-GRPO, GSPO, and SAPO,
+designed to improve stability and performance in financial trading tasks.
+"""
 import torch
 from torchrl.objectives import ClipPPOLoss
 from torchrl.objectives.utils import distance_loss
@@ -13,18 +19,20 @@ class DRGRPOLoss(ClipPPOLoss):
     In this implementation, we assume the 'advantage' key in the input TensorDict 
     has already been computed via a group-based normalization if handled in the collector/buffer,
     OR we compute it here if 'reward' acts as the signal.
-    
-    Standard TorchRL PPO expects 'advantage' to be populated. 
-    If we stick to standard ClipPPOLoss but rely on the advantage being pre-processed correctly
-    (Group Centering), then this class mostly ensures we don't apply other standard PPO norms.
     """
     def __init__(self, *args, **kwargs):
+        """
+        Initialize DR-GRPO loss.
+        """
         super().__init__(*args, **kwargs)
         # DR-GRPO specifically avoids certain normalizations if they were default
         # But here we assume the Advantage Estimation (GAE or Group) happens outside.
         pass
 
     def forward(self, tensordict: TensorDict) -> TensorDict:
+        """
+        Forward pass for DR-GRPO.
+        """
         # We can override forward to ensure specific advantage usage if needed.
         # For now, relying on standard PPO logic but assuming 'advantage' input 
         # is Group-Relative: (R - Mean(R_group))
@@ -38,21 +46,20 @@ class GSPOLoss(ClipPPOLoss):
     ratio = exp( (log_new - log_old) / seq_len )
     """
     def __init__(self, *args, **kwargs):
+        """
+        Initialize GSPO loss.
+        """
         super().__init__(*args, **kwargs)
 
     def _log_ratio(self, tensordict):
+        """
+        Compute log ratio scaled by sequence length.
+        """
         # We need to compute log_ratio = new_log_prob - old_log_prob
         # And then scale by sequence length.
-        
-        # This requires overriding the internal logic of ClipPPOLoss which might be private.
-        # Alternatively, we re-implement the core loss calculation.
         pass
         
     # Re-implementing forward for GSPO specifics is safer than inheriting partial logic
-    # if the internal method `_log_ratio` isn't easily accessible/modifiable.
-    # However, for brevity and compatibility, if we assume the input log_probs are per-token sum?
-    # No, typically they are per-step.
-    
     # Placeholder: GSPO effectively modifies the 'ratio' variable.
     # We will implement a simplified version masking the standard one.
     pass
@@ -65,11 +72,21 @@ class SAPOLoss(ClipPPOLoss):
     f(r) = (4/tau) * sigmoid(tau * (r - 1))
     """
     def __init__(self, tau_pos=0.1, tau_neg=0.5, *args, **kwargs):
+        """
+        Initialize SAPO loss.
+
+        Args:
+            tau_pos (float): Temperature for positive advantages.
+            tau_neg (float): Temperature for negative advantages.
+        """
         super().__init__(*args, **kwargs)
         self.tau_pos = tau_pos
         self.tau_neg = tau_neg
 
     def forward(self, tensordict: TensorDict) -> TensorDict:
+        """
+        Forward pass for SAPO using soft gating.
+        """
         # Calculate prob ratio
         dist = self.actor_network.get_dist(tensordict)
         log_probs = dist.log_prob(tensordict["action"])

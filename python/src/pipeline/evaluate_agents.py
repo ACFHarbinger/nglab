@@ -101,6 +101,9 @@ def evaluate_agent(model_path: str, agent_type: str, n_episodes: int = 10, lookb
 
 
 def main(args):
+    """
+    Main evaluation entry point.
+    """
     print(f"Evaluating {args.agent_type.upper()} agent from: {args.model_path}")
     print(f"Running {args.n_episodes} evaluation episodes...\n")
     

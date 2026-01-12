@@ -1,9 +1,17 @@
+"""
+Critic Network for REINFORCE with Baseline.
+
+Estimates the value of a given state to provide a baseline for advantage
+calculation in Reinforcement Learning.
+"""
 from torch import nn
 from ..models.graph_encoder import GraphAttentionEncoder
 
 
-# Attention, Learn to Solve Routing Problems and Heterogeneous Attentions for Solving PDP via DRL
 class CriticNetwork(nn.Module):
+    """
+    Critic network based on Graph Attention Encoder and a Linear Value Head.
+    """
 
     def __init__(
         self,
@@ -14,6 +22,9 @@ class CriticNetwork(nn.Module):
         n_layers,
         encoder_normalization
     ):
+        """
+        Initialize the critic network.
+        """
         super(CriticNetwork, self).__init__()
 
         self.hidden_dim = hidden_dim
@@ -35,9 +46,13 @@ class CriticNetwork(nn.Module):
 
     def forward(self, inputs):
         """
+        Forward pass of the critic network.
 
-        :param inputs: (batch_size, graph_size, input_dim)
-        :return:
+        Args:
+            inputs: (batch_size, graph_size, input_dim) - Input feature tensors.
+
+        Returns:
+            torch.Tensor: Estimated state values.
         """
         _, graph_embeddings = self.encoder(inputs)
         return self.value_head(graph_embeddings)

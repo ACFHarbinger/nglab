@@ -1,3 +1,9 @@
+"""
+Main Entry Point for NGLab Training Pipeline.
+
+Integrates Hydra for configuration and PyTorch Lightning for scalable training
+across Reinforcement Learning, Supervised Learning, and Unsupervised Learning tasks.
+"""
 import hydra
 from omegaconf import DictConfig, OmegaConf
 import pytorch_lightning as pl
@@ -16,6 +22,9 @@ from policies.neural import NeuralPolicy
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def main(cfg: DictConfig):
+    """
+    Main training function triggered by Hydra.
+    """
     print(OmegaConf.to_yaml(cfg))
     pl.seed_everything(cfg.seed)
 
@@ -26,6 +35,9 @@ def main(cfg: DictConfig):
     if cfg.task == "rl":
         # Environment
         def env_maker():
+            """
+            Factory function for creating environment instances.
+            """
             return TradingEnvWrapper(**cfg.env)
 
         # Policy (Actor)

@@ -1,3 +1,9 @@
+"""
+Reinforcement Learning Module for NGLab.
+
+Integrates TorchRL components with PyTorch Lightning to provide a scalable
+training loop for RL agents (PPO and variants).
+"""
 import torch
 import pytorch_lightning as pl
 from torchrl.collectors import SyncDataCollector
@@ -11,6 +17,15 @@ class RLLightningModule(pl.LightningModule):
     Manages the interaction between Policy, Environment (Collection), and Loss updates.
     """
     def __init__(self, agent_module, value_module, env_maker, cfg):
+        """
+        Initialize the RL module.
+
+        Args:
+            agent_module (nn.Module): The policy network (actor).
+            value_module (nn.Module): The value network (critic).
+            env_maker (callable): A function that returns a wrapped environment.
+            cfg (Dict): Configuration parameters.
+        """
         super().__init__()
         self.save_hyperparameters(ignore=['agent_module', 'value_module', 'env_maker'])
         self.cfg = cfg
@@ -47,10 +62,16 @@ class RLLightningModule(pl.LightningModule):
         )
 
     def configure_optimizers(self):
+        """
+        Configure the Adam optimizer for RL loss.
+        """
         optimizer = torch.optim.Adam(self.loss_module.parameters(), lr=self.cfg.get('learning_rate', 3e-4))
         return optimizer
 
     def setup(self, stage=None):
+        """
+        Initialize the data collector.
+        """
         # Create the collector here or in simple training loop
         # For PL, we usually iterate over a DataLoader. 
         # But PPO is on-policy.
@@ -65,10 +86,16 @@ class RLLightningModule(pl.LightningModule):
         )
 
     def train_dataloader(self):
+        """
+        Return the data collector as the training data source.
+        """
         # Return the collector as the dataloader source
         return self.collector
 
     def training_step(self, batch, batch_idx):
+        """
+        Perform a PPO training step on a collected batch.
+        """
         # 'batch' here is a TensorDict with 'frames_per_batch' steps collected
         
         # 1. PPO requires updates on this batch for multiple epochs
@@ -120,4 +147,7 @@ class RLLightningModule(pl.LightningModule):
 
     @property
     def automatic_optimization(self) -> bool:
+        """
+        Disable automatic optimization to handle manual PPO updates.
+        """
         return False

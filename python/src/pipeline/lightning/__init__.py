@@ -1,3 +1,6 @@
+"""
+PyTorch Lightning Modules for NGLab.
+"""
 from .base import BaseModule
 from .self_supervised import SelfSupervisedModule
 from .semi_supervised import SemiSupervisedModule

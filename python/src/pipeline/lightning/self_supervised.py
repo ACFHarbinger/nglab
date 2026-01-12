@@ -1,3 +1,9 @@
+"""
+Self-Supervised Learning Module for NGLab.
+
+Implements pretext tasks such as Masked Prediction to learn useful representations
+from unlabeled financial time series data.
+"""
 import torch
 import torch.nn.functional as F
 from .base import BaseModule
@@ -7,15 +13,28 @@ class SelfSupervisedModule(BaseModule):
     Module for Self-Supervised Learning tasks (e.g., Masked Prediction, Contrastive Learning).
     """
     def __init__(self, backbone, cfg):
+        """
+        Initialize the Self-Supervised module.
+
+        Args:
+            backbone (nn.Module): The time-series model backbone.
+            cfg (Dict): Configuration parameters.
+        """
         super().__init__(cfg)
         self.backbone = backbone
         self.head = torch.nn.Linear(cfg.get('hidden_dim', 128), cfg.get('input_dim', 1)) 
         self.mask_ratio = cfg.get('mask_ratio', 0.15)
 
     def forward(self, x):
+        """
+        Forward pass through the backbone.
+        """
         return self.backbone(x)
 
     def training_step(self, batch, batch_idx):
+        """
+        Perform a self-supervised training step using Masked Prediction.
+        """
         # Taking 'x' from batch (assuming tensor or dict with 'observation')
         x = batch if isinstance(batch, torch.Tensor) else batch['observation']
         
@@ -36,6 +55,9 @@ class SelfSupervisedModule(BaseModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
+        """
+        Perform a validation step.
+        """
         x = batch if isinstance(batch, torch.Tensor) else batch['observation']
         features = self.backbone(x)
         pred = self.head(features)

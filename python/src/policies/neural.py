@@ -1,3 +1,9 @@
+"""
+Neural Network Policy for NGLab.
+
+Wraps PyTorch or TorchRL modules to provide a consistent 'act' interface
+for model-based trading strategies.
+"""
 import torch
 from tensordict import TensorDict
 from .base import Policy
@@ -7,11 +13,27 @@ class NeuralPolicy(Policy):
     Policy that wraps a PyTorch/TorchRL module.
     """
     def __init__(self, model, cfg=None):
+        """
+        Initialize the neural policy.
+
+        Args:
+            model (nn.Module): The underlying neural network model.
+            cfg (Dict, optional): Configuration dictionary.
+        """
         super().__init__(cfg)
         self.model = model # Expecting a TensorDictModule or similar
         self.device = self.cfg.get('device', 'cpu')
 
     def act(self, observation):
+        """
+        Execute the model forward pass and extract an action.
+
+        Args:
+            observation (Any): Model input (tensor or Dict).
+
+        Returns:
+            Any: The predicted action.
+        """
         # Expecting observation to be compatible with model input
         # If model expects TensorDict:
         if isinstance(observation, dict) and not isinstance(observation, TensorDict):

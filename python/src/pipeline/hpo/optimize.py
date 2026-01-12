@@ -1,3 +1,9 @@
+"""
+Hyperparameter Optimization (HPO) for NGLab.
+
+Uses Optuna to perform automated search for optimal model and training
+hyperparameters across different pipeline tasks.
+"""
 import optuna
 import hydra
 from omegaconf import DictConfig
