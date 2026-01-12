@@ -282,6 +282,24 @@ async fn predict_garch(
         .map_err(|e| format!("Simulation task failed: {}", e))?
 }
 
+#[tauri::command]
+async fn predict_holt_winters(
+    params: nglab::moon::es::HoltWintersParams,
+) -> Result<nglab::moon::es::HoltWintersResult, String> {
+    tauri::async_runtime::spawn_blocking(move || nglab::moon::es::simulate(params))
+        .await
+        .map_err(|e| format!("Simulation task failed: {}", e))?
+}
+
+#[tauri::command]
+async fn predict_prophet(
+    params: nglab::moon::prophet::ProphetParams,
+) -> Result<nglab::moon::prophet::ProphetResult, String> {
+    tauri::async_runtime::spawn_blocking(move || nglab::moon::prophet::simulate(params))
+        .await
+        .map_err(|e| format!("Simulation task failed: {}", e))?
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // Initialize TradingEnv with default parameters
@@ -307,7 +325,9 @@ pub fn run() {
             pricing_credit_risk,
             pricing_rough_heston,
             predict_arima,
-            predict_garch
+            predict_garch,
+            predict_holt_winters,
+            predict_prophet
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

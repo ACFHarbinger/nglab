@@ -5,6 +5,7 @@ import { createChart, ColorType, IChartApi, ISeriesApi, LineSeries } from 'light
 import { open } from '@tauri-apps/plugin-dialog';
 import { readTextFile } from '@tauri-apps/plugin-fs';
 import Papa from 'papaparse';
+import { prepareChartData } from '../utils/dataHelpers';
 
 type ArimaResult = {
     path: number[];
@@ -16,8 +17,20 @@ type GarchResult = {
     volatility: number[];
 };
 
+type HoltWintersResult = {
+    path: number[];
+    used_seed?: number;
+};
+
+type ProphetResult = {
+    times: number[];
+    values: number[];
+    trend: number[];
+    seasonal: number[];
+};
+
 export default function PredictionTab() {
-    const [activeModel, setActiveModel] = useState<'arima' | 'garch'>('arima');
+    const [activeModel, setActiveModel] = useState<'arima' | 'garch' | 'holt_winters' | 'prophet'>('arima');
 
     // Data State
     const [rawData, setRawData] = useState<any[]>([]);
@@ -39,6 +52,25 @@ export default function PredictionTab() {
     const [beta, setBeta] = useState('0.8');
     const [garchSteps, setGarchSteps] = useState(200);
     const [isGarchLoading, setIsGarchLoading] = useState(false);
+
+    // Holt-Winters State
+    const [hwAlpha, setHwAlpha] = useState(0.5);
+    const [hwBeta, setHwBeta] = useState(0.1);
+    const [hwGamma, setHwGamma] = useState(0.1);
+    const [hwPeriod, setHwPeriod] = useState(12);
+    const [hwSeasonalType, setHwSeasonalType] = useState<'Additive' | 'Multiplicative'>('Additive');
+    const [hwSteps, setHwSteps] = useState(50);
+    const [hwSigma, setHwSigma] = useState(0.0);
+    const [isHwLoading, setIsHwLoading] = useState(false);
+
+    // Prophet State
+    const [prophetGrowth, setProphetGrowth] = useState('linear');
+    const [prophetYearly, setProphetYearly] = useState(false);
+    const [prophetWeekly, setProphetWeekly] = useState(false);
+    const [prophetDaily, setProphetDaily] = useState(false);
+    const [prophetMode, setProphetMode] = useState('additive');
+    const [prophetHorizon, setProphetHorizon] = useState(30);
+    const [isProphetLoading, setIsProphetLoading] = useState(false);
 
     // Common State
     const [seed, setSeed] = useState<number | ''>('');
@@ -98,40 +130,13 @@ export default function PredictionTab() {
     useEffect(() => {
         if (rawData.length > 0 && selectedColumn && pastSeriesRef.current) {
             try {
-                // Determine mode based on first element (rawData is homogeneous from handleOpenFile)
-                const hasDates = !isNaN(rawData[0]._ts);
-
-                let data = rawData.map((row, i) => {
-                    let time: any;
-                    if (hasDates) {
-                        // Strict Date Mode
-                        time = row._ts / 1000;
-                    } else {
-                        // Strict Index Mode
-                        time = i;
-                    }
-
-                    return {
-                        time: time,
-                        value: parseFloat(row[selectedColumn])
-                    };
-                })
-                    .filter(d => !isNaN(d.value) && d.value !== null && !isNaN(d.time))
-                    .sort((a, b) => (a.time as number) - (b.time as number));
-
-                // Deduplicate timestamps (LWC requires strictly ascending unique times)
-                const uniqueData = [];
+                const { data } = prepareChartData(rawData, selectedColumn);
                 if (data.length > 0) {
-                    uniqueData.push(data[0]);
-                    for (let i = 1; i < data.length; i++) {
-                        if (data[i].time > data[i - 1].time) {
-                            uniqueData.push(data[i]);
-                        }
-                    }
-                }
-
-                if (uniqueData.length > 0) {
-                    pastSeriesRef.current.setData(uniqueData);
+                    const chartData = data.map(d => ({
+                        time: d.time as any,
+                        value: d.value
+                    }));
+                    pastSeriesRef.current.setData(chartData);
                     chartRef.current?.timeScale().fitContent();
                 }
             } catch (err) {
@@ -274,19 +279,12 @@ export default function PredictionTab() {
             const arCoeffs = ar.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
             const maCoeffs = ma.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
 
-            let dataInput = null;
-            let lastTimeIdx = -1;
+            let dataInput: number[] | null = null;
 
-            if (rawData.length > 0 && selectedColumn) {
-                const validPoints = rawData.map((row, i) => ({
-                    idx: i,
-                    val: parseFloat(row[selectedColumn])
-                })).filter(d => !isNaN(d.val));
-
-                if (validPoints.length > 0) {
-                    dataInput = validPoints.map(d => d.val);
-                    lastTimeIdx = validPoints[validPoints.length - 1].idx;
-                }
+            // Use helper to get clean data
+            const { values, lastPoint, interval } = prepareChartData(rawData, selectedColumn);
+            if (values.length > 0) {
+                dataInput = values;
             }
 
             const result = await invoke<ArimaResult>('predict_arima', {
@@ -301,49 +299,16 @@ export default function PredictionTab() {
                 }
             });
 
-            if (predictionSeriesRef.current) {
+            if (predictionSeriesRef.current && lastPoint) {
                 console.log("ARIMA used seed:", result.used_seed);
 
-                // Calculate time interval
-                let interval = 86400; // Default 1 day in seconds
-                let lastTime = lastTimeIdx >= 0 && rawData[lastTimeIdx]._ts
-                    ? rawData[lastTimeIdx]._ts / 1000
-                    : lastTimeIdx; // Fallback to index if no date
-
-                // If we have at least 2 points, try to infer interval
-                if (dataInput && dataInput.length >= 2 && !isNaN(rawData[0]._ts)) {
-                    // Find the typical difference between the last few points
-                    // or just take the last diff
-                    // But we used filtered data for input, need filtered timestamps too
-                    // Let's reconstruct valid timestamps
-                    const validTimes = rawData
-                        .filter(row => !isNaN(parseFloat(row[selectedColumn])))
-                        .map(row => row._ts / 1000)
-                        .filter(t => !isNaN(t));
-
-                    if (validTimes.length >= 2) {
-                        const last = validTimes[validTimes.length - 1];
-                        const prev = validTimes[validTimes.length - 2];
-                        interval = last - prev;
-                        lastTime = last;
-                    }
-                }
-
-                // If using indices (lastTime < 1e9), interval should be 1
-                if (lastTime < 100000000) {
-                    interval = 1;
-                }
-
                 let pathData = result.path.map((v, i) => ({
-                    time: (lastTime + (interval * (i + 1))) as any,
+                    time: (lastPoint.time + (interval * (i + 1))) as any,
                     value: v
                 }));
 
-                if (dataInput && dataInput.length > 0) {
-                    const lastHistory = dataInput[dataInput.length - 1];
-                    // Stitch: Add the point at lastTime to connect the lines
-                    pathData = [{ time: lastTime as any, value: lastHistory }, ...pathData];
-                }
+                // Stitch: Add the point at lastTime to connect the lines
+                pathData = [{ time: lastPoint.time as any, value: lastPoint.value }, ...pathData];
 
                 predictionSeriesRef.current.setData(pathData);
                 chartRef.current?.timeScale().fitContent();
@@ -361,31 +326,16 @@ export default function PredictionTab() {
             const alphaCoeffs = alpha.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
             const betaCoeffs = beta.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
 
-            let dataInput = null;
-            let lastTimeIdx = -1;
+            let dataInput: number[] | null = null;
+            const { values, lastPoint, interval } = prepareChartData(rawData, selectedColumn);
 
-            if (rawData.length > 0 && selectedColumn) {
-                // For GARCH we usually need returns
-                // We calculate returns based on ADJACENT valid price points in rawData
-                // This assumes rawData is sorted by time but might have NaNs
-                // We'll trust that filtered validPoints are temporally ordered
-                const validPoints = rawData.map((row, i) => ({
-                    idx: i,
-                    val: parseFloat(row[selectedColumn])
-                })).filter(d => !isNaN(d.val));
-
-                if (validPoints.length > 1) {
-                    dataInput = [];
-                    // Returns consume 1 point, so the "time" of the return is usually the time of the *current* price (idx)
-                    // or previous? Usually r_t = ln(p_t / p_{t-1}). Time t.
-                    // So we track the index of the second price.
-
-                    for (let i = 1; i < validPoints.length; i++) {
-                        const p_t = validPoints[i].val;
-                        const p_prev = validPoints[i - 1].val;
-                        dataInput.push(Math.log(p_t / p_prev));
-                    }
-                    lastTimeIdx = validPoints[validPoints.length - 1].idx;
+            if (values.length > 1) {
+                // Calculate Log Returns
+                dataInput = [];
+                for (let i = 1; i < values.length; i++) {
+                    const p_t = values[i];
+                    const p_prev = values[i - 1];
+                    dataInput.push(Math.log(p_t / p_prev));
                 }
             }
 
@@ -400,33 +350,9 @@ export default function PredictionTab() {
                 }
             });
 
-            if (predictionSeriesRef.current) {
-                // Calculate time interval
-                let interval = 86400; // Default 1 day
-                let lastTime = lastTimeIdx >= 0 && rawData[lastTimeIdx]._ts
-                    ? rawData[lastTimeIdx]._ts / 1000
-                    : lastTimeIdx;
-
-                if (dataInput && dataInput.length >= 2 && !isNaN(rawData[0]._ts)) {
-                    const validTimes = rawData
-                        .filter(row => !isNaN(parseFloat(row[selectedColumn])))
-                        .map(row => row._ts / 1000)
-                        .filter(t => !isNaN(t));
-
-                    if (validTimes.length >= 2) {
-                        const last = validTimes[validTimes.length - 1];
-                        const prev = validTimes[validTimes.length - 2];
-                        interval = last - prev;
-                        lastTime = last;
-                    }
-                }
-
-                if (lastTime < 100000000) {
-                    interval = 1;
-                }
-
+            if (predictionSeriesRef.current && lastPoint) {
                 const pathData = result.volatility.map((v, i) => ({
-                    time: (lastTime + (interval * (i + 1))) as any,
+                    time: (lastPoint.time + (interval * (i + 1))) as any,
                     value: v
                 }));
 
@@ -437,6 +363,128 @@ export default function PredictionTab() {
             console.error(err);
         } finally {
             setIsGarchLoading(false);
+        }
+    };
+
+    const runHoltWinters = async () => {
+        setIsHwLoading(true);
+        try {
+            let dataInput: number[] | null = null;
+            const { values, lastPoint, interval } = prepareChartData(rawData, selectedColumn);
+            if (values.length > 0) {
+                dataInput = values;
+            }
+
+            const result = await invoke<HoltWintersResult>('predict_holt_winters', {
+                params: {
+                    alpha: hwAlpha,
+                    beta: hwBeta,
+                    gamma: hwGamma,
+                    period: hwPeriod,
+                    seasonal_type: hwSeasonalType,
+                    steps: hwSteps,
+                    sigma: hwSigma,
+                    seed: seed === '' ? null : seed,
+                    data: dataInput
+                }
+            });
+
+            if (predictionSeriesRef.current && lastPoint) {
+                let pathData = result.path.map((v, i) => ({
+                    time: (lastPoint.time + (interval * (i + 1))) as any,
+                    value: v
+                }));
+
+                if (dataInput && dataInput.length > 0) {
+                    pathData = [{ time: lastPoint.time as any, value: lastPoint.value }, ...pathData];
+                }
+
+                predictionSeriesRef.current.setData(pathData);
+                chartRef.current?.timeScale().fitContent();
+            }
+
+        } catch (error) {
+            console.error('Holt-Winters Error:', error);
+            // alert('Holt-Winters simulation failed: ' + error);
+        } finally {
+            setIsHwLoading(false);
+        }
+    };
+
+    const runProphet = async () => {
+        if (!chartRef.current || !predictionSeriesRef.current || !pastSeriesRef.current) return;
+        setIsProphetLoading(true);
+
+        try {
+            // Prepare Data
+            const values = rawData.map(d => parseFloat(d[selectedColumn])).filter(v => !isNaN(v));
+            // Create synthetic timestamps if rawData doesn't have good Time column or we just want indices
+            // But Prophet needs real time for seasonality.
+            // Try to find a date column.
+            let times: number[] = [];
+
+            // Simple heuristic to find date col: looks for 'date' or 'time' in columns
+            const dateCol = columns.find(c => c.toLowerCase().includes('date') || c.toLowerCase().includes('time'));
+
+            if (dateCol) {
+                times = rawData.map(d => {
+                    const val = d[dateCol];
+                    // Try parse
+                    const dt = new Date(val);
+                    if (!isNaN(dt.getTime())) {
+                        return Math.floor(dt.getTime() / 1000); // Unix seconds
+                    }
+                    return 0;
+                }).filter(t => t > 0);
+            }
+
+            // Fallback if no valid times found: generate daily sequence from now backwards? 
+            // Or just 0, 86400, ... params depend on real time for seasonality logic!
+            if (times.length !== values.length) {
+                // Synthesize
+                const now = Math.floor(Date.now() / 1000);
+                times = Array.from({ length: values.length }, (_, i) => now - (values.length - 1 - i) * 86400);
+            }
+
+            const params = {
+                growth: prophetGrowth,
+                changepoints: null,
+                seasonality_mode: prophetMode,
+                yearly_seasonality: prophetYearly,
+                weekly_seasonality: prophetWeekly,
+                daily_seasonality: prophetDaily,
+                seasonality_prior_scale: 10.0,
+                changepoint_prior_scale: 0.05,
+                forecast_horizon: prophetHorizon,
+                times: times,
+                values: values
+            };
+
+            const result = await invoke<ProphetResult>('predict_prophet', { params });
+
+            // Visualize
+            const lastTime = times[times.length - 1];
+            const predData = result.values.map((v, i) => ({
+                time: result.times[i] as any,
+                value: v
+            }));
+
+            // Connect last past point to first pred point for visual continuity
+            const bridge = { time: lastTime as any, value: values[values.length - 1] };
+
+            predictionSeriesRef.current.setData([bridge, ...predData]);
+
+            // Re-render past to match scale if needed (times usually match)
+            // But if we synthesized times, we might need to update past series too?
+            const pastData = values.map((v, i) => ({
+                time: times[i] as any,
+                value: v
+            }));
+            pastSeriesRef.current.setData(pastData);
+        } catch (error) {
+            console.error('Prophet Error:', error);
+        } finally {
+            setIsProphetLoading(false);
         }
     };
 
@@ -461,12 +509,25 @@ export default function PredictionTab() {
                         >
                             GARCH
                         </button>
+                        <button
+                            onClick={() => setActiveModel('holt_winters')}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${activeModel === 'holt_winters' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            Holt-Winters
+                        </button>
+                        <button
+                            onClick={() => setActiveModel('prophet')}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${activeModel === 'prophet' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            Prophet
+                        </button>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-indigo-300">
                     <Brain size={18} />
                     <span>Econometric Engine</span>
                 </div>
+
             </div>
 
             <div className="flex-1 flex overflow-hidden">
@@ -574,7 +635,7 @@ export default function PredictionTab() {
                                     </button>
                                 </div>
                             </div>
-                        ) : (
+                        ) : activeModel === 'garch' ? (
                             <div className="space-y-4">
                                 <h3 className="text-xs font-semibold uppercase text-slate-400 flex items-center gap-2">
                                     <Activity size={14} /> GARCH Configuration
@@ -636,7 +697,188 @@ export default function PredictionTab() {
                                     </button>
                                 </div>
                             </div>
-                        )}
+                        ) : activeModel === 'holt_winters' ? (
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-semibold uppercase text-slate-400 flex items-center gap-2">
+                                    <Activity size={14} /> HW Configuration
+                                </h3>
+                                <div className="space-y-3">
+                                    <label className="block text-xs text-slate-400">
+                                        Alpha (Level)
+                                        <input
+                                            type="number"
+                                            value={hwAlpha}
+                                            onChange={e => setHwAlpha(parseFloat(e.target.value))}
+                                            step="0.05"
+                                            max="1"
+                                            min="0"
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        />
+                                    </label>
+                                    <label className="block text-xs text-slate-400">
+                                        Beta (Trend)
+                                        <input
+                                            type="number"
+                                            value={hwBeta}
+                                            onChange={e => setHwBeta(parseFloat(e.target.value))}
+                                            step="0.05"
+                                            max="1"
+                                            min="0"
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        />
+                                    </label>
+                                    <label className="block text-xs text-slate-400">
+                                        Gamma (Seasonal)
+                                        <input
+                                            type="number"
+                                            value={hwGamma}
+                                            onChange={e => setHwGamma(parseFloat(e.target.value))}
+                                            step="0.05"
+                                            max="1"
+                                            min="0"
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        />
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <label className="text-xs text-slate-400">
+                                            Period
+                                            <input
+                                                type="number"
+                                                value={hwPeriod}
+                                                onChange={e => setHwPeriod(parseInt(e.target.value))}
+                                                min="1"
+                                                className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                            />
+                                        </label>
+                                        <label className="text-xs text-slate-400">
+                                            Type
+                                            <select
+                                                value={hwSeasonalType}
+                                                onChange={e => setHwSeasonalType(e.target.value as any)}
+                                                className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                            >
+                                                <option value="Additive">Additive</option>
+                                                <option value="Multiplicative">Multiplicative</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                    <label className="block text-xs text-slate-400">
+                                        Steps
+                                        <input
+                                            type="number"
+                                            value={hwSteps}
+                                            onChange={e => setHwSteps(parseInt(e.target.value))}
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        />
+                                    </label>
+                                    <label className="block text-xs text-slate-400">
+                                        Noise Sigma
+                                        <input
+                                            type="number"
+                                            value={hwSigma}
+                                            onChange={e => setHwSigma(parseFloat(e.target.value))}
+                                            step="0.1"
+                                            min="0"
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        />
+                                    </label>
+                                    <label className="block text-xs text-slate-400">
+                                        Random Seed
+                                        <input
+                                            type="number"
+                                            value={seed}
+                                            onChange={e => setSeed(e.target.value === '' ? '' : parseInt(e.target.value))}
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        />
+                                    </label>
+                                    <button
+                                        onClick={runHoltWinters}
+                                        disabled={isHwLoading}
+                                        className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded-lg transition-colors font-medium text-sm shadow-lg shadow-indigo-500/20"
+                                    >
+                                        {isHwLoading ? <Loader2 className="animate-spin" size={16} /> : 'Generate Path'}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : activeModel === 'prophet' ? (
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-semibold uppercase text-slate-400 flex items-center gap-2">
+                                    <Activity size={14} /> Prophet Configuration
+                                </h3>
+                                <div className="space-y-3">
+                                    <label className="block text-xs text-slate-400">
+                                        Growth Trend
+                                        <select
+                                            value={prophetGrowth}
+                                            onChange={e => setProphetGrowth(e.target.value)}
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        >
+                                            <option value="linear">Linear</option>
+                                            <option value="flat">Flat</option>
+                                        </select>
+                                    </label>
+                                    <div className="flex gap-4">
+                                        <label className="flex items-center gap-2 text-xs text-slate-400">
+                                            <input
+                                                type="checkbox"
+                                                checked={prophetYearly}
+                                                onChange={e => setProphetYearly(e.target.checked)}
+                                                className="rounded bg-slate-800 border-slate-700"
+                                            />
+                                            Yearly
+                                        </label>
+                                        <label className="flex items-center gap-2 text-xs text-slate-400">
+                                            <input
+                                                type="checkbox"
+                                                checked={prophetWeekly}
+                                                onChange={e => setProphetWeekly(e.target.checked)}
+                                                className="rounded bg-slate-800 border-slate-700"
+                                            />
+                                            Weekly
+                                        </label>
+                                        <label className="flex items-center gap-2 text-xs text-slate-400">
+                                            <input
+                                                type="checkbox"
+                                                checked={prophetDaily}
+                                                onChange={e => setProphetDaily(e.target.checked)}
+                                                className="rounded bg-slate-800 border-slate-700"
+                                            />
+                                            Daily
+                                        </label>
+                                    </div>
+
+                                    <label className="block text-xs text-slate-400">
+                                        Seasonality Mode
+                                        <select
+                                            value={prophetMode}
+                                            onChange={e => setProphetMode(e.target.value)}
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        >
+                                            <option value="additive">Additive</option>
+                                            <option value="multiplicative">Multiplicative</option>
+                                        </select>
+                                    </label>
+
+                                    <label className="block text-xs text-slate-400">
+                                        Forecast Horizon (Steps)
+                                        <input
+                                            type="number"
+                                            value={prophetHorizon}
+                                            onChange={e => setProphetHorizon(parseInt(e.target.value))}
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        />
+                                    </label>
+
+                                    <button
+                                        onClick={runProphet}
+                                        disabled={isProphetLoading}
+                                        className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded-lg transition-colors font-medium text-sm shadow-lg shadow-indigo-500/20"
+                                    >
+                                        {isProphetLoading ? <Loader2 className="animate-spin" size={16} /> : 'Generate Forecast'}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
                 </div>
 
@@ -644,7 +886,10 @@ export default function PredictionTab() {
                     <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex-1 flex flex-col relative">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-sm font-semibold text-slate-300">
-                                {activeModel === 'arima' ? 'Simulated Price Path (Integrated)' : 'Conditional Volatility Series'}
+                                {activeModel === 'arima' ? 'Simulated Price Path (Integrated)' :
+                                    activeModel === 'garch' ? 'Conditional Volatility Series' :
+                                        activeModel === 'holt_winters' ? 'Holt-Winters Forecast' :
+                                            'Prophet Forecast'}
                             </h3>
                             <div className="flex gap-2">
                                 {rawData.length > 0 && (
@@ -666,15 +911,25 @@ export default function PredictionTab() {
                                 ARIMA (AutoRegressive Integrated Moving Average) models can now use <b>historical data</b>.
                                 The model initializes its state using your CSV data, ensuring the prediction starts exactly where your data ends.
                             </p>
-                        ) : (
+                        ) : activeModel === 'garch' ? (
                             <p>
                                 GARCH models use historical returns to estimate initial conditional variance.
                                 This allows for more realistic volatility forecasting based on recent market regimes found in your data.
+                            </p>
+                        ) : activeModel === 'holt_winters' ? (
+                            <p>
+                                Holt-Winters (Triple Exponential Smoothing) captures level, trend, and seasonality.
+                                Adjust Alpha, Beta, and Gamma to control how much weight is given to recent vs. old data for each component.
+                            </p>
+                        ) : (
+                            <p>
+                                Prophet uses a decomposable time series model with three main components: trend, seasonality, and holidays.
+                                It is robust to missing data and shifts in the trend, and specifically designed for business forecasting.
                             </p>
                         )}
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
