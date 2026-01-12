@@ -3,7 +3,7 @@ import torch
 import scipy.stats as stats
 import torch.nn.functional as F
 
-from utils.train import rollout
+from pipeline.train import rollout
 from utils.model_utils import get_inner_model
 
 

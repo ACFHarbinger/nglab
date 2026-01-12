@@ -1,0 +1,25 @@
+defaults:
+  - _self_
+  - env: trading
+  - model: transformer
+  - algorithm: ppo
+
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.num}
+
+seed: 42
+device: "cuda"
+
+# Training params
+max_epochs: 100
+batch_size: 64
+num_workers: 4
+val_check_interval: 1.0
+gradient_clip_val: 1.0
+
+# Task: unsupervised, supervised, rl
+task: rl

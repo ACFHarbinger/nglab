@@ -1,0 +1,8 @@
+name: "NSTransformer"
+embed_dim: 64
+hidden_dim: 128
+n_enc_layers: 2
+n_dec_layers: 2
+n_heads: 4
+dropout: 0.1
+learning_rate: 3e-4

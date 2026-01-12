@@ -1,0 +1,7 @@
+name: "TradingEnv"
+lookback: 30
+max_steps: 1000
+feature_dim: 12  # Depends on the number of features in the environment
+action_dim: 3    # Buy, Sell, Hold (Continuous or Discrete)
+reward_scale: 1.0
+normalize_obs: true
