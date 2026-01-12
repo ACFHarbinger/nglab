@@ -10,6 +10,12 @@ import { Play, Square, RotateCcw, Activity, LineChart, Download, PieChart, Brain
 import { listen } from "@tauri-apps/api/event";
 import clsx from "clsx";
 
+/**
+ * The root component of the NGLab application.
+ *
+ * Manages global application state including the active tab, simulation logs,
+ * and real-time arena data. Provides the main layout and navigation.
+ */
 function App() {
   const { data: arenaData, history, isRunning, start, stop } = useArena();
   const [logs, setLogs] = useState<string[]>([]);
@@ -28,10 +34,16 @@ function App() {
     };
   }, []);
 
+  /**
+   * Triggers the start of the simulation via the `useArena` hook.
+   */
   const handleStart = async () => {
     start();
   };
 
+  /**
+   * Triggers the stop of the simulation via the `useArena` hook.
+   */
   const handleStop = async () => {
     stop();
   };

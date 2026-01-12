@@ -1,19 +1,46 @@
 import { useMemo } from 'react';
-import { OrderBook as IOrderBook } from '../../hooks/useArena';
+import { OrderBook as OrderBookData } from '../../hooks/useArena';
 
-export function OrderBook({ book }: { book: IOrderBook }) {
+/**
+ * Props for the OrderBook component.
+ */
+interface OrderBookProps {
+    /** The order book data to visualize */
+    book: OrderBookData | null;
+}
+
+/**
+ * Real-time Limit Order Book (LOB) visualization component.
+ *
+ * Renders bids and asks in a split-pane layout with depth bars
+ * to visualize liquidity at different price levels. Synchronized
+ * with the simulation engine via the 'arena-update' event.
+ */
+export function OrderBook({ book }: OrderBookProps) {
+    /**
+     * Memoize and sort bids in descending order (highest price first).
+     * Only displays the top 15 levels for UI performance.
+     */
     const bids = useMemo(() => {
-        return Object.values(book.bids || {})
+        return Object.values(book?.bids || {})
             .sort((a, b) => b.price - a.price)
             .slice(0, 15); // Top 15
-    }, [book.bids]);
+    }, [book?.bids]);
 
+    /**
+     * Memoize and sort asks in ascending order (lowest price first).
+     * Only displays the top 15 levels for UI performance.
+     */
     const asks = useMemo(() => {
-        return Object.values(book.asks || {})
+        return Object.values(book?.asks || {})
             .sort((a, b) => a.price - b.price)
             .slice(0, 15); // Top 15
-    }, [book.asks]);
+    }, [book?.asks]);
 
+    /**
+     * Memoize the maximum volume across both sides of the book.
+     * Used as a denominator to scale the relative width of depth bars.
+     */
     const maxVol = useMemo(() => {
         const bidMax = Math.max(...bids.map(b => b.total_quantity), 0);
         const askMax = Math.max(...asks.map(a => a.total_quantity), 0);

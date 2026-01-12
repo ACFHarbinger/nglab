@@ -42,6 +42,13 @@ type RoughHestonResult = {
   steps: number;
 };
 
+/**
+ * Component for quantitative options pricing and risk analysis.
+ *
+ * Supports the Black-Scholes model, Rough Bergomi, Rough Heston,
+ * and Credit Valuation Adjustment (CVA) calculations via the
+ * Rust 'models' module.
+ */
 function PricingTab() {
   const [model, setModel] = useState<'bsm' | 'rbergomi' | 'rough-heston' | 'credit'>('bsm');
 
@@ -104,6 +111,10 @@ function PricingTab() {
     }
   };
 
+  /**
+   * Executes the 'pricing_credit_risk' command to price options with a credit overlay.
+   * Adjusts base price by survival probability derived from the hazard rate.
+   */
   const runCredit = async () => {
     setCreditError('');
     setIsCreditSimulating(true);
@@ -129,6 +140,10 @@ function PricingTab() {
     }
   };
 
+  /**
+   * Invokes the 'pricing_rbergomi' command to estimate option values.
+   * Uses a rough volatility model (Fractional Brownian Motion) for high-frequency realism.
+   */
   const runRBergomi = async () => {
     setSimulationError('');
     setIsSimulating(true);
@@ -157,6 +172,10 @@ function PricingTab() {
     }
   };
 
+  /**
+   * Invokes the 'pricing_rough_heston' command for advanced stochastic volatility pricing.
+   * Captures the term structure of the volatility surface with rough variance dynamics.
+   */
   const runRoughHeston = async () => {
     setRoughHestonError('');
     setIsHestonSimulating(true);

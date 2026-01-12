@@ -1,4 +1,14 @@
 
+/**
+ * Prepares raw CSV/JSON data for use in financial charts (Lightweight Charts).
+ *
+ * Handles timestamp normalization, deduplication, and sorting.
+ * Also extracts a raw values array for backend simulation/forecasting.
+ *
+ * @param rawData - Array of objects from parsed CSV/JSON.
+ * @param selectedColumn - The column name to extract values from.
+ * @returns Formatted chart data, the last point, interval estimate, and raw values.
+ */
 export const prepareChartData = (rawData: any[], selectedColumn: string) => {
     if (!rawData || rawData.length === 0 || !selectedColumn) {
         return { data: [], lastPoint: null, interval: 86400, values: [] };

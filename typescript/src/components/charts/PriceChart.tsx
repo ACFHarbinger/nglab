@@ -2,11 +2,22 @@ import { createChart, ColorType, IChartApi, ISeriesApi, LineSeries } from 'light
 import { useEffect, useRef } from 'react';
 import { ArenaUpdate } from '../../hooks/useArena';
 
-interface ChartProps {
+/**
+ * Props for the PriceChart component.
+ */
+interface PriceChartProps {
+    /** Array of arena updates containing price and portfolio data */
     data: ArenaUpdate[];
 }
 
-export function PriceChart({ data }: ChartProps) {
+/**
+ * High-performance financial line chart using TradingView's Lightweight Charts.
+ *
+ * Optimized for rendering thousands of data points with smooth zooming and panning.
+ * Automatically adapts to the container size using a ResizeObserver.
+ * Visualizes both current price and portfolio value.
+ */
+export function PriceChart({ data }: PriceChartProps) {
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<IChartApi | null>(null);
     const priceSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
@@ -15,6 +26,9 @@ export function PriceChart({ data }: ChartProps) {
     useEffect(() => {
         if (!chartContainerRef.current) return;
 
+        /**
+         * Initialize the Lightweight Chart instance.
+         */
         const chart = createChart(chartContainerRef.current, {
             layout: {
                 background: { type: ColorType.Solid, color: '#1a1a1a' },
@@ -32,12 +46,19 @@ export function PriceChart({ data }: ChartProps) {
             }
         });
 
+        /**
+         * The green line series representing market mid-price.
+         */
         const priceSeries = chart.addSeries(LineSeries, {
             color: '#22c55e',
             lineWidth: 2,
             title: 'Price',
         });
 
+        /**
+         * The blue line series representing portfolio account value.
+         * Rendered on a separate left-side price scale for better visibility.
+         */
         const portfolioSeries = chart.addSeries(LineSeries, {
             color: '#3b82f6',
             lineWidth: 2,
@@ -59,18 +80,12 @@ export function PriceChart({ data }: ChartProps) {
         if (!priceSeriesRef.current || !portfolioSeriesRef.current) return;
 
         // Map data to chart format
-        // lightweight-charts expects sorted time.
-        // We assume data is appended in order.
-        // If we reload generic chart with full history:
         const priceData = data.map(d => ({ time: d.step as any, value: d.price }));
         const portfolioData = data.map(d => ({ time: d.step as any, value: d.portfolio_value }));
 
         priceSeriesRef.current.setData(priceData);
         portfolioSeriesRef.current.setData(portfolioData);
-
-        // Auto scale if needed
-        // chartRef.current?.timeScale().fitContent(); 
-    }, [data.length]); // Optimize: only update when length changes?
+    }, [data.length]);
 
     return <div ref={chartContainerRef} className="w-full h-[400px]" />;
 }

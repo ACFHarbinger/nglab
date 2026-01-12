@@ -29,7 +29,15 @@ type ProphetResult = {
     seasonal: number[];
 };
 
-export default function PredictionTab() {
+export default /**
+ * Component for time-series price prediction and forecasting.
+ *
+ * Integrates with the Rust backend's 'moon' module to provide
+ * ARIMA, GARCH, Holt-Winters, and Facebook Prophet forecasting.
+ * Allows users to upload historical price data and visualize
+ * future predictions onto a chart.
+ */
+    function PredictionTab() {
     const [activeModel, setActiveModel] = useState<'arima' | 'garch' | 'holt_winters' | 'prophet'>('arima');
 
     // Data State
@@ -145,6 +153,10 @@ export default function PredictionTab() {
         }
     }, [rawData, selectedColumn]);
 
+    /**
+     * Opens a native file dialog to select a CSV file for prediction analysis.
+     * Heuristically detects date formats (EU vs US) and parses historical data.
+     */
     const handleOpenFile = async () => {
         try {
             const selected = await open({
@@ -273,6 +285,10 @@ export default function PredictionTab() {
         }
     };
 
+    /**
+     * Invokes the 'predict_arima' command to generate a future price path
+     * using the AutoRegressive Integrated Moving Average model.
+     */
     const runArima = async () => {
         setIsArimaLoading(true);
         try {
@@ -320,6 +336,10 @@ export default function PredictionTab() {
         }
     };
 
+    /**
+     * Invokes the 'predict_garch' command to forecast volatility
+     * using the Generalized AutoRegressive Conditional Heteroskedasticity model.
+     */
     const runGarch = async () => {
         setIsGarchLoading(true);
         try {
@@ -366,6 +386,10 @@ export default function PredictionTab() {
         }
     };
 
+    /**
+     * Invokes the 'predict_holt_winters' command to generate a forecast
+     * using triple exponential smoothing (Holt-Winters).
+     */
     const runHoltWinters = async () => {
         setIsHwLoading(true);
         try {
@@ -411,6 +435,10 @@ export default function PredictionTab() {
         }
     };
 
+    /**
+     * Invokes the 'predict_prophet' command to generate a forecast
+     * using the Facebook Prophet additive model for time series data.
+     */
     const runProphet = async () => {
         if (!chartRef.current || !predictionSeriesRef.current || !pastSeriesRef.current) return;
         setIsProphetLoading(true);

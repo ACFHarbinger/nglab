@@ -18,10 +18,20 @@ try {
     console.error('Highcharts module loading failed:', e);
 }
 
+/**
+ * Represents a single row from a CSV data source.
+ */
 interface CsvRow {
     [key: string]: string | number;
 }
 
+/**
+ * Component for performing exploratory data analysis (EDA) on financial CSV files.
+ *
+ * Provides various chart types including Price, Spread, Volatility,
+ * Candlestick, and Heatmap visualizations. Supports technical indicators
+ * and timeframe filtering using Highcharts.
+ */
 function AnalysisTab() {
     const [chartOptions, setChartOptions] = useState<Highcharts.Options | null>(null);
     const [fileName, setFileName] = useState('');
@@ -46,6 +56,10 @@ function AnalysisTab() {
     }, [rawData, chartType, loading, error, selectedSeries, spreadPair, primaryCandidate, timeframe, indicators]);
 
 
+    /**
+     * Opens a native file dialog to select a CSV file for analysis.
+     * Clears previous state and triggers file processing.
+     */
     const handleOpenFile = async () => {
         try {
             const selected = await open({
@@ -78,6 +92,12 @@ function AnalysisTab() {
         }
     };
 
+    /**
+     * Reads and parses the selected CSV file using PapaParse.
+     * Performs initial timestamp normalization and candidate series identification.
+     *
+     * @param path - The absolute path to the CSV file.
+     */
     const processFile = async (path: string) => {
         try {
             const content = await readTextFile(path);
@@ -156,6 +176,13 @@ function AnalysisTab() {
         setChartType(type);
     };
 
+    /**
+     * Generates a Highcharts configuration based on the selected chart type and data.
+     * Handles specific mappings for Price, Spread, Volatility, Candlestick, and Heatmap.
+     *
+     * @param data - The normalized CSV data.
+     * @param type - The type of chart to create.
+     */
     const createChart = (data: CsvRow[], type: 'price' | 'spread' | 'volatility' | 'candlestick' | 'heatmap' = chartType) => {
         if (data.length === 0) {
             setError('CSV is empty');
@@ -210,6 +237,12 @@ function AnalysisTab() {
             seriesMap.set(seriesName, points);
         });
 
+        /**
+         * Groups tick data into daily OHLC (Open, High, Low, Close) buckets for candlestick charts.
+         *
+         * @param points - Array of [timestamp, price] pairs.
+         * @returns Array of [timestamp, open, high, low, close] quintuplets.
+         */
         const calculateOHLC = (points: number[][]) => {
             const dailyMap = new Map<number, { open: number, high: number, low: number, close: number, time: number }>();
             points.forEach(([ts, price]) => {

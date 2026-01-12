@@ -14,6 +14,13 @@ interface MarketMetadata {
     outcomes: OutcomeInfo[];
 }
 
+/**
+ * Component for scraping market data from Polymarket.
+ *
+ * Interacts with the Rust backend's 'web' module to resolve
+ * Polymarket IDs/URLs and download historical price data
+ * for binary prediction markets.
+ */
 export default function ScraperTab() {
     const [input, setInput] = useState('');
     const [marketMetadata, setMarketMetadata] = useState<MarketMetadata | null>(null);
@@ -27,6 +34,10 @@ export default function ScraperTab() {
     const [status, setStatus] = useState('');
     const [loading, setLoading] = useState(false);
 
+    /**
+     * Resolves a Polymarket URL or slug into market metadata (title and outcomes).
+     * Interacts with the 'resolve_polymarket_id' Tauri command.
+     */
     const handleFindMarket = async () => {
         if (!input) {
             setStatus('Please enter a URL or Slug.');
@@ -59,6 +70,10 @@ export default function ScraperTab() {
         setSelectedOutcomes(newSet);
     };
 
+    /**
+     * Triggers the historical data download for the selected outcomes.
+     * Prompts the user for a save location and invokes 'scrape_polymarket'.
+     */
     const handleScrape = async () => {
         if (selectedOutcomes.size === 0) {
             setStatus('Please select at least one outcome.');

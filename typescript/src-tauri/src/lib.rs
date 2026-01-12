@@ -13,16 +13,22 @@ use tokio::time::{sleep, Duration};
 
 /** Shared application state for the Tauri backend. */
 struct ArenaState {
+    /** Mutex-protected trading environment */
     env: Mutex<TradingEnv>,
+    /** Simulation run state */
     running: Mutex<bool>,
 }
 
 /** Real-time update event emitted to the frontend. */
 #[derive(serde::Serialize, Clone)]
 struct ArenaUpdate {
+    /** Current simulation step */
     step: u64,
+    /** Current mid-price from the orderbook */
     price: f64,
+    /** Total portfolio value in USDC */
     portfolio_value: f64,
+    /** Snapshot of the current orderbook */
     orderbook: OrderBook,
 }
 

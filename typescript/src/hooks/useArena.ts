@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
+/**
+ * A single order in the book.
+ */
 export interface Order {
     id: number;
     price: number;
@@ -12,26 +15,47 @@ export interface Order {
     timestamp: number;
 }
 
+/**
+ * A price level in the book, containing multiple orders.
+ */
 export interface PriceLevel {
     price: number;
     orders: Order[];
     total_quantity: number;
 }
 
-// IndexMap<i64, PriceLevel> serializes to JSON object with string integer keys
+/**
+ * Snapshot of the current state of the order book.
+ */
 export interface OrderBook {
+    /** Bids ordered by price (highest first) */
     bids: Record<string, PriceLevel>;
+    /** Asks ordered by price (lowest first) */
     asks: Record<string, PriceLevel>;
+    /** Server-side timestamp */
     timestamp: number;
 }
 
+/**
+ * Real-time update emitted by the Tauri backend.
+ */
 export interface ArenaUpdate {
+    /** Current simulation step */
     step: number;
+    /** Current mid-price */
     price: number;
+    /** Total account value in USDC */
     portfolio_value: number;
+    /** Current orderbook state */
     orderbook: OrderBook;
 }
 
+/**
+ * Custom hook to manage real-time arena state and simulation controls.
+ *
+ * Listens for 'arena-update' events from the Tauri backend and maintains
+ * state for the latest update, tick history, and simulation status.
+ */
 export function useArena() {
     const [data, setData] = useState<ArenaUpdate | null>(null);
     const [history, setHistory] = useState<ArenaUpdate[]>([]);
@@ -54,10 +78,18 @@ export function useArena() {
         };
     }, []);
 
+    /**
+     * Starts the simulation on the backend.
+     * Sets `isRunning` to true upon successful invocation.
+     */
     const start = useCallback(() => {
         invoke("start_simulation").then(() => setIsRunning(true)).catch(console.error);
     }, []);
 
+    /**
+     * Stops the simulation on the backend.
+     * Sets `isRunning` to false upon successful invocation.
+     */
     const stop = useCallback(() => {
         invoke("stop_simulation").then(() => setIsRunning(false)).catch(console.error);
     }, []);
