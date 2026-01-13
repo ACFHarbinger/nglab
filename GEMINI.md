@@ -26,4 +26,4 @@ NGLab is a Multimodal Deep Reinforcement Learning bot designed for financial tra
 
 ## Development
 - **Rust**: `cargo check`, `cargo build`
-- **Tauri**: `pnpm tauri dev` (requires system dependencies)
+- **Tauri**: `npm run tauri dev` (requires system dependencies)

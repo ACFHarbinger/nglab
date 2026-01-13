@@ -6,6 +6,7 @@ import { open } from '@tauri-apps/plugin-dialog';
 import { readTextFile } from '@tauri-apps/plugin-fs';
 import Papa from 'papaparse';
 import { prepareChartData } from '../utils/dataHelpers';
+import { MarketMetadata } from '../hooks/usePolymarket';
 
 type ArimaResult = {
     path: number[];
@@ -29,6 +30,12 @@ type ProphetResult = {
     seasonal: number[];
 };
 
+interface PredictionTabProps {
+    livePrices: Record<string, number>;
+    isStreaming: boolean;
+    activeMarket: MarketMetadata | null;
+}
+
 export default /**
  * Component for time-series price prediction and forecasting.
  *
@@ -37,7 +44,7 @@ export default /**
  * Allows users to upload historical price data and visualize
  * future predictions onto a chart.
  */
-    function PredictionTab() {
+    function PredictionTab({ livePrices, isStreaming, activeMarket }: PredictionTabProps) {
     const [activeModel, setActiveModel] = useState<'arima' | 'garch' | 'holt_winters' | 'prophet'>('arima');
 
     // Data State
@@ -45,6 +52,158 @@ export default /**
     const [fileName, setFileName] = useState('');
     const [columns, setColumns] = useState<string[]>([]);
     const [selectedColumn, setSelectedColumn] = useState('');
+
+    // Live Data State
+    const [dataSource, setDataSource] = useState<'csv' | 'live'>('csv');
+    const [liveHistory, setLiveHistory] = useState<any[]>([]);
+    const latestPricesRef = useRef(livePrices);
+
+    // Keep ref updated
+    useEffect(() => {
+        latestPricesRef.current = livePrices;
+    }, [livePrices]);
+
+    // Initialize with historical data when switching to live mode
+    useEffect(() => {
+        if (dataSource === 'live' && isStreaming && activeMarket && liveHistory.length === 0) {
+            console.log('🔮 Initializing with historical data...');
+
+            const initializeHistory = async () => {
+                try {
+                    const historicalRows: any[] = [];
+                    console.log(`Fetching real historical data for ${activeMarket.outcomes.length} outcomes...`);
+
+                    // Fetch data for all outcomes in parallel
+                    const fetchPromises = activeMarket.outcomes.map(async (outcome) => {
+                        try {
+                            const response = await fetch(
+                                `https://clob.polymarket.com/prices-history?market=${outcome.id}&interval=1m&fidelity=1`
+                            );
+
+                            if (!response.ok) return null;
+
+                            const data = await response.json();
+                            return { outcomeId: outcome.id, outcomeName: outcome.name, history: data.history || [] };
+                        } catch (error) {
+                            return null;
+                        }
+                    });
+
+                    const results = await Promise.all(fetchPromises);
+
+                    // Build timestamp -> prices map
+                    const pricesByTimestamp = new Map<number, Record<string, number>>();
+
+                    results.forEach(result => {
+                        if (!result || !result.history || result.history.length === 0) return;
+
+                        result.history.forEach((point: any) => {
+                            const timestamp = point.t * 1000;
+                            const price = parseFloat(point.p);
+
+                            if (!pricesByTimestamp.has(timestamp)) {
+                                pricesByTimestamp.set(timestamp, {});
+                            }
+
+                            pricesByTimestamp.get(timestamp)![result.outcomeName] = price;
+                        });
+                    });
+
+                    // Convert to array, sort, and take last 100 points
+                    const timestamps = Array.from(pricesByTimestamp.keys()).sort((a, b) => a - b);
+                    const recentTimestamps = timestamps.slice(-100);
+
+                    recentTimestamps.forEach(timestamp => {
+                        const prices = pricesByTimestamp.get(timestamp)!;
+                        historicalRows.push({
+                            _ts: timestamp,
+                            'Timestamp (UTC)': timestamp,
+                            ...prices
+                        });
+                    });
+
+                    if (historicalRows.length > 0) {
+                        console.log(`✓ Loaded ${historicalRows.length} real historical points`);
+                        setLiveHistory(historicalRows);
+                    } else {
+                        console.warn('⚠ No historical data available');
+                        const currentPrices = latestPricesRef.current;
+                        if (Object.keys(currentPrices).length > 0) {
+                            const row: any = { _ts: Date.now(), 'Timestamp (UTC)': Date.now() };
+                            activeMarket.outcomes.forEach(outcome => {
+                                if (currentPrices[outcome.id] !== undefined) {
+                                    row[outcome.name] = currentPrices[outcome.id];
+                                }
+                            });
+                            setLiveHistory([row]);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch historical data:', error);
+                }
+            };
+
+            initializeHistory();
+        }
+    }, [dataSource, isStreaming, activeMarket]);
+
+    // Poll livePrices to build history
+    useEffect(() => {
+        if (dataSource === 'live' && isStreaming && activeMarket) {
+            console.log('🔮 PredictionTab: Starting live data polling');
+            console.log('🔮 Active Market:', activeMarket.title);
+            console.log('🔮 Number of outcomes:', activeMarket.outcomes.length);
+
+            const interval = setInterval(() => {
+                const now = Date.now();
+                const newRow: any = { _ts: now, 'Timestamp (UTC)': now };
+                const currentPrices = latestPricesRef.current;
+
+                console.log('🔮 Current livePrices keys:', Object.keys(currentPrices).length);
+
+                let hasData = false;
+                // Map outcome IDs to Names
+                activeMarket.outcomes.forEach(outcome => {
+                    if (currentPrices[outcome.id] !== undefined) {
+                        newRow[outcome.name] = currentPrices[outcome.id];
+                        hasData = true;
+                    }
+                });
+
+                if (hasData) {
+                    console.log('✓ PredictionTab: New row created with', Object.keys(newRow).length - 2, 'price columns');
+                    setLiveHistory(prev => {
+                        const next = [...prev, newRow];
+                        if (next.length > 500) return next.slice(next.length - 500); // Keep 500 points for prediction context
+                        return next;
+                    });
+                } else {
+                    console.warn('⚠ PredictionTab: No price data matched!');
+                    console.warn('  Available price keys:', Object.keys(currentPrices));
+                    console.warn('  Expected outcome IDs:', activeMarket.outcomes.map(o => o.id));
+                }
+            }, 1000);
+            return () => {
+                console.log('🔮 PredictionTab: Stopping live data polling');
+                clearInterval(interval);
+            };
+        }
+    }, [dataSource, isStreaming, activeMarket]);
+
+    // Sync liveHistory to rawData
+    useEffect(() => {
+        if (dataSource === 'live') {
+            setRawData(liveHistory);
+            if (activeMarket) {
+                const names = activeMarket.outcomes.map(o => o.name);
+                setColumns(names);
+                if (!selectedColumn || !names.includes(selectedColumn)) {
+                    setSelectedColumn(names[0]);
+                }
+                setFileName(`Live: ${activeMarket.title.slice(0, 20)}...`);
+            }
+        }
+    }, [liveHistory, dataSource, activeMarket]);
 
     // ARIMA State
     const [ar, setAr] = useState('0.5, -0.2');
@@ -563,28 +722,76 @@ export default /**
                     {/* Data Loading Section */}
                     <div className="space-y-4">
                         <h3 className="text-xs font-semibold uppercase text-slate-400 flex items-center gap-2">
-                            <FileSpreadsheet size={14} /> Historical Data
+                            <FileSpreadsheet size={14} /> Data Source
                         </h3>
-                        <div className="space-y-3">
+
+                        <div className="flex bg-slate-800 rounded-lg p-1 border border-slate-700 mb-2">
                             <button
-                                onClick={handleOpenFile}
-                                className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg transition-colors border border-slate-700 text-sm"
+                                onClick={() => { setDataSource('csv'); setRawData([]); setColumns([]); setFileName(''); }}
+                                className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-2 ${dataSource === 'csv' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
                             >
-                                <FileSpreadsheet size={16} /> {fileName ? fileName : 'Load CSV'}
+                                <FileSpreadsheet size={12} /> CSV
                             </button>
-                            {columns.length > 0 && (
-                                <label className="block text-xs text-slate-400">
-                                    Target Column
-                                    <select
-                                        value={selectedColumn}
-                                        onChange={e => setSelectedColumn(e.target.value)}
-                                        className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
-                                    >
-                                        {columns.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                </label>
-                            )}
+                            <button
+                                onClick={() => { setDataSource('live'); setRawData([]); setLiveHistory([]); }}
+                                className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center justify-center gap-2 ${dataSource === 'live' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                            >
+                                <Activity size={12} /> Live
+                            </button>
                         </div>
+
+                        {dataSource === 'csv' ? (
+                            <div className="space-y-3">
+                                <button
+                                    onClick={handleOpenFile}
+                                    className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-lg transition-colors border border-slate-700 text-sm"
+                                >
+                                    <FileSpreadsheet size={16} /> {fileName ? fileName : 'Load CSV'}
+                                </button>
+                                {columns.length > 0 && (
+                                    <label className="block text-xs text-slate-400">
+                                        Target Column
+                                        <select
+                                            value={selectedColumn}
+                                            onChange={e => setSelectedColumn(e.target.value)}
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        >
+                                            {columns.map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                    </label>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <div className="p-3 bg-slate-900/50 rounded border border-slate-800">
+                                    {isStreaming && activeMarket ? (
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex items-center gap-2 text-green-400 text-xs font-mono">
+                                                <Activity size={12} className="animate-pulse" />
+                                                STREAMING ACTIVE
+                                            </div>
+                                            <p className="text-[10px] text-slate-500 line-clamp-2">{activeMarket.title}</p>
+                                        </div>
+                                    ) : (
+                                        <div className="text-xs text-slate-500 text-center py-2">
+                                            Stream is offline.<br />Start in Scraper Tab.
+                                        </div>
+                                    )}
+                                </div>
+                                {columns.length > 0 && (
+                                    <label className="block text-xs text-slate-400">
+                                        Outcome to Forecast
+                                        <select
+                                            value={selectedColumn}
+                                            onChange={e => setSelectedColumn(e.target.value)}
+                                            className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                        >
+                                            {columns.map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                    </label>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="border-t border-slate-800 pt-6">

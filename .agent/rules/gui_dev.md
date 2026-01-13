@@ -44,7 +44,7 @@ You are an expert **Tauri/React Frontend Engineer** specializing in Rust and Typ
 4.  **Connect**: Use `invoke('command_name')` in the React component.
 
 ## Debugging Checklist
-- [ ] Is the Tauri backend running (`pnpm tauri dev`)?
+- [ ] Is the Tauri backend running (`npm run tauri dev`)?
 - [ ] Are events being emitted from Rust? (Check Rust logs)
 - [ ] Is the React component listening to the correct event name?
 - [ ] Are JSON serialization/deserialization matching?

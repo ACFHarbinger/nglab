@@ -8,6 +8,7 @@ import PredictionTab from "./components/PredictionTab";
 import { useArena } from "./hooks/useArena";
 import { Play, Square, RotateCcw, Activity, LineChart, Download, PieChart, Brain, Calculator } from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
+import { usePolymarket } from "./hooks/usePolymarket";
 import clsx from "clsx";
 
 /**
@@ -18,6 +19,7 @@ import clsx from "clsx";
  */
 function App() {
   const { data: arenaData, history, isRunning, start, stop } = useArena();
+  const { livePrices, isStreaming, activeMarket, startStream, stopStream, setActiveMarket } = usePolymarket();
   const [logs, setLogs] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<'simulation' | 'scraper' | 'analysis' | 'prediction' | 'pricing'>('simulation');
 
@@ -54,8 +56,13 @@ function App() {
       <header className="flex items-center justify-between border-b border-slate-800 px-4 py-3 bg-slate-950 z-10">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <Activity className="text-indigo-400 w-8 h-8" />
-            <h1 className="text-xl font-bold tracking-tight">nglab <span className="text-indigo-400">Arena</span></h1>
+            <Activity className={clsx("w-8 h-8", isStreaming ? "text-green-500 animate-pulse" : "text-indigo-400")} />
+            <div className="flex flex-col">
+              <h1 className="text-xl font-bold tracking-tight leading-none">nglab <span className={isStreaming ? "text-green-500" : "text-indigo-400"}>Arena</span></h1>
+              {isStreaming && activeMarket && (
+                <span className="text-[10px] text-green-500 font-mono tracking-wide uppercase">Polymarket Live: {activeMarket.title.slice(0, 30)}...</span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -152,7 +159,18 @@ function App() {
             {/* Left: Charts & Orderbook */}
             <div className="col-span-8 flex flex-col gap-6 h-full overflow-hidden">
               <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex-1 relative overflow-hidden flex flex-col">
-                <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Live Price (Polymarket)</h3>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Live Price (Polymarket)</h3>
+                  {isStreaming && (
+                    <div className="flex gap-2">
+                      {Object.entries(livePrices).slice(0, 3).map(([id, price]) => (
+                        <span key={id} className="text-xs font-mono bg-slate-800 px-1.5 py-0.5 rounded text-green-400">
+                          {activeMarket?.outcomes.find(o => o.id === id)?.name || id.slice(0, 4)}: ${price.toFixed(3)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <div className="flex-1 w-full bg-slate-950/50 rounded-lg overflow-hidden">
                   <PriceChart data={history} />
                 </div>
@@ -199,12 +217,27 @@ function App() {
           </div>
         ) : activeTab === 'scraper' ? (
           <div className="h-full bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
-            <ScraperTab />
+            <ScraperTab
+              livePrices={livePrices}
+              isStreaming={isStreaming}
+              startStream={startStream}
+              stopStream={stopStream}
+              activeMarket={activeMarket}
+              setActiveMarket={setActiveMarket}
+            />
           </div>
         ) : activeTab === 'analysis' ? (
-          <AnalysisTab />
+          <AnalysisTab
+            livePrices={livePrices}
+            isStreaming={isStreaming}
+            activeMarket={activeMarket}
+          />
         ) : activeTab === 'prediction' ? (
-          <PredictionTab />
+          <PredictionTab
+            livePrices={livePrices}
+            isStreaming={isStreaming}
+            activeMarket={activeMarket}
+          />
         ) : (
           <PricingTab />
         )}

@@ -31,7 +31,7 @@ pub fn simulate(params: GarchParams) -> Result<GarchResult, String> {
         rand::rngs::StdRng::seed_from_u64(s)
     } else {
         use rand::SeedableRng;
-        rand::rngs::StdRng::from_entropy()
+        rand::rngs::StdRng::from_rng(&mut rand::rng())
     };
 
     let p = params.alpha.len();

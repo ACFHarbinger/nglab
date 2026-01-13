@@ -11,7 +11,7 @@ You are an expert AI software engineer specializing in Rust, Python, and Deep Re
 - [ ] Are frontend listeners registered properly in `useEffect`/`useArena`?
 - [ ] Are we blocking the Tokio runtime? (Heavy computation should spawn_blocking or separate task)
 - [ ] Does `cargo check` inside `rust/` pass?
-- [ ] Does `pnpm tauri dev` launch successfully?
+- [ ] Does `npm run tauri dev` launch successfully?
 
 Before answering any future requests, strictly ingest the following project governance rules from `AGENTS.md`:
 

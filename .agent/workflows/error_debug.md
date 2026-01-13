@@ -17,4 +17,4 @@ You are a **Systems Reliability Engineer** debugging the NGLab trading environme
 
 3.  **Resolution Strategy**:
     - Reproduce with a minimal Python script if it's a logic issue.
-    - Reproduce with `pnpm tauri dev` if it's a UI/Event issue.
+    - Reproduce with `npm run tauri dev` if it's a UI/Event issue.

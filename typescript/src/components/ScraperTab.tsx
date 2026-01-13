@@ -1,8 +1,7 @@
-
-import { useState } from 'react';
-import { invoke } from '@tauri-apps/api/core';
-import { Save } from 'lucide-react';
-import { save } from '@tauri-apps/plugin-dialog';
+import { useState, useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core"; // Updated for Tauri v2
+import { save } from "@tauri-apps/plugin-dialog";
+import { Save, Activity } from "lucide-react";
 
 interface OutcomeInfo {
     id: string;
@@ -14,6 +13,15 @@ interface MarketMetadata {
     outcomes: OutcomeInfo[];
 }
 
+export interface ScraperTabProps {
+    livePrices: Record<string, number>;
+    isStreaming: boolean;
+    startStream: (marketSource: string, metadata: MarketMetadata) => Promise<void>;
+    stopStream: () => Promise<void>;
+    activeMarket: MarketMetadata | null;
+    setActiveMarket: (metadata: MarketMetadata | null) => void;
+}
+
 /**
  * Component for scraping market data from Polymarket.
  *
@@ -21,9 +29,20 @@ interface MarketMetadata {
  * Polymarket IDs/URLs and download historical price data
  * for binary prediction markets.
  */
-export default function ScraperTab() {
+export default function ScraperTab({
+    livePrices,
+    isStreaming,
+    startStream,
+    stopStream,
+    activeMarket
+}: ScraperTabProps) {
     const [input, setInput] = useState('');
-    const [marketMetadata, setMarketMetadata] = useState<MarketMetadata | null>(null);
+    // Local metadata track current search result
+    const [localMetadata, setLocalMetadata] = useState<MarketMetadata | null>(null);
+
+    // Display metadata is determined by active stream OR local search
+    const displayMetadata = localMetadata || activeMarket;
+
     const [selectedOutcomes, setSelectedOutcomes] = useState<Set<string>>(new Set());
 
     // Config
@@ -33,6 +52,16 @@ export default function ScraperTab() {
 
     const [status, setStatus] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Sync active market to local view on mount/update
+    useEffect(() => {
+        if (activeMarket) {
+            setLocalMetadata(activeMarket);
+            setInput(activeMarket.title);
+            const allIds = new Set(activeMarket.outcomes.map(o => o.id));
+            setSelectedOutcomes(allIds);
+        }
+    }, [activeMarket]);
 
     /**
      * Resolves a Polymarket URL or slug into market metadata (title and outcomes).
@@ -47,7 +76,7 @@ export default function ScraperTab() {
         setStatus('Resolving market...');
         try {
             const metadata = await invoke<MarketMetadata>('resolve_polymarket_id', { input: input.trim() });
-            setMarketMetadata(metadata);
+            setLocalMetadata(metadata);
             // Select all by default
             const allIds = new Set(metadata.outcomes.map(o => o.id));
             setSelectedOutcomes(allIds);
@@ -122,8 +151,29 @@ export default function ScraperTab() {
         }
     };
 
+    /**
+     * Starts streaming live prices for the current market.
+     */
+    const handleStream = async () => {
+        if (!displayMetadata || isStreaming) return;
+
+        setStatus("Starting stream...");
+
+        try {
+            await startStream(input || displayMetadata.title, displayMetadata);
+            setStatus("Streaming live prices...");
+        } catch (e: any) {
+            console.error(e);
+            setStatus(`Stream Error: ${e}`);
+        }
+    };
+
     const reset = () => {
-        setMarketMetadata(null);
+        setLocalMetadata(null);
+        // We only clear active market if user explicitly resets while viewing it? 
+        // Or keep it simple: reset clears local view. If streaming, it continues but user sees search.
+        // Let's assume reset clears local state to allow new search.
+        // It DOES NOT stop streaming (unless we add a stop function).
         setSelectedOutcomes(new Set());
         setStatus('');
         setInput('');
@@ -139,7 +189,7 @@ export default function ScraperTab() {
             <div className="max-w-3xl flex flex-col gap-6">
 
                 {/* Step 1: Search */}
-                {!marketMetadata && (
+                {!displayMetadata && (
                     <div className="grid gap-4 p-4 border rounded-lg bg-card text-card-foreground shadow-sm">
                         <div className="grid gap-2">
                             <label className="text-sm font-medium">Market URL, Slug, or ID</label>
@@ -162,31 +212,39 @@ export default function ScraperTab() {
                 )}
 
                 {/* Step 2: Selection & Config */}
-                {marketMetadata && (
+                {displayMetadata && (
                     <div className="flex flex-col gap-6">
                         <div className="border rounded-lg p-4 bg-muted/20">
                             <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <h3 className="font-semibold text-lg">{marketMetadata.title}</h3>
+                                    <h3 className="font-semibold text-lg">{displayMetadata.title}</h3>
                                     <p className="text-sm text-muted-foreground">{selectedOutcomes.size} selected</p>
                                 </div>
                                 <button onClick={reset} className="text-xs text-muted-foreground hover:text-foreground">
                                     Change Market
                                 </button>
+                                {isStreaming && <span className="text-xs text-green-500 animate-pulse ml-2">● LIVE</span>}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[300px] overflow-y-auto p-1">
-                                {marketMetadata.outcomes.map(outcome => (
-                                    <label key={outcome.id} className="flex items-center space-x-2 p-2 rounded hover:bg-muted cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedOutcomes.has(outcome.id)}
-                                            onChange={() => toggleOutcome(outcome.id)}
-                                            className="h-4 w-4 rounded border-gray-300"
-                                        />
-                                        <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                            {outcome.name}
-                                        </span>
+                                {displayMetadata.outcomes.map(outcome => (
+                                    <label key={outcome.id} className="flex items-center justify-between p-2 rounded hover:bg-muted cursor-pointer border border-transparent hover:border-border">
+                                        <div className="flex items-center space-x-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedOutcomes.has(outcome.id)}
+                                                onChange={() => toggleOutcome(outcome.id)}
+                                                className="h-4 w-4 rounded border-gray-300"
+                                            />
+                                            <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                                {outcome.name}
+                                            </span>
+                                        </div>
+                                        {livePrices[outcome.id] !== undefined && (
+                                            <span className="text-sm font-mono text-green-400">
+                                                ${livePrices[outcome.id].toFixed(3)}
+                                            </span>
+                                        )}
                                     </label>
                                 ))}
                             </div>
@@ -244,6 +302,25 @@ export default function ScraperTab() {
                                 </>
                             )}
                         </button>
+
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleStream}
+                                disabled={isStreaming}
+                                className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 h-9 px-4 py-2 w-fit"
+                            >
+                                <Activity className="mr-2 h-4 w-4" />
+                                Stream Live Prices
+                            </button>
+                            {isStreaming && (
+                                <button
+                                    onClick={stopStream}
+                                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring bg-rose-600 hover:bg-rose-500 text-white shadow-sm h-9 px-4 py-2 w-fit"
+                                >
+                                    Stop Stream
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )}
 

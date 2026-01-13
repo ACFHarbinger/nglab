@@ -14,7 +14,7 @@ You are a **DevOps Engineer** managing the NGLab build pipeline.
     - Ensure `maturin` builds the rust extension correctly (`maturin develop`).
 
 3.  **Tauri**:
-    - `pnpm tauri build` for final distribution artifacts.
+    - `npm run tauri dev` for final distribution artifacts.
     - Ensure system dependencies (webkit2gtk, etc.) are present.
 
 ## Configuration

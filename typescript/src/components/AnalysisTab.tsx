@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { readTextFile } from '@tauri-apps/plugin-fs';
 import Highcharts from 'highcharts';
@@ -7,7 +7,8 @@ import CustomStock from 'highcharts/modules/stock';
 import Heatmap from 'highcharts/modules/heatmap';
 import Indicators from 'highcharts/indicators/indicators-all';
 import Papa from 'papaparse';
-import { FileSpreadsheet, Loader2 } from 'lucide-react';
+import { Activity, Wifi, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { MarketMetadata } from '../hooks/usePolymarket';
 
 // Load modules
 try {
@@ -32,7 +33,21 @@ interface CsvRow {
  * Candlestick, and Heatmap visualizations. Supports technical indicators
  * and timeframe filtering using Highcharts.
  */
-function AnalysisTab() {
+interface AnalysisTabProps {
+    livePrices: Record<string, number>;
+    isStreaming: boolean;
+    activeMarket: MarketMetadata | null;
+}
+
+/**
+ * Component for performing exploratory data analysis (EDA) on financial CSV files
+ * or live Polymarket data.
+ *
+ * Provides various chart types including Price, Spread, Volatility,
+ * Candlestick, and Heatmap visualizations. Supports technical indicators
+ * and timeframe filtering using Highcharts.
+ */
+function AnalysisTab({ livePrices, isStreaming, activeMarket }: AnalysisTabProps) {
     const [chartOptions, setChartOptions] = useState<Highcharts.Options | null>(null);
     const [fileName, setFileName] = useState('');
     const [loading, setLoading] = useState(false);
@@ -45,6 +60,164 @@ function AnalysisTab() {
     const [primaryCandidate, setPrimaryCandidate] = useState<string>('');
     const [timeframe, setTimeframe] = useState<'1D' | '1W' | '1M' | 'All'>('All');
     const [indicators, setIndicators] = useState({ sma: false, macd: false, rsi: false });
+
+    // Live Data State
+    const [dataSource, setDataSource] = useState<'csv' | 'live'>('csv');
+    const [liveHistory, setLiveHistory] = useState<CsvRow[]>([]);
+    const latestPricesRef = useRef(livePrices);
+
+    // Keep ref updated
+    useEffect(() => {
+        latestPricesRef.current = livePrices;
+    }, [livePrices]);
+
+    // Fetch recent historical data when switching to live mode
+    useEffect(() => {
+        if (dataSource === 'live' && isStreaming && activeMarket && liveHistory.length === 0) {
+            console.log('📊 Fetching recent historical data to initialize live mode...');
+
+            // Fetch real historical data from Polymarket API
+            const initializeHistory = async () => {
+                try {
+                    const historicalRows: CsvRow[] = [];
+                    console.log(`Fetching historical data for ${activeMarket.outcomes.length} outcomes...`);
+
+                    // Fetch data for all outcomes in parallel
+                    const fetchPromises = activeMarket.outcomes.map(async (outcome) => {
+                        try {
+                            const response = await fetch(
+                                `https://clob.polymarket.com/prices-history?market=${outcome.id}&interval=1m&fidelity=1`
+                            );
+
+                            if (!response.ok) {
+                                console.warn(`Failed to fetch ${outcome.name}: ${response.status}`);
+                                return null;
+                            }
+
+                            const data = await response.json();
+                            return { outcomeId: outcome.id, outcomeName: outcome.name, history: data.history || [] };
+                        } catch (error) {
+                            console.warn(`Error fetching ${outcome.name}:`, error);
+                            return null;
+                        }
+                    });
+
+                    const results = await Promise.all(fetchPromises);
+
+                    // Build timestamp -> prices map
+                    const pricesByTimestamp = new Map<number, Record<string, number>>();
+
+                    results.forEach(result => {
+                        if (!result || !result.history || result.history.length === 0) return;
+
+                        result.history.forEach((point: any) => {
+                            const timestamp = point.t * 1000; // Convert to ms
+                            const price = parseFloat(point.p);
+
+                            if (!pricesByTimestamp.has(timestamp)) {
+                                pricesByTimestamp.set(timestamp, {});
+                            }
+
+                            pricesByTimestamp.get(timestamp)![result.outcomeName] = price;
+                        });
+                    });
+
+                    // Convert to array, sort, and take last 100 points
+                    const timestamps = Array.from(pricesByTimestamp.keys()).sort((a, b) => a - b);
+                    const recentTimestamps = timestamps.slice(-100);
+
+                    recentTimestamps.forEach(timestamp => {
+                        const prices = pricesByTimestamp.get(timestamp)!;
+                        historicalRows.push({
+                            _ts: timestamp,
+                            'Timestamp (UTC)': timestamp,
+                            ...prices
+                        });
+                    });
+
+                    if (historicalRows.length > 0) {
+                        console.log(`✓ Loaded ${historicalRows.length} real historical data points`);
+                        setLiveHistory(historicalRows);
+                    } else {
+                        console.warn('⚠ No historical data, using current prices');
+                        const currentPrices = latestPricesRef.current;
+                        if (Object.keys(currentPrices).length > 0) {
+                            const row: CsvRow = { _ts: Date.now(), 'Timestamp (UTC)': Date.now() };
+                            activeMarket.outcomes.forEach(outcome => {
+                                if (currentPrices[outcome.id] !== undefined) {
+                                    row[outcome.name] = currentPrices[outcome.id];
+                                }
+                            });
+                            setLiveHistory([row]);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch historical data:', error);
+                }
+            };
+
+            initializeHistory();
+        }
+    }, [dataSource, isStreaming, activeMarket]);
+
+    // Poll livePrices ref to build history
+    useEffect(() => {
+        if (dataSource === 'live' && isStreaming && activeMarket) {
+            console.log('📈 AnalysisTab: Starting live data polling');
+            console.log('📈 Active Market:', activeMarket.title);
+            console.log('📈 Number of outcomes:', activeMarket.outcomes.length);
+
+            const interval = setInterval(() => {
+                const now = Date.now();
+                const newRow: CsvRow = { _ts: now, 'Timestamp (UTC)': now };
+                const currentPrices = latestPricesRef.current;
+
+                console.log('📈 Current livePrices keys:', Object.keys(currentPrices).length);
+                console.log('📈 Sample prices:', Object.entries(currentPrices).slice(0, 3));
+
+                let hasData = false;
+                // Map outcome IDs to Names for the chart series
+                activeMarket.outcomes.forEach(outcome => {
+                    if (currentPrices[outcome.id] !== undefined) {
+                        newRow[outcome.name] = currentPrices[outcome.id];
+                        hasData = true;
+                    }
+                });
+
+                if (hasData) {
+                    console.log('✓ New row created with', Object.keys(newRow).length - 2, 'price columns');
+                    setLiveHistory(prev => {
+                        const next = [...prev, newRow];
+                        // Keep last 1000 points to avoid memory leaks
+                        if (next.length > 1000) return next.slice(next.length - 1000);
+                        return next;
+                    });
+                } else {
+                    console.warn('⚠ No price data matched!');
+                    console.warn('  Available price keys:', Object.keys(currentPrices));
+                    console.warn('  Expected outcome IDs:', activeMarket.outcomes.map(o => o.id));
+                }
+            }, 1000);
+            return () => {
+                console.log('📈 AnalysisTab: Stopping live data polling');
+                clearInterval(interval);
+            };
+        }
+    }, [dataSource, isStreaming, activeMarket]);
+
+    // Sync liveHistory to rawData when in live mode, or switch modes
+    useEffect(() => {
+        if (dataSource === 'live') {
+            console.log('Syncing liveHistory to rawData:', liveHistory.length);
+            setRawData(liveHistory);
+            // Auto-select series if none selected
+            if (activeMarket && allSeries.length === 0) {
+                const names = activeMarket.outcomes.map(o => o.name);
+                setAllSeries(names);
+                setSelectedSeries(names.slice(0, 3)); // Select first 3
+            }
+        }
+    }, [liveHistory, dataSource, activeMarket]);
 
     // Re-generate chart when type or data changes
     useEffect(() => {
@@ -565,8 +738,25 @@ function AnalysisTab() {
                 <div className="flex items-center gap-6">
                     <div>
                         <h2 className="text-2xl font-bold tracking-tight">Data Analysis</h2>
-                        <p className="text-slate-400 text-sm">Visualize historical price data.</p>
+                        <p className="text-slate-400 text-sm">Visualize historical or live price data.</p>
                     </div>
+
+                    {/* Data Source Toggle */}
+                    <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
+                        <button
+                            onClick={() => { setDataSource('csv'); setRawData([]); setChartOptions(null); }}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-2 ${dataSource === 'csv' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            <FileSpreadsheet size={12} /> CSV
+                        </button>
+                        <button
+                            onClick={() => { setDataSource('live'); setRawData([]); setChartOptions(null); setLiveHistory([]); }}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-2 ${dataSource === 'live' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            <Activity size={12} /> Live
+                        </button>
+                    </div>
+
                     <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
                         {(['price', 'candlestick', 'heatmap', 'spread', 'volatility'] as const).map(t => (
                             <button
@@ -590,14 +780,31 @@ function AnalysisTab() {
                         ))}
                     </div>
                 </div>
-                <button
-                    onClick={handleOpenFile}
-                    disabled={loading}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg transition-colors font-medium text-sm shadow-lg shadow-indigo-500/20"
-                >
-                    {loading ? <Loader2 className="animate-spin" size={16} /> : <FileSpreadsheet size={16} />}
-                    {fileName ? 'Open Another File' : 'Open CSV File'}
-                </button>
+
+                {dataSource === 'csv' ? (
+                    <button
+                        onClick={handleOpenFile}
+                        disabled={loading}
+                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg transition-colors font-medium text-sm shadow-lg shadow-indigo-500/20"
+                    >
+                        {loading ? <Loader2 className="animate-spin" size={16} /> : <FileSpreadsheet size={16} />}
+                        {fileName ? 'Open Another File' : 'Open CSV File'}
+                    </button>
+                ) : (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg">
+                        {isStreaming ? (
+                            <>
+                                <Wifi size={16} className="text-green-500 animate-pulse" />
+                                <span className="text-xs text-green-500 font-mono tracking-wider">LIVE STREAM ACTIVE</span>
+                            </>
+                        ) : (
+                            <>
+                                <Wifi size={16} className="text-slate-600" />
+                                <span className="text-xs text-slate-500">STREAM OFFLINE</span>
+                            </>
+                        )}
+                    </div>
+                )}
             </div>
 
             {error && (
@@ -610,8 +817,17 @@ function AnalysisTab() {
                 <div className="flex-1 bg-slate-950 relative border-r border-slate-800">
                     {!chartOptions && !loading && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 gap-4">
-                            <FileSpreadsheet size={48} className="opacity-20" />
-                            <p>No data loaded. Open a CSV file to begin analysis.</p>
+                            {dataSource === 'csv' ? (
+                                <>
+                                    <FileSpreadsheet size={48} className="opacity-20" />
+                                    <p>No data loaded. Open a CSV file to begin analysis.</p>
+                                </>
+                            ) : (
+                                <>
+                                    <Activity size={48} className="opacity-20" />
+                                    <p>{isStreaming ? "Listening for live data... chart will update shortly." : "Stream is offline. Start a stream in the Scraper tab."}</p>
+                                </>
+                            )}
                         </div>
                     )}
 
