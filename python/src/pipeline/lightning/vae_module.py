@@ -7,10 +7,10 @@ with support for beta-VAE, KL annealing, and various reconstruction losses.
 
 import torch
 import torch.nn as nn
+
 from typing import Dict, Any, Optional, Literal
 from pytorch_lightning import LightningModule
-
-from ...models.vae import TimeSeriesVAE, vae_loss
+from models.vae import TimeSeriesVAE, vae_loss
 
 
 class VAELightningModule(LightningModule):

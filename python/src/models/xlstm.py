@@ -51,13 +51,14 @@ class xLSTM(nn.Module):
         self.norm = nn.LayerNorm(hidden_dim)
         self.fc = nn.Linear(hidden_dim, output_dim)
         
-    def forward(self, x, return_embedding=None):
+    def forward(self, x, return_embedding=None, return_sequence=False):
         """
         Forward pass.
         
         Args:
             x (Tensor): Input sequence [batch, seq_len, input_dim].
             return_embedding (bool, optional): Override output type.
+            return_sequence (bool, optional): If True, return full sequence.
         """
         # x is [Batch, Seq, Feat] (since batch_first=True in blocks)
         
@@ -71,12 +72,15 @@ class xLSTM(nn.Module):
         # x is now the output sequence of the last layer
         x = self.norm(x)
         
-        # Last time step
-        last_state = x[:, -1, :]
+        # Determine state
+        if return_sequence:
+            state = x
+        else:
+            state = x[:, -1, :]
         
         should_return_embedding = return_embedding if return_embedding is not None else (self.output_type == 'embedding')
         
         if should_return_embedding:
-            return last_state
+            return state
         
-        return self.fc(last_state)
+        return self.fc(state)

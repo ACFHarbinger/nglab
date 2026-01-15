@@ -31,29 +31,33 @@ class LSTM(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, output_dim)
         
-    def forward(self, x, return_embedding=None):
+    def forward(self, x, return_embedding=None, return_sequence=False):
         """
         Forward pass.
 
         Args:
             x (Tensor): Input sequence [batch, seq_len, input_dim].
             return_embedding (bool, optional): Override output type.
+            return_sequence (bool, optional): If True, return full sequence.
 
         Returns:
-            Tensor: Output [batch, output_dim] or [batch, hidden_dim].
+            Tensor: Output [batch, output_dim] or [batch, hidden_dim] or sequence.
         """
         # h0, c0 initialized to zeros by default if not provided
         out, (h_n, c_n) = self.lstm(x)
         
-        # Take last time step hidden state
-        last_state = out[:, -1, :]
+        # Determine if we want full sequence or last step
+        if return_sequence:
+            state = out # (B, L, H)
+        else:
+            state = out[:, -1, :] # (B, H)
         
         should_return_embedding = return_embedding if return_embedding is not None else (self.output_type == 'embedding')
         
         if should_return_embedding:
-            return last_state
+            return state
             
-        return self.fc(last_state)
+        return self.fc(state)
 
 
 class GRU(nn.Module):
@@ -86,26 +90,30 @@ class GRU(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, output_dim)
         
-    def forward(self, x, return_embedding=None):
+    def forward(self, x, return_embedding=None, return_sequence=False):
         """
         Forward pass.
 
         Args:
             x (Tensor): Input sequence [batch, seq_len, input_dim].
             return_embedding (bool, optional): Override output type.
+            return_sequence (bool, optional): If True, return full sequence.
 
         Returns:
-            Tensor: Output [batch, output_dim] or [batch, hidden_dim].
+            Tensor: Output [batch, output_dim] or [batch, hidden_dim] or sequence.
         """
         # h0 initialized to zeros by default if not provided
         out, h_n = self.gru(x)
         
-        # Take last time step hidden state
-        last_state = out[:, -1, :]
+        # Determine if we want full sequence or last step
+        if return_sequence:
+            state = out
+        else:
+            state = out[:, -1, :]
         
         should_return_embedding = return_embedding if return_embedding is not None else (self.output_type == 'embedding')
         
         if should_return_embedding:
-            return last_state
+            return state
             
-        return self.fc(last_state)
+        return self.fc(state)

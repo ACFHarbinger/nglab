@@ -47,25 +47,25 @@ class TimeSeriesBackbone(nn.Module):
                  d_model=cfg.get('hidden_dim', 128),
                  n_layers=cfg.get('num_layers', 2),
                  forecast_horizon=cfg.get('pred_len', 1),
-                 output_type='embedding'
+                 output_type=cfg.get('output_type', 'embedding')
              )
         elif model_name == 'LSTM':
              self.model = LSTM(
                  input_dim=cfg.get('feature_dim', 12),
-                 output_dim=1, # Unused in embedding mode
+                 output_dim=cfg.get('output_dim', 1),
                  hidden_dim=cfg.get('hidden_dim', 128),
                  n_layers=cfg.get('num_layers', 2),
                  dropout=cfg.get('dropout', 0.0),
-                 output_type='embedding'
+                 output_type=cfg.get('output_type', 'embedding')
              )
         elif model_name == 'GRU':
              self.model = GRU(
                  input_dim=cfg.get('feature_dim', 12),
-                 output_dim=1, # Unused in embedding mode
+                 output_dim=cfg.get('output_dim', 1),
                  hidden_dim=cfg.get('hidden_dim', 128),
                  n_layers=cfg.get('num_layers', 2),
                  dropout=cfg.get('dropout', 0.0),
-                 output_type='embedding'
+                 output_type=cfg.get('output_type', 'embedding')
              )
         elif model_name == 'xLSTM':
              self.model = xLSTM(
@@ -74,7 +74,7 @@ class TimeSeriesBackbone(nn.Module):
                  hidden_dim=cfg.get('hidden_dim', 128),
                  n_layers=cfg.get('num_layers', 2),
                  dropout=cfg.get('dropout', 0.0),
-                 output_type='embedding',
+                 output_type=cfg.get('output_type', 'embedding'),
                  cell_type=cfg.get('cell_type', 'slstm'),
                  num_heads=cfg.get('num_heads', 4)
              )
@@ -84,7 +84,7 @@ class TimeSeriesBackbone(nn.Module):
                  output_dim=1, # Unused in embedding mode
                  seq_len=cfg.get('seq_len', 30),
                  hidden_dim=cfg.get('hidden_dim', 128),
-                 output_type='embedding'
+                 output_type=cfg.get('output_type', 'embedding')
              )
         else:
             raise ValueError(f"Unknown model: {model_name}")
@@ -110,13 +110,26 @@ class TimeSeriesBackbone(nn.Module):
         # Check NSTransformer call: output_dim usually implies features.
         
         # Wrapped models (LSTM/GRU/Mamba) act as backbone with output_type='embedding'
-        out = self.model(x)
+        # Pass kwargs (including return_sequence) if supported by model
+        kwargs = {}
+        if self.cfg.get('return_sequence', False):
+             kwargs['return_sequence'] = True
         
-        # Legacy check if we were using raw nn.LSTM which returned tuple
-        # But now we use wrappers that return tensor.
-        if isinstance(out, tuple):
-            out = out[0]
-            # Take last step or avg? usually last step for RL/Classif
-            out = out[:, -1, :] 
-            
+        # We can generally pass kwargs. If a model doesn't accept them, we might need a whitelist.
+        # But Mamba, LSTM, GRU, xLSTM now support return_sequence.
+        # NSTransformer/CNN might not yet.
+        # Check name?
+        if self.cfg.get('name') in ['LSTM', 'GRU', 'Mamba', 'xLSTM']:
+             # These support return_sequence
+             # If return_sequence is False, it just works too.
+             pass
+        else:
+             # Remove return_sequence for models that don't support it
+             if 'return_sequence' in kwargs:
+                 del kwargs['return_sequence']
+        
+        out = self.model(x, **kwargs)
+        
+        # Legacy tuple check removed as we use wrappers returning tensors.
+        
         return out

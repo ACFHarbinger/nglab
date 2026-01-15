@@ -42,13 +42,14 @@ class TSMamba(nn.Module):
         # Note: For multi-step, we predict a vector or use direct strategy 
         self.head = nn.Linear(d_model, output_dim * forecast_horizon)
 
-    def forward(self, x, return_embedding=None):
+    def forward(self, x, return_embedding=None, return_sequence=False):
         """
         Forward pass for forecasting.
         
         Args:
             x (Tensor): Input tensor of shape (Batch, Seq_Len, Input_Dim)
             return_embedding (bool): Override output type. If True, return embedding.
+            return_sequence (bool): If True, return full sequence.
         """
         # x shape: (Batch, Seq_Len, Input_Dim)
         x = self.encoder(x)
@@ -58,16 +59,19 @@ class TSMamba(nn.Module):
             
         x = self.norm(x)
         
-        # We typically take the last state for forecasting
-        last_state = x[:, -1, :] 
-        
+        # Determine state to use (Full sequence or Last step)
+        if return_sequence:
+            state = x
+        else:
+            state = x[:, -1, :]
+            
         should_return_embedding = return_embedding if return_embedding is not None else (self.output_type == 'embedding')
         
         if should_return_embedding:
-            return last_state
+            return state
         
-        prediction = self.head(last_state)
-        return prediction
+        # Apply head
+        return self.head(state)
 
 
 

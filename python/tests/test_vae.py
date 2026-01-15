@@ -15,10 +15,6 @@ import torch
 import torch.nn as nn
 from typing import Dict
 
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
-
 from models.vae import TimeSeriesVAE, vae_loss
 from pipeline.lightning.vae_module import VAELightningModule
 
@@ -137,6 +133,8 @@ class TestTimeSeriesVAE:
         assert recon_sample.shape == (sample_batch.size(0), model.pred_len, model.input_dim)
 
         # Reconstruction with mean (deterministic)
+        # Ensure dropout is disabled for deterministic check
+        model.eval()
         recon_mean = model.reconstruct(sample_batch, use_mean=True)
         assert recon_mean.shape == (sample_batch.size(0), model.pred_len, model.input_dim)
 
@@ -297,18 +295,21 @@ class TestVAELightningModule:
 
     def test_kl_annealing(self, lightning_module):
         """Test KL weight annealing."""
+        from unittest.mock import MagicMock
+        lightning_module.trainer = MagicMock()
+
         # At epoch 0, KL weight should be 0
-        lightning_module.current_epoch = 0
+        lightning_module.trainer.current_epoch = 0
         assert lightning_module.get_current_kl_weight() == 0.0
 
         # At middle of annealing
-        lightning_module.current_epoch = 2
+        lightning_module.trainer.current_epoch = 2
         kl_anneal_epochs = lightning_module.kl_anneal_epochs
         expected = lightning_module.kl_weight * (2 / kl_anneal_epochs)
         assert lightning_module.get_current_kl_weight() == pytest.approx(expected)
 
         # After annealing is done
-        lightning_module.current_epoch = 10
+        lightning_module.trainer.current_epoch = 10
         assert lightning_module.get_current_kl_weight() == lightning_module.kl_weight
 
     def test_training_step(self, lightning_module, sample_batch_dict):
