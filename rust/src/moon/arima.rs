@@ -27,7 +27,7 @@ pub fn simulate(params: ArimaParams) -> Result<ArimaResult, String> {
     let seed = if let Some(s) = params.seed {
         s
     } else {
-        rand::thread_rng().next_u64()
+        rand::rng().next_u64()
     };
 
     use rand::{RngCore, SeedableRng};

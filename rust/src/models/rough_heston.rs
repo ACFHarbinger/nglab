@@ -84,7 +84,7 @@ pub fn simulate(params: RoughHestonParams) -> Result<RoughHestonResult, String> 
     }
 
     let chol = generate_fbm_cholesky(steps + 1, hurst, dt)?;
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     let mut terminal_prices = Vec::with_capacity(paths);
     let mut discounted_payoffs = Vec::with_capacity(paths);

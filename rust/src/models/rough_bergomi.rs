@@ -94,7 +94,7 @@ pub fn simulate(params: RBergomiParams) -> Result<RBergomiResult, String> {
     // 2. Monte Carlo
     let mut payoffs = Vec::with_capacity(params.paths);
     let mut terminals = Vec::with_capacity(params.paths);
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     for _ in 0..params.paths {
         // Generate correlated Brownian motions
