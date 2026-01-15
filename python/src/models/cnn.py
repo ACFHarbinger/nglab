@@ -1,0 +1,97 @@
+"""
+Rolling Price Window CNN for Time Series.
+Inspired by "S&P 500 Stock’s Movement Prediction using CNN".
+"""
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class RollingWindowCNN(nn.Module):
+    """
+    CNN for Time Series Prediction treating windows as 2D images.
+    Input shape: (Batch, Seq_Len, Features)
+    Internally reshaped to: (Batch, 1, Seq_Len, Features)
+    """
+    def __init__(self, input_dim, output_dim, seq_len=30, hidden_dim=64, output_type='prediction'):
+        """
+        Initialize the CNN.
+
+        Args:
+            input_dim (int): Number of input features (Feature dimension).
+            output_dim (int): Output dimension.
+            seq_len (int): Length of the time window.
+            hidden_dim (int): Hidden dimension size for fully connected layer.
+            output_type (str): 'prediction' or 'embedding'.
+        """
+        super().__init__()
+        self.output_type = output_type
+        
+        # 1. Convolutional Layers
+        # Treating time series as an image (Height=Seq_Len, Width=Features)
+        # Or (Height=Features, Width=Seq_Len)? 
+        # Standard convention: (Batch, Channel, Height, Width)
+        # Here: (Batch, 1, Seq_Len, Features) seems reasonable if Features are small.
+        # But usually we convolute over Time.
+        # Kernels often cover full feature width in 1D Conv.
+        # The prompt specifies "Rolling Price Window CNN using 2D Convolutions".
+        # This implies we scan over (Time, Features).
+        
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=(3, 3), padding=(1, 1))
+        self.bn1 = nn.BatchNorm2d(16)
+        
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=(3, 3), padding=(1, 1))
+        self.bn2 = nn.BatchNorm2d(32)
+        
+        # Max Pooling to reduce dimensions
+        self.pool = nn.MaxPool2d(kernel_size=(2, 1)) 
+        # (2, 1) pools time by 2, features kept? Or pool both? 
+        # Let's pool both for general reduction.
+        self.pool_both = nn.MaxPool2d(kernel_size=(2, 2))
+
+        # Calculate flattened dimension
+        # Assuming 2 pools of (2,2) roughly divides dimensions by 4.
+        # We'll compute dynamically in forward or assume fixed seq_len.
+        
+        # Let's use adaptive pooling to enforce a fixed output size before FC
+        self.adaptive_pool = nn.AdaptiveAvgPool2d((4, 4)) 
+        # Output: (Batch, 32, 4, 4) -> 32*16 = 512 flat
+        flat_dim = 32 * 4 * 4
+        
+        self.fc1 = nn.Linear(flat_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, output_dim)
+        
+    def forward(self, x, return_embedding=None):
+        """
+        Forward pass.
+        x: (Batch, Seq_Len, Features)
+        """
+        # Add channel dimension: (B, 1, L, F)
+        x = x.unsqueeze(1)
+        
+        # Block 1
+        x = self.conv1(x) # (B, 16, L, F)
+        x = self.bn1(x)
+        x = F.relu(x)
+        x = self.pool_both(x) # (B, 16, L/2, F/2)
+        
+        # Block 2
+        x = self.conv2(x) # (B, 32, L/2, F/2)
+        x = self.bn2(x)
+        x = F.relu(x)
+        
+        # Adaptive Pool to ensure fixed size regardless of input L or F slightly varying
+        x = self.adaptive_pool(x) # (B, 32, 4, 4)
+        
+        # Flatten
+        x = torch.flatten(x, 1) # (B, 512)
+        
+        # FC
+        x = self.fc1(x) # (B, Hidden)
+        x = F.relu(x)
+        
+        should_return_embedding = return_embedding if return_embedding is not None else (self.output_type == 'embedding')
+        
+        if should_return_embedding:
+            return x
+            
+        return self.fc2(x)

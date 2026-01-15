@@ -7,7 +7,9 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 from typing import Dict, Any
 
-class GANLightningModule(pl.LightningModule):
+from .base import BaseModule
+
+class GANLightningModule(BaseModule):
     """
     Lightning Module for Time Series GAN (e.g., TimeGAN style or conditional forecasting GAN).
     
@@ -24,9 +26,8 @@ class GANLightningModule(pl.LightningModule):
             discriminator (nn.Module): The discriminator network.
             cfg (Dict[str, Any]): Configuration dictionary.
         """
-        super().__init__()
+        super().__init__(cfg)
         self.save_hyperparameters(ignore=['generator', 'discriminator'])
-        self.cfg = cfg
         self.generator = generator
         self.discriminator = discriminator
         

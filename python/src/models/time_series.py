@@ -6,6 +6,7 @@ from .nstransformer import NSTransformer
 from .tsmamba import TSMamba
 from .rnn import LSTM, GRU
 from .xlstm import xLSTM
+from .cnn import RollingWindowCNN
 
 # Assuming NSTransformer exists in .nstransformer or we port it here.
 # For now, we wrap it or define standard interfaces.
@@ -76,6 +77,14 @@ class TimeSeriesBackbone(nn.Module):
                  output_type='embedding',
                  cell_type=cfg.get('cell_type', 'slstm'),
                  num_heads=cfg.get('num_heads', 4)
+             )
+        elif model_name == 'CNN':
+             self.model = RollingWindowCNN(
+                 input_dim=cfg.get('feature_dim', 12),
+                 output_dim=1, # Unused in embedding mode
+                 seq_len=cfg.get('seq_len', 30),
+                 hidden_dim=cfg.get('hidden_dim', 128),
+                 output_type='embedding'
              )
         else:
             raise ValueError(f"Unknown model: {model_name}")
