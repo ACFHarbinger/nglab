@@ -1,0 +1,36 @@
+# VAE Training Task Configuration
+
+defaults:
+  - /model: vae
+  - /env: trading
+
+# Task type
+task: vae
+
+# Training settings
+batch_size: 64
+num_epochs: 100
+num_workers: 4
+
+# Trainer settings
+accelerator: auto  # 'auto', 'gpu', 'cpu'
+devices: 1
+precision: 32  # 16 for mixed precision, 32 for full precision
+
+# Checkpointing
+save_top_k: 3  # Save top 3 models based on validation loss
+checkpoint_monitor: val/loss
+checkpoint_mode: min
+
+# Early stopping
+early_stopping: true
+patience: 15
+
+# Logging
+log_every_n_steps: 10
+val_check_interval: 1.0  # Validate every epoch
+
+# Data
+train_split: 0.8
+val_split: 0.2
+shuffle: true

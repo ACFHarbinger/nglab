@@ -15,6 +15,7 @@ from pipeline.lightning.self_supervised import SelfSupervisedModule
 from pipeline.lightning.semi_supervised import SemiSupervisedModule
 from pipeline.lightning.unsupervised import UnsupervisedModule
 from pipeline.lightning.sl_module import SLLightningModule
+from pipeline.lightning.vae_module import VAELightningModule
 from agents.env_wrapper import TradingEnvWrapper
 from models.time_series import TimeSeriesBackbone
 from pipeline.objectives.variants import DRGRPOLoss, GSPOLoss, SAPOLoss
@@ -62,6 +63,8 @@ def main(cfg: DictConfig):
         model = SemiSupervisedModule(backbone, cfg.model)
     elif cfg.task == "supervised":
         model = SLLightningModule(backbone, cfg.model)
+    elif cfg.task == "vae":
+        model = VAELightningModule(**cfg.model)
     else:
         raise ValueError(f"Unknown task: {cfg.task}")
 
