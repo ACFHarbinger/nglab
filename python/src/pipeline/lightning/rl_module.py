@@ -5,13 +5,13 @@ Integrates TorchRL components with PyTorch Lightning to provide a scalable
 training loop for RL agents (PPO and variants).
 """
 import torch
-import pytorch_lightning as pl
+from .base import BaseModule
 from torchrl.collectors import SyncDataCollector
 from torchrl.data import ReplayBuffer, LazyTensorStorage
 from torchrl.objectives import ClipPPOLoss, ValueEstimators
 from tensordict import TensorDict
 
-class RLLightningModule(pl.LightningModule):
+class RLLightningModule(BaseModule):
     """
     Lightning Module for Reinforcement Learning (PPO).
     Manages the interaction between Policy, Environment (Collection), and Loss updates.
@@ -26,9 +26,8 @@ class RLLightningModule(pl.LightningModule):
             env_maker (callable): A function that returns a wrapped environment.
             cfg (Dict): Configuration parameters.
         """
-        super().__init__()
+        super().__init__(cfg)
         self.save_hyperparameters(ignore=['agent_module', 'value_module', 'env_maker'])
-        self.cfg = cfg
         
         self.agent = agent_module
         self.critic = value_module
@@ -60,14 +59,7 @@ class RLLightningModule(pl.LightningModule):
             storage=LazyTensorStorage(max_size=self.frames_per_batch),
             batch_size=cfg.get('mini_batch_size', 64)
         )
-
-    def configure_optimizers(self):
-        """
-        Configure the Adam optimizer for RL loss.
-        """
-        optimizer = torch.optim.Adam(self.loss_module.parameters(), lr=self.cfg.get('learning_rate', 3e-4))
-        return optimizer
-
+        
     def setup(self, stage=None):
         """
         Initialize the data collector.

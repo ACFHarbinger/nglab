@@ -6,9 +6,9 @@ for specific downstream prediction tasks.
 """
 import torch
 import torch.nn.functional as F
-import pytorch_lightning as pl
+from .base import BaseModule
 
-class SLLightningModule(pl.LightningModule):
+class SLLightningModule(BaseModule):
     """
     Module for Supervised Learning (Fine-tuning).
     """
@@ -20,9 +20,8 @@ class SLLightningModule(pl.LightningModule):
             backbone (nn.Module): The pre-trained time-series model backbone.
             cfg (Dict): Configuration parameters.
         """
-        super().__init__()
+        super().__init__(cfg)
         self.save_hyperparameters(ignore=['backbone'])
-        self.cfg = cfg
         self.backbone = backbone
         self.head = torch.nn.Linear(cfg.get('hidden_dim', 128), cfg.get('output_dim', 1))
         
@@ -33,11 +32,6 @@ class SLLightningModule(pl.LightningModule):
         feat = self.backbone(x)
         return self.head(feat)
 
-    def configure_optimizers(self):
-        """
-        Configure the Adam optimizer.
-        """
-        return torch.optim.Adam(self.parameters(), lr=self.cfg.get('learning_rate', 1e-3))
 
     def training_step(self, batch, batch_idx):
         """

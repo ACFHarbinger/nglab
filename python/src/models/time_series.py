@@ -3,6 +3,7 @@ Unified Backbone for Time Series Models.
 """
 import torch.nn as nn
 from .nstransformer import NSTransformer 
+from .tsmamba import TSMamba
 
 # Assuming NSTransformer exists in .nstransformer or we port it here.
 # For now, we wrap it or define standard interfaces.
@@ -36,6 +37,15 @@ class TimeSeriesBackbone(nn.Module):
                  learner_dims=cfg.get('learner_dims', [64]),
                  # ... other params ...
             )
+        elif model_name == 'Mamba':
+             self.model = TSMamba(
+                 input_dim=cfg.get('feature_dim', 12),
+                 output_dim=1, # Unused in embedding mode
+                 d_model=cfg.get('hidden_dim', 128),
+                 n_layers=cfg.get('num_layers', 2),
+                 forecast_horizon=cfg.get('pred_len', 1),
+                 output_type='embedding'
+             )
         elif model_name == 'LSTM':
              self.model = nn.LSTM(
                  input_size=cfg.get('feature_dim', 12),
