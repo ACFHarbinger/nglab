@@ -19,6 +19,18 @@ from .elm import ELM
 from .som import KohonenMap
 from .capsule import CapsuleLayer
 from .cnn import RollingWindowCNN
+from .perceptron import Perceptron
+from .markov_chain import MarkovChain
+from .boltzmann import BoltzmannMachine
+from .dbn import DeepBeliefNetwork
+from .dcn import DeepConvNet
+from .deconv import DeconvNet, AutoDeconvNet
+from .dcign import DCIGN
+from .lsm import LiquidStateMachine
+from .resnet import DeepResNet
+from .dnc import DNC
+from .ntm import NTM
+from .attention_net import AttentionNetwork
 
 class TimeSeriesBackbone(nn.Module):
     """
@@ -180,6 +192,116 @@ class TimeSeriesBackbone(nn.Module):
                  hidden_dim=cfg.get('hidden_dim', 128),
                  output_type=cfg.get('output_type', 'embedding')
              )
+        elif model_name == 'Perceptron':
+             self.model = Perceptron(
+                 input_dim=cfg.get('feature_dim', 12),
+                 output_dim=cfg.get('output_dim', 1),
+                 activation=cfg.get('activation', 'sigmoid'),
+                 output_type=cfg.get('output_type', 'prediction')
+             )
+        elif model_name == 'MarkovChain':
+             self.model = MarkovChain(
+                 num_states=cfg.get('num_states', 10),
+                 output_type=cfg.get('output_type', 'prediction'),
+                 learnable=cfg.get('learnable', True)
+             )
+        elif model_name == 'BM':
+             self.model = BoltzmannMachine(
+                 num_units=cfg.get('feature_dim', 12),
+                 output_type=cfg.get('output_type', 'prediction')
+             )
+        elif model_name == 'DBN':
+             self.model = DeepBeliefNetwork(
+                 layer_sizes=[cfg.get('feature_dim', 12)] + cfg.get('hidden_dims', [64, 32]),
+                 output_type=cfg.get('output_type', 'prediction')
+             )
+        elif model_name == 'DCN':
+             self.model = DeepConvNet(
+                 input_dim=cfg.get('feature_dim', 12),
+                 hidden_channels=cfg.get('hidden_channels', [32, 64, 128]),
+                 output_dim=cfg.get('output_dim', 1),
+                 output_type=cfg.get('output_type', 'prediction')
+             )
+        elif model_name == 'Deconv':
+             self.model = DeconvNet(
+                 input_dim=cfg.get('feature_dim', 12),
+                 hidden_channels=cfg.get('hidden_channels', [128, 64, 32]),
+                 output_dim=cfg.get('output_dim', 1),
+                 output_type=cfg.get('output_type', 'prediction')
+             )
+        elif model_name == 'AutoDeconv':
+             self.model = AutoDeconvNet(
+                 input_dim=cfg.get('feature_dim', 12),
+                 latent_dim=cfg.get('latent_dim', 64),
+                 hidden_channels=cfg.get('hidden_channels', [32, 64, 128]),
+                 output_type=cfg.get('output_type', 'prediction')
+             )
+        elif model_name == 'DCIGN':
+             latent_dim = cfg.get('latent_dim', 128)
+             num_intrinsic = cfg.get('num_intrinsic', latent_dim // 4)
+             num_extrinsic = latent_dim - num_intrinsic
+             self.model = DCIGN(
+                 input_dim=cfg.get('feature_dim', 12),
+                 latent_dim=latent_dim,
+                 hidden_channels=cfg.get('hidden_channels', [32, 64, 128, 256]),
+                 num_intrinsic=num_intrinsic,
+                 num_extrinsic=num_extrinsic,
+                 output_type=cfg.get('output_type', 'prediction')
+             )
+        elif model_name == 'LSM':
+             self.model = LiquidStateMachine(
+                 input_dim=cfg.get('feature_dim', 12),
+                 liquid_size=cfg.get('liquid_size', 200),
+                 output_dim=cfg.get('output_dim', 1),
+                 connection_prob=cfg.get('connection_prob', 0.3),
+                 spectral_radius=cfg.get('spectral_radius', 1.2),
+                 output_type=cfg.get('output_type', 'prediction')
+             )
+        elif model_name == 'ResNet':
+             self.model = DeepResNet(
+                 input_dim=cfg.get('feature_dim', 12),
+                 hidden_dim=cfg.get('hidden_dim', 128),
+                 num_blocks=cfg.get('num_blocks', 4),
+                 output_dim=cfg.get('output_dim', 1),
+                 use_conv=cfg.get('use_conv', False),
+                 dropout=cfg.get('dropout', 0.1),
+                 output_type=cfg.get('output_type', 'prediction')
+             )
+        elif model_name == 'DNC':
+             self.model = DNC(
+                 input_dim=cfg.get('feature_dim', 12),
+                 hidden_dim=cfg.get('hidden_dim', 128),
+                 memory_size=cfg.get('memory_size', 64),
+                 memory_dim=cfg.get('memory_dim', 32),
+                 num_reads=cfg.get('num_reads', 4),
+                 output_dim=cfg.get('output_dim', 1),
+                 controller_type=cfg.get('controller_type', 'lstm'),
+                 output_type=cfg.get('output_type', 'prediction')
+             )
+        elif model_name == 'NTM':
+             self.model = NTM(
+                 input_dim=cfg.get('feature_dim', 12),
+                 hidden_dim=cfg.get('hidden_dim', 128),
+                 memory_size=cfg.get('memory_size', 128),
+                 memory_dim=cfg.get('memory_dim', 20),
+                 num_reads=cfg.get('num_reads', 1),
+                 num_writes=cfg.get('num_writes', 1),
+                 output_dim=cfg.get('output_dim', 1),
+                 controller_type=cfg.get('controller_type', 'lstm'),
+                 output_type=cfg.get('output_type', 'prediction')
+             )
+        elif model_name == 'Attention':
+             self.model = AttentionNetwork(
+                 input_dim=cfg.get('feature_dim', 12),
+                 d_model=cfg.get('d_model', 128),
+                 num_layers=cfg.get('num_layers', 4),
+                 num_heads=cfg.get('num_heads', 8),
+                 d_ff=cfg.get('d_ff', 512),
+                 output_dim=cfg.get('output_dim', 1),
+                 dropout=cfg.get('dropout', 0.1),
+                 max_seq_len=cfg.get('max_seq_len', 1000),
+                 output_type=cfg.get('output_type', 'prediction')
+             )
         else:
             raise ValueError(f"Unknown model: {model_name}")
 
@@ -194,8 +316,10 @@ class TimeSeriesBackbone(nn.Module):
         # Whitelist for models supporting return_sequence
         # All our new models I just refactored support it.
         sequence_supported = [
-            'LSTM', 'GRU', 'Mamba', 'xLSTM', 'SNN', 'ESN', 'MLP', 'ELM', 
-            'RBF', 'AE', 'DAE', 'SAE', 'Hopfield', 'RBM', 'SOM', 'Capsule'
+            'LSTM', 'GRU', 'Mamba', 'xLSTM', 'SNN', 'ESN', 'MLP', 'ELM',
+            'RBF', 'AE', 'DAE', 'SAE', 'Hopfield', 'RBM', 'SOM', 'Capsule',
+            'Perceptron', 'MarkovChain', 'BM', 'DBN', 'DCN', 'Deconv', 'AutoDeconv',
+            'DCIGN', 'LSM', 'ResNet', 'DNC', 'NTM', 'Attention'
         ]
         
         if self.cfg.get('name') in sequence_supported:

@@ -23,3 +23,17 @@ from .esn import EchoStateNetwork
 from .elm import ELM
 from .som import KohonenMap
 from .capsule import CapsuleLayer
+
+# New architectures
+from .perceptron import Perceptron
+from .markov_chain import MarkovChain
+from .boltzmann import BoltzmannMachine
+from .dbn import DeepBeliefNetwork
+from .dcn import DeepConvNet
+from .deconv import DeconvNet, AutoDeconvNet
+from .dcign import DCIGN
+from .lsm import LiquidStateMachine
+from .resnet import DeepResNet, ResidualBlock, ResNetBottleneck
+from .dnc import DNC, DNCMemory
+from .ntm import NTM, NTMMemory, NTMReadHead, NTMWriteHead
+from .attention_net import AttentionNetwork, MultiHeadAttention, AttentionBlock

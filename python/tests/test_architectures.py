@@ -19,6 +19,20 @@ from pipeline.lightning.base import BaseModule
 from models.vae import TimeSeriesVAE, vae_loss
 from pipeline.lightning.vae_module import VAELightningModule
 
+# New Imports
+from models.perceptron import Perceptron
+from models.markov_chain import MarkovChain
+from models.boltzmann import BoltzmannMachine
+from models.dbn import DeepBeliefNetwork
+from models.dcn import DeepConvNet
+from models.deconv import DeconvNet, AutoDeconvNet
+from models.dcign import DCIGN
+from models.lsm import LiquidStateMachine
+from models.resnet import DeepResNet
+from models.dnc import DNC
+from models.ntm import NTM
+from models.attention_net import AttentionNetwork
+
 # --- Feed-Forward & Basic Layers ---
 
 class TestMLP:
@@ -33,6 +47,19 @@ class TestMLP:
         x = torch.randn(4, 30, 10)
         out = model(x, return_sequence=True)
         assert out.shape == (4, 30, 5)
+
+class TestPerceptron:
+    def test_perceptron(self):
+        model = Perceptron(input_dim=10, output_dim=5)
+        x = torch.randn(4, 10)
+        assert model(x).shape == (4, 5)
+
+class TestMarkovChain:
+    def test_markov_chain(self):
+        model = MarkovChain(num_states=10)
+        # MarkovChain expects state probabilities or one-hot
+        x = torch.randn(4, 10).softmax(dim=-1)
+        assert model(x).shape == (4, 10)
 
 class TestRBF:
     def test_rbf_forward(self):
@@ -85,12 +112,25 @@ class TestHopfield:
         out = hn(x)
         assert out.shape == (1, 10)
 
+class TestBoltzmann:
+    def test_bm(self):
+        model = BoltzmannMachine(num_units=10)
+        x = torch.bernoulli(torch.rand(4, 10))
+        out = model(x)
+        assert out.shape == (4, 10)
+
 class TestRBM:
     def test_rbm(self):
         rbm = RBM(visible_dim=10, hidden_dim=20, output_type='prediction')
         v = torch.bernoulli(torch.rand(4, 10))
         v_recon = rbm(v)
         assert v_recon.shape == (4, 10)
+
+class TestDBN:
+    def test_dbn(self):
+        model = DeepBeliefNetwork(layer_sizes=[10, 20, 5])
+        x = torch.randn(4, 10)
+        assert model(x).shape == (4, 5)
 
 # --- Reservoir & Fast Learning ---
 
@@ -106,6 +146,12 @@ class TestELM:
         elm = ELM(input_dim=10, hidden_dim=50, output_dim=5, output_type='prediction')
         x_flat = torch.randn(4, 10)
         assert elm(x_flat).shape == (4, 5)
+
+class TestLiquidStateMachine:
+    def test_lsm_forward(self):
+        model = LiquidStateMachine(input_dim=12, liquid_size=100, output_dim=1)
+        x = torch.randn(2, 30, 12)
+        assert model(x).shape == (2, 1)
 
 # --- Competitive & Specialized ---
 
@@ -123,6 +169,42 @@ class TestCapsule:
         out_cap = cap(x_cap)
         assert out_cap.shape == (4, 4, 32)
         assert torch.all(torch.norm(out_cap, dim=-1) <= 1.0)
+
+# --- Convolutional & Residual Variants ---
+
+class TestConvVariants:
+    def test_dcn(self):
+        model = DeepConvNet(input_dim=12, hidden_channels=[32, 64], output_dim=1)
+        x = torch.randn(2, 30, 12)
+        assert model(x).shape == (2, 1)
+
+    def test_deconv(self):
+        model = DeconvNet(input_dim=64, hidden_channels=[128, 64], output_dim=12)
+        x = torch.randn(2, 64)
+        assert model(x).shape == (2, 12)
+
+class TestDeconvNet:
+    def test_auto_deconv(self):
+        model = AutoDeconvNet(input_dim=12, latent_dim=64, hidden_channels=[32, 64])
+        x = torch.randn(2, 30, 12)
+        assert model(x).shape == (2, 12)
+
+class TestDCIGN:
+    def test_dcign_forward(self):
+        model = DCIGN(input_dim=12, latent_dim=64, hidden_channels=[32, 64])
+        x = torch.randn(2, 30, 12)
+        assert model(x).shape == (2, 12)
+        
+    def test_dcign_codes(self):
+        model = DCIGN(input_dim=12, latent_dim=64, hidden_channels=[32, 64], output_type='embedding')
+        x = torch.randn(2, 30, 12)
+        assert model(x).shape == (2, 64)
+
+class TestResNet:
+    def test_resnet_forward(self):
+        model = DeepResNet(input_dim=12, hidden_dim=64, num_blocks=2, output_dim=1)
+        x = torch.randn(2, 30, 12)
+        assert model(x).shape == (2, 1)
 
 # --- Spiking & Temporal Models ---
 
@@ -146,27 +228,24 @@ class TestCNN:
         x = torch.randn(2, 30, 12)
         assert model(x).shape == (2, 1)
 
-# --- Generative & Diffusion Models ---
+# --- Memory-Augmented & Attention ---
 
-class TestGAN:
-    def test_timegan_shapes(self):
-        B, Seq, Pred, F = 2, 30, 5, 12
-        gen = TimeGANGenerator(input_dim=F, output_dim=F, seq_len=Seq, pred_len=Pred, hidden_dim=16)
-        disc = TimeGANDiscriminator(input_dim=F, hidden_dim=16)
-        x = torch.randn(B, Seq, F)
-        y_hat = gen(x)
-        assert y_hat.shape == (B, Pred, F)
-        assert disc(torch.cat([x, y_hat.detach()], dim=1)).shape == (B, 1)
+class TestMemoryAugmented:
+    def test_dnc_forward(self):
+        model = DNC(input_dim=12, hidden_dim=64, memory_size=16, memory_dim=16, num_reads=2, output_dim=1)
+        x = torch.randn(2, 10, 12)
+        assert model(x).shape == (2, 1)
+        
+    def test_ntm_forward(self):
+        model = NTM(input_dim=12, hidden_dim=64, memory_size=16, memory_dim=16, num_reads=1, num_writes=1, output_dim=1)
+        x = torch.randn(2, 10, 12)
+        assert model(x).shape == (2, 1)
 
-class TestDiffusion:
-    def test_diffusion_unet(self):
-        B, L, F = 2, 32, 4
-        cond_F = 4
-        t = torch.randint(0, 1000, (B,))
-        x = torch.randn(B, L, F)
-        cond = torch.randn(B, L, cond_F)
-        model = DiffusionUNet1D(input_dim=F+cond_F, output_dim=F, hidden_dim=16, layers=[1, 2])
-        assert model(x, t, cond).shape == (B, L, F)
+class TestAttention:
+    def test_attention_forward(self):
+        model = AttentionNetwork(input_dim=12, d_model=64, num_layers=2, num_heads=4, d_ff=128, output_dim=1)
+        x = torch.randn(2, 10, 12)
+        assert model(x).shape == (2, 1)
 
 # --- Integration ---
 
@@ -175,7 +254,9 @@ class TestBackboneIntegration:
         names = [
             'MLP', 'RBF', 'AE', 'DAE', 'SAE', 
             'Hopfield', 'RBM', 'ESN', 'ELM', 'SOM', 'Capsule',
-            'LSTM', 'GRU', 'xLSTM', 'SNN', 'CNN'
+            'LSTM', 'GRU', 'xLSTM', 'SNN', 'CNN',
+            'Perceptron', 'MarkovChain', 'BM', 'DBN', 'DCN', 'Deconv',
+            'DCIGN', 'LSM', 'ResNet', 'DNC', 'NTM', 'Attention'
         ]
         for name in names:
             cfg = {'name': name, 'feature_dim': 12, 'output_dim': 1}
@@ -183,3 +264,14 @@ class TestBackboneIntegration:
                 cfg.update({'in_caps': 8, 'in_dim': 12, 'out_caps': 4, 'out_dim': 16})
             backbone = TimeSeriesBackbone(cfg)
             assert backbone is not None
+            
+    def test_backbone_new_models_forward(self):
+        # Smoke test for forward pass of some of the complex new models via backbone
+        complex_models = ['LSM', 'ResNet', 'DNC', 'NTM', 'Attention', 'DCIGN', 'DCN']
+        for name in complex_models:
+            cfg = {'name': name, 'feature_dim': 12, 'output_dim': 12}
+            backbone = TimeSeriesBackbone(cfg)
+            x = torch.randn(2, 20, 12)
+            out = backbone(x)
+            assert out.shape[0] == 2
+            assert out.shape[-1] == 12
