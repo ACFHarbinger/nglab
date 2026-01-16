@@ -6,6 +6,7 @@ from .nstransformer import NSTransformer
 from .tsmamba import TSMamba
 from .rnn import LSTM, GRU
 from .xlstm import xLSTM
+from .snn import SNN
 from .cnn import RollingWindowCNN
 
 # Assuming NSTransformer exists in .nstransformer or we port it here.
@@ -86,6 +87,17 @@ class TimeSeriesBackbone(nn.Module):
                  hidden_dim=cfg.get('hidden_dim', 128),
                  output_type=cfg.get('output_type', 'embedding')
              )
+        elif model_name == 'SNN':
+             self.model = SNN(
+                 input_dim=cfg.get('feature_dim', 12),
+                 output_dim=cfg.get('output_dim', 1),
+                 hidden_dim=cfg.get('hidden_dim', 128),
+                 n_layers=cfg.get('num_layers', 2),
+                 dropout=cfg.get('dropout', 0.0),
+                 output_type=cfg.get('output_type', 'embedding'),
+                 decay=cfg.get('decay', 0.9),
+                 threshold=cfg.get('threshold', 1.0)
+             )
         else:
             raise ValueError(f"Unknown model: {model_name}")
 
@@ -119,7 +131,7 @@ class TimeSeriesBackbone(nn.Module):
         # But Mamba, LSTM, GRU, xLSTM now support return_sequence.
         # NSTransformer/CNN might not yet.
         # Check name?
-        if self.cfg.get('name') in ['LSTM', 'GRU', 'Mamba', 'xLSTM']:
+        if self.cfg.get('name') in ['LSTM', 'GRU', 'Mamba', 'xLSTM', 'SNN']:
              # These support return_sequence
              # If return_sequence is False, it just works too.
              pass
