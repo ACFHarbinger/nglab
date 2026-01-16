@@ -426,3 +426,6 @@ results/
 
 # Added by gradle
 /.gradle
+
+# LLM agents
+.claude/

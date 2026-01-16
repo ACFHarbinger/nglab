@@ -54,4 +54,19 @@ tui = ["dep:ratatui", "dep:crossterm", "dep:color-eyre", "logging"]
 logging = ["dep:rerun"]
 
 [dev-dependencies]
-criterion = "0.8"
+criterion = { version = "0.8", features = ["html_reports"] }
+
+[[bench]]
+name = "arena_bench"
+harness = false
+path = "benchmarks/arena_bench.rs"
+
+[[bench]]
+name = "orderbook_bench"
+harness = false
+path = "benchmarks/orderbook_bench.rs"
+
+[[bench]]
+name = "trading_env_bench"
+harness = false
+path = "benchmarks/trading_env_bench.rs"
