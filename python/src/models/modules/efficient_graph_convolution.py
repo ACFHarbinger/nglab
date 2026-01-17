@@ -1,28 +1,30 @@
 """Optimized Graph Convolution implementation with multiple aggregators."""
-import torch
 
+from collections.abc import Iterable
+
+import torch
 from torch import Tensor
-from torch.nn import Parameter, Linear
-from typing import Iterable, Optional, Tuple
+from torch.nn import Linear, Parameter
 from torch_geometric.nn import MessagePassing
-from torch_geometric.utils import scatter
-from torch_geometric.nn.inits import glorot, zeros
 from torch_geometric.nn.conv.gcn_conv import gcn_norm
-from torch_geometric.utils import add_remaining_self_loops
-from torch_geometric.typing import SparseTensor, OptTensor, Adj, torch_sparse
+from torch_geometric.nn.inits import glorot, zeros
+from torch_geometric.typing import Adj, OptTensor, SparseTensor, torch_sparse
+from torch_geometric.utils import add_remaining_self_loops, scatter
 
 
 # Adapted from https://github.com/shyam196/egc
 class EfficientGraphConvolution(MessagePassing):
     """
     Efficient Graph Convolution (EGC) with multiple aggregators.
-    
-    This layer computes node updates using a linear combination of different 
+
+    This layer computes node updates using a linear combination of different
     neighborhood aggregations (mean, max, sum, var, std, symnorm) and self-features.
     Supports multi-head weights and basis functions for efficiency.
     """
-    _cached_edge_index: Optional[Tuple[Tensor, OptTensor]]
-    _cached_adj_t: Optional[SparseTensor]
+
+    _cached_edge_index: tuple[Tensor, OptTensor] | None
+    _cached_adj_t: SparseTensor | None
+
     def __init__(
         self,
         in_channels: int,
@@ -34,7 +36,8 @@ class EfficientGraphConvolution(MessagePassing):
         add_self_loops: bool = True,
         bias: bool = True,
         sigmoid: bool = False,
-        **kwargs):
+        **kwargs,
+    ):
         """
         Args:
             in_channels: Dimension of input features.
@@ -56,7 +59,7 @@ class EfficientGraphConvolution(MessagePassing):
 
         for a in aggrs:
             if a not in {"sum", "mean", "symnorm", "min", "max", "var", "std"}:
-                raise ValueError("Unsupported aggregator: {}".format(a))
+                raise ValueError(f"Unsupported aggregator: {a}")
 
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -65,7 +68,7 @@ class EfficientGraphConvolution(MessagePassing):
         self.cached = cached
         self.add_self_loops = add_self_loops
         self.aggregators = list(aggrs)
-        self.sigmoid = sigmoid 
+        self.sigmoid = sigmoid
 
         self.bases_weight = Parameter(
             torch.Tensor(in_channels, (out_channels // num_heads) * num_bases)
@@ -169,7 +172,10 @@ class EfficientGraphConvolution(MessagePassing):
         )
 
         weightings = weightings.view(
-            batch_size, num_nodes, self.num_heads, self.num_bases * len(self.aggregators)
+            batch_size,
+            num_nodes,
+            self.num_heads,
+            self.num_bases * len(self.aggregators),
         )
         aggregated = aggregated.view(
             batch_size,
@@ -196,7 +202,7 @@ class EfficientGraphConvolution(MessagePassing):
         self,
         inputs: Tensor,
         index: Tensor,
-        dim_size: Optional[int] = None,
+        dim_size: int | None = None,
         symnorm_weight: OptTensor = None,
     ) -> Tensor:
         """
@@ -210,7 +216,11 @@ class EfficientGraphConvolution(MessagePassing):
             elif aggregator == "symnorm":
                 assert symnorm_weight is not None
                 out = scatter(
-                    inputs * symnorm_weight.unsqueeze(-1), index, 0, dim_size, reduce="sum"
+                    inputs * symnorm_weight.unsqueeze(-1),
+                    index,
+                    0,
+                    dim_size,
+                    reduce="sum",
                 )
             elif aggregator == "mean":
                 out = scatter(inputs, index, 0, dim_size, reduce="mean")
@@ -266,9 +276,4 @@ class EfficientGraphConvolution(MessagePassing):
 
     def __repr__(self):
         """String representation of the layer."""
-        return "{}({}, {}, {})".format(
-            self.__class__.__name__,
-            self.in_channels,
-            self.out_channels,
-            self.aggregators,
-        )
+        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels}, {self.aggregators})"

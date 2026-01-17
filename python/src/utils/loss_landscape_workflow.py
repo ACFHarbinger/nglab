@@ -1,13 +1,16 @@
 """
 Workflow for generating and visualizing reward landscapes.
 """
-import torch
-import torch.nn as nn
-import numpy as np
-import matplotlib.pyplot as plt
+
 import loss_landscapes
 import loss_landscapes.metrics
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+from torch import nn
+
 from environment import TradingEnv
+
 
 def evaluate_model(model, env, num_steps=100):
     """
@@ -19,13 +22,13 @@ def evaluate_model(model, env, num_steps=100):
     model.eval()
     obs, info = env.reset()
     total_reward = 0
-    
+
     # Try to get device from parameters
     try:
         device = next(model.parameters()).device
     except (AttributeError, StopIteration):
         device = torch.device("cpu")
-    
+
     with torch.no_grad():
         for _ in range(num_steps):
             # Convert observation to tensor
@@ -33,19 +36,21 @@ def evaluate_model(model, env, num_steps=100):
             # Invoke forward explicitly as the wrapper might not be callable
             action_logits = model.forward(obs_tensor)
             action = torch.argmax(action_logits, dim=-1).item()
-            
+
             obs, reward, terminated, truncated, info = env.step(action)
             total_reward += reward
-            
+
             if terminated or truncated:
                 break
-                
+
     return -total_reward
+
 
 class SimplePolicy(nn.Module):
     """
     Simple 2-layer MLP policy for landscape analysis.
     """
+
     def __init__(self, input_dim=6, hidden_dim=64, output_dim=3):
         """
         Initialize.
@@ -55,14 +60,15 @@ class SimplePolicy(nn.Module):
             nn.Flatten(),
             nn.Linear(30 * input_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, output_dim)
+            nn.Linear(hidden_dim, output_dim),
         )
-        
+
     def forward(self, x):
         """
         Forward pass.
         """
         return self.net(x)
+
 
 def run_landscape_analysis():
     """
@@ -70,20 +76,20 @@ def run_landscape_analysis():
     """
     print("Initializing environment...")
     env = TradingEnv(lookback=30, max_steps=100)
-    
+
     print("Initializing model...")
     model = SimplePolicy()
-    
+
     # We want to see how the landscape looks around the current weights
     # We'll use a random direction approach (standard for loss-landscapes)
     x_bound = 1.0
     y_bound = 1.0
     steps = 20
-    
+
     print(f"Generating landscape surface ({steps}x{steps} grid)...")
     # Metric targets 'evaluate_model' and varies model parameters along two random directions
     metric = lambda model_copy: evaluate_model(model_copy, env)
-    
+
     # Generate the landscape
     # This might take a few seconds as it steps the env many times
     landscape = loss_landscapes.random_plane(
@@ -91,30 +97,31 @@ def run_landscape_analysis():
         metric,
         distance=1,
         steps=steps,
-        normalization='filter',
-        deepcopy_model=True
+        normalization="filter",
+        deepcopy_model=True,
     )
-    
+
     print("Plotting landscape...")
     fig = plt.figure(figsize=(10, 7))
-    ax = fig.add_subplot(111, projection='3d')
-    
+    ax = fig.add_subplot(111, projection="3d")
+
     X = np.linspace(-x_bound, x_bound, steps)
     Y = np.linspace(-y_bound, y_bound, steps)
     X, Y = np.meshgrid(X, Y)
     Z = landscape
-    
-    surf = ax.plot_surface(X, Y, Z, cmap='viridis', edgecolor='none')
+
+    surf = ax.plot_surface(X, Y, Z, cmap="viridis", edgecolor="none")
     fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
-    
-    ax.set_title('3D Reward Landscape (Negative Total Reward)')
-    ax.set_xlabel('Direction 1')
-    ax.set_ylabel('Direction 2')
-    ax.set_zlabel('Loss (-Reward)')
-    
+
+    ax.set_title("3D Reward Landscape (Negative Total Reward)")
+    ax.set_xlabel("Direction 1")
+    ax.set_ylabel("Direction 2")
+    ax.set_zlabel("Loss (-Reward)")
+
     output_path = "loss_landscape_3d.png"
     plt.savefig(output_path)
     print(f"Landscape saved to {output_path}")
+
 
 if __name__ == "__main__":
     run_landscape_analysis()

@@ -8,7 +8,26 @@ import PredictionTab from "./components/PredictionTab";
 import TrainingTab from "./components/TrainingTab";
 import NewsTab from "./components/NewsTab";
 import { useArena } from "./hooks/useArena";
-import { Play, Square, RotateCcw, Activity, LineChart, Download, Brain, Calculator, ArrowUpRight, LayoutDashboard, Search, Star, Users, ShoppingCart, LogIn, User, GraduationCap, Newspaper } from "lucide-react";
+import {
+  Play,
+  Square,
+  RotateCcw,
+  Activity,
+  LineChart,
+  Download,
+  Brain,
+  Calculator,
+  ArrowUpRight,
+  LayoutDashboard,
+  Search,
+  Star,
+  Users,
+  ShoppingCart,
+  LogIn,
+  User,
+  GraduationCap,
+  Newspaper,
+} from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
 import { usePolymarket } from "./hooks/usePolymarket";
 import clsx from "clsx";
@@ -23,20 +42,37 @@ import { DashboardOverview } from "./components/dashboard/DashboardOverview";
  */
 function App() {
   const { data: arenaData, history, isRunning, start, stop } = useArena();
-  const { livePrices, isStreaming, activeMarket, startStream, stopStream, setActiveMarket } = usePolymarket();
+  const {
+    livePrices,
+    isStreaming,
+    activeMarket,
+    startStream,
+    stopStream,
+    setActiveMarket,
+  } = usePolymarket();
   const [logs, setLogs] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'simulation' | 'scraper' | 'analysis' | 'prediction' | 'pricing' | 'terminal' | 'training' | 'news'>('dashboard');
+  const [activeTab, setActiveTab] = useState<
+    | "dashboard"
+    | "simulation"
+    | "scraper"
+    | "analysis"
+    | "prediction"
+    | "pricing"
+    | "terminal"
+    | "training"
+    | "news"
+  >("dashboard");
 
   // Listen for logs
   useEffect(() => {
     const unlisten = listen("arena-update", (event: any) => {
       if (event.payload.message) {
-        setLogs(prev => [event.payload.message, ...prev].slice(0, 50));
+        setLogs((prev) => [event.payload.message, ...prev].slice(0, 50));
       }
     });
 
     return () => {
-      unlisten.then(f => f());
+      unlisten.then((f) => f());
     };
   }, []);
 
@@ -74,119 +110,113 @@ function App() {
           {/* Main Navigation */}
           <nav className="flex items-center gap-1">
             <button
-              onClick={() => setActiveTab('dashboard')}
+              onClick={() => setActiveTab("dashboard")}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                activeTab === 'dashboard'
+                activeTab === "dashboard"
                   ? "text-white bg-slate-800"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
               )}
             >
               <LayoutDashboard size={16} /> Dashboard
             </button>
             <button
-              onClick={() => setActiveTab('prediction')}
+              onClick={() => setActiveTab("prediction")}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                activeTab === 'prediction'
+                activeTab === "prediction"
                   ? "text-white bg-slate-800"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
               )}
             >
               <Brain size={16} /> Intelligence
             </button>
             <button
-              onClick={() => setActiveTab('terminal')}
+              onClick={() => setActiveTab("terminal")}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                activeTab === 'terminal'
+                activeTab === "terminal"
                   ? "text-white bg-slate-800"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
               )}
             >
               <ArrowUpRight size={16} /> Markets
             </button>
 
             <button
-              onClick={() => setActiveTab('analysis')}
+              onClick={() => setActiveTab("analysis")}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                activeTab === 'analysis'
+                activeTab === "analysis"
                   ? "text-white bg-slate-800"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
               )}
             >
               <ShoppingCart size={16} /> Positions
             </button>
-            <button
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all"
-            >
+            <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">
               <Star size={16} /> Favorites
             </button>
-            <button
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all"
-            >
+            <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">
               <Users size={16} /> Friends
             </button>
-            <button
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all"
-            >
+            <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">
               <User size={16} /> Account
             </button>
             {/* Separator */}
             <div className="w-px h-6 bg-slate-700 mx-2" />
             {/* Tool tabs moved from secondary nav */}
             <button
-              onClick={() => setActiveTab('simulation')}
+              onClick={() => setActiveTab("simulation")}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                activeTab === 'simulation'
+                activeTab === "simulation"
                   ? "text-white bg-slate-800"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
               )}
             >
               <LineChart size={16} /> Simulation
             </button>
             <button
-              onClick={() => setActiveTab('scraper')}
+              onClick={() => setActiveTab("scraper")}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                activeTab === 'scraper'
+                activeTab === "scraper"
                   ? "text-white bg-slate-800"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
               )}
             >
               <Download size={16} /> Scraper
             </button>
             <button
-              onClick={() => setActiveTab('pricing')}
+              onClick={() => setActiveTab("pricing")}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                activeTab === 'pricing'
+                activeTab === "pricing"
                   ? "text-white bg-slate-800"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
               )}
             >
               <Calculator size={16} /> Pricing
             </button>
             <button
-              onClick={() => setActiveTab('training')}
+              onClick={() => setActiveTab("training")}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                activeTab === 'training'
+                activeTab === "training"
                   ? "text-white bg-slate-800"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
               )}
             >
               <GraduationCap size={16} /> Training
             </button>
             <button
-              onClick={() => setActiveTab('news')}
+              onClick={() => setActiveTab("news")}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                activeTab === 'news'
+                activeTab === "news"
                   ? "text-white bg-slate-800"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
               )}
             >
               <Newspaper size={16} /> News
@@ -207,7 +237,7 @@ function App() {
           </div>
 
           {/* Simulation Controls (when in simulation tab) */}
-          {activeTab === 'simulation' && (
+          {activeTab === "simulation" && (
             <div className="flex gap-2">
               {!isRunning ? (
                 <button
@@ -235,42 +265,51 @@ function App() {
             <LogIn size={16} /> Login
           </button>
         </div>
-      </header >
+      </header>
 
       {/* Live Indicator Bar (only shows when streaming) */}
-      {
-        isStreaming && activeMarket && (
-          <div className="border-b border-slate-800 bg-slate-900/50 w-full px-4 py-1.5">
-            <span className="flex items-center gap-1.5 text-[10px] text-green-500 font-mono tracking-wide uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              Polymarket Live: {activeMarket.title.slice(0, 40)}...
-            </span>
-          </div>
-        )
-      }
+      {isStreaming && activeMarket && (
+        <div className="border-b border-slate-800 bg-slate-900/50 w-full px-4 py-1.5">
+          <span className="flex items-center gap-1.5 text-[10px] text-green-500 font-mono tracking-wide uppercase">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            Polymarket Live: {activeMarket.title.slice(0, 40)}...
+          </span>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="flex-1 overflow-hidden relative">
-        {activeTab === 'dashboard' ? (
-          <DashboardOverview onNavigateToTerminal={(id) => {
-            console.log("Navigating to market:", id);
-            setActiveTab('terminal');
-            // Future: Set active market by ID here
-          }} />
-        ) : activeTab === 'simulation' ? (
+        {activeTab === "dashboard" ? (
+          <DashboardOverview
+            onNavigateToTerminal={(id) => {
+              console.log("Navigating to market:", id);
+              setActiveTab("terminal");
+              // Future: Set active market by ID here
+            }}
+          />
+        ) : activeTab === "simulation" ? (
           <div className="grid grid-cols-12 gap-6 h-full p-4">
             {/* Left: Charts & Orderbook */}
             <div className="col-span-8 flex flex-col gap-6 h-full overflow-hidden">
               <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex-1 relative overflow-hidden flex flex-col">
                 <div className="flex justify-between items-center mb-2">
-                  <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Live Price (Polymarket)</h3>
+                  <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+                    Live Price (Polymarket)
+                  </h3>
                   {isStreaming && (
                     <div className="flex gap-2">
-                      {Object.entries(livePrices).slice(0, 3).map(([id, price]) => (
-                        <span key={id} className="text-xs font-mono bg-slate-800 px-1.5 py-0.5 rounded text-green-400">
-                          {activeMarket?.outcomes.find(o => o.id === id)?.name || id.slice(0, 4)}: ${price.toFixed(3)}
-                        </span>
-                      ))}
+                      {Object.entries(livePrices)
+                        .slice(0, 3)
+                        .map(([id, price]) => (
+                          <span
+                            key={id}
+                            className="text-xs font-mono bg-slate-800 px-1.5 py-0.5 rounded text-green-400"
+                          >
+                            {activeMarket?.outcomes.find((o) => o.id === id)
+                              ?.name || id.slice(0, 4)}
+                            : ${price.toFixed(3)}
+                          </span>
+                        ))}
                     </div>
                   )}
                 </div>
@@ -280,8 +319,14 @@ function App() {
               </div>
 
               <div className="h-64 bg-slate-900/50 border border-slate-800 rounded-xl p-4 overflow-hidden">
-                <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">Order Book Depth</h3>
-                <OrderBook book={arenaData?.orderbook || { bids: {}, asks: {}, timestamp: 0 }} />
+                <h3 className="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-wider">
+                  Order Book Depth
+                </h3>
+                <OrderBook
+                  book={
+                    arenaData?.orderbook || { bids: {}, asks: {}, timestamp: 0 }
+                  }
+                />
               </div>
             </div>
 
@@ -291,12 +336,18 @@ function App() {
               <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-xl p-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-indigo-300 uppercase font-bold">Current Step</p>
+                    <p className="text-xs text-indigo-300 uppercase font-bold">
+                      Current Step
+                    </p>
                     <p className="text-2xl font-mono">{arenaData?.step || 0}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-indigo-300 uppercase font-bold">Portfolio Value</p>
-                    <p className={`text-2xl font-mono ${(arenaData?.portfolio_value || 0) >= 10000 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <p className="text-xs text-indigo-300 uppercase font-bold">
+                      Portfolio Value
+                    </p>
+                    <p
+                      className={`text-2xl font-mono ${(arenaData?.portfolio_value || 0) >= 10000 ? "text-emerald-400" : "text-rose-400"}`}
+                    >
                       {arenaData?.portfolio_value?.toFixed(2) || "10000.00"}
                     </p>
                   </div>
@@ -305,12 +356,23 @@ function App() {
 
               {/* Log Panel */}
               <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex-1 flex flex-col overflow-hidden">
-                <h3 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Agent Logs</h3>
+                <h3 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">
+                  Agent Logs
+                </h3>
                 <div className="flex-1 overflow-y-auto font-mono text-xs space-y-1 pr-2 scrollbar-thin scrollbar-thumb-slate-700">
-                  {logs.length === 0 && <p className="text-slate-600 italic">Waiting for simulation data...</p>}
+                  {logs.length === 0 && (
+                    <p className="text-slate-600 italic">
+                      Waiting for simulation data...
+                    </p>
+                  )}
                   {logs.map((log, i) => (
-                    <div key={i} className="text-slate-300 border-l border-slate-700 pl-2 py-0.5">
-                      <span className="text-indigo-400 opacity-50 mr-2">[{new Date().toLocaleTimeString()}]</span>
+                    <div
+                      key={i}
+                      className="text-slate-300 border-l border-slate-700 pl-2 py-0.5"
+                    >
+                      <span className="text-indigo-400 opacity-50 mr-2">
+                        [{new Date().toLocaleTimeString()}]
+                      </span>
                       {log}
                     </div>
                   ))}
@@ -318,7 +380,7 @@ function App() {
               </div>
             </div>
           </div>
-        ) : activeTab === 'scraper' ? (
+        ) : activeTab === "scraper" ? (
           <div className="h-full bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
             <ScraperTab
               livePrices={livePrices}
@@ -329,29 +391,29 @@ function App() {
               setActiveMarket={setActiveMarket}
             />
           </div>
-        ) : activeTab === 'analysis' ? (
+        ) : activeTab === "analysis" ? (
           <AnalysisTab
             livePrices={livePrices}
             isStreaming={isStreaming}
             activeMarket={activeMarket}
           />
-        ) : activeTab === 'prediction' ? (
+        ) : activeTab === "prediction" ? (
           <PredictionTab
             livePrices={livePrices}
             isStreaming={isStreaming}
             activeMarket={activeMarket}
           />
-        ) : activeTab === 'terminal' ? (
+        ) : activeTab === "terminal" ? (
           <TerminalLayout />
-        ) : activeTab === 'training' ? (
+        ) : activeTab === "training" ? (
           <TrainingTab />
-        ) : activeTab === 'news' ? (
+        ) : activeTab === "news" ? (
           <NewsTab />
         ) : (
           <PricingTab />
         )}
       </main>
-    </div >
+    </div>
   );
 }
 

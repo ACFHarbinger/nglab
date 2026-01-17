@@ -34,7 +34,7 @@ def check_path(path):
         if not path.endswith(".py"):
             return []
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 tree = ast.parse(f.read())
         except SyntaxError:
             print(f"Syntax error in {path}")

@@ -1,49 +1,62 @@
 """
 Deconvolutional Network (DN) implementation.
 """
+
 """
 Deconvolutional Network (DN) implementation.
 """
-import torch.nn as nn
+from torch import nn
+
 
 class DeconvNet(nn.Module):
     """
     Deconvolutional Network (DN) - Transposed convolutions for upsampling.
     Used for generation and reconstruction tasks.
     """
-    def __init__(self, input_dim, hidden_channels=[128, 64, 32], output_dim=1, output_type='prediction'):
+
+    def __init__(
+        self,
+        input_dim,
+        hidden_channels=[128, 64, 32],
+        output_dim=1,
+        output_type="prediction",
+    ):
         """Initialize Deconvolutional Network."""
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.output_type = output_type
-        
+
         layers = []
         last_channels = input_dim
-        
+
         for h_channels in hidden_channels:
             # Transposed conv for upsampling
-            layers.append(nn.ConvTranspose1d(last_channels, h_channels, kernel_size=4, stride=2, padding=1))
+            layers.append(
+                nn.ConvTranspose1d(
+                    last_channels, h_channels, kernel_size=4, stride=2, padding=1
+                )
+            )
             layers.append(nn.BatchNorm1d(h_channels))
             layers.append(nn.ReLU())
             last_channels = h_channels
-            
+
         self.decoder = nn.Sequential(*layers)
         self.final_conv = nn.Conv1d(last_channels, output_dim, kernel_size=1)
-        
+
     def forward(self, x, return_embedding=None, return_sequence=False):
         """
         x: (Batch, Input_Dim) (latent/bottleneck) or (Batch, Units, Seq)
         """
         if x.dim() == 2:
-            x = x.unsqueeze(-1) # (Batch, Input_Dim, 1)
-            
+            x = x.unsqueeze(-1)  # (Batch, Input_Dim, 1)
+
         out = self.decoder(x)
         out = self.final_conv(out)
-        
+
         # (Batch, Output_Dim, Seq_out) -> (Batch, Seq_out, Output_Dim)
         out = out.transpose(1, 2)
-        
+
         if not return_sequence:
             return out[:, -1, :]
         return out
@@ -53,43 +66,58 @@ class AutoDeconvNet(nn.Module):
     """
     AutoDeconvNet - Uses DeconvNet for autoencoder architecture.
     """
-    def __init__(self, input_dim, latent_dim=64, hidden_channels=[32, 64, 128], output_type='prediction'):
+
+    def __init__(
+        self,
+        input_dim,
+        latent_dim=64,
+        hidden_channels=[32, 64, 128],
+        output_type="prediction",
+    ):
         """Initialize AutoDeconvNet."""
         super().__init__()
         self.input_dim = input_dim
         self.latent_dim = latent_dim
         self.output_type = output_type
-        
+
         # Encoder (Mirror of DeconvNet)
         layers = []
         last_channels = input_dim
         for h_channels in hidden_channels:
-            layers.append(nn.Conv1d(last_channels, h_channels, kernel_size=4, stride=2, padding=1))
+            layers.append(
+                nn.Conv1d(last_channels, h_channels, kernel_size=4, stride=2, padding=1)
+            )
             layers.append(nn.BatchNorm1d(h_channels))
             layers.append(nn.ReLU())
             last_channels = h_channels
-            
+
         self.encoder = nn.Sequential(*layers)
         self.pool = nn.AdaptiveAvgPool1d(1)
         self.fc_latent = nn.Linear(last_channels, latent_dim)
-        
+
         # Decoder
-        self.decoder = DeconvNet(latent_dim, list(reversed(hidden_channels)), input_dim, output_type)
-        
+        self.decoder = DeconvNet(
+            latent_dim, list(reversed(hidden_channels)), input_dim, output_type
+        )
+
     def forward(self, x, return_embedding=None, return_sequence=False, **kwargs):
         """Forward pass."""
         # x: (Batch, Seq, Input_Dim) -> (Batch, Input_Dim, Seq)
         if x.dim() == 2:
             x = x.unsqueeze(1)
-            
+
         x_in = x.transpose(1, 2)
-        
+
         e = self.encoder(x_in)
         z = self.fc_latent(self.pool(e).squeeze(-1))
-        
-        should_return_embedding = return_embedding if return_embedding is not None else (self.output_type == 'embedding')
-        
+
+        should_return_embedding = (
+            return_embedding
+            if return_embedding is not None
+            else (self.output_type == "embedding")
+        )
+
         if should_return_embedding:
             return z
-            
+
         return self.decoder(z, return_sequence=return_sequence)

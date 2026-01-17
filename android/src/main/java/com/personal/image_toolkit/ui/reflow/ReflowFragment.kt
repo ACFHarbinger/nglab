@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.personal.nglab.databinding.FragmentReflowBinding
 
 class ReflowFragment : Fragment() {
-
     private var _binding: FragmentReflowBinding? = null
 
     // This property is only valid between onCreateView and
@@ -20,7 +19,7 @@ class ReflowFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         val reflowViewModel =
             ViewModelProvider(this).get(ReflowViewModel::class.java)

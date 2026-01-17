@@ -10,14 +10,10 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.personal.nglab.databinding.ActivityAppBinding
-import com.personal.nglab.ui.windows.LoginFragment
-import com.personal.nglab.R // Ensure R is imported
 
 class AppActivity : AppCompatActivity() {
-
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityAppBinding
 
@@ -46,17 +42,19 @@ class AppActivity : AppCompatActivity() {
 
         // Update AppBarConfig with the new IDs defined in mobile_navigation.xml
         // Including all categories from PySide6: System Tools, Database, Web, Deep Learning
-        val topLevelDestinations = setOf(
-            R.id.nav_system_tools,
-            R.id.nav_web_integration,
-            R.id.nav_deep_learning
-        )
+        val topLevelDestinations =
+            setOf(
+                R.id.nav_system_tools,
+                R.id.nav_web_integration,
+                R.id.nav_deep_learning,
+            )
 
         binding.navView?.let {
-            appBarConfiguration = AppBarConfiguration(
-                topLevelDestinations,
-                binding.drawerLayout
-            )
+            appBarConfiguration =
+                AppBarConfiguration(
+                    topLevelDestinations,
+                    binding.drawerLayout,
+                )
             setupActionBarWithNavController(navController, appBarConfiguration)
             it.setupWithNavController(navController)
         }

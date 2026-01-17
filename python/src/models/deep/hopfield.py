@@ -3,26 +3,27 @@ Hopfield Network implementation.
 """
 
 import torch
-import torch
-import torch.nn as nn
+from torch import nn
+
 
 class HopfieldNetwork(nn.Module):
     """
     Discrete Hopfield Network.
     """
-    def __init__(self, size, output_type='embedding'):
+
+    def __init__(self, size, output_type="embedding"):
         """Initialize Hopfield Network."""
         super().__init__()
         self.size = size
         self.output_type = output_type
-        self.register_buffer('weights', torch.zeros(size, size))
-        
+        self.register_buffer("weights", torch.zeros(size, size))
+
     def store_patterns(self, patterns):
         """Store patterns using Hebbian learning."""
         w = torch.matmul(patterns.t(), patterns) / self.size
         w.fill_diagonal_(0)
         self.weights = w
-        
+
     def forward(self, x, iterations=10, return_embedding=None, return_sequence=False):
         """
         Retrieval as a 'forward' pass.
@@ -35,7 +36,7 @@ class HopfieldNetwork(nn.Module):
             out = y_flat.view(b, s, -1)
         else:
             out = self._retrieve(x, iterations)
-            
+
         if not return_sequence and out.dim() == 3:
             return out[:, -1, :]
         return out

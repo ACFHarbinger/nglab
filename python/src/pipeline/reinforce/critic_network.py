@@ -4,7 +4,9 @@ Critic Network for REINFORCE with Baseline.
 Estimates the value of a given state to provide a baseline for advantage
 calculation in Reinforcement Learning.
 """
+
 from torch import nn
+
 from ..models.graph_encoder import GraphAttentionEncoder
 
 
@@ -20,7 +22,7 @@ class CriticNetwork(nn.Module):
         embedding_dim,
         hidden_dim,
         n_layers,
-        encoder_normalization
+        encoder_normalization,
     ):
         """
         Initialize the critic network.
@@ -35,13 +37,11 @@ class CriticNetwork(nn.Module):
             n_heads=8,
             embed_dim=embedding_dim,
             n_layers=n_layers,
-            normalization=encoder_normalization
+            normalization=encoder_normalization,
         )
 
         self.value_head = nn.Sequential(
-            nn.Linear(embedding_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, 1)
+            nn.Linear(embedding_dim, hidden_dim), nn.ReLU(), nn.Linear(hidden_dim, 1)
         )
 
     def forward(self, inputs):

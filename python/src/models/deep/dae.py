@@ -1,22 +1,33 @@
 """
 Denoising AutoEncoder (DAE) implementation.
 """
+
 """
 Denoising AutoEncoder (DAE) implementation.
 """
 import torch
+
 from .ae import AutoEncoder
+
 
 class DenoisingAE(AutoEncoder):
     """
     Denoising AutoEncoder (DAE).
     Adds Gaussian noise during training.
     """
-    def __init__(self, input_dim, hidden_dims, latent_dim, noise_std=0.1, output_type='prediction'):
+
+    def __init__(
+        self,
+        input_dim,
+        hidden_dims,
+        latent_dim,
+        noise_std=0.1,
+        output_type="prediction",
+    ):
         """Initialize Denoising AutoEncoder."""
         super().__init__(input_dim, hidden_dims, latent_dim, output_type)
         self.noise_std = noise_std
-        
+
     def forward(self, x, return_embedding=None, return_sequence=False):
         """Forward pass."""
         if self.training:

@@ -3,14 +3,18 @@ Radial Basis Function (RBF) Network.
 """
 
 import torch
-import torch.nn as nn
+from torch import nn
+
 
 class RBF(nn.Module):
     """
     Radial Basis Function Network.
     Typically consist of an input layer, a hidden layer of RBF neurons, and a linear output layer.
     """
-    def __init__(self, input_dim, num_centers, output_dim, sigma=1.0, output_type='prediction'):
+
+    def __init__(
+        self, input_dim, num_centers, output_dim, sigma=1.0, output_type="prediction"
+    ):
         """
         Args:
             input_dim (int): Input feature dimension.
@@ -25,13 +29,13 @@ class RBF(nn.Module):
         self.output_dim = output_dim
         self.sigma = sigma
         self.output_type = output_type
-        
+
         # Centers are learnable parameters
         self.centers = nn.Parameter(torch.randn(num_centers, input_dim))
-        
+
         # Linear weights from hidden RBF to output
         self.linear = nn.Linear(num_centers, output_dim)
-        
+
     def kernel_function(self, x):
         """
         Gaussian RBF kernel: exp(-||x - c||^2 / (2 * sigma^2))
@@ -52,14 +56,18 @@ class RBF(nn.Module):
             emb = emb.view(b, s, -1)
         else:
             emb = self.kernel_function(x)
-            
-        should_return_embedding = return_embedding if return_embedding is not None else (self.output_type == 'embedding')
-        
+
+        should_return_embedding = (
+            return_embedding
+            if return_embedding is not None
+            else (self.output_type == "embedding")
+        )
+
         if should_return_embedding:
             if not return_sequence and emb.dim() == 3:
                 return emb[:, -1, :]
             return emb
-            
+
         out = self.linear(emb)
         if not return_sequence and out.dim() == 3:
             return out[:, -1, :]

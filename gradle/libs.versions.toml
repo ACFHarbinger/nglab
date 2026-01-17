@@ -16,6 +16,7 @@ navigationFragmentKtx = "2.6.0"
 navigationUiKtx = "2.6.0"
 shadow = "8.3.0"
 jvmVersion = "21"
+ktlint = "12.1.0"
 bouncycastle = "1.78.1"
 # Added JUnit 5 (Jupiter) and AssertJ versions
 junitJupiter = "5.10.2"
@@ -49,6 +50,7 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 
 [bundles]

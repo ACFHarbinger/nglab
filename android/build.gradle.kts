@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.ktlint)
 }
 
 android {
@@ -22,7 +23,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -55,8 +56,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     testImplementation("org.mockito:mockito-core:5.7.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
-    
-    // FIX: Moved fragment-testing from debugImplementation to testImplementation 
+
+    // FIX: Moved fragment-testing from debugImplementation to testImplementation
     // so it is available to the JVM unit tests (Robolectric).
     testImplementation("androidx.fragment:fragment-testing:1.6.2")
 

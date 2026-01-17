@@ -5,15 +5,18 @@ Provides various baseline implementations for the REINFORCE algorithm,
 including Rollout, Critic, and Exponential baselines, to reduce variance
 during training.
 """
+
+import copy
+
 import torch
 import torch.nn.functional as F
-from torch.utils.data import Dataset
 from scipy.stats import ttest_rel
-import copy
-from utils.ARP_HADRL.train import rollout, get_inner_model
+from torch.utils.data import Dataset
+from utils.ARP_HADRL.train import get_inner_model, rollout
+
 
 # Attention, Learn to Solve Routing Problems and Heterogeneous Attentions for Solving PDP via DRL
-class Baseline(object):
+class Baseline:
     """
     Abstract Base Class for REINFORCE baselines.
     """
@@ -66,7 +69,12 @@ class WarmupBaseline(Baseline):
     Baseline that warms up from an exponential baseline to another baseline.
     """
 
-    def __init__(self, baseline, n_epochs=1, warmup_exp_beta=0.8, ):
+    def __init__(
+        self,
+        baseline,
+        n_epochs=1,
+        warmup_exp_beta=0.8,
+    ):
         """
         Initialize Warmup baseline.
         """
@@ -106,7 +114,10 @@ class WarmupBaseline(Baseline):
         v, l = self.baseline.eval(x, c)
         vw, lw = self.warmup_baseline.eval(x, c)
         # Return convex combination of baseline and of loss
-        return self.alpha * v + (1 - self.alpha) * vw, self.alpha * l + (1 - self.alpha) * lw
+        return (
+            self.alpha * v + (1 - self.alpha) * vw,
+            self.alpha * l + (1 - self.alpha) * lw,
+        )
 
     def epoch_callback(self, model, epoch):
         """
@@ -116,7 +127,7 @@ class WarmupBaseline(Baseline):
         self.baseline.epoch_callback(model, epoch)
         if epoch < self.n_epochs:
             self.alpha = (epoch + 1) / float(self.n_epochs)
-            print("Set warmup alpha = {}".format(self.alpha))
+            print(f"Set warmup alpha = {self.alpha}")
 
     def state_dict(self):
         """
@@ -167,7 +178,7 @@ class ExponentialBaseline(Baseline):
         if self.v is None:
             v = c.mean()
         else:
-            v = self.beta * self.v + (1. - self.beta) * c.mean()
+            v = self.beta * self.v + (1.0 - self.beta) * c.mean()
 
         self.v = v.detach()  # Detach since we never want to backprop
         return self.v, 0  # No loss
@@ -176,15 +187,13 @@ class ExponentialBaseline(Baseline):
         """
         Return EMA state.
         """
-        return {
-            'v': self.v
-        }
+        return {"v": self.v}
 
     def load_state_dict(self, state_dict):
         """
         Load EMA state.
         """
-        self.v = state_dict['v']
+        self.v = state_dict["v"]
 
 
 class CriticBaseline(Baseline):
@@ -224,15 +233,13 @@ class CriticBaseline(Baseline):
         """
         Return critic state.
         """
-        return {
-            'critic': self.critic.state_dict()
-        }
+        return {"critic": self.critic.state_dict()}
 
     def load_state_dict(self, state_dict):
         """
         Load critic state.
         """
-        critic_state_dict = state_dict.get('critic', {})
+        critic_state_dict = state_dict.get("critic", {})
         if not isinstance(critic_state_dict, dict):  # backwards compatibility
             critic_state_dict = critic_state_dict.state_dict()
         self.critic.load_state_dict({**self.critic.state_dict(), **critic_state_dict})
@@ -263,15 +270,24 @@ class RolloutBaseline(Baseline):
 
         if dataset is not None:
             if len(dataset) != self.opts.val_size:
-                print("Warning: not using saved baseline dataset since val_size does not match")
+                print(
+                    "Warning: not using saved baseline dataset since val_size does not match"
+                )
                 dataset = None
-            elif (dataset[0] if self.problem.NAME == 'tsp' else dataset[0]['loc']).size(0) != self.opts.graph_size:
-                print("Warning: not using saved baseline dataset since graph_size does not match")
+            elif (dataset[0] if self.problem.NAME == "tsp" else dataset[0]["loc"]).size(
+                0
+            ) != self.opts.graph_size:
+                print(
+                    "Warning: not using saved baseline dataset since graph_size does not match"
+                )
                 dataset = None
 
         if dataset is None:
             self.dataset = self.problem.make_dataset(
-                size=self.opts.graph_size, num_samples=self.opts.val_size, distribution=self.opts.data_distribution)
+                size=self.opts.graph_size,
+                num_samples=self.opts.val_size,
+                distribution=self.opts.data_distribution,
+            )
         else:
             self.dataset = dataset
         print("Evaluating baseline model on evaluation dataset")
@@ -286,13 +302,17 @@ class RolloutBaseline(Baseline):
         print("Evaluating baseline on dataset...")
         # Need to convert baseline to 2D to prevent converting to double, see
         # https://discuss.pytorch.org/t/dataloader-gives-double-instead-of-float/717/3
-        return BaselineDataset(dataset, rollout(self.model, dataset, self.opts).view(-1, 1))
+        return BaselineDataset(
+            dataset, rollout(self.model, dataset, self.opts).view(-1, 1)
+        )
 
     def unwrap_batch(self, batch):
         """
         Unwrap batch previously wrapped by wrap_dataset.
         """
-        return batch['data'], batch['baseline'].view(-1)  # Flatten result to undo wrapping as 2D
+        return batch["data"], batch["baseline"].view(
+            -1
+        )  # Flatten result to undo wrapping as 2D
 
     def eval(self, x, c):
         """
@@ -316,28 +336,25 @@ class RolloutBaseline(Baseline):
 
         candidate_mean = candidate_vals.mean()
 
-        print("Epoch {} candidate mean {}, baseline epoch {} mean {}, difference {}".format(
-            epoch, candidate_mean, self.epoch, self.mean, candidate_mean - self.mean))
+        print(
+            f"Epoch {epoch} candidate mean {candidate_mean}, baseline epoch {self.epoch} mean {self.mean}, difference {candidate_mean - self.mean}"
+        )
         if candidate_mean - self.mean < 0:
             # Calc p value
             t, p = ttest_rel(candidate_vals, self.bl_vals)
 
             p_val = p / 2  # one-sided
             assert t < 0, "T-statistic should be negative"
-            print("p-value: {}".format(p_val))
+            print(f"p-value: {p_val}")
             if p_val < self.opts.bl_alpha:
-                print('Update baseline')
+                print("Update baseline")
                 self._update_model(model, epoch)
 
     def state_dict(self):
         """
         Return baseline model state.
         """
-        return {
-            'model': self.model,
-            'dataset': self.dataset,
-            'epoch': self.epoch
-        }
+        return {"model": self.model, "dataset": self.dataset, "epoch": self.epoch}
 
     def load_state_dict(self, state_dict):
         """
@@ -345,8 +362,10 @@ class RolloutBaseline(Baseline):
         """
         # We make it such that it works whether model was saved as data parallel or not
         load_model = copy.deepcopy(self.model)
-        get_inner_model(load_model).load_state_dict(get_inner_model(state_dict['model']).state_dict())
-        self._update_model(load_model, state_dict['epoch'], state_dict['dataset'])
+        get_inner_model(load_model).load_state_dict(
+            get_inner_model(state_dict["model"]).state_dict()
+        )
+        self._update_model(load_model, state_dict["epoch"], state_dict["dataset"])
 
 
 class BaselineDataset(Dataset):
@@ -362,16 +381,13 @@ class BaselineDataset(Dataset):
 
         self.dataset = dataset
         self.baseline = baseline
-        assert (len(self.dataset) == len(self.baseline))
+        assert len(self.dataset) == len(self.baseline)
 
     def __getitem__(self, item):
         """
         Get wrapped item index.
         """
-        return {
-            'data': self.dataset[item],
-            'baseline': self.baseline[item]
-        }
+        return {"data": self.dataset[item], "baseline": self.baseline[item]}
 
     def __len__(self):
         """

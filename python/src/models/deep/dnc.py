@@ -1,10 +1,12 @@
 """
 Differentiable Neural Computer (DNC) - Neural network with external memory
 """
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+
 from typing import Literal
+
+import torch
+import torch.nn.functional as F
+from torch import nn
 
 
 class DNCMemory(nn.Module):
@@ -18,6 +20,7 @@ class DNCMemory(nn.Module):
         memory_size: Number of memory slots (N)
         memory_dim: Dimension of each memory slot (W)
     """
+
     def __init__(self, memory_size: int, memory_dim: int):
         """Initialize DNC Memory."""
         super().__init__()
@@ -25,10 +28,7 @@ class DNCMemory(nn.Module):
         self.memory_dim = memory_dim
 
     def content_addressing(
-        self,
-        memory: torch.Tensor,
-        key: torch.Tensor,
-        strength: torch.Tensor
+        self, memory: torch.Tensor, key: torch.Tensor, strength: torch.Tensor
     ) -> torch.Tensor:
         """
         Content-based addressing using cosine similarity.
@@ -54,7 +54,7 @@ class DNCMemory(nn.Module):
         memory: torch.Tensor,
         write_weights: torch.Tensor,
         erase_vector: torch.Tensor,
-        write_vector: torch.Tensor
+        write_vector: torch.Tensor,
     ) -> torch.Tensor:
         """
         Update memory using write weights, erase vector, and write vector.
@@ -71,19 +71,17 @@ class DNCMemory(nn.Module):
             Updated memory (batch, N, W)
         """
         # Erase
-        erase = torch.einsum('bn,bw->bnw', write_weights, erase_vector)
+        erase = torch.einsum("bn,bw->bnw", write_weights, erase_vector)
         memory = memory * (1 - erase)
 
         # Write
-        write = torch.einsum('bn,bw->bnw', write_weights, write_vector)
+        write = torch.einsum("bn,bw->bnw", write_weights, write_vector)
         memory = memory + write
 
         return memory
 
     def read_memory(
-        self,
-        memory: torch.Tensor,
-        read_weights: torch.Tensor
+        self, memory: torch.Tensor, read_weights: torch.Tensor
     ) -> torch.Tensor:
         """
         Read from memory using read weights.
@@ -96,7 +94,7 @@ class DNCMemory(nn.Module):
             Read vectors (batch, num_reads, W)
         """
         # read_vectors = sum_i w_i * M_i
-        read_vectors = torch.einsum('brn,bnw->brw', read_weights, memory)
+        read_vectors = torch.einsum("brn,bnw->brw", read_weights, memory)
         return read_vectors
 
 
@@ -117,6 +115,7 @@ class DNC(nn.Module):
         controller_type: Type of controller ('lstm' or 'linear')
         output_type: 'prediction' returns output, 'embedding' returns controller state
     """
+
     def __init__(
         self,
         input_dim: int,
@@ -125,8 +124,8 @@ class DNC(nn.Module):
         memory_dim: int = 32,
         num_reads: int = 4,
         output_dim: int = 10,
-        controller_type: Literal['lstm', 'linear'] = 'lstm',
-        output_type: Literal['prediction', 'embedding'] = 'prediction'
+        controller_type: Literal["lstm", "linear"] = "lstm",
+        output_type: Literal["prediction", "embedding"] = "prediction",
     ):
         """Initialize DNC."""
         super().__init__()
@@ -139,10 +138,14 @@ class DNC(nn.Module):
         self.output_type = output_type
 
         # Controller network (LSTM or Linear)
-        controller_input_dim = input_dim + num_reads * memory_dim  # Input + read vectors
+        controller_input_dim = (
+            input_dim + num_reads * memory_dim
+        )  # Input + read vectors
 
-        if controller_type == 'lstm':
-            self.controller = nn.LSTM(controller_input_dim, hidden_dim, batch_first=True)
+        if controller_type == "lstm":
+            self.controller = nn.LSTM(
+                controller_input_dim, hidden_dim, batch_first=True
+            )
         else:
             self.controller = nn.Linear(controller_input_dim, hidden_dim)
 
@@ -153,13 +156,13 @@ class DNC(nn.Module):
 
         # Interface parameters (generated from controller output)
         interface_size = (
-            num_reads * memory_dim +  # Read keys
-            num_reads +  # Read strengths
-            memory_dim +  # Write key
-            1 +  # Write strength
-            memory_dim +  # Erase vector
-            memory_dim +  # Write vector
-            num_reads * 3  # Read modes (backward, content, forward)
+            num_reads * memory_dim  # Read keys
+            + num_reads  # Read strengths
+            + memory_dim  # Write key
+            + 1  # Write strength
+            + memory_dim  # Erase vector
+            + memory_dim  # Write vector
+            + num_reads * 3  # Read modes (backward, content, forward)
         )
 
         self.interface_net = nn.Linear(hidden_dim, interface_size)
@@ -181,51 +184,47 @@ class DNC(nn.Module):
         idx = 0
 
         # Read keys (num_reads, memory_dim)
-        read_keys = interface[:, idx:idx + self.num_reads * self.memory_dim]
+        read_keys = interface[:, idx : idx + self.num_reads * self.memory_dim]
         read_keys = read_keys.view(batch_size, self.num_reads, self.memory_dim)
         idx += self.num_reads * self.memory_dim
 
         # Read strengths (num_reads,)
-        read_strengths = F.softplus(interface[:, idx:idx + self.num_reads]) + 1
+        read_strengths = F.softplus(interface[:, idx : idx + self.num_reads]) + 1
         read_strengths = read_strengths.unsqueeze(-1)  # (batch, num_reads, 1)
         idx += self.num_reads
 
         # Write key (memory_dim,)
-        write_key = interface[:, idx:idx + self.memory_dim]
+        write_key = interface[:, idx : idx + self.memory_dim]
         idx += self.memory_dim
 
         # Write strength (1,)
-        write_strength = F.softplus(interface[:, idx:idx + 1]) + 1
+        write_strength = F.softplus(interface[:, idx : idx + 1]) + 1
         idx += 1
 
         # Erase vector (memory_dim,)
-        erase_vector = torch.sigmoid(interface[:, idx:idx + self.memory_dim])
+        erase_vector = torch.sigmoid(interface[:, idx : idx + self.memory_dim])
         idx += self.memory_dim
 
         # Write vector (memory_dim,)
-        write_vector = interface[:, idx:idx + self.memory_dim]
+        write_vector = interface[:, idx : idx + self.memory_dim]
         idx += self.memory_dim
 
         # Read modes (num_reads, 3) - backward, content, forward
-        read_modes = interface[:, idx:idx + self.num_reads * 3]
+        read_modes = interface[:, idx : idx + self.num_reads * 3]
         read_modes = read_modes.view(batch_size, self.num_reads, 3)
         read_modes = F.softmax(read_modes, dim=-1)
 
         return {
-            'read_keys': read_keys,
-            'read_strengths': read_strengths,
-            'write_key': write_key,
-            'write_strength': write_strength,
-            'erase_vector': erase_vector,
-            'write_vector': write_vector,
-            'read_modes': read_modes
+            "read_keys": read_keys,
+            "read_strengths": read_strengths,
+            "write_key": write_key,
+            "write_strength": write_strength,
+            "erase_vector": erase_vector,
+            "write_vector": write_vector,
+            "read_modes": read_modes,
         }
 
-    def forward(
-        self,
-        x: torch.Tensor,
-        return_sequence: bool = False
-    ) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, return_sequence: bool = False) -> torch.Tensor:
         """
         Forward pass through DNC.
 
@@ -239,10 +238,14 @@ class DNC(nn.Module):
         batch_size, seq_len, _ = x.shape
 
         # Initialize memory and states
-        memory = torch.zeros(batch_size, self.memory_size, self.memory_dim, device=x.device)
-        read_vectors = torch.zeros(batch_size, self.num_reads, self.memory_dim, device=x.device)
+        memory = torch.zeros(
+            batch_size, self.memory_size, self.memory_dim, device=x.device
+        )
+        read_vectors = torch.zeros(
+            batch_size, self.num_reads, self.memory_dim, device=x.device
+        )
 
-        if self.controller_type == 'lstm':
+        if self.controller_type == "lstm":
             h_state = torch.zeros(1, batch_size, self.hidden_dim, device=x.device)
             c_state = torch.zeros(1, batch_size, self.hidden_dim, device=x.device)
 
@@ -250,13 +253,12 @@ class DNC(nn.Module):
 
         for t in range(seq_len):
             # Concatenate input with previous read vectors
-            controller_input = torch.cat([
-                x[:, t, :],
-                read_vectors.view(batch_size, -1)
-            ], dim=-1)
+            controller_input = torch.cat(
+                [x[:, t, :], read_vectors.view(batch_size, -1)], dim=-1
+            )
 
             # Controller forward pass
-            if self.controller_type == 'lstm':
+            if self.controller_type == "lstm":
                 controller_input = controller_input.unsqueeze(1)  # Add time dimension
                 controller_output, (h_state, c_state) = self.controller(
                     controller_input, (h_state, c_state)
@@ -272,13 +274,10 @@ class DNC(nn.Module):
 
             # Write to memory
             write_weights = self.memory_module.content_addressing(
-                memory, params['write_key'], params['write_strength']
+                memory, params["write_key"], params["write_strength"]
             )
             memory = self.memory_module.update_memory(
-                memory,
-                write_weights,
-                params['erase_vector'],
-                params['write_vector']
+                memory, write_weights, params["erase_vector"], params["write_vector"]
             )
 
             # Read from memory (simplified: content-based only)
@@ -286,8 +285,8 @@ class DNC(nn.Module):
             for i in range(self.num_reads):
                 weights = self.memory_module.content_addressing(
                     memory,
-                    params['read_keys'][:, i, :],
-                    params['read_strengths'][:, i, :]
+                    params["read_keys"][:, i, :],
+                    params["read_strengths"][:, i, :],
                 )
                 read_weights.append(weights)
 
@@ -297,17 +296,16 @@ class DNC(nn.Module):
             read_vectors = self.memory_module.read_memory(memory, read_weights)
 
             # Generate output
-            output_input = torch.cat([
-                controller_output,
-                read_vectors.view(batch_size, -1)
-            ], dim=-1)
+            output_input = torch.cat(
+                [controller_output, read_vectors.view(batch_size, -1)], dim=-1
+            )
 
             output = self.output_net(output_input)
             outputs.append(output)
 
         outputs = torch.stack(outputs, dim=1)
 
-        if self.output_type == 'embedding':
+        if self.output_type == "embedding":
             if return_sequence:
                 return outputs
             else:

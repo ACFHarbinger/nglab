@@ -15,6 +15,7 @@ plugins {
 
     // Other utility plugins
     alias(libs.plugins.shadow) apply false
+    alias(libs.plugins.ktlint) apply false
 }
 
 allprojects {

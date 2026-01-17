@@ -11,30 +11,33 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.personal.nglab.R
 
 class CategoryHostFragment : Fragment() {
-
     private lateinit var category: AppCategory
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Retrieve the category passed via Navigation Arguments
         val categoryName = arguments?.getString("category") ?: "SYSTEM_TOOLS"
-        category = try {
-            AppCategory.valueOf(categoryName)
-        } catch (e: IllegalArgumentException) {
-            AppCategory.SYSTEM_TOOLS
-        }
+        category =
+            try {
+                AppCategory.valueOf(categoryName)
+            } catch (e: IllegalArgumentException) {
+                AppCategory.SYSTEM_TOOLS
+            }
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
         // Inflate a simple layout with TabLayout and ViewPager2
         return inflater.inflate(R.layout.fragment_category_host, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         val tabLayout = view.findViewById<TabLayout>(R.id.tab_layout)

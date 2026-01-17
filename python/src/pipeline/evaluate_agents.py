@@ -5,34 +5,35 @@ This script evaluates trained PPO or SAC agents on the TradingEnv
 and computes performance metrics like Sharpe Ratio and Max Drawdown.
 """
 
-import os
 import argparse
+
 import numpy as np
 from stable_baselines3 import PPO, SAC
-from environment import TradingEnv
 from train_sac import ContinuousActionWrapper
+
+from environment import TradingEnv
 
 
 def calculate_metrics(portfolio_values: list) -> dict:
     """Calculate trading performance metrics."""
     portfolio_values = np.array(portfolio_values)
-    
+
     # Returns
     returns = np.diff(portfolio_values) / portfolio_values[:-1]
-    
+
     # Sharpe Ratio (annualized, assuming 252 trading days)
     mean_return = np.mean(returns)
     std_return = np.std(returns, ddof=1) if len(returns) > 1 else 1e-8
     sharpe_ratio = mean_return / std_return * np.sqrt(252) if std_return > 0 else 0.0
-    
+
     # Max Drawdown
     cumulative_max = np.maximum.accumulate(portfolio_values)
     drawdowns = (cumulative_max - portfolio_values) / cumulative_max
     max_drawdown = np.max(drawdowns)
-    
+
     # Total Return
     total_return = (portfolio_values[-1] - portfolio_values[0]) / portfolio_values[0]
-    
+
     return {
         "sharpe_ratio": sharpe_ratio,
         "max_drawdown": max_drawdown,
@@ -43,30 +44,38 @@ def calculate_metrics(portfolio_values: list) -> dict:
     }
 
 
-def evaluate_agent(model_path: str, agent_type: str, n_episodes: int = 10, lookback: int = 30, max_steps: int = 1000):
+def evaluate_agent(
+    model_path: str,
+    agent_type: str,
+    n_episodes: int = 10,
+    lookback: int = 30,
+    max_steps: int = 1000,
+):
     """Evaluate a trained agent over multiple episodes."""
-    
+
     # Load model
     if agent_type.lower() == "ppo":
         model = PPO.load(model_path)
         env = TradingEnv(lookback=lookback, max_steps=max_steps)
     elif agent_type.lower() == "sac":
         model = SAC.load(model_path)
-        env = ContinuousActionWrapper(TradingEnv(lookback=lookback, max_steps=max_steps))
+        env = ContinuousActionWrapper(
+            TradingEnv(lookback=lookback, max_steps=max_steps)
+        )
     else:
         raise ValueError(f"Unknown agent type: {agent_type}")
-    
+
     all_portfolio_values = []
     total_rewards = []
     episode_lengths = []
-    
+
     for episode in range(n_episodes):
         obs, info = env.reset()
         done = False
         episode_reward = 0
         steps = 0
         portfolio_values = [10000.0]  # Initial capital
-        
+
         while not done:
             action, _ = model.predict(obs, deterministic=True)
             obs, reward, terminated, truncated, info = env.step(action)
@@ -74,19 +83,19 @@ def evaluate_agent(model_path: str, agent_type: str, n_episodes: int = 10, lookb
             episode_reward += reward
             steps += 1
             portfolio_values.append(info.get("portfolio_value", portfolio_values[-1]))
-        
+
         all_portfolio_values.append(portfolio_values)
         total_rewards.append(episode_reward)
         episode_lengths.append(steps)
-    
+
     env.close()
-    
+
     # Aggregate metrics across episodes
     aggregated_metrics = []
     for pv in all_portfolio_values:
         metrics = calculate_metrics(pv)
         aggregated_metrics.append(metrics)
-    
+
     # Average metrics
     avg_metrics = {
         "avg_sharpe_ratio": np.mean([m["sharpe_ratio"] for m in aggregated_metrics]),
@@ -96,7 +105,7 @@ def evaluate_agent(model_path: str, agent_type: str, n_episodes: int = 10, lookb
         "avg_episode_reward": np.mean(total_rewards),
         "avg_episode_length": np.mean(episode_lengths),
     }
-    
+
     return avg_metrics
 
 
@@ -106,15 +115,11 @@ def main(args):
     """
     print(f"Evaluating {args.agent_type.upper()} agent from: {args.model_path}")
     print(f"Running {args.n_episodes} evaluation episodes...\n")
-    
+
     metrics = evaluate_agent(
-        args.model_path,
-        args.agent_type,
-        args.n_episodes,
-        args.lookback,
-        args.max_steps
+        args.model_path, args.agent_type, args.n_episodes, args.lookback, args.max_steps
     )
-    
+
     print("=" * 50)
     print("EVALUATION RESULTS")
     print("=" * 50)
@@ -129,11 +134,25 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate trained agents")
-    parser.add_argument("--model_path", type=str, required=True, help="Path to the trained model")
-    parser.add_argument("--agent_type", type=str, required=True, choices=["ppo", "sac"], help="Agent type")
-    parser.add_argument("--n_episodes", type=int, default=10, help="Number of evaluation episodes")
-    parser.add_argument("--lookback", type=int, default=30, help="Lookback window for observations")
-    parser.add_argument("--max_steps", type=int, default=1000, help="Max steps per episode")
-    
+    parser.add_argument(
+        "--model_path", type=str, required=True, help="Path to the trained model"
+    )
+    parser.add_argument(
+        "--agent_type",
+        type=str,
+        required=True,
+        choices=["ppo", "sac"],
+        help="Agent type",
+    )
+    parser.add_argument(
+        "--n_episodes", type=int, default=10, help="Number of evaluation episodes"
+    )
+    parser.add_argument(
+        "--lookback", type=int, default=30, help="Lookback window for observations"
+    )
+    parser.add_argument(
+        "--max_steps", type=int, default=1000, help="Max steps per episode"
+    )
+
     args = parser.parse_args()
     main(args)

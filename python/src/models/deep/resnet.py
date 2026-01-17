@@ -1,9 +1,11 @@
 """
 Deep Residual Network (ResNet) - Network with skip connections
 """
-import torch
-import torch.nn as nn
+
 from typing import Literal
+
+import torch
+from torch import nn
 
 
 class ResidualBlock(nn.Module):
@@ -18,12 +20,13 @@ class ResidualBlock(nn.Module):
         use_conv: If True, use Conv1d; otherwise use Linear
         dropout: Dropout probability
     """
+
     def __init__(
         self,
         hidden_dim: int,
         use_conv: bool = False,
         dropout: float = 0.1,
-        kernel_size: int = 3
+        kernel_size: int = 3,
     ):
         """Initialize Residual Block."""
         super().__init__()
@@ -31,12 +34,22 @@ class ResidualBlock(nn.Module):
 
         if use_conv:
             self.block = nn.Sequential(
-                nn.Conv1d(hidden_dim, hidden_dim, kernel_size=kernel_size, padding=kernel_size // 2),
+                nn.Conv1d(
+                    hidden_dim,
+                    hidden_dim,
+                    kernel_size=kernel_size,
+                    padding=kernel_size // 2,
+                ),
                 nn.BatchNorm1d(hidden_dim),
                 nn.ReLU(),
                 nn.Dropout(dropout),
-                nn.Conv1d(hidden_dim, hidden_dim, kernel_size=kernel_size, padding=kernel_size // 2),
-                nn.BatchNorm1d(hidden_dim)
+                nn.Conv1d(
+                    hidden_dim,
+                    hidden_dim,
+                    kernel_size=kernel_size,
+                    padding=kernel_size // 2,
+                ),
+                nn.BatchNorm1d(hidden_dim),
             )
         else:
             self.block = nn.Sequential(
@@ -45,7 +58,7 @@ class ResidualBlock(nn.Module):
                 nn.ReLU(),
                 nn.Dropout(dropout),
                 nn.Linear(hidden_dim, hidden_dim),
-                nn.LayerNorm(hidden_dim)
+                nn.LayerNorm(hidden_dim),
             )
 
         self.activation = nn.ReLU()
@@ -83,6 +96,7 @@ class DeepResNet(nn.Module):
         dropout: Dropout probability
         output_type: 'prediction' returns final output, 'embedding' returns features
     """
+
     def __init__(
         self,
         input_dim: int,
@@ -92,7 +106,7 @@ class DeepResNet(nn.Module):
         use_conv: bool = False,
         dropout: float = 0.1,
         kernel_size: int = 3,
-        output_type: Literal['prediction', 'embedding'] = 'prediction'
+        output_type: Literal["prediction", "embedding"] = "prediction",
     ):
         """
         Initialize DeepResNet.
@@ -107,22 +121,32 @@ class DeepResNet(nn.Module):
         # Initial projection to hidden_dim
         if use_conv:
             self.input_proj = nn.Sequential(
-                nn.Conv1d(input_dim, hidden_dim, kernel_size=kernel_size, padding=kernel_size // 2),
+                nn.Conv1d(
+                    input_dim,
+                    hidden_dim,
+                    kernel_size=kernel_size,
+                    padding=kernel_size // 2,
+                ),
                 nn.BatchNorm1d(hidden_dim),
-                nn.ReLU()
+                nn.ReLU(),
             )
         else:
             self.input_proj = nn.Sequential(
-                nn.Linear(input_dim, hidden_dim),
-                nn.LayerNorm(hidden_dim),
-                nn.ReLU()
+                nn.Linear(input_dim, hidden_dim), nn.LayerNorm(hidden_dim), nn.ReLU()
             )
 
         # Stack of residual blocks
-        self.res_blocks = nn.ModuleList([
-            ResidualBlock(hidden_dim, use_conv=use_conv, dropout=dropout, kernel_size=kernel_size)
-            for _ in range(num_blocks)
-        ])
+        self.res_blocks = nn.ModuleList(
+            [
+                ResidualBlock(
+                    hidden_dim,
+                    use_conv=use_conv,
+                    dropout=dropout,
+                    kernel_size=kernel_size,
+                )
+                for _ in range(num_blocks)
+            ]
+        )
 
         # Global pooling for conv case
         if use_conv:
@@ -159,18 +183,17 @@ class DeepResNet(nn.Module):
         for block in self.res_blocks:
             x = block(x)
 
-        if self.output_type == 'embedding':
+        if self.output_type == "embedding":
             if self.use_conv:
                 if return_sequence:
                     return x.transpose(1, 2)
                 else:
                     x = self.global_pool(x).squeeze(-1)
                     return x
+            elif return_sequence:
+                return x
             else:
-                if return_sequence:
-                    return x
-                else:
-                    return x[:, -1, :]
+                return x[:, -1, :]
 
         # Apply output projection
         if self.use_conv:
@@ -182,12 +205,11 @@ class DeepResNet(nn.Module):
                 # Global pooling
                 x = self.global_pool(x).squeeze(-1)
                 out = self.output_proj(x)
+        # Fully connected case
+        elif return_sequence:
+            out = self.output_proj(x)
         else:
-            # Fully connected case
-            if return_sequence:
-                out = self.output_proj(x)
-            else:
-                out = self.output_proj(x[:, -1, :])
+            out = self.output_proj(x[:, -1, :])
 
         return out
 
@@ -206,13 +228,14 @@ class ResNetBottleneck(nn.Module):
         use_conv: If True, use Conv1d; otherwise use Linear
         dropout: Dropout probability
     """
+
     def __init__(
         self,
         in_dim: int,
         bottleneck_dim: int,
         out_dim: int,
         use_conv: bool = False,
-        dropout: float = 0.1
+        dropout: float = 0.1,
     ):
         """Initialize Bottleneck Block."""
         super().__init__()
@@ -228,7 +251,7 @@ class ResNetBottleneck(nn.Module):
                 nn.ReLU(),
                 nn.Dropout(dropout),
                 nn.Conv1d(bottleneck_dim, out_dim, kernel_size=1),
-                nn.BatchNorm1d(out_dim)
+                nn.BatchNorm1d(out_dim),
             )
 
             # Shortcut connection (if dimensions don't match)
@@ -246,7 +269,7 @@ class ResNetBottleneck(nn.Module):
                 nn.ReLU(),
                 nn.Dropout(dropout),
                 nn.Linear(bottleneck_dim, out_dim),
-                nn.LayerNorm(out_dim)
+                nn.LayerNorm(out_dim),
             )
 
             if in_dim != out_dim:

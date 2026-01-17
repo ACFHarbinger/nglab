@@ -1,24 +1,27 @@
 """Normalization layer wrapper supporting various types (Batch, Layer, Instance)."""
-import math
-import torch.nn as nn
 
-from typing import Optional
+import math
+
+from torch import nn
 
 
 class Normalization(nn.Module):
     """
     Wrapper for various Normalization layers (Batch, Layer, Instance).
     """
-    def __init__(self, 
-                embed_dim: int, 
-                norm_name: str='batch', 
-                eps_alpha: float=1e-05, 
-                learn_affine: Optional[bool]=True, 
-                track_stats: Optional[bool]=False,  
-                mbval: Optional[float]=0.1, 
-                n_groups: Optional[int]=None, 
-                kval: Optional[float]=None,
-                bias: Optional[bool]=True):
+
+    def __init__(
+        self,
+        embed_dim: int,
+        norm_name: str = "batch",
+        eps_alpha: float = 1e-05,
+        learn_affine: bool | None = True,
+        track_stats: bool | None = False,
+        mbval: float | None = 0.1,
+        n_groups: int | None = None,
+        kval: float | None = None,
+        bias: bool | None = True,
+    ):
         """
         Initializes the normalization layer.
 
@@ -34,20 +37,38 @@ class Normalization(nn.Module):
             bias: If True, add bias for LayerNorm.
         """
         super(Normalization, self).__init__()
-        
-        if norm_name == 'instance':
-            self.normalizer = nn.InstanceNorm1d(embed_dim, eps=eps_alpha, affine=learn_affine, track_running_stats=track_stats, momentum=mbval)
-        elif norm_name == 'batch':
-            self.normalizer = nn.BatchNorm1d(embed_dim, eps=eps_alpha, affine=learn_affine, track_running_stats=track_stats, momentum=mbval)
-        elif norm_name == 'layer':
-            self.normalizer = nn.LayerNorm(embed_dim, eps=eps_alpha, elementwise_affine=learn_affine, bias=bias)
-        elif norm_name == 'group':
+
+        if norm_name == "instance":
+            self.normalizer = nn.InstanceNorm1d(
+                embed_dim,
+                eps=eps_alpha,
+                affine=learn_affine,
+                track_running_stats=track_stats,
+                momentum=mbval,
+            )
+        elif norm_name == "batch":
+            self.normalizer = nn.BatchNorm1d(
+                embed_dim,
+                eps=eps_alpha,
+                affine=learn_affine,
+                track_running_stats=track_stats,
+                momentum=mbval,
+            )
+        elif norm_name == "layer":
+            self.normalizer = nn.LayerNorm(
+                embed_dim, eps=eps_alpha, elementwise_affine=learn_affine, bias=bias
+            )
+        elif norm_name == "group":
             if n_groups is None:
                 # Fallback or error if n_groups not provided
-                n_groups = 1 # avoid error if not used, or raise?
-            self.normalizer = nn.GroupNorm(n_groups, eps=eps_alpha, num_channels=embed_dim, affine=learn_affine)
-        elif norm_name == 'local_response':
-            self.normalizer = nn.LocalResponseNorm(embed_dim, alpha=eps_alpha, beta=mbval, k=kval)
+                n_groups = 1  # avoid error if not used, or raise?
+            self.normalizer = nn.GroupNorm(
+                n_groups, eps=eps_alpha, num_channels=embed_dim, affine=learn_affine
+            )
+        elif norm_name == "local_response":
+            self.normalizer = nn.LocalResponseNorm(
+                embed_dim, alpha=eps_alpha, beta=mbval, k=kval
+            )
         else:
             raise ValueError(f"Unknown normalization method: {norm_name}")
 
@@ -58,7 +79,7 @@ class Normalization(nn.Module):
     def init_parameters(self):
         """Initializes the affine parameters if applicable."""
         for param in self.parameters():
-            stdv = 1. / math.sqrt(param.size(-1))
+            stdv = 1.0 / math.sqrt(param.size(-1))
             param.data.uniform_(-stdv, stdv)
 
     def forward(self, input, mask=None):

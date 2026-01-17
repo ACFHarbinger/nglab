@@ -9,7 +9,7 @@ from pathlib import Path
 # .parent.parent.parent -> nglab (Project Root)
 project_root = Path(__file__).resolve().parent.parent.parent
 
-# Add the project root to sys.path. 
+# Add the project root to sys.path.
 # This allows 'import python.src...' to resolve correctly.
 sys.path.insert(0, str(project_root))
 

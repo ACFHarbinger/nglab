@@ -1,10 +1,12 @@
 """
 Neural Turing Machine (NTM) - Neural network with addressable memory
 """
+
+from typing import Literal
+
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from typing import Tuple, Literal
+from torch import nn
 
 
 class NTMMemory(nn.Module):
@@ -17,6 +19,7 @@ class NTMMemory(nn.Module):
         memory_size: Number of memory slots (N)
         memory_dim: Dimension of each memory slot (M)
     """
+
     def __init__(self, memory_size: int, memory_dim: int):
         """Initialize NTM Memory."""
         super().__init__()
@@ -24,10 +27,7 @@ class NTMMemory(nn.Module):
         self.memory_dim = memory_dim
 
     def content_addressing(
-        self,
-        memory: torch.Tensor,
-        key: torch.Tensor,
-        strength: torch.Tensor
+        self, memory: torch.Tensor, key: torch.Tensor, strength: torch.Tensor
     ) -> torch.Tensor:
         """
         Content-based addressing using cosine similarity.
@@ -59,7 +59,7 @@ class NTMMemory(nn.Module):
         gate: torch.Tensor,
         shift: torch.Tensor,
         sharpen: torch.Tensor,
-        prev_weights: torch.Tensor
+        prev_weights: torch.Tensor,
     ) -> torch.Tensor:
         """
         Location-based addressing with interpolation, shift, and sharpening.
@@ -86,16 +86,13 @@ class NTMMemory(nn.Module):
         shifted = self._convolutional_shift(gated, shift, shift_range)
 
         # 3. Sharpening
-        sharpened = shifted ** sharpen
+        sharpened = shifted**sharpen
         weights = sharpened / (sharpened.sum(dim=1, keepdim=True) + 1e-8)
 
         return weights
 
     def _convolutional_shift(
-        self,
-        weights: torch.Tensor,
-        shift: torch.Tensor,
-        shift_range: int
+        self, weights: torch.Tensor, shift: torch.Tensor, shift_range: int
     ) -> torch.Tensor:
         """
         Perform circular convolution for shifting.
@@ -112,11 +109,10 @@ class NTMMemory(nn.Module):
 
         # Create shifted versions of weights
         # Pad weights circularly
-        weights_padded = torch.cat([
-            weights[:, -shift_range//2:],
-            weights,
-            weights[:, :shift_range//2]
-        ], dim=1)
+        weights_padded = torch.cat(
+            [weights[:, -shift_range // 2 :], weights, weights[:, : shift_range // 2]],
+            dim=1,
+        )
 
         # Perform convolution
         shifted = torch.zeros_like(weights)
@@ -124,7 +120,7 @@ class NTMMemory(nn.Module):
             offset = i - shift_range // 2
             start_idx = shift_range // 2 + offset
             end_idx = start_idx + N
-            shifted += shift[:, i:i+1] * weights_padded[:, start_idx:end_idx]
+            shifted += shift[:, i : i + 1] * weights_padded[:, start_idx:end_idx]
 
         return shifted
 
@@ -139,12 +135,13 @@ class NTMReadHead(nn.Module):
         controller_dim: Dimension of controller output
         shift_range: Range of allowed shifts (typically 3 for [-1, 0, +1])
     """
+
     def __init__(
         self,
         memory_size: int,
         memory_dim: int,
         controller_dim: int,
-        shift_range: int = 3
+        shift_range: int = 3,
     ):
         """Initialize NTM Read Head."""
         super().__init__()
@@ -165,8 +162,8 @@ class NTMReadHead(nn.Module):
         self,
         controller_output: torch.Tensor,
         memory: torch.Tensor,
-        prev_weights: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        prev_weights: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Read from memory using NTM addressing.
 
@@ -209,12 +206,13 @@ class NTMWriteHead(nn.Module):
         controller_dim: Dimension of controller output
         shift_range: Range of allowed shifts
     """
+
     def __init__(
         self,
         memory_size: int,
         memory_dim: int,
         controller_dim: int,
-        shift_range: int = 3
+        shift_range: int = 3,
     ):
         """Initialize NTM Write Head."""
         super().__init__()
@@ -239,8 +237,8 @@ class NTMWriteHead(nn.Module):
         self,
         controller_output: torch.Tensor,
         memory: torch.Tensor,
-        prev_weights: torch.Tensor
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        prev_weights: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Write to memory using NTM addressing.
 
@@ -273,11 +271,11 @@ class NTMWriteHead(nn.Module):
 
         # Write to memory
         # Erase: M_t = M_{t-1} * (1 - w_t * e_t^T)
-        erase_matrix = torch.einsum('bn,bm->bnm', weights, erase)
+        erase_matrix = torch.einsum("bn,bm->bnm", weights, erase)
         memory = memory * (1 - erase_matrix)
 
         # Add: M_t = M_t + w_t * a_t^T
-        add_matrix = torch.einsum('bn,bm->bnm', weights, add)
+        add_matrix = torch.einsum("bn,bm->bnm", weights, add)
         memory = memory + add_matrix
 
         return memory, weights
@@ -301,6 +299,7 @@ class NTM(nn.Module):
         controller_type: Type of controller ('lstm' or 'linear')
         output_type: 'prediction' returns output, 'embedding' returns controller state
     """
+
     def __init__(
         self,
         input_dim: int,
@@ -310,8 +309,8 @@ class NTM(nn.Module):
         num_reads: int = 1,
         num_writes: int = 1,
         output_dim: int = 10,
-        controller_type: Literal['lstm', 'linear'] = 'lstm',
-        output_type: Literal['prediction', 'embedding'] = 'prediction'
+        controller_type: Literal["lstm", "linear"] = "lstm",
+        output_type: Literal["prediction", "embedding"] = "prediction",
     ):
         """Initialize NTM."""
         super().__init__()
@@ -328,31 +327,30 @@ class NTM(nn.Module):
         # Controller (receives input + read vectors)
         controller_input_dim = input_dim + num_reads * memory_dim
 
-        if controller_type == 'lstm':
-            self.controller = nn.LSTM(controller_input_dim, hidden_dim, batch_first=True)
+        if controller_type == "lstm":
+            self.controller = nn.LSTM(
+                controller_input_dim, hidden_dim, batch_first=True
+            )
         else:
             self.controller = nn.Linear(controller_input_dim, hidden_dim)
 
         # Read heads
-        self.read_heads = nn.ModuleList([
-            NTMReadHead(memory_size, memory_dim, hidden_dim)
-            for _ in range(num_reads)
-        ])
+        self.read_heads = nn.ModuleList(
+            [NTMReadHead(memory_size, memory_dim, hidden_dim) for _ in range(num_reads)]
+        )
 
         # Write heads
-        self.write_heads = nn.ModuleList([
-            NTMWriteHead(memory_size, memory_dim, hidden_dim)
-            for _ in range(num_writes)
-        ])
+        self.write_heads = nn.ModuleList(
+            [
+                NTMWriteHead(memory_size, memory_dim, hidden_dim)
+                for _ in range(num_writes)
+            ]
+        )
 
         # Output network
         self.output_net = nn.Linear(hidden_dim + num_reads * memory_dim, output_dim)
 
-    def forward(
-        self,
-        x: torch.Tensor,
-        return_sequence: bool = False
-    ) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, return_sequence: bool = False) -> torch.Tensor:
         """
         Forward pass through NTM.
 
@@ -366,7 +364,9 @@ class NTM(nn.Module):
         batch_size, seq_len, _ = x.shape
 
         # Initialize memory and weights
-        memory = torch.zeros(batch_size, self.memory_size, self.memory_dim, device=x.device)
+        memory = torch.zeros(
+            batch_size, self.memory_size, self.memory_dim, device=x.device
+        )
         memory = memory + 1e-6  # Small initialization to avoid NaN
 
         read_weights = [
@@ -379,10 +379,12 @@ class NTM(nn.Module):
         ]
 
         # Initialize read vectors
-        read_vectors = torch.zeros(batch_size, self.num_reads * self.memory_dim, device=x.device)
+        read_vectors = torch.zeros(
+            batch_size, self.num_reads * self.memory_dim, device=x.device
+        )
 
         # Initialize controller state
-        if self.controller_type == 'lstm':
+        if self.controller_type == "lstm":
             h_state = torch.zeros(1, batch_size, self.hidden_dim, device=x.device)
             c_state = torch.zeros(1, batch_size, self.hidden_dim, device=x.device)
 
@@ -393,7 +395,7 @@ class NTM(nn.Module):
             controller_input = torch.cat([x[:, t, :], read_vectors], dim=1)
 
             # Controller forward
-            if self.controller_type == 'lstm':
+            if self.controller_type == "lstm":
                 controller_input = controller_input.unsqueeze(1)
                 controller_output, (h_state, c_state) = self.controller(
                     controller_input, (h_state, c_state)
@@ -426,7 +428,7 @@ class NTM(nn.Module):
 
         outputs = torch.stack(outputs, dim=1)
 
-        if self.output_type == 'embedding':
+        if self.output_type == "embedding":
             if return_sequence:
                 return outputs
             else:

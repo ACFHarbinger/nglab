@@ -1,17 +1,19 @@
-
 """Standard Feed-Forward Network (FFN) implementation."""
+
 import math
-import torch.nn as nn
+
+from torch import nn
 
 
 class FeedForward(nn.Module):
     """
     Standard Feed-Forward Neural Network (MLP) block.
-    
+
     Consists of two linear transformations with an activation function in between.
     Often used in Transformer architectures.
     """
-    def __init__(self, input_dim:int, output_dim:int, bias:bool=True):
+
+    def __init__(self, input_dim: int, output_dim: int, bias: bool = True):
         """
         Initializes the feed-forward layer.
 
@@ -29,7 +31,7 @@ class FeedForward(nn.Module):
     def init_parameters(self):
         """Initializes the parameters using uniform distribution."""
         for param in self.parameters():
-            stdv = 1. / math.sqrt(param.size(-1))
+            stdv = 1.0 / math.sqrt(param.size(-1))
             param.data.uniform_(-stdv, stdv)
 
     def forward(self, input, mask=None):

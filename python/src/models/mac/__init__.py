@@ -3,41 +3,41 @@ Classical machine learning models for time series.
 """
 
 from .base import ClassicalModel
+from .boosting import (
+    LightGBMModel,
+    XGBoostModel,
+)
 from .linear import (
-    LinearRegressionModel,
-    RidgeRegressionModel,
-    LassoRegressionModel,
     ElasticNetModel,
+    LassoRegressionModel,
+    LinearRegressionModel,
     LogisticRegressionModel,
     PolynomialRegressionModel,
+    RidgeRegressionModel,
 )
-from .trees import (
-    DecisionTreeModel,
-    RandomForestModel,
-    GradientBoostingModel,
-)
-from .boosting import (
-    XGBoostModel,
-    LightGBMModel,
-)
+from .naive_bayes import NaiveBayesModel
 from .neighbors import kNNModel
 from .svm import SVMModel
-from .naive_bayes import NaiveBayesModel
+from .trees import (
+    DecisionTreeModel,
+    GradientBoostingModel,
+    RandomForestModel,
+)
 
 __all__ = [
     "ClassicalModel",
-    "LinearRegressionModel",
-    "RidgeRegressionModel",
-    "LassoRegressionModel",
-    "ElasticNetModel",
-    "LogisticRegressionModel",
-    "PolynomialRegressionModel",
     "DecisionTreeModel",
-    "RandomForestModel",
+    "ElasticNetModel",
     "GradientBoostingModel",
-    "XGBoostModel",
+    "LassoRegressionModel",
     "LightGBMModel",
-    "kNNModel",
-    "SVMModel",
+    "LinearRegressionModel",
+    "LogisticRegressionModel",
     "NaiveBayesModel",
+    "PolynomialRegressionModel",
+    "RandomForestModel",
+    "RidgeRegressionModel",
+    "SVMModel",
+    "XGBoostModel",
+    "kNNModel",
 ]

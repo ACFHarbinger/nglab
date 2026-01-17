@@ -1,9 +1,11 @@
 """Gated Graph Convolution (GatedGCN) with explicit edge updates."""
-import math
-import torch
-import torch.nn as nn
 
-from . import Normalization, ActivationFunction
+import math
+
+import torch
+from torch import nn
+
+from . import ActivationFunction, Normalization
 
 
 class GatedGraphConvolution(nn.Module):
@@ -17,20 +19,24 @@ class GatedGraphConvolution(nn.Module):
         - X. Bresson and T. Laurent. An experimental study of neural networks for variable graphs. In International Conference on Learning Representations, 2018.
         - V. P. Dwivedi, C. K. Joshi, T. Laurent, Y. Bengio, and X. Bresson. Benchmarking graph neural networks. arXiv preprint arXiv:2003.00982, 2020.
     """
+
     """
     Gated Graph Convolution Layer (GatedGCN).
-    
+
     Explicitly models edge features and uses a gating mechanism to control
     information flow between neighbors. Updates both node and edge features.
     """
-    def __init__(self, 
-                hidden_dim: int,
-                aggregation: str = "sum",
-                norm: str = "batch",
-                activation: str = "relu",
-                learn_affine: bool = True,
-                gated: bool = True,
-                bias: bool = True):
+
+    def __init__(
+        self,
+        hidden_dim: int,
+        aggregation: str = "sum",
+        norm: str = "batch",
+        activation: str = "relu",
+        learn_affine: bool = True,
+        gated: bool = True,
+        bias: bool = True,
+    ):
         """
         Args:
             hidden_dim: Dimension of hidden features (input and output are assumed same size).
@@ -48,7 +54,7 @@ class GatedGraphConvolution(nn.Module):
         self.learn_affine = learn_affine
         self.gated = gated
         assert self.gated, "Use gating with GCN, pass the `--gated` flag"
-        
+
         self.U = nn.Linear(hidden_dim, hidden_dim, bias=bias)
         self.V = nn.Linear(hidden_dim, hidden_dim, bias=bias)
         self.A = nn.Linear(hidden_dim, hidden_dim, bias=bias)
@@ -58,25 +64,25 @@ class GatedGraphConvolution(nn.Module):
         self.norm_h = Normalization(hidden_dim, self.norm, learn_affine)
         self.norm_e = Normalization(hidden_dim, self.norm, learn_affine)
         self.activation = ActivationFunction(activation)
-    
+
     def reset_parameters(self):
         """Initializes the parameters of the layer using uniform distribution."""
         for param in self.parameters():
-            stdv = 1. / math.sqrt(param.size(-1))
+            stdv = 1.0 / math.sqrt(param.size(-1))
             param.data.uniform_(-stdv, stdv)
-        
+
     def forward(self, h, e, mask):
         """
         Args:
             h: Input node features (B x V x H)
             e: Input edge features (B x V x V x H)
             mask: Graph adjacency matrices (B x V x V)
-        Returns: 
+        Returns:
             Updated node and edge features
         """
         batch_size, num_nodes, hidden_dim = h.shape
-        #h_in = h
-        #e_in = e
+        # h_in = h
+        # e_in = e
 
         # Linear transformations for node update
         Uh = self.U(h)  # B x V x H
@@ -96,7 +102,7 @@ class GatedGraphConvolution(nn.Module):
 
         # Normalize node features
         h = self.norm_h(h) if self.norm_h else h
-        
+
         # Normalize edge features
         # For edges, we need to flatten B, V, V. Normalization handles 3D/4D if mapped correctly.
         # Normalization(hidden_dim) expects (N, H) or (B, N, H).
@@ -121,12 +127,14 @@ class GatedGraphConvolution(nn.Module):
         """
         # Perform feature-wise gating mechanism
         Vh = gates * Vh  # B x V x V x H
-        
+
         # Enforce graph structure through masking
         Vh[mask.unsqueeze(-1).expand_as(Vh)] = 0
-        
+
         if self.aggregation == "mean":
-            return torch.sum(Vh, dim=2) / torch.sum(1-mask, dim=2).unsqueeze(-1).type_as(Vh)
+            return torch.sum(Vh, dim=2) / torch.sum(1 - mask, dim=2).unsqueeze(
+                -1
+            ).type_as(Vh)
         elif self.aggregation == "max":
             return torch.max(Vh, dim=2)[0]
         else:

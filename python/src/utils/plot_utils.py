@@ -8,20 +8,17 @@ This module provides functions for generating various plots:
 - Interactive visualizations.
 """
 
-import os
 import math
-import numpy as np
+import os
+
 import networkx as nx
-import seaborn as sns
+import numpy as np
 import plotly.express as px
-
-from matplotlib import pyplot as plt
-from matplotlib.patches import Rectangle
-from matplotlib.collections import PatchCollection
+import seaborn as sns
 from logic.src.utils.io_utils import compose_dirpath
-
-
-
+from matplotlib import pyplot as plt
+from matplotlib.collections import PatchCollection
+from matplotlib.patches import Rectangle
 
 
 def draw_graph(distance_matrix):
@@ -38,7 +35,6 @@ def draw_graph(distance_matrix):
     print(G.edges(data=True))
     nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
     plt.show()
-    return
 
 
 def plot_linechart(
@@ -92,7 +88,7 @@ def plot_linechart(
             markers: Markers.
         """
         points_by_nbins = {}
-        for id, lg in enumerate(zip(*graph_log)):
+        for id, lg in enumerate(zip(*graph_log, strict=False)):
             if x_values is None:
                 to_plot = (*lg,)
             else:
@@ -120,7 +116,13 @@ def plot_linechart(
             else:
                 plot_func(*to_plot, linestyle=line, marker=mark)
 
-            for id, (x, y) in enumerate(zip(list(zip(*lg))[0], list(zip(*lg))[5])):
+            for id, (x, y) in enumerate(
+                zip(
+                    list(zip(*lg, strict=False))[0],
+                    list(zip(*lg, strict=False))[5],
+                    strict=False,
+                )
+            ):
                 if id not in points_by_nbins:
                     points_by_nbins[id] = []
                 points_by_nbins[id].append((x, y))
@@ -148,8 +150,14 @@ def plot_linechart(
             plot_func, graph_log, x_values, linestyles, markers
         )
         if annotate:
-            for lg in zip(*graph_log):
-                for id, xy in enumerate(zip(list(zip(*lg))[0], list(zip(*lg))[5])):
+            for lg in zip(*graph_log, strict=False):
+                for id, xy in enumerate(
+                    zip(
+                        list(zip(*lg, strict=False))[0],
+                        list(zip(*lg, strict=False))[5],
+                        strict=False,
+                    )
+                ):
                     # plt.annotate(id, xy=xy, textcoords='data')
                     if id == graph_log.shape[0] - 1:
                         plt.scatter(
@@ -267,7 +275,7 @@ def plot_tsp(xy, tour, ax1):
         scale=1,
     )
 
-    ax1.set_title("{} nodes, total length {:.2f}".format(len(tour), lengths[-1]))
+    ax1.set_title(f"{len(tour)} nodes, total length {lengths[-1]:.2f}")
 
 
 def discrete_cmap(N, base_cmap=None):
@@ -349,7 +357,7 @@ def plot_vehicle_routes(
         dist = 0
         x_prev, y_prev = x_dep, y_dep
         cum_demand = 0
-        for (x, y), d in zip(coords, route_demands):
+        for (x, y), d in zip(coords, route_demands, strict=False):
             dist += np.sqrt((x - x_prev) ** 2 + (y - y_prev) ** 2)
 
             cap_rects.append(Rectangle((x, y), 0.01, 0.1))
@@ -376,18 +384,12 @@ def plot_vehicle_routes(
             angles="xy",
             scale=1,
             color=color,
-            label="R{}, # {}, c {} / {}, d {:.2f}".format(
-                veh_number,
-                len(r),
-                int(total_route_demand) if round_demand else total_route_demand,
-                int(capacity) if round_demand else capacity,
-                dist,
-            ),
+            label=f"R{veh_number}, # {len(r)}, c {int(total_route_demand) if round_demand else total_route_demand} / {int(capacity) if round_demand else capacity}, d {dist:.2f}",
         )
 
         qvs.append(qv)
 
-    ax1.set_title("{} routes, total distance {:.2f}".format(len(routes), total_dist))
+    ax1.set_title(f"{len(routes)} routes, total distance {total_dist:.2f}")
     ax1.legend(handles=qvs)
 
     pc_cap = PatchCollection(
@@ -457,8 +459,8 @@ def plot_attention_maps_wrapper(
     if head_idx >= 0:
         if batch_idx >= 0:
             attn_map = attention_weights[layer_idx, head_idx, batch_idx].cpu().numpy()
-            title = "Attention Map (Layer {}, Head {}, Batch {})".format(
-                layer_idx, head_idx, batch_idx
+            title = (
+                f"Attention Map (Layer {layer_idx}, Head {head_idx}, Batch {batch_idx})"
             )
             attention_filename = os.path.join(
                 dir_path,
@@ -470,44 +472,35 @@ def plot_attention_maps_wrapper(
             attn_map = (
                 attention_weights[layer_idx, head_idx, :].mean(dim=0).cpu().numpy()
             )  # Average over batches
-            title = "Attention Map Average Over All Batches (Layer {}, Head {})".format(
-                layer_idx, head_idx
-            )
+            title = f"Attention Map Average Over All Batches (Layer {layer_idx}, Head {head_idx})"
             attention_filename = os.path.join(
                 dir_path,
                 "attention_maps",
                 model_name,
                 f"layer{layer_idx}_head{head_idx}_map{sample_idx}.png",
             )
+    elif batch_idx >= 0:
+        attn_map = (
+            attention_weights[layer_idx, :, batch_idx].mean(dim=0).cpu().numpy()
+        )  # Average over heads
+        title = f"Attention Map Average Over All Heads (Layer {layer_idx}, Batch {batch_idx})"
+        attention_filename = os.path.join(
+            dir_path,
+            "attention_maps",
+            model_name,
+            f"layer{layer_idx}_headavg_map{sample_idx}.png",
+        )
     else:
-        if batch_idx >= 0:
-            attn_map = (
-                attention_weights[layer_idx, :, batch_idx].mean(dim=0).cpu().numpy()
-            )  # Average over heads
-            title = "Attention Map Average Over All Heads (Layer {}, Batch {})".format(
-                layer_idx, batch_idx
-            )
-            attention_filename = os.path.join(
-                dir_path,
-                "attention_maps",
-                model_name,
-                f"layer{layer_idx}_headavg_map{sample_idx}.png",
-            )
-        else:
-            attn_map = (
-                attention_weights[layer_idx, :, :].mean(dim=(0, 1)).cpu().numpy()
-            )  # Average over heads and batches
-            title = (
-                "Attention Map Average Over All Heads and Batches (Layer {})".format(
-                    layer_idx
-                )
-            )
-            attention_filename = os.path.join(
-                dir_path,
-                "attention_maps",
-                model_name,
-                f"layer{layer_idx}_headavg_map{sample_idx}.png",
-            )
+        attn_map = (
+            attention_weights[layer_idx, :, :].mean(dim=(0, 1)).cpu().numpy()
+        )  # Average over heads and batches
+        title = f"Attention Map Average Over All Heads and Batches (Layer {layer_idx})"
+        attention_filename = os.path.join(
+            dir_path,
+            "attention_maps",
+            model_name,
+            f"layer{layer_idx}_headavg_map{sample_idx}.png",
+        )
 
     try:
         os.makedirs(os.path.dirname(attention_filename), exist_ok=True)
@@ -598,4 +591,3 @@ def visualize_interactive_plot(**kwargs):
         tickvals=list(range(len(kwargs["y_labels"]))), ticktext=kwargs["y_labels"]
     )
     interactive_fig.show()
-    return

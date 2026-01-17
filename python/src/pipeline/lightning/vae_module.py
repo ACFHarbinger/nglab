@@ -5,11 +5,11 @@ This module provides a Lightning wrapper for training the TimeSeriesVAE model
 with support for beta-VAE, KL annealing, and various reconstruction losses.
 """
 
-import torch
-import torch.nn as nn
+from typing import Literal
 
-from typing import Dict, Any, Optional, Literal
+import torch
 from pytorch_lightning import LightningModule
+
 from python.src.models.deep.vae import TimeSeriesVAE, vae_loss
 
 
@@ -54,21 +54,23 @@ class VAELightningModule(LightningModule):
         d_model: int = 128,
         seq_len: int = 100,
         pred_len: int = 20,
-        encoder_type: Literal['transformer', 'mamba', 'lstm', 'gru', 'xlstm'] = 'mamba',
-        decoder_type: Optional[Literal['transformer', 'mamba', 'lstm', 'gru', 'xlstm']] = None,
+        encoder_type: Literal["transformer", "mamba", "lstm", "gru", "xlstm"] = "mamba",
+        decoder_type: (
+            Literal["transformer", "mamba", "lstm", "gru", "xlstm"] | None
+        ) = None,
         n_layers: int = 3,
         n_heads: int = 8,
         d_ff: int = 512,
         dropout: float = 0.1,
-        activation: str = 'gelu',
+        activation: str = "gelu",
         learning_rate: float = 1e-3,
         weight_decay: float = 1e-5,
         kl_weight: float = 1.0,
         kl_anneal_epochs: int = 0,
-        reconstruction_loss: Literal['mse', 'l1', 'huber'] = 'mse',
+        reconstruction_loss: Literal["mse", "l1", "huber"] = "mse",
         num_val_samples: int = 4,
-        encoder_kwargs: Optional[Dict] = None,
-        decoder_kwargs: Optional[Dict] = None,
+        encoder_kwargs: dict | None = None,
+        decoder_kwargs: dict | None = None,
     ):
         """Initialize VAELightningModule."""
         super().__init__()
@@ -115,15 +117,13 @@ class VAELightningModule(LightningModule):
         else:
             return self.kl_weight * (current_epoch / self.kl_anneal_epochs)
 
-    def forward(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         """Forward pass through VAE."""
         return self.model(x)
 
     def compute_loss(
-        self,
-        batch: Dict[str, torch.Tensor],
-        batch_idx: int
-    ) -> Dict[str, torch.Tensor]:
+        self, batch: dict[str, torch.Tensor], batch_idx: int
+    ) -> dict[str, torch.Tensor]:
         """
         Compute VAE loss for a batch.
 
@@ -135,17 +135,17 @@ class VAELightningModule(LightningModule):
             Dictionary with loss and metrics
         """
         # Extract input sequence
-        x = batch['Price']  # (batch_size, seq_len, input_dim)
+        x = batch["Price"]  # (batch_size, seq_len, input_dim)
 
         # Target is the future prediction window
         # For autoregressive prediction, we use the last pred_len steps
-        target = x[:, -self.model.pred_len:, :]  # (batch_size, pred_len, input_dim)
+        target = x[:, -self.model.pred_len :, :]  # (batch_size, pred_len, input_dim)
 
         # Forward pass
         output = self.model(x)
-        reconstruction = output['reconstruction']
-        mean = output['mean']
-        log_var = output['log_var']
+        reconstruction = output["reconstruction"]
+        mean = output["mean"]
+        log_var = output["log_var"]
 
         # Compute loss
         current_kl_weight = self.get_current_kl_weight()
@@ -155,44 +155,48 @@ class VAELightningModule(LightningModule):
             mean=mean,
             log_var=log_var,
             kl_weight=current_kl_weight,
-            reconstruction_loss=self.reconstruction_loss
+            reconstruction_loss=self.reconstruction_loss,
         )
 
         # Add latent statistics
-        loss_dict['latent_mean'] = mean.mean()
-        loss_dict['latent_std'] = torch.exp(0.5 * log_var).mean()
-        loss_dict['kl_weight_current'] = current_kl_weight
+        loss_dict["latent_mean"] = mean.mean()
+        loss_dict["latent_std"] = torch.exp(0.5 * log_var).mean()
+        loss_dict["kl_weight_current"] = current_kl_weight
 
         return loss_dict
 
-    def training_step(self, batch: Dict[str, torch.Tensor], batch_idx: int) -> torch.Tensor:
+    def training_step(
+        self, batch: dict[str, torch.Tensor], batch_idx: int
+    ) -> torch.Tensor:
         """Training step."""
         loss_dict = self.compute_loss(batch, batch_idx)
 
         # Log metrics
-        self.log('train/loss', loss_dict['total_loss'], prog_bar=True)
-        self.log('train/reconstruction_loss', loss_dict['reconstruction_loss'])
-        self.log('train/kl_loss', loss_dict['kl_loss'])
-        self.log('train/kl_weighted', loss_dict['kl_weighted'], prog_bar=True)
-        self.log('train/latent_mean', loss_dict['latent_mean'])
-        self.log('train/latent_std', loss_dict['latent_std'])
-        self.log('train/kl_weight', loss_dict['kl_weight_current'])
+        self.log("train/loss", loss_dict["total_loss"], prog_bar=True)
+        self.log("train/reconstruction_loss", loss_dict["reconstruction_loss"])
+        self.log("train/kl_loss", loss_dict["kl_loss"])
+        self.log("train/kl_weighted", loss_dict["kl_weighted"], prog_bar=True)
+        self.log("train/latent_mean", loss_dict["latent_mean"])
+        self.log("train/latent_std", loss_dict["latent_std"])
+        self.log("train/kl_weight", loss_dict["kl_weight_current"])
 
-        return loss_dict['total_loss']
+        return loss_dict["total_loss"]
 
-    def validation_step(self, batch: Dict[str, torch.Tensor], batch_idx: int) -> torch.Tensor:
+    def validation_step(
+        self, batch: dict[str, torch.Tensor], batch_idx: int
+    ) -> torch.Tensor:
         """Validation step."""
         loss_dict = self.compute_loss(batch, batch_idx)
 
         # Log metrics
-        self.log('val/loss', loss_dict['total_loss'], prog_bar=True)
-        self.log('val/reconstruction_loss', loss_dict['reconstruction_loss'])
-        self.log('val/kl_loss', loss_dict['kl_loss'])
-        self.log('val/kl_weighted', loss_dict['kl_weighted'])
-        self.log('val/latent_mean', loss_dict['latent_mean'])
-        self.log('val/latent_std', loss_dict['latent_std'])
+        self.log("val/loss", loss_dict["total_loss"], prog_bar=True)
+        self.log("val/reconstruction_loss", loss_dict["reconstruction_loss"])
+        self.log("val/kl_loss", loss_dict["kl_loss"])
+        self.log("val/kl_weighted", loss_dict["kl_weighted"])
+        self.log("val/latent_mean", loss_dict["latent_mean"])
+        self.log("val/latent_std", loss_dict["latent_std"])
 
-        return loss_dict['total_loss']
+        return loss_dict["total_loss"]
 
     def on_validation_epoch_end(self):
         """
@@ -201,49 +205,41 @@ class VAELightningModule(LightningModule):
         """
         if self.num_val_samples > 0:
             samples = self.model.sample(
-                num_samples=self.num_val_samples,
-                device=self.device
+                num_samples=self.num_val_samples, device=self.device
             )
             # Log sample statistics
-            self.log('val/sample_mean', samples.mean())
-            self.log('val/sample_std', samples.std())
+            self.log("val/sample_mean", samples.mean())
+            self.log("val/sample_std", samples.std())
 
     def configure_optimizers(self):
         """Configure optimizer and learning rate scheduler."""
         optimizer = torch.optim.AdamW(
-            self.parameters(),
-            lr=self.learning_rate,
-            weight_decay=self.weight_decay
+            self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay
         )
 
         # Cosine annealing with warmup
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer,
-            T_max=self.trainer.max_epochs,
-            eta_min=self.learning_rate * 0.1
+            optimizer, T_max=self.trainer.max_epochs, eta_min=self.learning_rate * 0.1
         )
 
         return {
-            'optimizer': optimizer,
-            'lr_scheduler': {
-                'scheduler': scheduler,
-                'interval': 'epoch',
-                'frequency': 1
-            }
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "interval": "epoch",
+                "frequency": 1,
+            },
         }
 
     def predict_step(
-        self,
-        batch: Dict[str, torch.Tensor],
-        batch_idx: int,
-        dataloader_idx: int = 0
-    ) -> Dict[str, torch.Tensor]:
+        self, batch: dict[str, torch.Tensor], batch_idx: int, dataloader_idx: int = 0
+    ) -> dict[str, torch.Tensor]:
         """
         Prediction step for inference.
 
         Returns reconstructions and latent representations.
         """
-        x = batch['Price']
+        x = batch["Price"]
 
         # Get reconstruction (using mean of latent distribution for deterministic output)
         reconstruction = self.model.reconstruct(x, use_mean=True)
@@ -252,8 +248,8 @@ class VAELightningModule(LightningModule):
         mean, log_var = self.model.encode(x)
 
         return {
-            'reconstruction': reconstruction,
-            'latent_mean': mean,
-            'latent_log_var': log_var,
-            'input': x
+            "reconstruction": reconstruction,
+            "latent_mean": mean,
+            "latent_log_var": log_var,
+            "input": x,
         }

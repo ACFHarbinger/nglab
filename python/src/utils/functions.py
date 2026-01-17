@@ -1,14 +1,18 @@
 """
 Functional utilities for model loading and tensor manipulation.
 """
-import os
+
 import json
+import os
+
 import torch
 
 
 def torch_load_cpu(load_path):
     """Load torch tensors on CPU."""
-    return torch.load(load_path, map_location=lambda storage, loc: storage)  # Load on CPU
+    return torch.load(
+        load_path, map_location=lambda storage, loc: storage
+    )  # Load on CPU
 
 
 def move_to(var, device):
@@ -24,16 +28,16 @@ def load_args(filename):
     """
     Load arguments from a JSON file with backwards compatibility.
     """
-    with open(filename, 'r') as f:
+    with open(filename) as f:
         args = json.load(f)
 
     # Backwards compatibility
-    if 'data_distribution' not in args:
-        args['data_distribution'] = None
-        probl, *dist = args['problem'].split("_")
+    if "data_distribution" not in args:
+        args["data_distribution"] = None
+        probl, *dist = args["problem"].split("_")
         if probl == "op":
-            args['problem'] = probl
-            args['data_distribution'] = dist[0]
+            args["problem"] = probl
+            args["data_distribution"] = dist[0]
     return args
 
 
@@ -50,16 +54,14 @@ def _load_model_file(load_path, model):
     """
     # Load the model parameters from a saved state
     load_optimizer_state_dict = None
-    print('  [*] Loading model from {}'.format(load_path))
+    print(f"  [*] Loading model from {load_path}")
 
     load_data = torch.load(
-        os.path.join(
-            os.getcwd(),
-            load_path
-        ), map_location=lambda storage, loc: storage)
+        os.path.join(os.getcwd(), load_path), map_location=lambda storage, loc: storage
+    )
     if isinstance(load_data, dict):
-        load_optimizer_state_dict = load_data.get('optimizer', None)
-        load_model_state_dict = load_data.get('model', load_data)
+        load_optimizer_state_dict = load_data.get("optimizer", None)
+        load_model_state_dict = load_data.get("model", load_data)
     else:
         load_model_state_dict = load_data.state_dict()
 
@@ -90,23 +92,28 @@ def load_model(path, epoch=None):
             epoch = max(
                 int(os.path.splitext(filename)[0].split("-")[1])
                 for filename in os.listdir(path)
-                if os.path.splitext(filename)[1] == '.pt'
+                if os.path.splitext(filename)[1] == ".pt"
             )
-        model_filename = os.path.join(path, 'epoch-{}.pt'.format(epoch))
+        model_filename = os.path.join(path, f"epoch-{epoch}.pt")
     else:
-        assert False, "{} is not a valid directory or file".format(path)
+        assert False, f"{path} is not a valid directory or file"
 
-    args = load_args(os.path.join(path, 'args.json'))
-    model_class = {
-        'lstm': LSTM,
-        'nstransformer': NSTransformer
-    }.get(args.get('model', 'attention'), None)
-    assert model_class is not None, "Unknown model: {}".format(model_class)
-    model = model_class(args['n_seq'], args['hidden_dim'], args['embedding_dim'], args['n_encode_layers'], args['pred_len'])
+    args = load_args(os.path.join(path, "args.json"))
+    model_class = {"lstm": LSTM, "nstransformer": NSTransformer}.get(
+        args.get("model", "attention"), None
+    )
+    assert model_class is not None, f"Unknown model: {model_class}"
+    model = model_class(
+        args["n_seq"],
+        args["hidden_dim"],
+        args["embedding_dim"],
+        args["n_encode_layers"],
+        args["pred_len"],
+    )
 
     # Overwrite model parameters by parameters to load
     load_data = torch_load_cpu(model_filename)
-    model.load_state_dict({**model.state_dict(), **load_data.get('model', {})})
+    model.load_state_dict({**model.state_dict(), **load_data.get("model", {})})
     model, *_ = _load_model_file(model_filename, model)
     model.eval()  # Put in eval mode
     return model, args

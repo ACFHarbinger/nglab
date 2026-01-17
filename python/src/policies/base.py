@@ -4,15 +4,17 @@ Base Policy Definitions for NGLab.
 Defines the abstract interface for all trading policies, ensuring consistency
 between heuristic and neural approaches.
 """
+
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any
+
 
 class Policy(ABC):
     """
     Abstract Base Class for all trading policies.
     """
-    
-    def __init__(self, cfg: Dict[str, Any] = None):
+
+    def __init__(self, cfg: dict[str, Any] = None):
         """
         Initialize the policy.
 
@@ -25,10 +27,10 @@ class Policy(ABC):
     def act(self, observation: Any) -> Any:
         """
         Takes an observation and returns an action.
-        
+
         Args:
             observation (Any): The current state of the environment.
-            
+
         Returns:
             Any: The action to take (e.g., Hold/Buy/Sell).
         """

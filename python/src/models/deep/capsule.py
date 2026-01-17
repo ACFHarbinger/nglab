@@ -3,14 +3,15 @@ Capsule Network Layer.
 """
 
 import torch
-import torch
-import torch.nn as nn
+from torch import nn
+
 
 class CapsuleLayer(nn.Module):
     """
     Simplified Capsule Layer (CN).
     """
-    def __init__(self, in_caps, in_dim, out_caps, out_dim, output_type='embedding'):
+
+    def __init__(self, in_caps, in_dim, out_caps, out_dim, output_type="embedding"):
         """
         Initialize Capsule Layer.
         """
@@ -20,9 +21,9 @@ class CapsuleLayer(nn.Module):
         self.out_caps = out_caps
         self.out_dim = out_dim
         self.output_type = output_type
-        
+
         self.W = nn.Parameter(torch.randn(out_caps, in_caps, out_dim, in_dim) * 0.1)
-        
+
     def squash(self, x, dim=-1):
         """
         Squash activation function.
@@ -44,7 +45,7 @@ class CapsuleLayer(nn.Module):
             res = v_flat.view(b, s, self.out_caps, self.out_dim)
         else:
             res = self._process(x)
-            
+
         if not return_sequence and res.dim() == 4:
             return res[:, -1, :, :]
         return res

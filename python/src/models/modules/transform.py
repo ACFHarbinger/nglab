@@ -1,6 +1,7 @@
 """
 Transformation layers for model dimensions.
 """
+
 import torch
 
 
@@ -8,6 +9,7 @@ class Transpose(torch.nn.Module):
     """
     Transpose layer for neural networks.
     """
+
     def __init__(self, dims=(-1, 1)):
         """
         Initialize.

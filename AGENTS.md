@@ -37,23 +37,29 @@ graph TD
 ```
 
 ### 1. The Simulation Engine (Rust)
+
 The **Core Layer** provides deterministic, low-latency execution of market mechanics.
+
 - **`TradingEnv`**: A Gymnasium-compatible environment optimized for RL agents, featuring zero-copy data transfer to Python.
 - **`OrderBook`**: A standard Central Limit Order Book (CLOB) implementation with price-time priority matching (O(log n) efficiency).
 - **`PolymarketArena`**: A specialized simulation for prediction markets, handling binary outcome tokens and AMM dynamics.
 - **Quantitative Suite**: High-fidelity mathematical models including Black-Scholes, Rough Heston, and Rough Bergomi for synthetic price generation and risk management.
 
 ### 2. Research & Learning Pipeline (Python)
+
 The **Intelligence Layer** hosts an extensive library of deep learning architectures and training utilities.
+
 - **The Model Factory**: 30+ implemented architectures, including:
-    - **Sequencing**: LSTM, GRU, xLSTM, Mamba (SSM), NSTransformer.
-    - **Generative**: VAE (with multimodal encoders), TimeGAN, Diffusion U-Net (1D).
-    - **Advanced**: Neural ODEs (NODE), Physics-Informed Neural Networks (PINN), Differentiable Neural Computers (DNC), Spiking Neural Networks (SNN).
+  - **Sequencing**: LSTM, GRU, xLSTM, Mamba (SSM), NSTransformer.
+  - **Generative**: VAE (with multimodal encoders), TimeGAN, Diffusion U-Net (1D).
+  - **Advanced**: Neural ODEs (NODE), Physics-Informed Neural Networks (PINN), Differentiable Neural Computers (DNC), Spiking Neural Networks (SNN).
 - **Policy Framework**: Integration with TorchRL for PPO and SAC agents, alongside classical threshold and quantitative policies.
 - **Evolutionary HPO**: Automated hyperparameter optimization using Optuna for model refinement.
 
 ### 3. Operator Interface (TypeScript/Tauri 2.0)
+
 The **Interaction Layer** provides a "Bloomberg-tier" dashboard for real-time monitoring and control.
+
 - **Live Terminal**: High-performance charting using `lightweight-charts` and real-time order book visualizations.
 - **Command & Control**: Dedicated modules for scraper management, model deployment, and live simulation steering.
 - **Streaming Pipeline**: WebSocket-driven event updates providing 60 FPS visual feedback on market dynamics.
@@ -62,19 +68,20 @@ The **Interaction Layer** provides a "Bloomberg-tier" dashboard for real-time mo
 
 ## ⚡ Performance Specification
 
-| Component | Metric | Achievement |
-| :--- | :--- | :--- |
-| **Rust Matching Engine** | Latency | < 100μs per order |
-| **Environment Step** | Speed | > 20,000 steps/sec |
-| **Data Bridge** | Strategy | Zero-copy NumPy integration via PyO3 |
-| **Frontend UI** | Framerate | Locked 60 FPS with real-time streaming |
-| **Memory Footprint** | Efficiency | Core simulation < 50MB RSS |
+| Component                | Metric     | Achievement                            |
+| :----------------------- | :--------- | :------------------------------------- |
+| **Rust Matching Engine** | Latency    | < 100μs per order                      |
+| **Environment Step**     | Speed      | > 20,000 steps/sec                     |
+| **Data Bridge**          | Strategy   | Zero-copy NumPy integration via PyO3   |
+| **Frontend UI**          | Framerate  | Locked 60 FPS with real-time streaming |
+| **Memory Footprint**     | Efficiency | Core simulation < 50MB RSS             |
 
 ---
 
 ## 📡 Data Ingestion & Scrapers
 
 NGLab features specialized async scrapers built in Rust to ingest high-fidelity data from live markets:
+
 - **Polymarket Scraper**: Multi-frequency ingestion (minutely/hourly/daily) for prediction market research.
 - **WebSocket Hub**: Managed streaming for real-time price discovery and order flow.
 
@@ -83,6 +90,7 @@ NGLab features specialized async scrapers built in Rust to ingest high-fidelity 
 ## 🛠️ Development & Stewardship
 
 The project maintains professional software standards across all languages:
+
 - **Testing**: Comprehensive suites across Rust (Criterion benchmarks), Python (Pytest), and TypeScript.
 - **Documentation**: 100% docstring/JSDoc coverage; verified with compliance checkers.
 - **CI/CD**: Automated linting, type-checking, and build validation for every commit.

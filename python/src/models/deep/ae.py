@@ -1,17 +1,20 @@
 """
 AutoEncoder (AE) implementation.
 """
-import torch.nn as nn
+
+from torch import nn
+
 
 class AutoEncoder(nn.Module):
     """
     Standard AutoEncoder (AE).
     """
-    def __init__(self, input_dim, hidden_dims, latent_dim, output_type='prediction'):
+
+    def __init__(self, input_dim, hidden_dims, latent_dim, output_type="prediction"):
         """Initialize AutoEncoder."""
         super().__init__()
         self.output_type = output_type
-        
+
         # Encoder
         encoder_layers = []
         last_dim = input_dim
@@ -21,7 +24,7 @@ class AutoEncoder(nn.Module):
             last_dim = h_dim
         encoder_layers.append(nn.Linear(last_dim, latent_dim))
         self.encoder = nn.Sequential(*encoder_layers)
-        
+
         # Decoder
         decoder_layers = []
         last_dim = latent_dim
@@ -31,15 +34,15 @@ class AutoEncoder(nn.Module):
             last_dim = h_dim
         decoder_layers.append(nn.Linear(last_dim, input_dim))
         self.decoder = nn.Sequential(*decoder_layers)
-        
+
     def encode(self, x):
         """Encode input to latent space."""
         return self.encoder(x)
-        
+
     def decode(self, z):
         """Decode latent vector to input space."""
         return self.decoder(z)
-        
+
     def forward(self, x, return_embedding=None, return_sequence=False):
         """Forward pass."""
         # Handle sequence
@@ -53,14 +56,18 @@ class AutoEncoder(nn.Module):
         else:
             z = self.encode(x)
             recon = self.decode(z)
-            
-        should_return_embedding = return_embedding if return_embedding is not None else (self.output_type == 'embedding')
-        
+
+        should_return_embedding = (
+            return_embedding
+            if return_embedding is not None
+            else (self.output_type == "embedding")
+        )
+
         if should_return_embedding:
             if not return_sequence and z.dim() == 3:
                 return z[:, -1, :]
             return z
-            
+
         if not return_sequence and recon.dim() == 3:
             return recon[:, -1, :]
         return recon

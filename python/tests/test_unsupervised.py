@@ -1,12 +1,15 @@
 import unittest
+
 import torch
+
 from python.src.pipeline.lightning.self_supervised import SelfSupervisedModule
 from python.src.pipeline.lightning.unsupervised import UnsupervisedModule
+
 
 class TestUnsupervised(unittest.TestCase):
     def setUp(self):
         self.backbone = torch.nn.Linear(10, 10)
-        self.cfg = {'input_dim': 10, 'hidden_dim': 10}
+        self.cfg = {"input_dim": 10, "hidden_dim": 10}
 
     def test_self_supervised(self):
         module = SelfSupervisedModule(self.backbone, self.cfg)
@@ -21,5 +24,6 @@ class TestUnsupervised(unittest.TestCase):
         loss = module.training_step(batch, 0)
         self.assertIsInstance(loss, torch.Tensor)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

@@ -1,10 +1,12 @@
 """
 Utility functions for data loading and processing.
 """
-import os
+
 import json
-import torch
+import os
+
 import pandas as pd
+import torch
 
 
 def read_json(json_path, lock=None):
@@ -61,7 +63,7 @@ def df_to_torch(df, key_avoid, fill_nan=0):
     torch_dict = {}
     if fill_nan is not None:
         df = df.fillna(fill_nan)
-        
+
     for col in df.columns:
         if key_avoid not in col:
             torch_dict[col] = torch.tensor(df[col].values)

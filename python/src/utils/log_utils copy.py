@@ -8,22 +8,21 @@ This module provides tools for:
 - Aggregating and visualizing log data.
 """
 
-import os
-import json
-import wandb
-import torch
-import pickle
 import datetime
+import json
+import os
+import pickle
 import statistics
+from collections import Counter
+
+import logic.src.utils.definitions as udef
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import logic.src.utils.definitions as udef
-
-from collections import Counter
+import torch
+import wandb
 from logic.src.utils.definitions import DAY_METRICS
-from logic.src.utils.io_utils import read_json, compose_dirpath
-
+from logic.src.utils.io_utils import compose_dirpath, read_json
 
 
 def log_values(cost, grad_norms, epoch, batch_id, step, l_dict, tb_logger, opts):
@@ -49,7 +48,7 @@ def log_values(cost, grad_norms, epoch, batch_id, step, l_dict, tb_logger, opts)
             "day" if opts["train_time"] else "epoch", epoch, batch_id, avg_cost
         )
     )
-    print("grad_norm: {}, clipped: {}".format(grad_norms[0], grad_norms_clipped[0]))
+    print(f"grad_norm: {grad_norms[0]}, clipped: {grad_norms_clipped[0]}")
 
     # Log values to tensorboard
     if not opts["no_tensorboard"]:
@@ -90,8 +89,6 @@ def log_values(cost, grad_norms, epoch, batch_id, step, l_dict, tb_logger, opts)
     if "imitation_loss" in l_dict and l_dict["imitation_loss"].item() != 0:
         print(f"imitation_loss: {l_dict['imitation_loss'].item():.6f}")
 
-    return
-
 
 def log_epoch(x_tup, loss_keys, epoch_loss, opts):
     """
@@ -118,7 +115,6 @@ def log_epoch(x_tup, loss_keys, epoch_loss, opts):
         if opts["wandb_mode"] != "disabled":
             wandb.log({x_tup[0]: x_tup[1], lname: lmean}, commit=(key == loss_keys[-1]))
     print(log_str)
-    return
 
 
 def get_loss_stats(epoch_loss):
@@ -248,7 +244,6 @@ def sort_log(logfile_path, lock=None):
     finally:
         if lock is not None:
             lock.release()
-    return
 
 
 def _convert_numpy(obj):
@@ -309,7 +304,7 @@ def log_to_json(json_path, keys, dit, sort_log=True, sample_id=None, lock=None):
 
         for key, val in dit.items():
             values = val.values() if isinstance(val, dict) else val
-            new[key] = dict(zip(keys, values))
+            new[key] = dict(zip(keys, values, strict=False))
 
         if sort_log:
             new = _sort_log(new)
@@ -408,7 +403,7 @@ def log_to_json2(json_path, keys, dit, sort_log=True, sample_id=None, lock=None)
         # --- MODIFY / MERGE NEW DATA ---
         for key, val in dit.items():
             values = val.values() if isinstance(val, dict) else val
-            new[key] = dict(zip(keys, values))
+            new[key] = dict(zip(keys, values, strict=False))
 
         if sort_log:
             new = _sort_log(new)
@@ -475,7 +470,6 @@ def log_to_pickle(pickle_path, log, lock=None, dw_func=None):
     finally:
         if lock is not None:
             lock.release()
-    return
 
 
 def update_log(json_path, new_output, start_id, policies, sort_log=True, lock=None):
@@ -533,7 +527,7 @@ def load_log_dict(dir_paths, nsamples, show_incomplete=False, lock=None):
         nsamples
     ), f"Len of dir_paths and nsamples lists must be equal, not {len(dir_paths)} != {len(nsamples)}"
     logs = {}
-    for path, ns in zip(dir_paths, nsamples):
+    for path, ns in zip(dir_paths, nsamples, strict=False):
         gsize = int(os.path.basename(path).split("_")[1])
         logs[f"{gsize}"] = os.path.join(path, f"log_mean_{ns}N.json")
         if show_incomplete and ns > 1:
@@ -564,7 +558,6 @@ def log_plot(visualize=False, **kwargs):
     if visualize:
         plt.show()
     plt.close(kwargs["fig"])
-    return
 
 
 @compose_dirpath
@@ -605,10 +598,18 @@ def output_stats(
             for n_id in range(nsamples):
                 tmp.append(data[n_id][pol].values())
             mean_dit[pol] = {
-                key: log for key, log in zip(keys, [*map(statistics.mean, zip(*tmp))])
+                key: log
+                for key, log in zip(
+                    keys, [*map(statistics.mean, zip(*tmp, strict=False))], strict=False
+                )
             }
             std_dit[pol] = {
-                key: log for key, log in zip(keys, [*map(statistics.stdev, zip(*tmp))])
+                key: log
+                for key, log in zip(
+                    keys,
+                    [*map(statistics.stdev, zip(*tmp, strict=False))],
+                    strict=False,
+                )
             }
 
         if sort_log:
@@ -616,16 +617,16 @@ def output_stats(
             std_dit = _sort_log(std_dit)
         if print_output:
             for lg, lg_std, pol in zip(
-                mean_dit.values(), std_dit.values(), mean_dit.keys()
+                mean_dit.values(), std_dit.values(), mean_dit.keys(), strict=False
             ):
                 logm = lg.values() if isinstance(lg, dict) else lg
                 logs = lg_std.values() if isinstance(lg_std, dict) else lg_std
-                tmp_lg = [(str(x), str(y)) for x, y in zip(logm, logs)]
+                tmp_lg = [(str(x), str(y)) for x, y in zip(logm, logs, strict=False)]
                 if pol in policies:
                     print(f"{pol}:")
-                    for (x, y), key in zip(tmp_lg, keys):
+                    for (x, y), key in zip(tmp_lg, keys, strict=False):
                         print(
-                            f"- {key} value: {x[:x.find('.')+3]} +- {y[:y.find('.')+5]}"
+                            f"- {key} value: {x[: x.find('.') + 3]} +- {y[: y.find('.') + 5]}"
                         )
 
         with open(mean_filename, "w") as fp:
@@ -657,7 +658,7 @@ def runs_per_policy(dir_paths, nsamples, policies, print_output=False, lock=None
         nsamples
     ), f"Len of dir_paths and nsamples lists must be equal, not {len(dir_paths)} != {len(nsamples)}"
     runs_ls = []
-    for path, ns in zip(dir_paths, nsamples):
+    for path, ns in zip(dir_paths, nsamples, strict=False):
         dit = {pol: [] for pol in policies}
         log = os.path.join(path, f"log_full_{ns}N.json")
         data = read_json(log, lock)

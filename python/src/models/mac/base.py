@@ -1,22 +1,26 @@
 """
 Base class for classical machine learning models.
 """
-import torch
-import torch.nn as nn
-import numpy as np
+
 from abc import ABC
+
+import numpy as np
+import torch
+from torch import nn
+
 
 class ClassicalModel(nn.Module, ABC):
     """
     Abstract base class for classical machine learning models.
     Wraps scikit-learn/XGBoost/LightGBM models to be used within NGLab.
     """
-    def __init__(self, output_type='prediction'):
+
+    def __init__(self, output_type="prediction"):
         super().__init__()
         self.output_type = output_type
-        self.model = None # To be initialized by subclasses
+        self.model = None  # To be initialized by subclasses
         self._is_fitted = False
-        
+
         # Dummy parameter to ensure optimizer/device placement works if needed
         # though classical models typically run on CPU via sklearn.
         self.dummy_param = nn.Parameter(torch.empty(0))
@@ -33,7 +37,7 @@ class ClassicalModel(nn.Module, ABC):
         # Convert to numpy
         device = x.device
         x_np = x.detach().cpu().numpy()
-        
+
         # Handle sequence data (Batch, Seq, Feat) -> (Batch * Seq, Feat) or use last step
         is_seq = x_np.ndim == 3
         if is_seq:
@@ -58,11 +62,11 @@ class ClassicalModel(nn.Module, ABC):
 
         # Convert back to tensor
         out = torch.from_numpy(out_np).to(device).to(torch.float32)
-        
+
         # Reshape back if sequence was requested
         if is_seq and return_sequence:
             out = out.view(b, s, -1)
-            
+
         return out
 
     def fit(self, X, y):
@@ -71,16 +75,16 @@ class ClassicalModel(nn.Module, ABC):
             X = X.detach().cpu().numpy()
         if isinstance(y, torch.Tensor):
             y = y.detach().cpu().numpy()
-            
+
         if X.ndim == 3:
             # Flatten sequence for fitting classical models
             b, s, f = X.shape
             X = X.reshape(b * s, f)
             y = y.reshape(b * s, -1)
-            
+
         if y.ndim == 2 and y.shape[1] == 1:
             y = y.ravel()
-            
+
         self.model.fit(X, y)
         self._is_fitted = True
 
@@ -88,12 +92,12 @@ class ClassicalModel(nn.Module, ABC):
         """Override to include the classical model state if needed."""
         sd = super().state_dict(*args, **kwargs)
         if self.model is not None and self._is_fitted:
-            sd['_classical_model'] = self.model
+            sd["_classical_model"] = self.model
         return sd
 
     def load_state_dict(self, state_dict, strict=True):
         """Override to load the classical model state."""
-        if '_classical_model' in state_dict:
-            self.model = state_dict.pop('_classical_model')
+        if "_classical_model" in state_dict:
+            self.model = state_dict.pop("_classical_model")
             self._is_fitted = True
         return super().load_state_dict(state_dict, strict)

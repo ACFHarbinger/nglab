@@ -427,5 +427,9 @@ results/
 # Added by gradle
 /.gradle
 
+# Added by ktlint
+android/build/reports/ktlint/
+android/build/intermediates/ktLint/
+
 # LLM agents
 .claude/

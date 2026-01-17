@@ -1,8 +1,10 @@
 """
 Utilities for model manipulation and setup.
 """
+
 import os
-import torch.nn as nn
+
+from torch import nn
 
 from .functions import load_model
 
@@ -46,11 +48,12 @@ def setup_model(name, general_path, device, lock=None):
     Returns:
         nn.Module: The loaded and initialized model.
     """
+
     def _load_model(general_path, model_path, device, lock):
         model_path = os.path.join(general_path, model_path)
         with lock:
             model, _ = load_model(model_path)
-        
+
         model.to(device)
         model.eval()
         return model

@@ -13,6 +13,7 @@ def test_import_nglab():
     """Test that the nglab Rust module can be imported."""
     try:
         import nglab
+
         assert nglab is not None
     except ImportError as e:
         pytest.skip(f"nglab module not built: {e}")
@@ -125,7 +126,7 @@ def test_zero_copy_numpy_transfer():
 
     # Check that observation is a proper numpy array
     assert isinstance(obs, np.ndarray)
-    assert obs.flags['C_CONTIGUOUS'] or obs.flags['F_CONTIGUOUS']
+    assert obs.flags["C_CONTIGUOUS"] or obs.flags["F_CONTIGUOUS"]
 
     # Verify data is not copied (observation should be writable or read-only view)
     # If read-only, it's a view into Rust memory (zero-copy)
@@ -140,8 +141,7 @@ def test_multiple_environments():
         pytest.skip("nglab module not built")
 
     envs = [
-        nglab.TradingEnv(initial_cash=10000.0, lookback_window=50)
-        for _ in range(3)
+        nglab.TradingEnv(initial_cash=10000.0, lookback_window=50) for _ in range(3)
     ]
 
     # Reset all environments

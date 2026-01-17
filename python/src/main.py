@@ -4,22 +4,23 @@ Main Entry Point for NGLab Training Pipeline.
 Integrates Hydra for configuration and PyTorch Lightning for scalable training
 across Reinforcement Learning, Supervised Learning, and Unsupervised Learning tasks.
 """
+
 import hydra
-from omegaconf import DictConfig, OmegaConf
 import pytorch_lightning as pl
-from pytorch_lightning.loggers import TensorBoardLogger
+from agents.env_wrapper import TradingEnvWrapper
+from models.time_series import TimeSeriesBackbone
+from omegaconf import DictConfig, OmegaConf
 
 # Imports from our modules
 from pipeline.lightning.rl_module import RLLightningModule
 from pipeline.lightning.self_supervised import SelfSupervisedModule
 from pipeline.lightning.semi_supervised import SemiSupervisedModule
-from pipeline.lightning.unsupervised import UnsupervisedModule
 from pipeline.lightning.sl_module import SLLightningModule
+from pipeline.lightning.unsupervised import UnsupervisedModule
 from pipeline.lightning.vae_module import VAELightningModule
-from agents.env_wrapper import TradingEnvWrapper
-from models.time_series import TimeSeriesBackbone
-from pipeline.objectives.variants import DRGRPOLoss, GSPOLoss, SAPOLoss
 from policies.neural import NeuralPolicy
+from pytorch_lightning.loggers import TensorBoardLogger
+
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def main(cfg: DictConfig):
@@ -42,21 +43,21 @@ def main(cfg: DictConfig):
             return TradingEnvWrapper(**cfg.env)
 
         # Policy (Actor)
-        policy = NeuralPolicy(backbone, cfg.model) # Wrapping backbone
+        policy = NeuralPolicy(backbone, cfg.model)  # Wrapping backbone
 
         # Value Network (Critic) - instantiated similarly or separate backbone
         # For simplicity reusing/instantiating backbone check cfg
-        critic = TimeSeriesBackbone(cfg.model) 
-        
+        critic = TimeSeriesBackbone(cfg.model)
+
         model = RLLightningModule(
             agent_module=policy,
             value_module=critic,
             env_maker=env_maker,
-            cfg=cfg.algorithm
+            cfg=cfg.algorithm,
         )
-        
+
     elif cfg.task == "unsupervised":
-        model = UnsupervisedModule(backbone, cfg.model) # Or conf for pretraining
+        model = UnsupervisedModule(backbone, cfg.model)  # Or conf for pretraining
     elif cfg.task == "self_supervised":
         model = SelfSupervisedModule(backbone, cfg.model)
     elif cfg.task == "semi_supervised":
@@ -76,7 +77,7 @@ def main(cfg: DictConfig):
         devices=1,
         logger=logger,
         gradient_clip_val=cfg.gradient_clip_val,
-        val_check_interval=cfg.val_check_interval
+        val_check_interval=cfg.val_check_interval,
     )
 
     # 4. Fit
@@ -84,14 +85,17 @@ def main(cfg: DictConfig):
     # For others, we need a dataloader.
     # Placeholder for DataModule usage or passing dataloaders.
     # For RL LightningModule we implemented 'train_dataloader' so we can just call fit(model).
-    
+
     if cfg.task == "rl":
         trainer.fit(model)
     else:
         # Dummy dataloaders for other tasks (User needs to implement DataLoading)
         # Or we raise/print reminder
-        print("DataLoaders for SL/SSL not implemented in this skeleton. Please provide datamodule.")
+        print(
+            "DataLoaders for SL/SSL not implemented in this skeleton. Please provide datamodule."
+        )
         # trainer.fit(model, train_dataloaders=..., val_dataloaders=...)
+
 
 if __name__ == "__main__":
     main()

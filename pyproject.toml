@@ -53,14 +53,181 @@ reportUnusedImport = "warning"
 # Create an override for __init__.py files
 ignore = ["**/__init__.py"]
 
-
-[tool.pytest.ini_options]
-testpaths = ["python/tests"]
-python_files = ["test_*.py"]
-addopts = "-v"
-pythonpath = ["python/src"]
-
 [dependency-groups]
 dev = [
+    "black>=25.12.0",
+    "mypy>=1.19.1",
+    "pip-audit>=2.10.0",
+    "pre-commit>=4.5.1",
     "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.14.13",
+    "sphinx>=9.0.4",
 ]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+include = ["*.py", "*.pyi"]
+exclude = ["typescript", "rust", "android", "build", "node_modules", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "N", "UP", "PL", "RUF"]
+ignore = ["E501"] # Line too long (handled by black)
+fixable = ["ALL"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["python", "nglab"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = false
+warn_unused_configs = true
+ignore_missing_imports = true
+check_untyped_defs = false
+disallow_untyped_defs = false
+explicit_package_bases = true
+
+# =================================================================
+# PYTEST CONFIGURATION (from pytest.ini)
+# =================================================================
+
+[tool.pytest.ini_options]
+# Test discovery
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*", "*Test"]
+python_functions = ["test_*", "*_test"]
+testpaths = "python/tests" # Original pyproject.toml value
+
+# Console output options (addopts converted to list format)
+addopts = [
+    "-v",               # Verbose output
+    "-ra",              # Show summary of all test outcomes
+    "--showlocals",     # Show local variables in tracebacks
+    "--strict-markers", # Fail on unknown markers
+    #"--strict-config",  # Fail on unknown config options
+    "--tb=short",       # Shorter traceback format
+    "--color=yes",      # Color output
+    "--show-capture=all", # Show captured output on failure
+    "--disable-warnings", # Disable warnings to reduce noise
+]
+
+# Markers for categorizing tests (converted to key=value pairs)
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "fast: marks tests as fast running",
+    "unit: marks tests as unit tests",
+    "integration: marks tests as integration tests",
+    "validation: marks tests that validate argument combinations",
+    "edge_case: marks tests for edge cases",
+    "parametrize: marks parametrized tests",
+    "train_rl: marks tests related to reinforcement learning training",
+    "mrl_train: marks tests related to meta-learning training",
+    "train_sl: marks tests related to supervised learning training",
+    "train_ul: marks tests related to unsupervised learning training",
+    "train_semi: marks tests related to semi-supervised learning training",
+    "train_self: marks tests related to self-supervised learning training",
+    "hp_optim: marks tests related to hyperparameter optimization",
+    "eval: marks tests related to evaluation command",
+    "architecture: marks tests related to deep learning architectures",
+    "integration: marks integration tests",
+    "policies: marks tests for simulation policies",
+    "model: marks tests for classical machine learning models",
+    "data: marks tests for data processing",
+    "skip: skip this test",
+    "skipif: skip this test if condition is true",
+    "xfail: expected to fail",
+]
+
+# Filter warnings (converted to list)
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore::UserWarning",
+    "ignore::FutureWarning",
+    "ignore:.*urllib3.*:UserWarning",
+    "ignore:.*distutils.*:DeprecationWarning",
+    "error::ResourceWarning",
+]
+
+# Logging configuration
+log_level = "INFO"
+log_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
+log_date_format = "%Y-%m-%d %H:%M:%S"
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+# JUnit XML output
+junit_suite_name = "wsmart_route"
+junit_logging = "all"
+junit_duration_report = "call"
+
+# =================================================================
+# COVERAGE CONFIGURATION (from [tool:coverage] and [coverage:*])
+# =================================================================
+[tool.coverage.run]
+source = [
+    "."
+]
+omit = [
+    "*/test/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+    "*/.*/*",
+    "setup.py",
+    "conftest.py",
+]
+branch = true
+data_file = ".coverage"
+
+[tool.coverage.report]
+fail_under = 60
+precision = 2
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstract",
+    "logger\\.",
+    "log\\.",
+    "pass",
+    "from typing import",
+    "import typing",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+title = "nglab Test Coverage Report"
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
+[tool.coverage.json]
+output = "coverage.json"

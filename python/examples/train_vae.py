@@ -9,20 +9,20 @@ This script demonstrates:
 5. Evaluating reconstruction quality
 """
 
-import torch
-import pytorch_lightning as pl
-from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
-from torch.utils.data import DataLoader, random_split
-
 import sys
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+import pytorch_lightning as pl
+import torch
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.loggers import TensorBoardLogger
+from torch.utils.data import DataLoader, random_split
 
-from models.vae import TimeSeriesVAE
+# Add src to path
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
 from pipeline.lightning.vae_module import VAELightningModule
+
 from data.polymarket_dataset import PolymarketDataset
 
 
@@ -42,7 +42,7 @@ def main():
     D_MODEL = 128
     SEQ_LEN = 100
     PRED_LEN = 20
-    ENCODER_TYPE = 'mamba'  # Options: transformer, mamba, lstm, gru, xlstm
+    ENCODER_TYPE = "mamba"  # Options: transformer, mamba, lstm, gru, xlstm
     N_LAYERS = 3
 
     # Training configuration
@@ -50,11 +50,11 @@ def main():
     WEIGHT_DECAY = 1e-5
     KL_WEIGHT = 1.0  # Beta parameter (1.0 = standard VAE, >1.0 = beta-VAE)
     KL_ANNEAL_EPOCHS = 10  # Gradually increase KL weight for stable training
-    RECONSTRUCTION_LOSS = 'mse'  # Options: mse, l1, huber
+    RECONSTRUCTION_LOSS = "mse"  # Options: mse, l1, huber
     MAX_EPOCHS = 100
 
     # Trainer configuration
-    ACCELERATOR = 'auto'  # 'auto', 'gpu', 'cpu'
+    ACCELERATOR = "auto"  # 'auto', 'gpu', 'cpu'
     DEVICES = 1
     PRECISION = 32  # 16 for mixed precision
 
@@ -65,9 +65,7 @@ def main():
     print("Loading dataset...")
     try:
         dataset = PolymarketDataset(
-            data_dir=str(DATA_DIR),
-            seq_len=SEQ_LEN,
-            pred_len=PRED_LEN
+            data_dir=str(DATA_DIR), seq_len=SEQ_LEN, pred_len=PRED_LEN
         )
         print(f"Dataset size: {len(dataset)} samples")
     except Exception as e:
@@ -75,28 +73,31 @@ def main():
         print("Using synthetic data for demonstration...")
         # Create synthetic dataset for demonstration
         from torch.utils.data import TensorDataset
+
         num_samples = 1000
         synthetic_prices = torch.randn(num_samples, SEQ_LEN, INPUT_DIM)
         synthetic_labels = torch.randn(num_samples, PRED_LEN, INPUT_DIM)
         dataset = TensorDataset(synthetic_prices, synthetic_labels)
+
         # Wrap to match expected format
         class SyntheticDataset:
             def __init__(self, prices, labels):
                 self.prices = prices
                 self.labels = labels
+
             def __len__(self):
                 return len(self.prices)
+
             def __getitem__(self, idx):
-                return {'Price': self.prices[idx], 'Labels': self.labels[idx]}
+                return {"Price": self.prices[idx], "Labels": self.labels[idx]}
+
         dataset = SyntheticDataset(synthetic_prices, synthetic_labels)
 
     # Split into train and validation
     train_size = int(TRAIN_SPLIT * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = random_split(
-        dataset,
-        [train_size, val_size],
-        generator=torch.Generator().manual_seed(42)
+        dataset, [train_size, val_size], generator=torch.Generator().manual_seed(42)
     )
 
     print(f"Train size: {len(train_dataset)}, Validation size: {len(val_dataset)}")
@@ -107,7 +108,7 @@ def main():
         batch_size=BATCH_SIZE,
         shuffle=True,
         num_workers=NUM_WORKERS,
-        pin_memory=True
+        pin_memory=True,
     )
 
     val_loader = DataLoader(
@@ -115,7 +116,7 @@ def main():
         batch_size=BATCH_SIZE,
         shuffle=False,
         num_workers=NUM_WORKERS,
-        pin_memory=True
+        pin_memory=True,
     )
 
     # ========== Initialize Model ==========
@@ -134,34 +135,27 @@ def main():
         kl_weight=KL_WEIGHT,
         kl_anneal_epochs=KL_ANNEAL_EPOCHS,
         reconstruction_loss=RECONSTRUCTION_LOSS,
-        num_val_samples=8
+        num_val_samples=8,
     )
 
     print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")
 
     # ========== Setup Callbacks ==========
     checkpoint_callback = ModelCheckpoint(
-        dirpath='checkpoints/vae',
-        filename='vae-{epoch:02d}-{val/loss:.4f}',
-        monitor='val/loss',
-        mode='min',
+        dirpath="checkpoints/vae",
+        filename="vae-{epoch:02d}-{val/loss:.4f}",
+        monitor="val/loss",
+        mode="min",
         save_top_k=3,
-        save_last=True
+        save_last=True,
     )
 
     early_stopping_callback = EarlyStopping(
-        monitor='val/loss',
-        patience=15,
-        mode='min',
-        verbose=True
+        monitor="val/loss", patience=15, mode="min", verbose=True
     )
 
     # ========== Setup Logger ==========
-    logger = TensorBoardLogger(
-        save_dir='logs',
-        name='vae',
-        version=None
-    )
+    logger = TensorBoardLogger(save_dir="logs", name="vae", version=None)
 
     # ========== Initialize Trainer ==========
     trainer = pl.Trainer(
@@ -173,7 +167,7 @@ def main():
         callbacks=[checkpoint_callback, early_stopping_callback],
         log_every_n_steps=10,
         val_check_interval=1.0,
-        gradient_clip_val=1.0
+        gradient_clip_val=1.0,
     )
 
     # ========== Train ==========
@@ -189,7 +183,9 @@ def main():
     with torch.no_grad():
         samples = model.model.sample(num_samples=10, device=model.device)
         print(f"Generated samples shape: {samples.shape}")
-        print(f"Sample statistics - Mean: {samples.mean():.4f}, Std: {samples.std():.4f}")
+        print(
+            f"Sample statistics - Mean: {samples.mean():.4f}, Std: {samples.std():.4f}"
+        )
 
     # ========== Evaluate Reconstruction ==========
     print("\nEvaluating reconstruction quality...")
@@ -198,8 +194,8 @@ def main():
 
     with torch.no_grad():
         # Get reconstruction
-        reconstruction = model.model.reconstruct(val_batch['Price'], use_mean=True)
-        target = val_batch['Price'][:, -PRED_LEN:, :]
+        reconstruction = model.model.reconstruct(val_batch["Price"], use_mean=True)
+        target = val_batch["Price"][:, -PRED_LEN:, :]
 
         # Compute metrics
         mse = torch.nn.functional.mse_loss(reconstruction, target)
@@ -214,12 +210,14 @@ def main():
     with torch.no_grad():
         for batch in val_loader:
             batch = {k: v.to(model.device) for k, v in batch.items()}
-            mean, log_var = model.model.encode(batch['Price'])
+            mean, log_var = model.model.encode(batch["Price"])
             all_latents.append(mean.cpu())
 
     all_latents = torch.cat(all_latents, dim=0)
     print(f"Latent space shape: {all_latents.shape}")
-    print(f"Latent statistics - Mean: {all_latents.mean():.4f}, Std: {all_latents.std():.4f}")
+    print(
+        f"Latent statistics - Mean: {all_latents.mean():.4f}, Std: {all_latents.std():.4f}"
+    )
     print(f"Latent range - Min: {all_latents.min():.4f}, Max: {all_latents.max():.4f}")
 
     print("\n=== Training Script Completed ===")
