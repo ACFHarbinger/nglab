@@ -32,6 +32,10 @@ All notable changes to the NGLab project will be documented in this file.
   - Implemented strict **Language Isolation** and directory exclusions in `pre-commit` to prevent unintentional changes to Markdown, Kotlin, and metadata files.
   - Standardized `Ruff` configuration to use the modern `[tool.ruff.lint]` structure and updated `MyPy` to Python 3.10 support.
   - Implemented `HelperModelFactory` for unified access to supplemental ML algorithms.
+- **Code Organization**:
+  - **Deep Models Refactoring**: Reorganized `python/src/models/deep/` into logical subdirectories (`autoencoders/`, `recurrent/`, `convolutional/`, `attention/`, `memory/`, `probabilistic/`, `general/`, `spiking/`, `competitive/`) with individual class files and facade modules for cleaner imports.
+  - **MAC Models Refactoring**: Reorganized `python/src/models/mac/` into subdirectories (`linear/`, `trees/`, `boosting/`, `ensemble/`, `naive_bayes/`, `neighbors/`, `svm/`) with individual class files (46 total) and facade modules mirroring the `helper/` structure.
+  - **Factory Pattern**: Split `time_series.py` into `deep_factory.py` and `mac_factory.py` to separate model creation logic, reducing the main file from 588 lines to ~70 lines while maintaining full backward compatibility.
 - **Project Structure & Dependencies**:
   - Added `scikit-learn`, `xgboost`, and `lightgbm` to `pyproject.toml`.
   - Created modularized test fixtures in `python/tests/fixtures/` (`deep_fixtures.py`, `mac_fixtures.py`).

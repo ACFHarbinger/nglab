@@ -3,11 +3,11 @@ Clustering models for NGLab.
 """
 
 from ..mac.base import ClassicalModel
-from .logic_clustering.kmeans import KMeansAlgorithm
-from .logic_clustering.hierarchical import HierarchicalClusteringAlgorithm
-from .logic_clustering.dbscan import DBSCANAlgorithm
-from .logic_clustering.gmm import GMMAlgorithm
-from .logic_clustering.kmedians import KMediansAlgorithm
+from .clustering_algorithm.kmeans import KMeansAlgorithm
+from .clustering_algorithm.hierarchical import HierarchicalClusteringAlgorithm
+from .clustering_algorithm.dbscan import DBSCANAlgorithm
+from .clustering_algorithm.gmm import GMMAlgorithm
+from .clustering_algorithm.kmedians import KMediansAlgorithm
 
 class ClusteringModel(ClassicalModel):
     """Base class for clustering models."""

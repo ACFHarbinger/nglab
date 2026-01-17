@@ -4,9 +4,9 @@ Association rule learning models for NGLab.
 
 import torch
 from ..mac.base import ClassicalModel
-from .logic_association.apriori import AprioriAlgorithm
-from .logic_association.fpgrowth import FPGrowthAlgorithm
-from .logic_association.eclat import EclatAlgorithm
+from .association_rule_learning.apriori import AprioriAlgorithm
+from .association_rule_learning.fpgrowth import FPGrowthAlgorithm
+from .association_rule_learning.eclat import EclatAlgorithm
 
 class AssociationRuleModel(ClassicalModel):
     """Base class for association rule models."""

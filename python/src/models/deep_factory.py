@@ -1,0 +1,416 @@
+"""
+Deep Learning Model Factory.
+"""
+
+from .deep import (
+    AttentionNetwork,
+    AutoDeconvNet,
+    AutoEncoder,
+    BoltzmannMachine,
+    CapsuleLayer,
+    DCIGN,
+    DeconvNet,
+    DeepBeliefNetwork,
+    DeepConvNet,
+    DeepResNet,
+    DenoisingAE,
+    DNC,
+    EchoStateNetwork,
+    ELM,
+    GRU,
+    HopfieldNetwork,
+    KohonenMap,
+    LiquidStateMachine,
+    LSTM,
+    LVQ,
+    MarkovChain,
+    MLP,
+    NeuralODE,
+    NormalizingFlow,
+    NSTransformer,
+    NTM,
+    Perceptron,
+    PINN,
+    RBF,
+    RBM,
+    RollingWindowCNN,
+    SNN,
+    SparseAE,
+    StackedAutoEncoder,
+    TSMamba,
+    VAE,
+    xLSTM,
+)
+
+
+# List of deep model names
+DEEP_MODEL_NAMES = [
+    "NSTransformer",
+    "Mamba",
+    "LSTM",
+    "GRU",
+    "xLSTM",
+    "SNN",
+    "MLP",
+    "RBF",
+    "AE",
+    "DAE",
+    "SAE",
+    "StackedAE",
+    "Hopfield",
+    "RBM",
+    "ESN",
+    "ELM",
+    "SOM",
+    "Capsule",
+    "CNN",
+    "Perceptron",
+    "MarkovChain",
+    "BM",
+    "DBN",
+    "DCN",
+    "Deconv",
+    "AutoDeconv",
+    "DCIGN",
+    "LSM",
+    "ResNet",
+    "DNC",
+    "NTM",
+    "Attention",
+    "Flow",
+    "NODE",
+    "LVQ",
+    "PINN",
+    "VAE",
+]
+
+
+def create_deep_model(model_name: str, cfg: dict):
+    """
+    Factory function to create deep learning models.
+    
+    Args:
+        model_name: Name of the model to create.
+        cfg: Configuration dictionary.
+        
+    Returns:
+        Instantiated model or None if not a deep model.
+    """
+    if model_name == "NSTransformer":
+        return NSTransformer(
+            pred_len=cfg.get("pred_len", 1),
+            seq_len=cfg.get("seq_len", 30),
+            input_dim=cfg.get("feature_dim", 12),
+            embed_dim=cfg.get("embed_dim", 64),
+            hidden_dim=cfg.get("hidden_dim", 128),
+            output_dim=cfg.get("output_dim", 64),
+            learner_dims=cfg.get("learner_dims", [64]),
+        )
+    elif model_name == "Mamba":
+        return TSMamba(
+            input_dim=cfg.get("feature_dim", 12),
+            output_dim=1,
+            d_model=cfg.get("hidden_dim", 128),
+            n_layers=cfg.get("num_layers", 2),
+            forecast_horizon=cfg.get("pred_len", 1),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "LSTM":
+        return LSTM(
+            input_dim=cfg.get("feature_dim", 12),
+            output_dim=cfg.get("output_dim", 1),
+            hidden_dim=cfg.get("hidden_dim", 128),
+            n_layers=cfg.get("num_layers", 2),
+            dropout=cfg.get("dropout", 0.0),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "GRU":
+        return GRU(
+            input_dim=cfg.get("feature_dim", 12),
+            output_dim=cfg.get("output_dim", 1),
+            hidden_dim=cfg.get("hidden_dim", 128),
+            n_layers=cfg.get("num_layers", 2),
+            dropout=cfg.get("dropout", 0.0),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "xLSTM":
+        return xLSTM(
+            input_dim=cfg.get("feature_dim", 12),
+            output_dim=1,
+            hidden_dim=cfg.get("hidden_dim", 128),
+            n_layers=cfg.get("num_layers", 2),
+            dropout=cfg.get("dropout", 0.0),
+            output_type=cfg.get("output_type", "embedding"),
+            cell_type=cfg.get("cell_type", "slstm"),
+            num_heads=cfg.get("num_heads", 4),
+        )
+    elif model_name == "SNN":
+        return SNN(
+            input_dim=cfg.get("feature_dim", 12),
+            output_dim=cfg.get("output_dim", 1),
+            hidden_dim=cfg.get("hidden_dim", 128),
+            n_layers=cfg.get("num_layers", 2),
+            dropout=cfg.get("dropout", 0.0),
+            output_type=cfg.get("output_type", "embedding"),
+            decay=cfg.get("decay", 0.9),
+            threshold=cfg.get("threshold", 1.0),
+        )
+    elif model_name == "MLP":
+        return MLP(
+            input_dim=cfg.get("feature_dim", 12),
+            hidden_dims=cfg.get("hidden_dims", [128, 64]),
+            output_dim=cfg.get("output_dim", 1),
+            dropout=cfg.get("dropout", 0.0),
+            activation=cfg.get("activation", "relu"),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "RBF":
+        return RBF(
+            input_dim=cfg.get("feature_dim", 12),
+            num_centers=cfg.get("hidden_dim", 100),
+            output_dim=cfg.get("output_dim", 1),
+            sigma=cfg.get("sigma", 1.0),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "AE":
+        return AutoEncoder(
+            input_dim=cfg.get("feature_dim", 12),
+            hidden_dims=cfg.get("hidden_dims", [64]),
+            latent_dim=cfg.get("hidden_dim", 32),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "DAE":
+        return DenoisingAE(
+            input_dim=cfg.get("feature_dim", 12),
+            hidden_dims=cfg.get("hidden_dims", [64]),
+            latent_dim=cfg.get("hidden_dim", 32),
+            noise_std=cfg.get("noise_std", 0.1),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "SAE":
+        return SparseAE(
+            input_dim=cfg.get("feature_dim", 12),
+            hidden_dims=cfg.get("hidden_dims", [64]),
+            latent_dim=cfg.get("hidden_dim", 32),
+            sparsity_target=cfg.get("sparsity_target", 0.05),
+            sparsity_weight=cfg.get("sparsity_weight", 0.1),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "StackedAE":
+        return StackedAutoEncoder(
+            layer_sizes=[cfg.get("feature_dim", 12)]
+            + cfg.get("hidden_dims", [64, 32])
+            + [cfg.get("latent_dim", 16)],
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "Hopfield":
+        return HopfieldNetwork(
+            size=cfg.get("feature_dim", 12),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "RBM":
+        return RBM(
+            visible_dim=cfg.get("feature_dim", 12),
+            hidden_dim=cfg.get("hidden_dim", 64),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "ESN":
+        return EchoStateNetwork(
+            input_dim=cfg.get("feature_dim", 12),
+            reservoir_dim=cfg.get("hidden_dim", 500),
+            output_dim=cfg.get("output_dim", 1),
+            spectral_radius=cfg.get("spectral_radius", 0.9),
+            sparsity=cfg.get("sparsity", 0.1),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "ELM":
+        return ELM(
+            input_dim=cfg.get("feature_dim", 12),
+            hidden_dim=cfg.get("hidden_dim", 500),
+            output_dim=cfg.get("output_dim", 1),
+            activation=cfg.get("activation", "sigmoid"),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "SOM":
+        return KohonenMap(
+            input_dim=cfg.get("feature_dim", 12),
+            grid_size=cfg.get("grid_size", (10, 10)),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "Capsule":
+        return CapsuleLayer(
+            in_caps=cfg.get("in_caps", 8),
+            in_dim=cfg.get("in_dim", 16),
+            out_caps=cfg.get("out_caps", 4),
+            out_dim=cfg.get("out_dim", 32),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "CNN":
+        return RollingWindowCNN(
+            input_dim=cfg.get("feature_dim", 12),
+            output_dim=1,
+            seq_len=cfg.get("seq_len", 30),
+            hidden_dim=cfg.get("hidden_dim", 128),
+            output_type=cfg.get("output_type", "embedding"),
+        )
+    elif model_name == "Perceptron":
+        return Perceptron(
+            input_dim=cfg.get("feature_dim", 12),
+            output_dim=cfg.get("output_dim", 1),
+            activation=cfg.get("activation", "sigmoid"),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "MarkovChain":
+        return MarkovChain(
+            num_states=cfg.get("num_states", 10),
+            output_type=cfg.get("output_type", "prediction"),
+            learnable=cfg.get("learnable", True),
+        )
+    elif model_name == "BM":
+        return BoltzmannMachine(
+            num_units=cfg.get("feature_dim", 12),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "DBN":
+        return DeepBeliefNetwork(
+            layer_sizes=[cfg.get("feature_dim", 12)]
+            + cfg.get("hidden_dims", [64, 32]),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "DCN":
+        return DeepConvNet(
+            input_dim=cfg.get("feature_dim", 12),
+            hidden_channels=cfg.get("hidden_channels", [32, 64, 128]),
+            output_dim=cfg.get("output_dim", 1),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "Deconv":
+        return DeconvNet(
+            input_dim=cfg.get("feature_dim", 12),
+            hidden_channels=cfg.get("hidden_channels", [128, 64, 32]),
+            output_dim=cfg.get("output_dim", 1),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "AutoDeconv":
+        return AutoDeconvNet(
+            input_dim=cfg.get("feature_dim", 12),
+            latent_dim=cfg.get("latent_dim", 64),
+            hidden_channels=cfg.get("hidden_channels", [32, 64, 128]),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "DCIGN":
+        latent_dim = cfg.get("latent_dim", 128)
+        num_intrinsic = cfg.get("num_intrinsic", latent_dim // 4)
+        num_extrinsic = latent_dim - num_intrinsic
+        return DCIGN(
+            input_dim=cfg.get("feature_dim", 12),
+            latent_dim=latent_dim,
+            hidden_channels=cfg.get("hidden_channels", [32, 64, 128, 256]),
+            num_intrinsic=num_intrinsic,
+            num_extrinsic=num_extrinsic,
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "LSM":
+        return LiquidStateMachine(
+            input_dim=cfg.get("feature_dim", 12),
+            liquid_size=cfg.get("liquid_size", 200),
+            output_dim=cfg.get("output_dim", 1),
+            connection_prob=cfg.get("connection_prob", 0.3),
+            spectral_radius=cfg.get("spectral_radius", 1.2),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "ResNet":
+        return DeepResNet(
+            input_dim=cfg.get("feature_dim", 12),
+            hidden_dim=cfg.get("hidden_dim", 128),
+            num_blocks=cfg.get("num_blocks", 4),
+            output_dim=cfg.get("output_dim", 1),
+            use_conv=cfg.get("use_conv", False),
+            dropout=cfg.get("dropout", 0.1),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "DNC":
+        return DNC(
+            input_dim=cfg.get("feature_dim", 12),
+            hidden_dim=cfg.get("hidden_dim", 128),
+            memory_size=cfg.get("memory_size", 64),
+            memory_dim=cfg.get("memory_dim", 32),
+            num_reads=cfg.get("num_reads", 4),
+            output_dim=cfg.get("output_dim", 1),
+            controller_type=cfg.get("controller_type", "lstm"),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "NTM":
+        return NTM(
+            input_dim=cfg.get("feature_dim", 12),
+            hidden_dim=cfg.get("hidden_dim", 128),
+            memory_size=cfg.get("memory_size", 128),
+            memory_dim=cfg.get("memory_dim", 20),
+            num_reads=cfg.get("num_reads", 1),
+            num_writes=cfg.get("num_writes", 1),
+            output_dim=cfg.get("output_dim", 1),
+            controller_type=cfg.get("controller_type", "lstm"),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "Attention":
+        return AttentionNetwork(
+            input_dim=cfg.get("feature_dim", 12),
+            d_model=cfg.get("d_model", 128),
+            num_layers=cfg.get("num_layers", 4),
+            num_heads=cfg.get("num_heads", 8),
+            d_ff=cfg.get("d_ff", 512),
+            output_dim=cfg.get("output_dim", 1),
+            dropout=cfg.get("dropout", 0.1),
+            max_seq_len=cfg.get("max_seq_len", 1000),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "Flow":
+        return NormalizingFlow(
+            input_dim=cfg.get("feature_dim", 12),
+            num_layers=cfg.get("num_layers", 4),
+            hidden_dim=cfg.get("hidden_dim", 64),
+            seq_len=cfg.get("seq_len", 1),
+        )
+    elif model_name == "NODE":
+        return NeuralODE(
+            input_dim=cfg.get("feature_dim", 12),
+            hidden_dim=cfg.get("hidden_dim", 64),
+            output_dim=cfg.get("output_dim", 1),
+            num_layers=cfg.get("num_layers", 2),
+            time_steps=cfg.get("seq_len", 10),
+            horizon=cfg.get("horizon", 1.0),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "LVQ":
+        return LVQ(
+            input_dim=cfg.get("feature_dim", 12),
+            num_classes=cfg.get("num_classes", 2),
+            prototypes_per_class=cfg.get("prototypes_per_class", 1),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "PINN":
+        return PINN(
+            input_dim=cfg.get("feature_dim", 2),
+            hidden_dim=cfg.get("hidden_dim", 20),
+            output_dim=cfg.get("output_dim", 1),
+            num_layers=cfg.get("num_layers", 4),
+            activation=cfg.get("activation", "tanh"),
+            output_type=cfg.get("output_type", "prediction"),
+        )
+    elif model_name == "VAE":
+        return VAE(
+            input_dim=cfg.get("feature_dim", 12),
+            latent_dim=cfg.get("latent_dim", 16),
+            d_model=cfg.get("d_model", 128),
+            seq_len=cfg.get("seq_len", 100),
+            pred_len=cfg.get("pred_len", 20),
+            encoder_type=cfg.get("encoder_type", "transformer"),
+            decoder_type=cfg.get("decoder_type", None),
+            n_layers=cfg.get("num_layers", 3),
+            n_heads=cfg.get("num_heads", 8),
+            d_ff=cfg.get("d_ff", 512),
+            dropout=cfg.get("dropout", 0.1),
+            activation=cfg.get("activation", "gelu"),
+        )
+    
+    return None

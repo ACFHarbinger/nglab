@@ -6,11 +6,11 @@ import torch
 import numpy as np
 from ..mac.base import ClassicalModel
 from ..mac.linear import MARSModel
-from .logic_dim_reduction.pca import PCAAlgorithm
-from .logic_dim_reduction.tsne import TSNEAlgorithm
-from .logic_dim_reduction.lda import LDAAlgorithm
-from .logic_dim_reduction.sammon import SammonMappingAlgorithm
-from .logic_dim_reduction.mda import MDAAlgorithm
+from .dimensionality_reduction.pca import PCAAlgorithm
+from .dimensionality_reduction.tsne import TSNEAlgorithm
+from .dimensionality_reduction.lda import LDAAlgorithm
+from .dimensionality_reduction.sammon import SammonMappingAlgorithm
+from .dimensionality_reduction.mda import MDAAlgorithm
 
 # Sklearn imports for direct wrappers
 from sklearn.linear_model import LinearRegression
