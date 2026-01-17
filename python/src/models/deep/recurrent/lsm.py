@@ -5,7 +5,7 @@ Liquid State Machine (LSM) model.
 import torch
 from torch import nn
 
-from .snn import LIFCell, surrogate_heaviside
+from python.src.models.deep.spiking.snn import LIFCell, surrogate_heaviside
 
 
 class LiquidStateMachine(nn.Module):

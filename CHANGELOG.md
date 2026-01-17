@@ -48,7 +48,7 @@ All notable changes to the NGLab project will be documented in this file.
 
 - **Build Environment**: Resolved linker issues in `.cargo/config.toml` to support `cargo doc` and standard builds in heterogeneous environments.
 - **Deep Learning Models**: Fixed relative imports and crashing bugs in `nstansformer`, `tsmamba`, and `xlstm`.
-- **Test Stability**: Resolved shape mismatches in `TimeSeriesVAE` tests and `NameError` in classical model fitting unit tests.
+- **Test Stability**: Resolved shape mismatches in `VAE` tests and `NameError` in classical model fitting unit tests.
 - **Code Standards**: Fixed wildcard imports in Android Kotlin tests and adapters to comply with `ktlint` standards.
 - **Python Quality**: Addressed various import errors and shape mismatches identified during the CI integration of classical and deep models.
 

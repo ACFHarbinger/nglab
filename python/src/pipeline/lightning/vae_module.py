@@ -1,7 +1,7 @@
 """
 PyTorch Lightning Module for VAE Training
 
-This module provides a Lightning wrapper for training the TimeSeriesVAE model
+This module provides a Lightning wrapper for training the VAE model
 with support for beta-VAE, KL annealing, and various reconstruction losses.
 """
 
@@ -10,7 +10,7 @@ from typing import Literal
 import torch
 from pytorch_lightning import LightningModule
 
-from python.src.models.deep.vae import TimeSeriesVAE, vae_loss
+from python.src.models.deep.autoencoders.vae import VAE, vae_loss
 
 
 class VAELightningModule(LightningModule):
@@ -77,7 +77,7 @@ class VAELightningModule(LightningModule):
         self.save_hyperparameters()
 
         # Initialize VAE model
-        self.model = TimeSeriesVAE(
+        self.model = VAE(
             input_dim=input_dim,
             latent_dim=latent_dim,
             d_model=d_model,

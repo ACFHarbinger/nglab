@@ -10,7 +10,7 @@ def deep_dummy_input():
 
 @pytest.fixture
 def vae_config():
-    """Config specifically for TimeSeriesVAE."""
+    """Config specifically for VAE."""
     return {
         "input_dim": 10,
         "latent_dim": 16,

@@ -11,7 +11,7 @@ import torch
 from torch import nn
 
 
-class TimeSeriesVAE(nn.Module):
+class VAE(nn.Module):
     """
     Variational Auto-Encoder for time series prediction.
 
@@ -108,7 +108,7 @@ class TimeSeriesVAE(nn.Module):
             "output_dim": d_model,
             **(encoder_kwargs or {}),
         }
-        from ..time_series import TimeSeriesBackbone
+        from python.src.models.time_series import TimeSeriesBackbone
         self.encoder = TimeSeriesBackbone(encoder_cfg)
 
         # Project embeddings to latent distribution parameters
@@ -140,7 +140,7 @@ class TimeSeriesVAE(nn.Module):
             # NSTransformer does.
             # RNN wrappers (LSTM/GRU) output (Batch, Seq, Hidden).
             # We need a projection layer if backbone doesn't do it.
-            # TimeSeriesVAE implementation didn't have a projection before?
+            # VAE implementation didn't have a projection before?
             # Looking at previous code: self.decoder(...) -> reconstruction.
             # If backbone outputs (B, L, H), valid.
             # Let's ensure cfg matches intentions.

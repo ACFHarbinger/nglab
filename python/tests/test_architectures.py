@@ -17,26 +17,26 @@ from python.src.models.deep import (
     RollingWindowCNN,
     SparseAE,
     StackedAutoEncoder,
+    AttentionNetwork,
+    BoltzmannMachine,
+    DeepBeliefNetwork,
+    DCIGN,
+    DeepConvNet,
+    AutoDeconvNet,
+    DeconvNet,
+    DNC,
+    NormalizingFlow,
+    LiquidStateMachine,
+    MarkovChain,
+    NeuralODE,
+    NTM,
+    Perceptron,
+    PINN,
+    DeepResNet,
+    VAE,
+    LVQ,
 )
-from python.src.models.deep.attention_net import AttentionNetwork
-from python.src.models.deep.boltzmann import BoltzmannMachine
-from python.src.models.deep.dbn import DeepBeliefNetwork
-from python.src.models.deep.dcign import DCIGN
-from python.src.models.deep.dcn import DeepConvNet
-from python.src.models.deep.deconv import AutoDeconvNet, DeconvNet
-from python.src.models.deep.dnc import DNC
-from python.src.models.deep.flow import NormalizingFlow
-from python.src.models.deep.lsm import LiquidStateMachine
-from python.src.models.deep.markov_chain import MarkovChain
-from python.src.models.deep.node import NeuralODE
-from python.src.models.deep.ntm import NTM
-
-# New Imports
-from python.src.models.deep.perceptron import Perceptron
-from python.src.models.deep.pinn import PINN, pinn_loss
-from python.src.models.deep.resnet import DeepResNet
-from python.src.models.deep.vae import TimeSeriesVAE
-from python.src.models.deep.lvq import LVQ
+from python.src.models.deep.general.pinn import pinn_loss
 
 # --- Feed-Forward & Basic Layers ---
 
@@ -120,9 +120,9 @@ class TestAutoEncoders:
         assert st_ae(x_seq, return_sequence=True).shape == (4, 5, 10)
 
 
-class TestTimeSeriesVAE:
+class TestVAE:
     def test_vae_forward(self, vae_config):
-        model = TimeSeriesVAE(**vae_config)
+        model = VAE(**vae_config)
         # Match vae_config: seq_len=30, input_dim=10
         x = torch.randn(8, 30, 10)
         output = model(x)
@@ -265,7 +265,7 @@ class TestResNet:
 class TestSNN:
     def test_surrogate_gradient(self):
         x = torch.tensor([0.0], requires_grad=True)
-        from python.src.models.deep.snn import surrogate_heaviside
+        from python.src.models.deep.spiking import surrogate_heaviside
 
         y = surrogate_heaviside(x)
         y.backward()
@@ -380,7 +380,7 @@ class TestNeuralODE:
     def test_node_solver(self):
         # Test if simple decay exponential solution is valid
         # dy/dt = -y => y(t) = y0 * exp(-t)
-        from python.src.models.deep.node import odesolve
+        from python.src.models.deep.general import odesolve
 
         class Decay(nn.Module):
             def forward(self, t, y):
