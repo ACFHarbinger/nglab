@@ -8,8 +8,8 @@ use nglab::simulation::gym::TradingEnv;
 use nglab::simulation::orderbook::OrderBook;
 use nglab::web::polymarket::{Frequency, PolymarketScraper};
 use nglab::web::scraper::WebScraper;
-use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 use tauri::{Emitter, Manager, State};
 use tokio::time::{sleep, Duration};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
@@ -409,7 +409,10 @@ async fn stream_polymarket_prices(
         return Err("No token IDs found for this market".to_string());
     }
 
-    eprintln!("🚀 Starting WebSocket stream for {} token IDs", token_ids.len());
+    eprintln!(
+        "🚀 Starting WebSocket stream for {} token IDs",
+        token_ids.len()
+    );
     eprintln!("Token IDs: {:?}", &token_ids[0..token_ids.len().min(3)]);
 
     // Set the streaming flag to true
@@ -448,7 +451,10 @@ async fn stream_polymarket_prices(
 
                 // 4. Listen Loop
                 eprintln!("✓ Subscription sent");
-                eprintln!("📡 WebSocket connected successfully. Subscribed to {} assets", token_ids.len());
+                eprintln!(
+                    "📡 WebSocket connected successfully. Subscribed to {} assets",
+                    token_ids.len()
+                );
 
                 // TEST: Emit a test event to verify event propagation
                 let test_update = PolymarketPriceUpdate {
@@ -467,142 +473,107 @@ async fn stream_polymarket_prices(
                 let mut msg_count = 0;
                 while ws_running.load(Ordering::SeqCst) {
                     if let Some(msg) = read.next().await {
-                    msg_count += 1;
-                    eprintln!("📨 Message #{} received (type: {:?})", msg_count,
-                        match &msg {
-                            Ok(Message::Text(_)) => "Text",
-                            Ok(Message::Binary(_)) => "Binary",
-                            Ok(Message::Ping(_)) => "Ping",
-                            Ok(Message::Pong(_)) => "Pong",
-                            Ok(Message::Close(_)) => "Close",
-                            Ok(Message::Frame(_)) => "Frame",
-                            Err(_) => "Error",
-                        }
-                    );
+                        msg_count += 1;
+                        eprintln!(
+                            "📨 Message #{} received (type: {:?})",
+                            msg_count,
+                            match &msg {
+                                Ok(Message::Text(_)) => "Text",
+                                Ok(Message::Binary(_)) => "Binary",
+                                Ok(Message::Ping(_)) => "Ping",
+                                Ok(Message::Pong(_)) => "Pong",
+                                Ok(Message::Close(_)) => "Close",
+                                Ok(Message::Frame(_)) => "Frame",
+                                Err(_) => "Error",
+                            }
+                        );
 
-                    match msg {
-                        Ok(Message::Text(text)) => {
-                            eprintln!("📄 WS RECV TEXT: {}", text);
+                        match msg {
+                            Ok(Message::Text(text)) => {
+                                eprintln!("📄 WS RECV TEXT: {}", text);
 
-                            // Parse JSON response
-                            if let Ok(value) = serde_json::from_str::<serde_json::Value>(&text) {
-                                // Try multiple Polymarket API formats
-                                let mut updated = false;
+                                // Parse JSON response
+                                if let Ok(value) = serde_json::from_str::<serde_json::Value>(&text)
+                                {
+                                    // Try multiple Polymarket API formats
+                                    let mut updated = false;
 
-                                // Format 0: Official Polymarket price_change event (Sept 2025)
-                                // {"event_type": "price_change", "price_changes": [{"asset_id": "...", "best_bid": "0.52", "best_ask": "0.53"}]}
-                                if let Some(event_type) = value.get("event_type").and_then(|s| s.as_str()) {
-                                    if event_type == "price_change" {
-                                        if let Some(price_changes) = value.get("price_changes").and_then(|v| v.as_array()) {
-                                            for change in price_changes {
-                                                if let Some(asset_id) = change.get("asset_id").and_then(|s| s.as_str()) {
-                                                    // Use midpoint of best_bid and best_ask
-                                                    let bid_opt = change.get("best_bid").and_then(|b| {
-                                                        if let Some(s) = b.as_str() {
-                                                            s.parse::<f64>().ok()
-                                                        } else {
-                                                            b.as_f64()
-                                                        }
-                                                    });
-                                                    let ask_opt = change.get("best_ask").and_then(|a| {
-                                                        if let Some(s) = a.as_str() {
-                                                            s.parse::<f64>().ok()
-                                                        } else {
-                                                            a.as_f64()
-                                                        }
-                                                    });
+                                    // Format 0: Official Polymarket price_change event (Sept 2025)
+                                    // {"event_type": "price_change", "price_changes": [{"asset_id": "...", "best_bid": "0.52", "best_ask": "0.53"}]}
+                                    if let Some(event_type) =
+                                        value.get("event_type").and_then(|s| s.as_str())
+                                    {
+                                        if event_type == "price_change" {
+                                            if let Some(price_changes) = value
+                                                .get("price_changes")
+                                                .and_then(|v| v.as_array())
+                                            {
+                                                for change in price_changes {
+                                                    if let Some(asset_id) = change
+                                                        .get("asset_id")
+                                                        .and_then(|s| s.as_str())
+                                                    {
+                                                        // Use midpoint of best_bid and best_ask
+                                                        let bid_opt =
+                                                            change.get("best_bid").and_then(|b| {
+                                                                if let Some(s) = b.as_str() {
+                                                                    s.parse::<f64>().ok()
+                                                                } else {
+                                                                    b.as_f64()
+                                                                }
+                                                            });
+                                                        let ask_opt =
+                                                            change.get("best_ask").and_then(|a| {
+                                                                if let Some(s) = a.as_str() {
+                                                                    s.parse::<f64>().ok()
+                                                                } else {
+                                                                    a.as_f64()
+                                                                }
+                                                            });
 
-                                                    if let (Some(bid), Some(ask)) = (bid_opt, ask_opt) {
-                                                        let price = (bid + ask) / 2.0; // Midpoint price
-                                                        eprintln!("✓ Emitting price_change: {} = ${} (bid:{}, ask:{})",
+                                                        if let (Some(bid), Some(ask)) =
+                                                            (bid_opt, ask_opt)
+                                                        {
+                                                            let price = (bid + ask) / 2.0; // Midpoint price
+                                                            eprintln!("✓ Emitting price_change: {} = ${} (bid:{}, ask:{})",
                                                             asset_id, price, bid, ask);
-                                                        let update = PolymarketPriceUpdate {
-                                                            asset_id: asset_id.to_string(),
-                                                            price,
-                                                        };
+                                                            let update = PolymarketPriceUpdate {
+                                                                asset_id: asset_id.to_string(),
+                                                                price,
+                                                            };
 
-                                                        // Try emitting to all windows
-                                                        // Emit event to frontend
-                                                        if let Err(e) = app_handle.emit("polymarket-price-update", &update) {
-                                                            eprintln!("  ❌ Failed to emit event: {}", e);
-                                                        } else {
-                                                            eprintln!("  ✅ Event emitted successfully");
+                                                            // Try emitting to all windows
+                                                            // Emit event to frontend
+                                                            if let Err(e) = app_handle.emit(
+                                                                "polymarket-price-update",
+                                                                &update,
+                                                            ) {
+                                                                eprintln!(
+                                                                    "  ❌ Failed to emit event: {}",
+                                                                    e
+                                                                );
+                                                            } else {
+                                                                eprintln!("  ✅ Event emitted successfully");
+                                                            }
+
+                                                            updated = true;
                                                         }
-
-                                                        updated = true;
                                                     }
                                                 }
                                             }
                                         }
                                     }
-                                }
 
-                                // Format 1: Direct array of updates
-                                if !updated {
-                                    if let Some(arr) = value.as_array() {
-                                        for item in arr {
-                                            if let Some(asset_id) = item.get("asset_id").and_then(|s| s.as_str()) {
-                                                // Try getting price as string or number
-                                                let price_opt = item.get("price")
-                                                    .and_then(|p| {
-                                                        if let Some(s) = p.as_str() {
-                                                            s.parse::<f64>().ok()
-                                                        } else {
-                                                            p.as_f64()
-                                                        }
-                                                    });
-
-                                                if let Some(price) = price_opt {
-                                                    eprintln!("✓ Emitting price update: {} = ${}", asset_id, price);
-                                                    let update = PolymarketPriceUpdate {
-                                                        asset_id: asset_id.to_string(),
-                                                        price,
-                                                    };
-                                                    // Emit event to frontend
-                                                    if let Err(e) = app_handle.emit("polymarket-price-update", &update) {
-                                                        eprintln!("  ❌ Failed to emit: {}", e);
-                                                    } else {
-                                                        eprintln!("  ✅ Emitted");
-                                                    }
-                                                    updated = true;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Format 2: Single object with asset_id and price
-                                if !updated {
-                                    if let Some(asset_id) = value.get("asset_id").and_then(|s| s.as_str()) {
-                                        let price_opt = value.get("price")
-                                            .and_then(|p| {
-                                                if let Some(s) = p.as_str() {
-                                                    s.parse::<f64>().ok()
-                                                } else {
-                                                    p.as_f64()
-                                                }
-                                            });
-
-                                        if let Some(price) = price_opt {
-                                            eprintln!("✓ Emitting single price update: {} = ${}", asset_id, price);
-                                            let update = PolymarketPriceUpdate {
-                                                asset_id: asset_id.to_string(),
-                                                price,
-                                            };
-                                            let _ = app_handle.emit("polymarket-price-update", &update);
-                                            updated = true;
-                                        }
-                                    }
-                                }
-
-                                // Format 3: Nested data structure (common in some APIs)
-                                if !updated {
-                                    if let Some(data) = value.get("data") {
-                                        if let Some(arr) = data.as_array() {
+                                    // Format 1: Direct array of updates
+                                    if !updated {
+                                        if let Some(arr) = value.as_array() {
                                             for item in arr {
-                                                if let Some(asset_id) = item.get("asset_id").and_then(|s| s.as_str()) {
-                                                    let price_opt = item.get("price")
-                                                        .and_then(|p| {
+                                                if let Some(asset_id) =
+                                                    item.get("asset_id").and_then(|s| s.as_str())
+                                                {
+                                                    // Try getting price as string or number
+                                                    let price_opt =
+                                                        item.get("price").and_then(|p| {
                                                             if let Some(s) = p.as_str() {
                                                                 s.parse::<f64>().ok()
                                                             } else {
@@ -611,54 +582,134 @@ async fn stream_polymarket_prices(
                                                         });
 
                                                     if let Some(price) = price_opt {
-                                                        eprintln!("✓ Emitting nested price update: {} = ${}", asset_id, price);
+                                                        eprintln!(
+                                                            "✓ Emitting price update: {} = ${}",
+                                                            asset_id, price
+                                                        );
                                                         let update = PolymarketPriceUpdate {
                                                             asset_id: asset_id.to_string(),
                                                             price,
                                                         };
                                                         // Emit event to frontend
-                                                    if let Err(e) = app_handle.emit("polymarket-price-update", &update) {
-                                                        eprintln!("  ❌ Failed to emit: {}", e);
-                                                    } else {
-                                                        eprintln!("  ✅ Emitted");
-                                                    }
+                                                        if let Err(e) = app_handle.emit(
+                                                            "polymarket-price-update",
+                                                            &update,
+                                                        ) {
+                                                            eprintln!("  ❌ Failed to emit: {}", e);
+                                                        } else {
+                                                            eprintln!("  ✅ Emitted");
+                                                        }
                                                         updated = true;
                                                     }
                                                 }
                                             }
                                         }
                                     }
-                                }
 
-                                if !updated {
-                                    eprintln!("⚠ Could not parse price update from message format");
+                                    // Format 2: Single object with asset_id and price
+                                    if !updated {
+                                        if let Some(asset_id) =
+                                            value.get("asset_id").and_then(|s| s.as_str())
+                                        {
+                                            let price_opt = value.get("price").and_then(|p| {
+                                                if let Some(s) = p.as_str() {
+                                                    s.parse::<f64>().ok()
+                                                } else {
+                                                    p.as_f64()
+                                                }
+                                            });
+
+                                            if let Some(price) = price_opt {
+                                                eprintln!(
+                                                    "✓ Emitting single price update: {} = ${}",
+                                                    asset_id, price
+                                                );
+                                                let update = PolymarketPriceUpdate {
+                                                    asset_id: asset_id.to_string(),
+                                                    price,
+                                                };
+                                                let _ = app_handle
+                                                    .emit("polymarket-price-update", &update);
+                                                updated = true;
+                                            }
+                                        }
+                                    }
+
+                                    // Format 3: Nested data structure (common in some APIs)
+                                    if !updated {
+                                        if let Some(data) = value.get("data") {
+                                            if let Some(arr) = data.as_array() {
+                                                for item in arr {
+                                                    if let Some(asset_id) = item
+                                                        .get("asset_id")
+                                                        .and_then(|s| s.as_str())
+                                                    {
+                                                        let price_opt =
+                                                            item.get("price").and_then(|p| {
+                                                                if let Some(s) = p.as_str() {
+                                                                    s.parse::<f64>().ok()
+                                                                } else {
+                                                                    p.as_f64()
+                                                                }
+                                                            });
+
+                                                        if let Some(price) = price_opt {
+                                                            eprintln!("✓ Emitting nested price update: {} = ${}", asset_id, price);
+                                                            let update = PolymarketPriceUpdate {
+                                                                asset_id: asset_id.to_string(),
+                                                                price,
+                                                            };
+                                                            // Emit event to frontend
+                                                            if let Err(e) = app_handle.emit(
+                                                                "polymarket-price-update",
+                                                                &update,
+                                                            ) {
+                                                                eprintln!(
+                                                                    "  ❌ Failed to emit: {}",
+                                                                    e
+                                                                );
+                                                            } else {
+                                                                eprintln!("  ✅ Emitted");
+                                                            }
+                                                            updated = true;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if !updated {
+                                        eprintln!(
+                                            "⚠ Could not parse price update from message format"
+                                        );
+                                    }
+                                } else {
+                                    eprintln!("⚠ Failed to parse JSON from WebSocket message");
                                 }
-                            } else {
-                                eprintln!("⚠ Failed to parse JSON from WebSocket message");
+                            }
+                            Ok(Message::Ping(data)) => {
+                                eprintln!("🏓 Received Ping, sending Pong");
+                                let _ = write.send(Message::Pong(data)).await;
+                            }
+                            Ok(Message::Pong(_)) => {
+                                eprintln!("🏓 Received Pong");
+                            }
+                            Ok(Message::Close(frame)) => {
+                                eprintln!("❌ WebSocket connection closed: {:?}", frame);
+                                break;
+                            }
+                            Ok(Message::Binary(data)) => {
+                                eprintln!("📦 Received binary data: {} bytes", data.len());
+                            }
+                            Err(e) => {
+                                eprintln!("❌ WebSocket Error: {}", e);
+                                break;
+                            }
+                            _ => {
+                                eprintln!("❓ Unknown message type");
                             }
                         }
-                        Ok(Message::Ping(data)) => {
-                            eprintln!("🏓 Received Ping, sending Pong");
-                            let _ = write.send(Message::Pong(data)).await;
-                        }
-                        Ok(Message::Pong(_)) => {
-                            eprintln!("🏓 Received Pong");
-                        }
-                        Ok(Message::Close(frame)) => {
-                            eprintln!("❌ WebSocket connection closed: {:?}", frame);
-                            break;
-                        }
-                        Ok(Message::Binary(data)) => {
-                            eprintln!("📦 Received binary data: {} bytes", data.len());
-                        }
-                        Err(e) => {
-                            eprintln!("❌ WebSocket Error: {}", e);
-                            break;
-                        }
-                        _ => {
-                            eprintln!("❓ Unknown message type");
-                        }
-                    }
                     } else {
                         // No more messages, exit loop
                         break;
@@ -698,6 +749,105 @@ fn stop_polymarket_stream(app: tauri::AppHandle) -> Result<(), String> {
     } else {
         Err("Failed to access stream state".to_string())
     }
+}
+
+/**
+ * Command to list available trained models in the python/trained_models directory.
+ */
+#[tauri::command]
+async fn list_trained_models(app: tauri::AppHandle) -> Result<Vec<String>, String> {
+    // Resolve path relative to app? Or absolute?
+    // Assuming simplified relative structure for dev, but in prod this needs resource path.
+    // For now, let's look in the user's workspace/python/trained_models
+    // We can assume the CWD is the project root in dev mode.
+    // In dev: tauri dev runs from project root usually?
+    // The user says "python/trained_models" exists.
+
+    let path = std::path::Path::new("../../python/trained_models");
+    if !path.exists() {
+        return Ok(vec![]);
+    }
+
+    let mut models = Vec::new();
+    if let Ok(entries) = std::fs::read_dir(path) {
+        for entry in entries {
+            if let Ok(entry) = entry {
+                let path = entry.path();
+                if path.extension().map_or(false, |ext| ext == "pt") {
+                    if let Some(name) = path.file_stem().and_then(|s| s.to_str()) {
+                        models.push(name.to_string());
+                    }
+                }
+            }
+        }
+    }
+    models.sort();
+    Ok(models)
+}
+
+/**
+ * Command to run inference on a selected trained model.
+ */
+#[derive(serde::Serialize)]
+struct PredictionResponse {
+    status: String,
+    prediction: Option<Vec<f64>>, // Flexible, maybe scalar or array
+    message: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+struct InferenceOutput {
+    status: String,
+    prediction: Option<serde_json::Value>, // Can be number list or nested
+    message: Option<String>,
+    // metadata: ...
+}
+
+#[tauri::command]
+async fn predict_trained_model(
+    model_name: String,
+    input_data: Vec<f64>,
+) -> Result<Vec<f64>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let model_path = format!("../../python/trained_models/{}.pt", model_name);
+
+        let mut cmd = std::process::Command::new("python3");
+        cmd.arg("../../python/src/infer.py")
+            .arg("--model_path")
+            .arg(&model_path)
+            .arg("--input_json")
+            .arg(serde_json::to_string(&input_data).unwrap_or("[]".to_string()));
+
+        let output = cmd
+            .output()
+            .map_err(|e| format!("Failed to execute python: {}", e))?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(format!("Inference script failed: {}", stderr));
+        }
+
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let result: InferenceOutput = serde_json::from_str(&stdout)
+            .map_err(|e| format!("Failed to parse inference output: {} | raw: {}", e, stdout))?;
+
+        if result.status == "success" {
+            // Normalize prediction to Vec<f64>
+            if let Some(val) = result.prediction {
+                if let Some(arr) = val.as_array() {
+                    let vec: Vec<f64> = arr.iter().filter_map(|v| v.as_f64()).collect();
+                    return Ok(vec);
+                } else if let Some(num) = val.as_f64() {
+                    return Ok(vec![num]);
+                }
+            }
+            Err("Empty or invalid prediction format".to_string())
+        } else {
+            Err(result.message.unwrap_or("Unknown error".to_string()))
+        }
+    })
+    .await
+    .map_err(|e| format!("Task failed: {}", e))?
 }
 
 #[tauri::command]
@@ -742,7 +892,9 @@ pub fn run() {
             predict_arima,
             predict_garch,
             predict_holt_winters,
-            predict_prophet
+            predict_prophet,
+            list_trained_models,
+            predict_trained_model
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

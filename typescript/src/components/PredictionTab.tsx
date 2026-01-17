@@ -45,7 +45,7 @@ export default /**
  * future predictions onto a chart.
  */
     function PredictionTab({ livePrices, isStreaming, activeMarket }: PredictionTabProps) {
-    const [activeModel, setActiveModel] = useState<'arima' | 'garch' | 'holt_winters' | 'prophet'>('arima');
+    const [activeModel, setActiveModel] = useState<'arima' | 'garch' | 'holt_winters' | 'prophet' | 'trained_model'>('arima');
 
     // Data State
     const [rawData, setRawData] = useState<any[]>([]);
@@ -241,6 +241,73 @@ export default /**
 
     // Common State
     const [seed, setSeed] = useState<number | ''>('');
+
+    // Trained Model State
+    const [trainedModels, setTrainedModels] = useState<string[]>([]);
+    const [selectedTrainedModel, setSelectedTrainedModel] = useState<string>('');
+    const [isTrainedModelLoading, setIsTrainedModelLoading] = useState(false);
+
+    useEffect(() => {
+        // Fetch trained models on mount
+        invoke<string[]>('list_trained_models')
+            .then(models => {
+                setTrainedModels(models);
+                if (models.length > 0) {
+                    setSelectedTrainedModel(models[0]);
+                }
+            })
+            .catch(err => console.error("Failed to list models:", err));
+    }, []);
+
+    const runTrainedModel = async () => {
+        if (!chartRef.current || !predictionSeriesRef.current || !pastSeriesRef.current || !selectedTrainedModel) return;
+        setIsTrainedModelLoading(true);
+
+        try {
+            // Prepare Data
+            const { values, lastPoint, interval } = prepareChartData(rawData, selectedColumn);
+            if (values.length === 0) return;
+
+            // We pass the recent context. Usually models expect a sequence length.
+            // We'll pass the last N points. Configurable? For now pass all relevant.
+            // Note: infer.py expects a simple list.
+
+            // Limit context to prevent huge payloads if not needed? 
+            // Let's pass last 200 points.
+            const context = values.slice(-200);
+
+            const prediction = await invoke<number[]>('predict_trained_model', {
+                modelName: selectedTrainedModel,
+                inputData: context
+            });
+
+            if (predictionSeriesRef.current && lastPoint) {
+                // If prediction is a sequence, we plot it forward
+                // If prediction is a single scalar (next step), we plot 1 point.
+
+                // Heuristic: If len > 1, assume it's a sequence forecast
+                // If len == 1, it's just the next step.
+
+                let pathData = prediction.map((v, i) => ({
+                    time: (lastPoint.time + (interval * (i + 1))) as any,
+                    value: v
+                }));
+
+                // Connect
+                const bridge = { time: lastPoint.time as any, value: lastPoint.value };
+                pathData = [bridge, ...pathData];
+
+                predictionSeriesRef.current.setData(pathData);
+                chartRef.current?.timeScale().fitContent();
+            }
+
+        } catch (error) {
+            console.error('Trained Model Error:', error);
+            // alert('Inference failed: ' + error);
+        } finally {
+            setIsTrainedModelLoading(false);
+        }
+    };
 
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const chartRef = useRef<IChartApi | null>(null);
@@ -708,6 +775,12 @@ export default /**
                         >
                             Prophet
                         </button>
+                        <button
+                            onClick={() => setActiveModel('trained_model')}
+                            className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${activeModel === 'trained_model' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            Deep Learning
+                        </button>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-indigo-300">
@@ -1113,6 +1186,40 @@ export default /**
                                     </button>
                                 </div>
                             </div>
+                        ) : activeModel === 'trained_model' ? (
+                            <div className="space-y-4">
+                                <h3 className="text-xs font-semibold uppercase text-slate-400 flex items-center gap-2">
+                                    <Brain size={14} /> Trained Model Selection
+                                </h3>
+                                <div className="space-y-3">
+                                    {trainedModels.length === 0 ? (
+                                        <div className="p-3 bg-red-900/20 border border-red-800 rounded text-xs text-red-400">
+                                            No trained models found in <code>python/trained_models/</code>
+                                        </div>
+                                    ) : (
+                                        <label className="block text-xs text-slate-400">
+                                            Select Model
+                                            <select
+                                                value={selectedTrainedModel}
+                                                onChange={e => setSelectedTrainedModel(e.target.value)}
+                                                className="mt-1 w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm"
+                                            >
+                                                {trainedModels.map(m => (
+                                                    <option key={m} value={m}>{m}</option>
+                                                ))}
+                                            </select>
+                                        </label>
+                                    )}
+
+                                    <button
+                                        onClick={runTrainedModel}
+                                        disabled={isTrainedModelLoading || trainedModels.length === 0}
+                                        className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-2 rounded-lg transition-colors font-medium text-sm shadow-lg shadow-indigo-500/20"
+                                    >
+                                        {isTrainedModelLoading ? <Loader2 className="animate-spin" size={16} /> : 'Run Inference'}
+                                    </button>
+                                </div>
+                            </div>
                         ) : null}
                     </div>
                 </div>
@@ -1124,7 +1231,8 @@ export default /**
                                 {activeModel === 'arima' ? 'Simulated Price Path (Integrated)' :
                                     activeModel === 'garch' ? 'Conditional Volatility Series' :
                                         activeModel === 'holt_winters' ? 'Holt-Winters Forecast' :
-                                            'Prophet Forecast'}
+                                            activeModel === 'prophet' ? 'Prophet Forecast' :
+                                                'Deep Learning Inference'}
                             </h3>
                             <div className="flex gap-2">
                                 {rawData.length > 0 && (
@@ -1155,6 +1263,11 @@ export default /**
                             <p>
                                 Holt-Winters (Triple Exponential Smoothing) captures level, trend, and seasonality.
                                 Adjust Alpha, Beta, and Gamma to control how much weight is given to recent vs. old data for each component.
+                            </p>
+                        ) : activeModel === 'trained_model' ? (
+                            <p>
+                                Uses a pre-trained PyTorch model from your <code>part-2/trained_models</code> directory.
+                                The model is loaded in a separate Python process to run inference on the recent context window.
                             </p>
                         ) : (
                             <p>
