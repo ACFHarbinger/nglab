@@ -32,6 +32,7 @@ from models.resnet import DeepResNet
 from models.dnc import DNC
 from models.ntm import NTM
 from models.attention_net import AttentionNetwork
+from models.flow import NormalizingFlow, flow_loss
 
 # --- Feed-Forward & Basic Layers ---
 
@@ -247,6 +248,44 @@ class TestAttention:
         x = torch.randn(2, 10, 12)
         assert model(x).shape == (2, 1)
 
+# --- Generative Models ---
+
+class TestNormalizingFlow:
+    def test_flow_forward(self):
+        input_dim = 10
+        model = NormalizingFlow(input_dim=input_dim, num_layers=2, hidden_dim=20)
+        x = torch.randn(4, 10)
+        z, log_det = model(x)
+        assert z.shape == (4, 10)
+        assert log_det.shape == (4,)
+        
+    def test_flow_inverse(self):
+        input_dim = 10
+        model = NormalizingFlow(input_dim=input_dim, num_layers=4, hidden_dim=20)
+        x = torch.randn(4, 10)
+        z, _ = model(x)
+        x_recon = model.inverse(z)
+        assert torch.allclose(x, x_recon, atol=1e-5)
+        
+    def test_flow_sampling(self):
+        input_dim = 10
+        model = NormalizingFlow(input_dim=input_dim, num_layers=2, hidden_dim=20)
+        samples = model.sample(num_samples=5, device=torch.device('cpu'))
+        assert samples.shape == (5, 10)
+        
+    def test_flow_sequence(self):
+        # Test handling of flattened sequence
+        input_dim = 5
+        seq_len = 5
+        model = NormalizingFlow(input_dim=input_dim, seq_len=seq_len, num_layers=2)
+        x = torch.randn(3, seq_len, input_dim)
+        z, log_det = model(x)
+        assert z.shape == (3, seq_len * input_dim) # Latent is flattened
+        
+        x_recon = model.inverse(z)
+        assert x_recon.shape == (3, seq_len, input_dim)
+        assert torch.allclose(x, x_recon, atol=1e-5)
+
 # --- Integration ---
 
 class TestBackboneIntegration:
@@ -275,3 +314,12 @@ class TestBackboneIntegration:
             out = backbone(x)
             assert out.shape[0] == 2
             assert out.shape[-1] == 12
+
+    def test_backbone_flow(self):
+        cfg = {'name': 'Flow', 'feature_dim': 10, 'num_layers': 2}
+        backbone = TimeSeriesBackbone(cfg)
+        x = torch.randn(4, 10)
+        # Flow returns (z, log_det) tuple
+        z, log_det = backbone(x)
+        assert z.shape == (4, 10)
+        assert log_det.shape == (4,)

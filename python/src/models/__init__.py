@@ -37,3 +37,4 @@ from .resnet import DeepResNet, ResidualBlock, ResNetBottleneck
 from .dnc import DNC, DNCMemory
 from .ntm import NTM, NTMMemory, NTMReadHead, NTMWriteHead
 from .attention_net import AttentionNetwork, MultiHeadAttention, AttentionBlock
+from .flow import NormalizingFlow, flow_loss
