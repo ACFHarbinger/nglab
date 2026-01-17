@@ -80,12 +80,15 @@ class ClassicalModel(nn.Module, ABC):
             # Flatten sequence for fitting classical models
             b, s, f = X.shape
             X = X.reshape(b * s, f)
-            y = y.reshape(b * s, -1)
+            if y is not None:
+                y = y.reshape(b * s, -1)
 
-        if y.ndim == 2 and y.shape[1] == 1:
-            y = y.ravel()
-
-        self.model.fit(X, y)
+        if y is not None:
+            if y.ndim == 2 and y.shape[1] == 1:
+                y = y.ravel()
+            self.model.fit(X, y)
+        else:
+            self.model.fit(X)
         self._is_fitted = True
 
     def state_dict(self, *args, **kwargs):

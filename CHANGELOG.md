@@ -19,9 +19,18 @@ All notable changes to the NGLab project will be documented in this file.
   - Integrated high-performance boosting libraries: XGBoost and LightGBM.
   - Added support for k-Nearest Neighbors (kNN), SVM (SVC/SVR), and Naive Bayes variants.
   - Implemented `ClassicalModel` wrapper for PyTorch-compatible inference and fit logic.
+- **CI/CD & Code Quality**:
+  - Integrated a comprehensive quality suite with `Black`, `Ruff`, `MyPy`, `Pip-Audit`, and `Pytest-Cov` for Python.
+  - Re-integrated `cargo fmt` and `cargo clippy` for Rust quality assurance.
+  - Added `Prettier` for TypeScript and JavaScript formatting with strict isolation.
+  - Integrated `ktlint` via Gradle for the Android Kotlin codebase.
+  - Implemented strict **Language Isolation** and directory exclusions in `pre-commit` to prevent unintentional changes to Markdown, Kotlin, and metadata files.
+  - Standardized `Ruff` configuration to use the modern `[tool.ruff.lint]` structure and updated `MyPy` to Python 3.10 support.
+  - Implemented `HelperModelFactory` for unified access to supplemental ML algorithms.
 - **Project Structure & Dependencies**:
   - Added `scikit-learn`, `xgboost`, and `lightgbm` to `pyproject.toml`.
   - Created modularized test fixtures in `python/tests/fixtures/` (`deep_fixtures.py`, `mac_fixtures.py`).
+  - Added `ktlint` Gradle plugin support to the Android module.
 
 ### Changed
 
@@ -35,6 +44,8 @@ All notable changes to the NGLab project will be documented in this file.
 - **Build Environment**: Resolved linker issues in `.cargo/config.toml` to support `cargo doc` and standard builds in heterogeneous environments.
 - **Deep Learning Models**: Fixed relative imports and crashing bugs in `nstansformer`, `tsmamba`, and `xlstm`.
 - **Test Stability**: Resolved shape mismatches in `TimeSeriesVAE` tests and `NameError` in classical model fitting unit tests.
+- **Code Standards**: Fixed wildcard imports in Android Kotlin tests and adapters to comply with `ktlint` standards.
+- **Python Quality**: Addressed various import errors and shape mismatches identified during the CI integration of classical and deep models.
 
 ## [Unreleased] - 2026-01-16
 
