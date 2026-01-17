@@ -11,10 +11,12 @@ class SinusoidalPositionEmbeddings(nn.Module):
     Sinusoidal embeddings for time steps t.
     """
     def __init__(self, dim):
+        """Initialize Sinusoidal Embeddings."""
         super().__init__()
         self.dim = dim
 
     def forward(self, time):
+        """Generate embeddings for time steps."""
         device = time.device
         half_dim = self.dim // 2
         embeddings = math.log(10000) / (half_dim - 1)
@@ -28,6 +30,7 @@ class ResidualBlock1D(nn.Module):
     1D Residual Block with optional time embedding injection and group norm.
     """
     def __init__(self, in_channels, out_channels, time_emb_dim=None, n_groups=8):
+        """Initialize Residual Block."""
         super().__init__()
         self.norm1 = nn.GroupNorm(n_groups, in_channels)
         self.conv1 = nn.Conv1d(in_channels, out_channels, kernel_size=3, padding=1)
@@ -46,6 +49,7 @@ class ResidualBlock1D(nn.Module):
             self.shortcut = nn.Identity()
 
     def forward(self, x, time_emb=None):
+        """Forward pass."""
         h = self.conv1(F.silu(self.norm1(x)))
         
         if self.time_proj is not None and time_emb is not None:
@@ -64,6 +68,7 @@ class DiffusionUNet1D(nn.Module):
         cond: (Batch, Seq_Len, Features) Condition (e.g., historical window)
     """
     def __init__(self, input_dim, output_dim, hidden_dim=64, layers=[1, 2, 4], time_emb_dim=128):
+        """Initialize Diffusion UNet."""
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim

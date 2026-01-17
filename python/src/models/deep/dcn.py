@@ -1,5 +1,6 @@
-
-import torch
+"""
+Deep Convolutional Network (DCN).
+"""
 import torch.nn as nn
 
 class DeepConvNet(nn.Module):
@@ -8,6 +9,7 @@ class DeepConvNet(nn.Module):
     Batch normalization and pooling layers; feature extraction at different layers.
     """
     def __init__(self, input_dim, hidden_channels=[32, 64, 128], output_dim=1, output_type='prediction'):
+        """Initialize DCN."""
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim

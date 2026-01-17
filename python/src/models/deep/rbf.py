@@ -1,3 +1,6 @@
+"""
+Radial Basis Function (RBF) Network.
+"""
 
 import torch
 import torch.nn as nn
@@ -40,6 +43,7 @@ class RBF(nn.Module):
         return torch.exp(-dist_sq / (2 * self.sigma**2))
 
     def forward(self, x, return_embedding=None, return_sequence=False):
+        """Forward pass."""
         # Handle sequence input
         if x.dim() == 3:
             b, s, f = x.shape

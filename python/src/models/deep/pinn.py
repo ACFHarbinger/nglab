@@ -33,6 +33,9 @@ class PINN(nn.Module):
         activation: str = 'tanh',
         output_type: str = 'prediction'
     ):
+        """
+        Initialize PINN.
+        """
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim

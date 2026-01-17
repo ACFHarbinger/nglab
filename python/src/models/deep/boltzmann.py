@@ -1,4 +1,8 @@
+"""
+Boltzmann Machine (BM) implementation.
+"""
 
+import torch
 import torch
 import torch.nn as nn
 
@@ -9,6 +13,7 @@ class BoltzmannMachine(nn.Module):
     Full connectivity between all units.
     """
     def __init__(self, num_units, output_type='prediction'):
+        """Initialize Boltzmann Machine."""
         super().__init__()
         self.num_units = num_units
         self.output_type = output_type
@@ -18,6 +23,7 @@ class BoltzmannMachine(nn.Module):
         self.bias = nn.Parameter(torch.zeros(num_units))
         
     def get_weights(self):
+        """Get symmetric weights with zero diagonal."""
         # Force symmetry and zero diagonal
         w = (self.weights + self.weights.t()) / 2
         return w.fill_diagonal_(0)

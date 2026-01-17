@@ -1,8 +1,11 @@
+"""
+Deep Learning Models for Time Series Forecasting.
+"""
 from .nstransformer import NSTransformer 
 from .tsmamba import TSMamba
 from .rnn import LSTM, GRU
 from .xlstm import xLSTM
-from .snn import SNN
+from .snn import SNN, LIFCell, SurrogateHeaviside
 from .mlp import MLP
 from .rbf import RBF
 from .ae import AutoEncoder
@@ -30,3 +33,4 @@ from .attention_net import AttentionNetwork
 from .flow import NormalizingFlow
 from .node import NeuralODE
 from .pinn import PINN
+from .gan import TimeGANGenerator, TimeGANDiscriminator

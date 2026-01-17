@@ -1,3 +1,6 @@
+"""
+Deep Convolutional Inverse Graphics Network (DCIGN).
+"""
 
 import torch
 import torch.nn as nn
@@ -9,6 +12,7 @@ class DCIGN(nn.Module):
     Supports property swapping and manipulation.
     """
     def __init__(self, input_dim, latent_dim=128, hidden_channels=[32, 64, 128, 256], num_intrinsic=32, num_extrinsic=96, output_type='prediction'):
+        """Initialize DCIGN."""
         super().__init__()
         self.input_dim = input_dim
         self.latent_dim = latent_dim
@@ -42,6 +46,7 @@ class DCIGN(nn.Module):
         self.final_conv = nn.Conv1d(last_channels, input_dim, kernel_size=1)
         
     def encode(self, x):
+        """Encode input into intrinsic and extrinsic features."""
         # x: (Batch, Seq, Input_Dim) -> (Batch, Input_Dim, Seq)
         x = x.transpose(1, 2)
         feat = self.encoder(x)
@@ -53,6 +58,7 @@ class DCIGN(nn.Module):
         return intrinsic, extrinsic
         
     def decode(self, intrinsic, extrinsic):
+        """Decode intrinsic and extrinsic features to reconstruct input."""
         z = torch.cat([intrinsic, extrinsic], dim=1)
         z = z.unsqueeze(-1) # (Batch, Latent, 1)
         recon = self.decoder_body(z)
@@ -60,6 +66,7 @@ class DCIGN(nn.Module):
         return recon.transpose(1, 2) # (Batch, Seq_out, Input_Dim)
         
     def forward(self, x, return_embedding=None, return_sequence=False, **kwargs):
+        """Forward pass."""
         intrinsic, extrinsic = self.encode(x)
         
         should_return_embedding = return_embedding if return_embedding is not None else (self.output_type == 'embedding')

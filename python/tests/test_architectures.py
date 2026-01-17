@@ -2,8 +2,8 @@
 import pytest
 import torch
 import torch.nn as nn
-from models import (
-    TimeSeriesBackbone,
+from python.src.models import TimeSeriesBackbone
+from python.src.models.deep import (
     MLP, RBF,
     AutoEncoder, DenoisingAE, SparseAE,
     HopfieldNetwork, RBM,
@@ -12,29 +12,29 @@ from models import (
     RollingWindowCNN, SNN, LIFCell, SurrogateHeaviside,
     TimeGANGenerator, TimeGANDiscriminator
 )
-from models.diffusion_unet import DiffusionUNet1D
-from pipeline.lightning.diffusion_module import DiffusionLightningModule
-from pipeline.lightning.gan_module import GANLightningModule
-from pipeline.lightning.base import BaseModule
-from models.vae import TimeSeriesVAE, vae_loss
-from pipeline.lightning.vae_module import VAELightningModule
+from python.src.models.deep.diffusion_unet import DiffusionUNet1D
+from python.src.pipeline.lightning.diffusion_module import DiffusionLightningModule
+from python.src.pipeline.lightning.gan_module import GANLightningModule
+from python.src.pipeline.lightning.base import BaseModule
+from python.src.models.deep.vae import TimeSeriesVAE, vae_loss
+from python.src.pipeline.lightning.vae_module import VAELightningModule
 
 # New Imports
-from models.perceptron import Perceptron
-from models.markov_chain import MarkovChain
-from models.boltzmann import BoltzmannMachine
-from models.dbn import DeepBeliefNetwork
-from models.dcn import DeepConvNet
-from models.deconv import DeconvNet, AutoDeconvNet
-from models.dcign import DCIGN
-from models.lsm import LiquidStateMachine
-from models.resnet import DeepResNet
-from models.dnc import DNC
-from models.ntm import NTM
-from models.attention_net import AttentionNetwork
-from models.flow import NormalizingFlow, flow_loss
-from models.node import NeuralODE
-from models.pinn import PINN, pinn_loss
+from python.src.models.deep.perceptron import Perceptron
+from python.src.models.deep.markov_chain import MarkovChain
+from python.src.models.deep.boltzmann import BoltzmannMachine
+from python.src.models.deep.dbn import DeepBeliefNetwork
+from python.src.models.deep.dcn import DeepConvNet
+from python.src.models.deep.deconv import DeconvNet, AutoDeconvNet
+from python.src.models.deep.dcign import DCIGN
+from python.src.models.deep.lsm import LiquidStateMachine
+from python.src.models.deep.resnet import DeepResNet
+from python.src.models.deep.dnc import DNC
+from python.src.models.deep.ntm import NTM
+from python.src.models.deep.attention_net import AttentionNetwork
+from python.src.models.deep.flow import NormalizingFlow, flow_loss
+from python.src.models.deep.node import NeuralODE
+from python.src.models.deep.pinn import PINN, pinn_loss
 
 # --- Feed-Forward & Basic Layers ---
 
@@ -214,7 +214,7 @@ class TestResNet:
 class TestSNN:
     def test_surrogate_gradient(self):
         x = torch.tensor([0.0], requires_grad=True)
-        from models.snn import surrogate_heaviside
+        from python.src.models.deep.snn import surrogate_heaviside
         y = surrogate_heaviside(x)
         y.backward()
         assert x.grad is not None
@@ -298,7 +298,7 @@ class TestNeuralODE:
     def test_node_solver(self):
         # Test if simple decay exponential solution is valid
         # dy/dt = -y => y(t) = y0 * exp(-t)
-        from models.node import odesolve
+        from python.src.models.deep.node import odesolve
         class Decay(nn.Module):
             def forward(self, t, y): return -y
             

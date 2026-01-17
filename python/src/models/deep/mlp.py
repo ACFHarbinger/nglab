@@ -1,5 +1,6 @@
-
-import torch
+"""
+Multi-Layer Perceptron (MLP) implementation.
+"""
 import torch.nn as nn
 
 class MLP(nn.Module):

@@ -18,6 +18,7 @@ class ScaledDotProductAttention(nn.Module):
         dropout: Dropout probability for attention weights
     """
     def __init__(self, dropout: float = 0.1):
+        """Initialize Scaled Dot-Product Attention."""
         super().__init__()
         self.dropout = nn.Dropout(dropout)
 
@@ -72,6 +73,7 @@ class MultiHeadAttention(nn.Module):
         num_heads: int = 8,
         dropout: float = 0.1
     ):
+        """Initialize Multi-Head Attention."""
         super().__init__()
         assert d_model % num_heads == 0, "d_model must be divisible by num_heads"
 
@@ -146,6 +148,7 @@ class AttentionBlock(nn.Module):
         d_ff: int = 2048,
         dropout: float = 0.1
     ):
+        """Initialize Attention Block."""
         super().__init__()
 
         # Multi-head attention
@@ -220,6 +223,9 @@ class AttentionNetwork(nn.Module):
         max_seq_len: int = 1000,
         output_type: Literal['prediction', 'embedding'] = 'prediction'
     ):
+        """
+        Initialize Attention Network.
+        """
         super().__init__()
         self.input_dim = input_dim
         self.d_model = d_model

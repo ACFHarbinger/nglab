@@ -1,5 +1,9 @@
-
-import torch
+"""
+Deconvolutional Network (DN) implementation.
+"""
+"""
+Deconvolutional Network (DN) implementation.
+"""
 import torch.nn as nn
 
 class DeconvNet(nn.Module):
@@ -8,6 +12,7 @@ class DeconvNet(nn.Module):
     Used for generation and reconstruction tasks.
     """
     def __init__(self, input_dim, hidden_channels=[128, 64, 32], output_dim=1, output_type='prediction'):
+        """Initialize Deconvolutional Network."""
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -49,6 +54,7 @@ class AutoDeconvNet(nn.Module):
     AutoDeconvNet - Uses DeconvNet for autoencoder architecture.
     """
     def __init__(self, input_dim, latent_dim=64, hidden_channels=[32, 64, 128], output_type='prediction'):
+        """Initialize AutoDeconvNet."""
         super().__init__()
         self.input_dim = input_dim
         self.latent_dim = latent_dim
@@ -71,6 +77,7 @@ class AutoDeconvNet(nn.Module):
         self.decoder = DeconvNet(latent_dim, list(reversed(hidden_channels)), input_dim, output_type)
         
     def forward(self, x, return_embedding=None, return_sequence=False, **kwargs):
+        """Forward pass."""
         # x: (Batch, Seq, Input_Dim) -> (Batch, Input_Dim, Seq)
         if x.dim() == 2:
             x = x.unsqueeze(1)

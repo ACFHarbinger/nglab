@@ -1,4 +1,8 @@
+"""
+Markov Chain (MC) implementation.
+"""
 
+import torch
 import torch
 import torch.nn as nn
 
@@ -9,6 +13,7 @@ class MarkovChain(nn.Module):
     Can generate sequences and sample next states.
     """
     def __init__(self, num_states, output_type='prediction', learnable=True):
+        """Initialize Markov Chain."""
         super().__init__()
         self.num_states = num_states
         self.output_type = output_type
@@ -20,6 +25,7 @@ class MarkovChain(nn.Module):
             self.register_buffer('transition_matrix', torch.eye(num_states))
             
     def get_transition_probs(self):
+        """Get transition probabilities (softmax of logits)."""
         return torch.softmax(self.transition_matrix, dim=-1)
         
     def forward(self, x, return_embedding=None, return_sequence=False):

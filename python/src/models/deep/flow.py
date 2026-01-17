@@ -20,6 +20,7 @@ class CouplingLayer(nn.Module):
     where s and t are scale and translation networks (MLPs).
     """
     def __init__(self, input_dim: int, hidden_dim: int, mask_type: str = 'odd'):
+        """Initialize Coupling Layer."""
         super().__init__()
         self.input_dim = input_dim
         
@@ -116,6 +117,7 @@ class NormalizingFlow(nn.Module):
         hidden_dim: int = 64,
         seq_len: int = 1, # If > 1, input is (B, L, D) and we flatten it
     ):
+        """Initialize Normalizing Flow."""
         super().__init__()
         
         self.seq_len = seq_len

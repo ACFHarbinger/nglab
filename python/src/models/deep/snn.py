@@ -4,7 +4,7 @@ Spiking Neural Network (SNN) implementation using Surrogate Gradients.
 """
 import torch
 import torch.nn as nn
-import math
+
 
 class SurrogateHeaviside(torch.autograd.Function):
     """
@@ -13,12 +13,14 @@ class SurrogateHeaviside(torch.autograd.Function):
     """
     @staticmethod
     def forward(ctx, input, alpha=25.0):
+        """Forward pass."""
         ctx.save_for_backward(input)
         ctx.alpha = alpha
         return (input > 0).float()
 
     @staticmethod
     def backward(ctx, grad_output):
+        """Backward pass with surrogate gradient."""
         input, = ctx.saved_tensors
         # Surrogate gradient: alpha / (1 + |alpha * input|)^2
         # This is the derivative of the fast sigmoid function.
@@ -26,6 +28,7 @@ class SurrogateHeaviside(torch.autograd.Function):
         return grad_input, None
 
 def surrogate_heaviside(x, alpha=25.0):
+    """Compute Heaviside with surrogate gradient."""
     return SurrogateHeaviside.apply(x, alpha)
 
 
@@ -38,6 +41,7 @@ class LIFCell(nn.Module):
     S[t] = Heaviside(U[t] - threshold)
     """
     def __init__(self, input_dim, hidden_dim, decay=0.9, threshold=1.0, alpha=25.0):
+        """Initialize LIF Cell."""
         super().__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim

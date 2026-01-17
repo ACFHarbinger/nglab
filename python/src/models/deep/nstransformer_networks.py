@@ -3,7 +3,7 @@ Internal building blocks for Non-Stationary Transformer (Encoder/Decoder).
 """
 import torch.nn as nn
 
-from .modules import (
+from ..modules import (
     DSAttention, AttentionLayer,
     SkipConnection, Normalization, Transpose
 )

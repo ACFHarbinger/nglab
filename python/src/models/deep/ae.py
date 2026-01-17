@@ -1,5 +1,6 @@
-
-import torch
+"""
+AutoEncoder (AE) implementation.
+"""
 import torch.nn as nn
 
 class AutoEncoder(nn.Module):
@@ -7,6 +8,7 @@ class AutoEncoder(nn.Module):
     Standard AutoEncoder (AE).
     """
     def __init__(self, input_dim, hidden_dims, latent_dim, output_type='prediction'):
+        """Initialize AutoEncoder."""
         super().__init__()
         self.output_type = output_type
         
@@ -31,12 +33,15 @@ class AutoEncoder(nn.Module):
         self.decoder = nn.Sequential(*decoder_layers)
         
     def encode(self, x):
+        """Encode input to latent space."""
         return self.encoder(x)
         
     def decode(self, z):
+        """Decode latent vector to input space."""
         return self.decoder(z)
         
     def forward(self, x, return_embedding=None, return_sequence=False):
+        """Forward pass."""
         # Handle sequence
         if x.dim() == 3:
             b, s, f = x.shape

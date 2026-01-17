@@ -1,4 +1,8 @@
+"""
+Extreme Learning Machine (ELM) implementation.
+"""
 
+import torch
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -8,6 +12,7 @@ class ELM(nn.Module):
     Extreme Learning Machine (ELM).
     """
     def __init__(self, input_dim, hidden_dim, output_dim, activation='sigmoid', output_type='prediction'):
+        """Initialize ELM."""
         super().__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
@@ -26,6 +31,7 @@ class ELM(nn.Module):
         self.readout = nn.Linear(hidden_dim, output_dim)
         
     def forward(self, x, return_embedding=None, return_sequence=False):
+        """Forward pass."""
         if x.dim() == 3:
             b, s, f = x.shape
             x_flat = x.view(b * s, f)

@@ -1,3 +1,6 @@
+"""
+Perceptron implementation.
+"""
 
 import torch
 import torch.nn as nn
@@ -8,6 +11,7 @@ class Perceptron(nn.Module):
     The simplest neural network with configurable activation functions.
     """
     def __init__(self, input_dim, output_dim, activation='sigmoid', output_type='prediction'):
+        """Initialize Perceptron."""
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -23,6 +27,7 @@ class Perceptron(nn.Module):
         }.get(activation.lower(), torch.sigmoid)
         
     def forward(self, x, return_embedding=None, return_sequence=False):
+        """Forward pass."""
         # Handle sequence
         if x.dim() == 3:
             b, s, f = x.shape

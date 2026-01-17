@@ -16,6 +16,7 @@ import ast
 import os
 import sys
 
+
 def check_path(path):
     """
     Check a single file for missing docstrings using AST parsing.
@@ -38,7 +39,7 @@ def check_path(path):
         except SyntaxError:
             print(f"Syntax error in {path}")
             return []
-            
+
         if not ast.get_docstring(tree):
             missing.append(f"{path}: (Module) Missing docstring")
 
@@ -46,11 +47,12 @@ def check_path(path):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 if node.name.startswith("_") and not node.name.startswith("__"):
                     continue
-                
+
                 if not ast.get_docstring(node):
                     kind = "Class" if isinstance(node, ast.ClassDef) else "Function"
                     missing.append(f"{path}: ({kind}) {node.name} Missing docstring")
     return missing
+
 
 def check_docstrings_recursive(directory):
     """
@@ -68,11 +70,12 @@ def check_docstrings_recursive(directory):
             missing.extend(check_path(os.path.join(root, file)))
     return missing
 
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python check_docstrings.py <path1> [path2 ...]")
         sys.exit(1)
-    
+
     all_missing = []
     for arg in sys.argv[1:]:
         if os.path.isfile(arg):

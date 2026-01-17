@@ -3,7 +3,7 @@ Time Series GAN Networks (Generator and Discriminator).
 """
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+
 
 class TimeGANGenerator(nn.Module):
     """

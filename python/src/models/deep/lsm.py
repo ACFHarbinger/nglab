@@ -1,3 +1,6 @@
+"""
+Liquid State Machine (LSM) model.
+"""
 
 import torch
 import torch.nn as nn
@@ -10,6 +13,17 @@ class LiquidStateMachine(nn.Module):
     Trainable readout layers.
     """
     def __init__(self, input_dim, liquid_size, output_dim, connection_prob=0.3, spectral_radius=1.2, output_type='prediction'):
+        """
+        Initialize the Liquid State Machine.
+
+        Args:
+            input_dim: Input feature dimension.
+            liquid_size: Size of the reservoir (liquid).
+            output_dim: Output dimension.
+            connection_prob: Probability of recurrent connections.
+            spectral_radius: Spectral radius for weight scaling.
+            output_type: Output type ('prediction' or 'embedding').
+        """
         super().__init__()
         self.input_dim = input_dim
         self.liquid_size = liquid_size

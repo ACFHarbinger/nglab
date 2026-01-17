@@ -8,7 +8,7 @@ with support for multiple backbone architectures (Transformer, Mamba, LSTM, etc.
 import torch
 import torch.nn as nn
 from typing import Dict, Tuple, Optional, Literal
-from .time_series import TimeSeriesBackbone
+from ..time_series import TimeSeriesBackbone
 
 
 class TimeSeriesVAE(nn.Module):
@@ -54,6 +54,11 @@ class TimeSeriesVAE(nn.Module):
         encoder_kwargs: Optional[Dict] = None,
         decoder_kwargs: Optional[Dict] = None,
     ):
+        """
+        Initialize the VAE.
+
+        See class docstring for arguments details.
+        """
         super().__init__()
 
         self.input_dim = input_dim

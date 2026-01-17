@@ -1,3 +1,6 @@
+"""
+Deep Belief Network (DBN) implementation.
+"""
 
 import torch
 import torch.nn as nn
@@ -23,6 +26,7 @@ class DeepBeliefNetwork(nn.Module):
         ])
         
     def forward(self, x, return_embedding=None, return_sequence=False):
+        """Forward pass."""
         # Forward pass through the stack of RBMs
         current = x
         for rbm in self.rbms:

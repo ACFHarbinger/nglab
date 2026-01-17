@@ -59,10 +59,12 @@ class ODEFunc(nn.Module):
     Wrapper for the derivative function to handle time conditioning easily.
     """
     def __init__(self, net: nn.Module):
+        """Initialize with a neural network."""
         super().__init__()
         self.net = net
         
     def forward(self, t: float, y: torch.Tensor) -> torch.Tensor:
+        """Compute the derivative dy/dt."""
         # If network accepts (y, t), pass both. Otherwise just y.
         # Simple heuristic: concatenate t if possible or just ignore if autonomous.
         # For this implementation, we assume simple autonomous dynamics f(y) 
@@ -98,6 +100,11 @@ class NeuralODE(nn.Module):
         horizon: float = 1.0,
         output_type: str = 'prediction' # 'prediction' or 'embedding'
     ):
+        """
+        Initialize the Neural ODE.
+
+        See class docstring for configuration details.
+        """
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim

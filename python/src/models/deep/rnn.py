@@ -1,4 +1,6 @@
-import torch
+"""
+Recurrent Neural Network (RNN) implementations (LSTM, GRU).
+"""
 import torch.nn as nn
 
 class LSTM(nn.Module):

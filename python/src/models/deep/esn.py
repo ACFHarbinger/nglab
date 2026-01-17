@@ -1,4 +1,8 @@
+"""
+Echo State Network (ESN) implementation.
+"""
 
+import torch
 import torch
 import torch.nn as nn
 
@@ -7,6 +11,9 @@ class EchoStateNetwork(nn.Module):
     Echo State Network (ESN).
     """
     def __init__(self, input_dim, reservoir_dim, output_dim, spectral_radius=0.9, sparsity=0.1, output_type='prediction'):
+        """
+        Initialize ESN.
+        """
         super().__init__()
         self.input_dim = input_dim
         self.reservoir_dim = reservoir_dim
@@ -26,6 +33,7 @@ class EchoStateNetwork(nn.Module):
         self.readout = nn.Linear(reservoir_dim + input_dim, output_dim)
         
     def forward(self, x, return_embedding=None, return_sequence=False):
+        """Calculate forward pass."""
         batch_size, seq_len, _ = x.size()
         h = torch.zeros(batch_size, self.reservoir_dim, device=x.device)
         

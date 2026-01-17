@@ -18,6 +18,7 @@ class NTMMemory(nn.Module):
         memory_dim: Dimension of each memory slot (M)
     """
     def __init__(self, memory_size: int, memory_dim: int):
+        """Initialize NTM Memory."""
         super().__init__()
         self.memory_size = memory_size
         self.memory_dim = memory_dim
@@ -145,6 +146,7 @@ class NTMReadHead(nn.Module):
         controller_dim: int,
         shift_range: int = 3
     ):
+        """Initialize NTM Read Head."""
         super().__init__()
         self.memory_size = memory_size
         self.memory_dim = memory_dim
@@ -214,6 +216,7 @@ class NTMWriteHead(nn.Module):
         controller_dim: int,
         shift_range: int = 3
     ):
+        """Initialize NTM Write Head."""
         super().__init__()
         self.memory_size = memory_size
         self.memory_dim = memory_dim
@@ -310,6 +313,7 @@ class NTM(nn.Module):
         controller_type: Literal['lstm', 'linear'] = 'lstm',
         output_type: Literal['prediction', 'embedding'] = 'prediction'
     ):
+        """Initialize NTM."""
         super().__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim

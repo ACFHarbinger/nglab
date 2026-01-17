@@ -3,7 +3,7 @@ Deep Residual Network (ResNet) - Network with skip connections
 """
 import torch
 import torch.nn as nn
-from typing import List, Literal
+from typing import Literal
 
 
 class ResidualBlock(nn.Module):
@@ -25,6 +25,7 @@ class ResidualBlock(nn.Module):
         dropout: float = 0.1,
         kernel_size: int = 3
     ):
+        """Initialize Residual Block."""
         super().__init__()
         self.use_conv = use_conv
 
@@ -93,6 +94,9 @@ class DeepResNet(nn.Module):
         kernel_size: int = 3,
         output_type: Literal['prediction', 'embedding'] = 'prediction'
     ):
+        """
+        Initialize DeepResNet.
+        """
         super().__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
@@ -210,6 +214,7 @@ class ResNetBottleneck(nn.Module):
         use_conv: bool = False,
         dropout: float = 0.1
     ):
+        """Initialize Bottleneck Block."""
         super().__init__()
         self.use_conv = use_conv
 
