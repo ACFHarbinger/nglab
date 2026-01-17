@@ -7,8 +7,11 @@ All notable changes to the NGLab project will be documented in this file.
 ### Added
 - **Comprehensive Documentation**:
     - Added high-fidelity JSDoc to the entire TypeScript frontend, including React components (Tabs, Dashboard, Terminal), custom hooks, and utility functions.
-    - Converted Rust codebase documentation to standard inner-module style (`//!`) and added detailed item-level documentation for all structs, enums, traits, and functions in `rust/src/`.
+    - Converted Rust codebase documentation to standard inner-module style (`//!`) and added detailed item-level documentation for all structs, enums, traits, and functions in `rust/src/` and `rust/benchmarks/`.
     - Added module-level documentation to CSS files (`App.css`, `index.css`) to improve stylistic transparency.
+    - Documented the Python Gymnasium environment wrappers in `environment/` using PEP 257 docstrings; verified compliance with `check_docstrings.py`.
+    - Added top-level package initialization documentation to `nglab/__init__.py`.
+    - Documented all utility scripts in `scripts/` with detailed headers for usage and maintenance.
 
 ### Changed
 - **Tauri Backend Refactoring**:

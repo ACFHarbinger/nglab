@@ -1,12 +1,20 @@
-//! Benchmarks for the arena simulation
-//!
-//! Run with: cargo bench
+/*!
+ * Benchmarks for the arena simulation.
+ *
+ * This module contains performance benchmarks for core arena operations,
+ * including order book insertions, matching logic, and environment step execution.
+ *
+ * Run with: `cargo bench`
+ */
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 // Note: We need to import from the crate
 // For now, we'll benchmark with inline implementations
 
+/**
+ * Benchmark suite for basic order book operations using inline simple implementations.
+ */
 fn benchmark_orderbook_operations(c: &mut Criterion) {
     use std::collections::BTreeMap;
     use std::collections::VecDeque;
@@ -71,6 +79,12 @@ fn benchmark_orderbook_operations(c: &mut Criterion) {
     });
 }
 
+/**
+ * Benchmark suite for simulation step performance.
+ *
+ * Measures the time taken to execute a standard trading loop with simple
+ * price-action based decision making.
+ */
 fn benchmark_simulation_step(c: &mut Criterion) {
     c.bench_function("env_step_1000", |b| {
         // Simulate 1000 steps of a trading environment

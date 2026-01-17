@@ -1,4 +1,21 @@
 #!/bin/bash
+# NGLab Environment Setup Script (Linux/macOS)
+# 
+# This script automates the creation and configuration of the development 
+# environment for NGLab. It supports multiple environment managers and 
+# handles dependency installation for Rust, Python, and TypeScript.
+#
+# Managers:
+#   - uv (default): Fast Python package and project manager.
+#   - conda: Anaconda/Miniconda environment manager.
+#   - venv: Standard Python virtual environment.
+#
+# Usage:
+#   ./scripts/setup_env.sh [manager] [--silent]
+#
+# Example:
+#   ./scripts/setup_env.sh uv
+#   ./scripts/setup_env.sh conda --silent
 
 # Default to verbose mode
 VERBOSE=true

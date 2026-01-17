@@ -1,6 +1,15 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
-use nglab::simulation::orderbook::{OrderBook, Order, OrderSide, OrderType};
+/*!
+ * Performance benchmarks for the Limit Order Book (LOB).
+ *
+ * Measures the efficiency of order insertion, cancellations, matching,
+ * and price level extraction across different book sizes.
+ */
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use nglab::simulation::orderbook::{Order, OrderBook, OrderSide, OrderType};
 
+/**
+ * Benchmarks order insertion latency for limit orders at various scales.
+ */
 fn orderbook_insert_limit_orders(c: &mut Criterion) {
     let mut group = c.benchmark_group("orderbook_insert");
 
@@ -25,6 +34,9 @@ fn orderbook_insert_limit_orders(c: &mut Criterion) {
     group.finish();
 }
 
+/**
+ * Benchmarks the matching engine performance when processing market orders.
+ */
 fn orderbook_match_orders(c: &mut Criterion) {
     c.bench_function("orderbook_match_simple", |b| {
         b.iter(|| {
@@ -43,13 +55,7 @@ fn orderbook_match_orders(c: &mut Criterion) {
             }
 
             // Add matching sell order
-            let sell_order = Order::new(
-                1000,
-                OrderSide::Sell,
-                OrderType::Market,
-                0.0,
-                50,
-            );
+            let sell_order = Order::new(1000, OrderSide::Sell, OrderType::Market, 0.0, 50);
             book.add_order(black_box(sell_order));
 
             book
@@ -57,25 +63,26 @@ fn orderbook_match_orders(c: &mut Criterion) {
     });
 }
 
+/**
+ * Benchmarks the extraction of top price levels from the order book.
+ */
 fn orderbook_price_levels(c: &mut Criterion) {
     let mut book = OrderBook::new();
 
     // Populate with orders
     for i in 0..1000 {
-        let side = if i % 2 == 0 { OrderSide::Buy } else { OrderSide::Sell };
+        let side = if i % 2 == 0 {
+            OrderSide::Buy
+        } else {
+            OrderSide::Sell
+        };
         let price = if side == OrderSide::Buy {
             100.0 - (i as f64 * 0.01)
         } else {
             100.0 + (i as f64 * 0.01)
         };
 
-        let order = Order::new(
-            i as u64,
-            side,
-            OrderType::Limit,
-            price,
-            10,
-        );
+        let order = Order::new(i as u64, side, OrderType::Limit, price, 10);
         book.add_order(order);
     }
 
@@ -87,6 +94,9 @@ fn orderbook_price_levels(c: &mut Criterion) {
     });
 }
 
+/**
+ * Benchmarks a realistic mix of insertions, matches, and cancellations.
+ */
 fn orderbook_mixed_operations(c: &mut Criterion) {
     c.bench_function("orderbook_mixed_ops", |b| {
         b.iter(|| {
@@ -106,13 +116,8 @@ fn orderbook_mixed_operations(c: &mut Criterion) {
 
                 // Every 10th order, insert a market order to trigger matching
                 if i % 10 == 0 {
-                    let market_order = Order::new(
-                        i + 10000,
-                        OrderSide::Sell,
-                        OrderType::Market,
-                        0.0,
-                        5,
-                    );
+                    let market_order =
+                        Order::new(i + 10000, OrderSide::Sell, OrderType::Market, 0.0, 5);
                     book.add_order(market_order);
                 }
 

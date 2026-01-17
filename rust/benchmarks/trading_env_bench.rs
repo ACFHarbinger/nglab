@@ -1,6 +1,15 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion, BenchmarkId};
+/*!
+ * Benchmarks for the `TradingEnv` simulation performance.
+ *
+ * Focuses on the latency of individual environment steps and full
+ * episode simulations, accounting for different lookback window sizes.
+ */
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use nglab::simulation::gym::TradingEnv;
 
+/**
+ * Benchmarks the performance of `env.step()` under varying lookback windows.
+ */
 fn env_step_performance(c: &mut Criterion) {
     let mut group = c.benchmark_group("trading_env_step");
 
@@ -24,6 +33,9 @@ fn env_step_performance(c: &mut Criterion) {
     group.finish();
 }
 
+/**
+ * Benchmarks the environment reset operation.
+ */
 fn env_reset_performance(c: &mut Criterion) {
     c.bench_function("trading_env_reset", |b| {
         let mut env = TradingEnv::new(10000.0, 50, 0.001);
@@ -34,6 +46,9 @@ fn env_reset_performance(c: &mut Criterion) {
     });
 }
 
+/**
+ * Benchmarks the time taken for a full 1000-step simulation episode.
+ */
 fn env_episode_performance(c: &mut Criterion) {
     c.bench_function("trading_env_full_episode", |b| {
         b.iter(|| {
@@ -57,6 +72,9 @@ fn env_episode_performance(c: &mut Criterion) {
     });
 }
 
+/**
+ * Benchmarks the overhead of reward calculation and state updates.
+ */
 fn env_reward_calculation(c: &mut Criterion) {
     c.bench_function("trading_env_reward_calc", |b| {
         let mut env = TradingEnv::new(10000.0, 50, 0.001);

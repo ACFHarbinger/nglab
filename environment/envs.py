@@ -57,6 +57,17 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
         max_steps: int = 1000,
         render_mode: str | None = None,
     ):
+        """
+        Initialize the trading environment.
+
+        Args:
+            prices: Optional price time series. If None, random walk is used.
+            initial_capital: Starting cash balance.
+            transaction_cost: Relative cost per trade (e.g., 0.001 for 10bps).
+            lookback: Number of historical steps in observation.
+            max_steps: Maximum steps per episode.
+            render_mode: Gymnasium render mode ("human" or None).
+        """
         super().__init__()
         
         self.initial_capital = initial_capital
@@ -104,6 +115,16 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
         seed: int | None = None,
         options: dict[str, Any] | None = None,
     ) -> tuple[NDArray[Any], dict[str, Any]]:
+        """
+        Reset the environment and return the initial observation.
+
+        Args:
+            seed: Random seed for environment initialization.
+            options: Additional options for environment reset.
+
+        Returns:
+            A tuple of (initial observation, info).
+        """
         super().reset(seed=seed)
         
         if self._rust_env is not None:
@@ -122,6 +143,15 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
     def step(
         self, action: int
     ) -> tuple[NDArray[Any], float, bool, bool, dict[str, Any]]:
+        """
+        Execute one step in the environment.
+
+        Args:
+            action: 0=Hold, 1=Buy, 2=Sell.
+
+        Returns:
+            A tuple of (observation, reward, terminated, truncated, info).
+        """
         if self._rust_env is not None:
             obs, reward, terminated, truncated, info = self._rust_env.step(action)
             return np.array(obs), reward, terminated, truncated, dict(info)
@@ -215,6 +245,9 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
         return 0.0
     
     def render(self):
+        """
+        Render the current state of the environment.
+        """
         if self.render_mode == "human":
             print(f"Step: {self.current_step}, "
                   f"Value: ${self._portfolio_value():.2f}, "
@@ -224,12 +257,16 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
 
 class ClobEnv(TradingEnv):
     """
-    Central Limit Order Book trading environment.
+    Central Limit Order Book (CLOB) trading environment.
     
-    Extends TradingEnv with full order book simulation.
+    Extends the base TradingEnv by providing direct access to the order book
+    and high-performance matching logic implemented in the Rust backend.
     """
     
     def __init__(self, **kwargs):
+        """
+        Initialize the CLOB environment.
+        """
         super().__init__(**kwargs)
         
         if HAS_RUST:
@@ -238,16 +275,20 @@ class ClobEnv(TradingEnv):
         else:
             self._orderbook = None
 
-
 class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
     """
-    Polymarket prediction market environment.
-    
-    Observation Space:
-        Box containing market prices, positions, and account info
-    
+    Polymarket Arena - Python wrapper for Rust RL trading environment
+
+    This module provides Gymnasium-compatible environments for:
+    - **CLOB**: Central Limit Order Book trading with high-fidelity matching.
+    - **Polymarket**: Prediction market trading with real-time price streaming.
+    - **General Trading**: Standard step-based simulation for RL agents.
+
     Action Space:
         MultiDiscrete for each market: 0=Hold, 1=Buy Yes, 2=Buy No, 3=Sell Yes, 4=Sell No
+    
+    This environment allows training agents to manage portfolios across multiple
+    binary outcome prediction markets simultaneously.
     """
     
     metadata: dict[str, Any] = {"render_modes": ["human"]}
@@ -259,6 +300,15 @@ class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
         taker_fee: float = 0.001,
         render_mode: str | None = None,
     ):
+        """
+        Initialize the Polymarket prediction market environment.
+
+        Args:
+            market_ids: List of market addresses to trade in.
+            initial_collateral: Starting USDT/USDC collateral.
+            taker_fee: Relative fee charged on trades.
+            render_mode: Gymnasium render mode.
+        """
         super().__init__()
         
         self.initial_collateral = initial_collateral
@@ -298,6 +348,16 @@ class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
         seed: int | None = None,
         options: dict[str, Any] | None = None,
     ) -> tuple[NDArray[Any], dict[str, Any]]:
+        """
+        Reset the Polymarket environment.
+
+        Args:
+            seed: Random seed.
+            options: Reset options.
+
+        Returns:
+            Initial observation and info.
+        """
         super().reset(seed=seed)
         
         if self._arena is not None:
@@ -313,6 +373,15 @@ class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
     def step(
         self, action: NDArray[Any]
     ) -> tuple[NDArray[Any], float, bool, bool, dict[str, Any]]:
+        """
+        Execute actions across multiple prediction markets.
+
+        Args:
+            action: MultiDiscrete actions for each market.
+
+        Returns:
+            Observation, reward, and episode flags.
+        """
         # Process actions for each market
         prev_value = self._account_value()
         
@@ -399,5 +468,8 @@ class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
         return value
     
     def render(self):
+        """
+        Render the current account balance and status.
+        """
         if self.render_mode == "human":
             print(f"Account Value: ${self._account_value():.2f}")

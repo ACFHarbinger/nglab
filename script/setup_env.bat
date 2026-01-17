@@ -1,6 +1,21 @@
 @echo off
-setlocal enabledelayedexpansion
-
+:: NGLab Environment Setup Script (Windows)
+:: 
+:: This script automates the creation and configuration of the development 
+:: environment for NGLab on Windows. It supports multiple environment managers 
+:: and handles dependency installation.
+::
+:: Managers:
+::   - uv (default): Fast Python package and project manager.
+::   - conda: Anaconda/Miniconda environment manager.
+::   - venv: Standard Python virtual environment.
+::
+:: Usage:
+::   scripts\setup_env.bat [manager] [-silent]
+::
+:: Example:
+::   scripts\setup_env.bat uv
+::   scripts\setup_env.bat venv -silent
 :: Default values
 set VERBOSE=1
 set MANAGER=uv

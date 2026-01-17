@@ -1,6 +1,19 @@
 #!/bin/bash
 # NGLab Build Artifact Cleanup Script
-# Removes build artifacts, caches, and temporary files to reclaim disk space
+# 
+# Removes build artifacts, caches, and temporary files across the entire 
+# project (Rust, Python, TypeScript) to reclaim disk space and ensure 
+# clean builds.
+#
+# Sections:
+#   1. Rust build artifacts (target/)
+#   2. Python cache files (__pycache__, .pyc, etc.)
+#   3. TypeScript/Node.js build artifacts (dist/, src-tauri/target/)
+#   4. Test and coverage artifacts (.coverage, htmlcov)
+#   5. Jupyter notebook checkpoints
+#   6. OS and editor artifacts (.DS_Store, Thumbs.db, swap files)
+#
+# Usage: ./scripts/cleanup.sh
 
 set -e
 
