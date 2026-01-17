@@ -93,15 +93,12 @@ class TestAutoEncoders:
         assert loss > 0
 
 class TestTimeSeriesVAE:
-    @pytest.fixture
-    def model_config(self):
-        return {'input_dim': 5, 'latent_dim': 16, 'd_model': 32, 'seq_len': 20, 'pred_len': 5, 'encoder_type': 'lstm'}
-
-    def test_vae_forward(self, model_config):
-        model = TimeSeriesVAE(**model_config)
-        x = torch.randn(8, 20, 5)
+    def test_vae_forward(self, vae_config):
+        model = TimeSeriesVAE(**vae_config)
+        # Match vae_config: seq_len=30, input_dim=10
+        x = torch.randn(8, 30, 10)
         output = model(x)
-        assert output['reconstruction'].shape == (8, 5, 5)
+        assert output['reconstruction'].shape == (8, 5, 10)
         assert output['z'].shape == (8, 16)
 
 # --- Energy & Associative Models ---

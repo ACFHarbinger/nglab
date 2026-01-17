@@ -3,6 +3,7 @@ Unified Backbone for Time Series Models.
 """
 import torch.nn as nn
 from .deep import *
+from .mac import *
 
 class TimeSeriesBackbone(nn.Module):
     """
@@ -306,6 +307,73 @@ class TimeSeriesBackbone(nn.Module):
                 activation=cfg.get('activation', 'tanh'),
                 output_type=cfg.get('output_type', 'prediction')
             )
+        elif model_name == 'LinearRegression':
+            self.model = LinearRegressionModel(**cfg.get('model_kwargs', {}))
+        elif model_name == 'Ridge':
+            self.model = RidgeRegressionModel(
+                alpha=cfg.get('alpha', 1.0),
+                **cfg.get('model_kwargs', {})
+            )
+        elif model_name == 'Lasso':
+            self.model = LassoRegressionModel(
+                alpha=cfg.get('alpha', 1.0),
+                **cfg.get('model_kwargs', {})
+            )
+        elif model_name == 'ElasticNet':
+            self.model = ElasticNetModel(
+                alpha=cfg.get('alpha', 1.0),
+                l1_ratio=cfg.get('l1_ratio', 0.5),
+                **cfg.get('model_kwargs', {})
+            )
+        elif model_name == 'LogisticRegression':
+            self.model = LogisticRegressionModel(**cfg.get('model_kwargs', {}))
+        elif model_name == 'Polynomial':
+            self.model = PolynomialRegressionModel(
+                degree=cfg.get('degree', 2),
+                **cfg.get('model_kwargs', {})
+            )
+        elif model_name == 'DecisionTree':
+            self.model = DecisionTreeModel(
+                task=cfg.get('task', 'regression'),
+                **cfg.get('model_kwargs', {})
+            )
+        elif model_name == 'RandomForest':
+            self.model = RandomForestModel(
+                task=cfg.get('task', 'regression'),
+                **cfg.get('model_kwargs', {})
+            )
+        elif model_name == 'GradientBoosting':
+            self.model = GradientBoostingModel(
+                task=cfg.get('task', 'regression'),
+                **cfg.get('model_kwargs', {})
+            )
+        elif model_name == 'XGBoost':
+            self.model = XGBoostModel(
+                task=cfg.get('task', 'regression'),
+                **cfg.get('model_kwargs', {})
+            )
+        elif model_name == 'LightGBM':
+            self.model = LightGBMModel(
+                task=cfg.get('task', 'regression'),
+                **cfg.get('model_kwargs', {})
+            )
+        elif model_name == 'kNN':
+            self.model = kNNModel(
+                task=cfg.get('task', 'regression'),
+                n_neighbors=cfg.get('n_neighbors', 5),
+                **cfg.get('model_kwargs', {})
+            )
+        elif model_name == 'SVM':
+            self.model = SVMModel(
+                task=cfg.get('task', 'regression'),
+                kernel=cfg.get('kernel', 'rbf'),
+                **cfg.get('model_kwargs', {})
+            )
+        elif model_name == 'NaiveBayes':
+            self.model = NaiveBayesModel(
+                type=cfg.get('type', 'gaussian'),
+                **cfg.get('model_kwargs', {})
+            )
         else:
             raise ValueError(f"Unknown model: {model_name}")
 
@@ -332,7 +400,10 @@ class TimeSeriesBackbone(nn.Module):
             'LSTM', 'GRU', 'Mamba', 'xLSTM', 'SNN', 'ESN', 'MLP', 'ELM',
             'RBF', 'AE', 'DAE', 'SAE', 'Hopfield', 'RBM', 'SOM', 'Capsule',
             'Perceptron', 'MarkovChain', 'BM', 'DBN', 'DCN', 'Deconv', 'AutoDeconv',
-            'DCIGN', 'LSM', 'ResNet', 'DNC', 'NTM', 'Attention', 'Flow', 'NODE', 'PINN'
+            'DCIGN', 'LSM', 'ResNet', 'DNC', 'NTM', 'Attention', 'Flow', 'NODE', 'PINN',
+            'LinearRegression', 'Ridge', 'Lasso', 'ElasticNet', 'LogisticRegression',
+            'Polynomial', 'DecisionTree', 'RandomForest', 'GradientBoosting',
+            'XGBoost', 'LightGBM', 'kNN', 'SVM', 'NaiveBayes'
         ]
         
         if self.cfg.get('name') in sequence_supported:

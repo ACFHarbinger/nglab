@@ -72,12 +72,15 @@ class LiquidStateMachine(nn.Module):
                 spk = torch.zeros(batch_size, self.liquid_size, device=device)
             else:
                 mem, spk = state
+                # Ensure they are seen as tensors
+                assert isinstance(mem, torch.Tensor)
+                assert isinstance(spk, torch.Tensor)
                 
             # Recurrent injection: W_liquid @ previous spikes
-            i_rec = torch.matmul(spk, self.wliquid.t())
+            i_rec = torch.mm(spk, self.wliquid.t())
             
             # Input injection: W_in @ input
-            i_inj = torch.matmul(u_in, self.win.t())
+            i_inj = torch.mm(u_in, self.win.t())
             
             # Potential update: decay * (mem - spk * threshold) + i_inj + i_rec
             mem = self.liquid_cell.decay * (mem - spk * self.liquid_cell.threshold) + i_inj + i_rec

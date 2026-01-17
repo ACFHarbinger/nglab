@@ -3,7 +3,7 @@ xLSTM Model wrapping xLSTMBlocks.
 """
 import torch
 import torch.nn as nn
-from .modules.xlstm_block import xLSTMBlock
+from ..modules.xlstm_block import xLSTMBlock
 
 class xLSTM(nn.Module):
     """

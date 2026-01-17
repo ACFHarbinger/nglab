@@ -5,8 +5,8 @@ Adapted from the Time-Series-Library.
 import torch
 import torch.nn as nn
 
-from .modules import DataEmbedding
-from models.nstransformer_networks import (
+from ..modules import DataEmbedding
+from .nstransformer_networks import (
     Encoder, EncoderLayer,
     Decoder, DecoderLayer
 )
@@ -128,10 +128,13 @@ class NSTransformer(nn.Module):
         # B x S x E, B x 1 x E -> B x S
         delta = self.delta_learner(x_raw, mean_enc)
 
+        if not hasattr(self, 'label_len'):
+            self.label_len = 0 # Default to 0 if not provided
+            
         x_dec_new = torch.cat([x_enc[:, -self.label_len:, :], torch.zeros_like(x_dec[:, -self.pred_len:, :])],
                             dim=1).to(x_enc.device).clone()
 
-        enc_out = self.enc_embedding(x_enc, x_mark_enc)
+        enc_out = self.init_embedding(x_enc, x_mark_enc)
         enc_out = self.encoder(enc_out, attn_mask=None, tau=tau, delta=delta)
 
         dec_out = self.dec_embedding(x_dec_new, x_mark_dec)

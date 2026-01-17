@@ -12,14 +12,26 @@ All notable changes to the NGLab project will be documented in this file.
     - Documented the Python Gymnasium environment wrappers in `environment/` using PEP 257 docstrings; verified compliance with `check_docstrings.py`.
     - Added top-level package initialization documentation to `nglab/__init__.py`.
     - Documented all utility scripts in `scripts/` with detailed headers for usage and maintenance.
+- **Classical Machine Learning Models**:
+    - Integrated a suite of classical ML models including Linear Regression, Ridge, Lasso, ElasticNet, Logistic Regression, and Polynomial Regression.
+    - Added Tree-based models: Decision Tree, Random Forest, and Gradient Boosting.
+    - Integrated high-performance boosting libraries: XGBoost and LightGBM.
+    - Added support for k-Nearest Neighbors (kNN), SVM (SVC/SVR), and Naive Bayes variants.
+    - Implemented `ClassicalModel` wrapper for PyTorch-compatible inference and fit logic.
+- **Project Structure & Dependencies**:
+    - Added `scikit-learn`, `xgboost`, and `lightgbm` to `pyproject.toml`.
+    - Created modularized test fixtures in `python/tests/fixtures/` (`deep_fixtures.py`, `mac_fixtures.py`).
 
 ### Changed
 - **Tauri Backend Refactoring**:
     - Modularized the Tauri `lib.rs` into specialized submodules for state management (`state.rs`) and categorized command handlers (`commands/`).
 - **Project Structure**: Improved maintainability of `typescript/src-tauri/src/` by decoupling commands from the main library entry point.
+- **Test Infrastructure**: Updated `conftest.py` with global fixture loading and root path resolution for Python tests.
 
 ### Fixed
 - **Build Environment**: Resolved linker issues in `.cargo/config.toml` to support `cargo doc` and standard builds in heterogeneous environments.
+- **Deep Learning Models**: Fixed relative imports and crashing bugs in `nstansformer`, `tsmamba`, and `xlstm`.
+- **Test Stability**: Resolved shape mismatches in `TimeSeriesVAE` tests and `NameError` in classical model fitting unit tests.
 
 ## [Unreleased] - 2026-01-16
 

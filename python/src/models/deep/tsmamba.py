@@ -4,7 +4,7 @@ Time Series Mamba implementation.
 import torch
 import torch.nn as nn
 
-from .modules.mamba_block import MambaBlock
+from ..modules.mamba_block import MambaBlock
 
 
 class TSMamba(nn.Module):
