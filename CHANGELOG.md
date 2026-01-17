@@ -21,6 +21,8 @@ All notable changes to the NGLab project will be documented in this file.
   - **SVM Variants**: Added LinearSVM, NuSVM, OneClassSVM (Anomaly), LS-SVM, and Twin SVM (TWSVM).
   - **Clustering**: Added K-Medians (custom L1) and Expectation Maximisation (EM via GMM).
   - **Association Rules**: Added Eclat algorithm for vertical itemset mining.
+  - **Association Rule Learning**: Added `EclatAlgorithm` (custom) alongside `Apriori` and `FPGrowth`.
+  - **Dimensionality Reduction (Expanded)**: Added `PCR`, `PLSR`, `MDS`, `Sammon Mapping` (custom), `Projection Pursuit` (FastICA), `QDA`, `MDA` (custom), `FDA` (MARS-based), and `UMAP` (wrapper).
   - **Integration**: All models wrapped in `ClassicalModel` and integrated into `TimeSeriesBackbone` or `HelperModelFactory` for seamless PyTorch interoperability.
 - **CI/CD & Code Quality**:
   - Integrated a comprehensive quality suite with `Black`, `Ruff`, `MyPy`, `Pip-Audit`, and `Pytest-Cov` for Python.

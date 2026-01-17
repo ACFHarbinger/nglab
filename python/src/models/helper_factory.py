@@ -14,8 +14,18 @@ from .helper.clustering import (
 
 from .helper.dim_reduction import (
     PCAModel,
+    PCAModel,
     TSNEModel,
-    LDAModel
+    LDAModel,
+    PCRModel,
+    PLSRModel,
+    MDSModel,
+    SammonMappingModel,
+    ProjectionPursuitModel,
+    MDAModel,
+    QDAModel,
+    FDAModel,
+    UMAPModel,
 )
 from .helper.association_rule import (
     AprioriModel,
@@ -43,7 +53,18 @@ class HelperModelFactory:
         # Dimensionality Reduction
         "pca": PCAModel,
         "tsne": TSNEModel,
+        "pca": PCAModel,
+        "tsne": TSNEModel,
         "lda": LDAModel,
+        "pcr": PCRModel,
+        "plsr": PLSRModel,
+        "mds": MDSModel,
+        "sammon": SammonMappingModel,
+        "pp": ProjectionPursuitModel,
+        "mda": MDAModel,
+        "qda": QDAModel,
+        "fda": FDAModel,
+        "umap": UMAPModel,
         
         # Association Rule Learning
         "apriori": AprioriModel,

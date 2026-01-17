@@ -163,7 +163,7 @@ class M5Model(ClassicalModel):
             X = X.detach().cpu().numpy()
             
         if not self._is_fitted:
-             return np.zeros((X.shape[0], 1))
+            return np.zeros((X.shape[0], 1))
         
         # Predict using tree to find leaves
         leaves = self.tree.apply(X)

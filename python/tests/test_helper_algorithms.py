@@ -12,7 +12,7 @@ def test_ml_factory_listing():
     assert "kmeans" in models
     assert "pca" in models
     assert "apriori" in models
-    assert len(models) == 12
+    assert len(models) == 21
 
 def test_clustering_via_factory():
     X = torch.randn(20, 5)
@@ -30,13 +30,22 @@ def test_dim_reduction_via_factory():
     y = torch.randint(0, 2, (20,))
     
     # n_samples is 50, perplexity must be less than 50
-    dim_types = ["pca", "tsne", "lda"]
+    # n_samples is 50, perplexity must be less than 50
+    dim_types = [
+        "pca", "tsne", "lda", "pcr", "plsr", "mds", "sammon", 
+        "pp", "mda", "qda", "fda", "umap"
+    ]
     for mtype in dim_types:
         if mtype == "tsne":
-            model = HelperModelFactory.create_model(mtype, n_components=1, perplexity=10)
+            model = HelperModelFactory.create_model(mtype, n_components=1, perplexity=5)
+        elif mtype == "mda":
+            # MDA needs enough samples per class
+            model = HelperModelFactory.create_model(mtype, n_components_per_class=1)
         else:
             model = HelperModelFactory.create_model(mtype, n_components=1)
-        if mtype == "lda":
+            
+        # Models requiring y
+        if mtype in ["lda", "plsr", "mda", "qda", "fda"]:
             model.fit(X, y)
         else:
             model.fit(X, None)
