@@ -10,7 +10,7 @@ import torch.nn as nn
 
 from typing import Dict, Any, Optional, Literal
 from pytorch_lightning import LightningModule
-from models.vae import TimeSeriesVAE, vae_loss
+from python.src.models.deep.vae import TimeSeriesVAE, vae_loss
 
 
 class VAELightningModule(LightningModule):
@@ -70,6 +70,7 @@ class VAELightningModule(LightningModule):
         encoder_kwargs: Optional[Dict] = None,
         decoder_kwargs: Optional[Dict] = None,
     ):
+        """Initialize VAELightningModule."""
         super().__init__()
         self.save_hyperparameters()
 

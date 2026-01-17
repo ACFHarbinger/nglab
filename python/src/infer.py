@@ -1,3 +1,6 @@
+"""
+Inference script for trained models.
+"""
 import argparse
 import json
 import sys
@@ -11,6 +14,7 @@ from models.time_series import TimeSeriesBackbone
 from utils.model_versioning import load_model_with_metadata, ModelMetadata
 
 def main():
+    """Run inference using a trained model and input JSON."""
     parser = argparse.ArgumentParser(description='Run inference on a trained model')
     parser.add_argument('--model_path', type=str, required=True, help='Path to .pt checkpoint')
     parser.add_argument('--input_json', type=str, required=True, help='JSON string of input data (list of floats)')

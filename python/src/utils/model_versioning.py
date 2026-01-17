@@ -214,6 +214,7 @@ def check_version_compatibility(
     """
 
     def parse_version(version: str) -> tuple[int, int, int]:
+        """Parse version string into tuple of integers."""
         parts = version.split(".")
         if len(parts) != 3:
             raise ValueError(f"Invalid version format: {version}")

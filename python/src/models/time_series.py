@@ -10,6 +10,12 @@ class TimeSeriesBackbone(nn.Module):
     Wraps specific implementations (Transformer, LSTM, etc).
     """
     def __init__(self, cfg):
+        """
+        Initialize TimeSeriesBackbone.
+
+        Args:
+            cfg: Configuration dictionary defining the model architecture.
+        """
         super().__init__()
         self.cfg = cfg
         model_name = cfg.get('name', 'NSTransformer')
@@ -304,6 +310,15 @@ class TimeSeriesBackbone(nn.Module):
             raise ValueError(f"Unknown model: {model_name}")
 
     def forward(self, x):
+        """
+        Forward pass.
+
+        Args:
+            x: Input tensor or dictionary containing 'observation'.
+
+        Returns:
+            Model output.
+        """
         if hasattr(x, 'get'): 
             x = x.get('observation')
             
