@@ -33,6 +33,7 @@ dependencies = [
     "xgboost>=2.0.0",
     "lightgbm>=4.0.0",
     "yfinance==0.2.66",
+    "statsmodels>=0.14.6",
 ]
 
 [build-system]

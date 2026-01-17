@@ -10,8 +10,6 @@ from typing import Literal
 import torch
 from torch import nn
 
-from ..time_series import TimeSeriesBackbone
-
 
 class TimeSeriesVAE(nn.Module):
     """
@@ -110,6 +108,7 @@ class TimeSeriesVAE(nn.Module):
             "output_dim": d_model,
             **(encoder_kwargs or {}),
         }
+        from ..time_series import TimeSeriesBackbone
         self.encoder = TimeSeriesBackbone(encoder_cfg)
 
         # Project embeddings to latent distribution parameters
@@ -182,6 +181,7 @@ class TimeSeriesVAE(nn.Module):
         # I will rely on TimeSeriesBackbone and assume the user wants it fixed later or it works for Transformers.
         # NOTE: I should add a TODO/Warning about this.
 
+        # TimeSeriesBackbone is already imported locally above
         self.decoder = TimeSeriesBackbone(decoder_cfg)
 
         # FIX ADDITION: We likely need a projection from decoder output to input_dim if decoder outputs hidden.

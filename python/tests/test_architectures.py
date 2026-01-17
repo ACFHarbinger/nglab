@@ -35,6 +35,7 @@ from python.src.models.deep.perceptron import Perceptron
 from python.src.models.deep.pinn import PINN, pinn_loss
 from python.src.models.deep.resnet import DeepResNet
 from python.src.models.deep.vae import TimeSeriesVAE
+from python.src.models.deep.lvq import LVQ
 
 # --- Feed-Forward & Basic Layers ---
 
@@ -431,6 +432,7 @@ class TestBackboneIntegration:
             "DNC",
             "NTM",
             "Attention",
+            "LVQ",
         ]
         for name in names:
             cfg = {"name": name, "feature_dim": 12, "output_dim": 1}
@@ -468,3 +470,27 @@ class TestBackboneIntegration:
         z, log_det = backbone(x)
         assert z.shape == (4, 10)
         assert log_det.shape == (4,)
+
+class TestLVQ:
+    def test_lvq_forward(self):
+        model = LVQ(input_dim=10, num_classes=3, output_type="prediction")
+        x = torch.randn(4, 10)
+        # Check prediction shape
+        out = model(x)
+        assert out.shape == (4, 1)
+        
+    def test_lvq_embedding(self):
+        model = LVQ(input_dim=10, num_classes=3, output_type="embedding")
+        x = torch.randn(4, 10)
+        # Embedding returns distances to prototypes
+        out = model(x, return_embedding=True)
+        # num_prototypes = 3 * 1 = 3
+        assert out.shape == (4, 3)
+
+    def test_lvq_training_step(self):
+        model = LVQ(input_dim=10, num_classes=2)
+        x = torch.randn(4, 10)
+        y = torch.randint(0, 2, (4, 1))
+        loss = model.training_step(x, y)
+        assert loss is not None
+        assert loss.grad_fn is not None or loss.requires_grad # Ensure it's part of graph

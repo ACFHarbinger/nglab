@@ -17,4 +17,5 @@ sys.path.insert(0, str(project_root))
 pytest_plugins = [
     "python.tests.fixtures.deep_fixtures",
     "python.tests.fixtures.mac_fixtures",
+    "python.tests.fixtures.regression_fixtures",
 ]

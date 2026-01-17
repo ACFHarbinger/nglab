@@ -13,12 +13,13 @@ All notable changes to the NGLab project will be documented in this file.
   - Documented the Python Gymnasium environment wrappers in `environment/` using PEP 257 docstrings; verified compliance with `check_docstrings.py`.
   - Added top-level package initialization documentation to `nglab/__init__.py`.
   - Documented all utility scripts in `scripts/` with detailed headers for usage and maintenance.
-- **Classical Machine Learning Models**:
-  - Integrated a suite of classical ML models including Linear Regression, Ridge, Lasso, ElasticNet, Logistic Regression, and Polynomial Regression.
-  - Added Tree-based models: Decision Tree, Random Forest, and Gradient Boosting.
-  - Integrated high-performance boosting libraries: XGBoost and LightGBM.
-  - Added support for k-Nearest Neighbors (kNN), SVM (SVC/SVR), and Naive Bayes variants.
-  - Implemented `ClassicalModel` wrapper for PyTorch-compatible inference and fit logic.
+- **Classical Machine Learning Models (Expanded)**:
+  - **Regression**: Added LARS, Stepwise, M5, MARS, LOESS, and classical linear variants.
+  - **Decision Trees**: Added comprehensive suite including CART, ID3, C4.5, C5.0, CHAID, DecisionStump, and ConditionalTree.
+  - **Ensemble Methods**: Implemented AdaBoost, Bagging, Stacking, Voting, WeightedAverage (Blending), and GBRT.
+  - **Bayesian**: Added GaussianNB, MultinomialNB, AODE, and BayesianNetwork (BBN).
+  - **SVM Variants**: Added LinearSVM, NuSVM, OneClassSVM (Anomaly), LS-SVM, and Twin SVM (TWSVM).
+  - **Integration**: All models wrapped in `ClassicalModel` and integrated into `TimeSeriesBackbone` for seamless PyTorch interoperability.
 - **CI/CD & Code Quality**:
   - Integrated a comprehensive quality suite with `Black`, `Ruff`, `MyPy`, `Pip-Audit`, and `Pytest-Cov` for Python.
   - Re-integrated `cargo fmt` and `cargo clippy` for Rust quality assurance.

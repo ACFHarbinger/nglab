@@ -6,8 +6,9 @@ from .helper.clustering import (
     KMeansModel,
     HierarchicalClusteringModel,
     DBSCANModel,
-    GMMModel
+    GMMModel,
 )
+
 from .helper.dim_reduction import (
     PCAModel,
     TSNEModel,

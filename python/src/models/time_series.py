@@ -303,6 +303,13 @@ class TimeSeriesBackbone(nn.Module):
                 horizon=cfg.get("horizon", 1.0),
                 output_type=cfg.get("output_type", "prediction"),
             )
+        elif model_name == "LVQ":
+            self.model = LVQ(
+                input_dim=cfg.get("feature_dim", 12),
+                num_classes=cfg.get("num_classes", 2),
+                prototypes_per_class=cfg.get("prototypes_per_class", 1),
+                output_type=cfg.get("output_type", "prediction"),
+            )
         elif model_name == "PINN":
             self.model = PINN(
                 input_dim=cfg.get("feature_dim", 2),  # e.g. (x, t)
@@ -322,6 +329,10 @@ class TimeSeriesBackbone(nn.Module):
             self.model = LassoRegressionModel(
                 alpha=cfg.get("alpha", 1.0), **cfg.get("model_kwargs", {})
             )
+        elif model_name == "LARS":
+            self.model = LARSModel(
+                 n_nonzero_coefs=cfg.get("n_nonzero_coefs", 500), **cfg.get("model_kwargs", {})
+            )
         elif model_name == "ElasticNet":
             self.model = ElasticNetModel(
                 alpha=cfg.get("alpha", 1.0),
@@ -338,12 +349,66 @@ class TimeSeriesBackbone(nn.Module):
             self.model = DecisionTreeModel(
                 task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
             )
+        elif model_name == "CART":
+            self.model = CARTModel(
+                task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "ID3":
+            self.model = ID3Model(
+                task=cfg.get("task", "classification"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "C45":
+            self.model = C45Model(
+                task=cfg.get("task", "classification"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "C50":
+            self.model = C50Model(
+                task=cfg.get("task", "classification"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "CHAID":
+            self.model = CHAIDModel(
+                task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "DecisionStump":
+            self.model = DecisionStumpModel(
+                task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "ConditionalTree":
+            self.model = ConditionalDecisionTreeModel(
+                task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "M5":
+            self.model = M5Model(**cfg.get("model_kwargs", {}))
         elif model_name == "RandomForest":
             self.model = RandomForestModel(
                 task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
             )
-        elif model_name == "GradientBoosting":
+        elif model_name == "GradientBoosting" or model_name == "GBM":
             self.model = GradientBoostingModel(
+                task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "GBRT":
+             self.model = GBRTModel(
+                task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "AdaBoost":
+             self.model = AdaBoostModel(
+                task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "Bagging":
+             self.model = BaggingModel(
+                task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "Stacking":
+             self.model = StackingModel(
+                task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "Voting":
+             self.model = VotingModel(
+                task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "WeightedAverage" or model_name == "Blending":
+             self.model = WeightedAverageModel(
                 task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
             )
         elif model_name == "XGBoost":
@@ -366,9 +431,47 @@ class TimeSeriesBackbone(nn.Module):
                 kernel=cfg.get("kernel", "rbf"),
                 **cfg.get("model_kwargs", {}),
             )
+        elif model_name == "SVR":
+            self.model = SVRModel(**cfg.get("model_kwargs", {}))
+        elif model_name == "LinearSVM":
+            self.model = LinearSVMModel(
+                task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "NuSVM":
+            self.model = NuSVMModel(
+                task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "OneClassSVM":
+            self.model = OneClassSVMModel(**cfg.get("model_kwargs", {}))
+        elif model_name == "LSSVM":
+            self.model = LSSVMModel(**cfg.get("model_kwargs", {}))
+        elif model_name == "TWSVM":
+            self.model = TWSVMModel(**cfg.get("model_kwargs", {}))
         elif model_name == "NaiveBayes":
             self.model = NaiveBayesModel(
                 type=cfg.get("type", "gaussian"), **cfg.get("model_kwargs", {})
+            )
+        elif model_name == "GaussianNB":
+            self.model = GaussianNaiveBayesModel(**cfg.get("model_kwargs", {}))
+        elif model_name == "MultinomialNB":
+            self.model = MultinomialNaiveBayesModel(**cfg.get("model_kwargs", {}))
+        elif model_name == "AODE":
+            self.model = AODEModel(**cfg.get("model_kwargs", {}))
+        elif model_name == "BayesianNetwork" or model_name == "BBN" or model_name == "BN":
+            self.model = BayesianNetworkModel(**cfg.get("model_kwargs", {}))
+        elif model_name == "OLSR":
+            self.model = OLSRModel(**cfg.get("model_kwargs", {}))
+        elif model_name == "Stepwise":
+            self.model = StepwiseRegressionModel(**cfg.get("model_kwargs", {}))
+        elif model_name == "MARS":
+            self.model = MARSModel(**cfg.get("model_kwargs", {}))
+        elif model_name == "LOESS":
+            self.model = LOESSModel(**cfg.get("model_kwargs", {}))
+        elif model_name == "LWL":
+            self.model = LWLModel(
+                task=cfg.get("task", "regression"),
+                n_neighbors=cfg.get("n_neighbors", 5),
+                **cfg.get("model_kwargs", {}),
             )
         else:
             raise ValueError(f"Unknown model: {model_name}")
@@ -428,17 +531,43 @@ class TimeSeriesBackbone(nn.Module):
             "LinearRegression",
             "Ridge",
             "Lasso",
+            "LARS",
             "ElasticNet",
             "LogisticRegression",
             "Polynomial",
             "DecisionTree",
             "RandomForest",
             "GradientBoosting",
+            "GBM",
+            "GBRT",
+            "AdaBoost",
+            "Bagging",
+            "Stacking",
+            "Voting",
+            "WeightedAverage",
+            "Blending",
             "XGBoost",
             "LightGBM",
             "kNN",
             "SVM",
+            "SVM",
+            "SVR",
+            "LinearSVM",
+            "NuSVM",
+            "OneClassSVM",
+            "LSSVM",
+            "TWSVM",
             "NaiveBayes",
+            "GaussianNB",
+            "MultinomialNB",
+            "AODE",
+            "BayesianNetwork",
+            "BBN",
+            "BN",
+            "OLSR",
+            "Stepwise",
+            "MARS",
+            "LOESS",
         ]
 
         if self.cfg.get("name") in sequence_supported:
