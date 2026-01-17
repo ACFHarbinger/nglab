@@ -1,7 +1,9 @@
-//! Polymarket data scraper.
-//!
-//! Fetches market metadata and historical price data
-//! from the Polymarket API.
+/*!
+ * Polymarket data scraper.
+ *
+ * Fetches market metadata and historical price data
+ * from the Polymarket API.
+ */
 
 use crate::errors::{ArenaError, ArenaResult};
 use crate::web::scraper::WebScraper;
@@ -10,6 +12,9 @@ use reqwest::blocking::Client;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/**
+ * Data frequency for historical price fetching.
+ */
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Frequency {
     Minutely,
@@ -31,19 +36,27 @@ impl Frequency {
     }
 }
 
+/**
+ * Information about a specific market outcome (e.g., "Yes", "No").
+ */
 #[derive(Serialize, Clone, Debug)]
 pub struct OutcomeInfo {
     pub id: String,
     pub name: String,
 }
 
+/**
+ * Metadata for a Polymarket prediction market.
+ */
 #[derive(Serialize, Clone, Debug)]
 pub struct MarketMetadata {
     pub title: String,
     pub outcomes: Vec<OutcomeInfo>,
 }
 
-/** Scraper for Polymarket data. */
+/**
+ * Scraper for fetching and processing Polymarket data.
+ */
 pub struct PolymarketScraper {
     client: Client,
     token_ids: Vec<String>,
@@ -128,6 +141,11 @@ impl PolymarketScraper {
         }
     }
 
+    /**
+     * Resolve a market or event by ID or slug and populate metadata.
+     *
+     * @param market_id The Polymarket ID or human-readable slug.
+     */
     pub fn resolve_market(&mut self, market_id: &str) -> ArenaResult<()> {
         let url = format!("https://gamma-api.polymarket.com/markets/{}", market_id);
 

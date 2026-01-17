@@ -1,9 +1,11 @@
-//! Order Book implementation with price-priority, time-priority matching
-//!
-//! This module implements a Central Limit Order Book (CLOB) that supports:
-//! - Price-priority, time-priority (FIFO within price level)
-//! - Limit and market orders
-//! - Queue position tracking for realistic HFT simulation
+/*!
+ * Order Book implementation with price-priority, time-priority matching
+ *
+ * This module implements a Central Limit Order Book (CLOB) that supports:
+ * - Price-priority, time-priority (FIFO within price level)
+ * - Limit and market orders
+ * - Queue position tracking for realistic HFT simulation
+ */
 
 use indexmap::IndexMap;
 #[cfg(feature = "python")]
@@ -11,21 +13,27 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 
-/** Order side: Bid or Ask */
+/**
+ * Order side: Bid (buy) or Ask (sell).
+ */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Side {
     Bid,
     Ask,
 }
 
-/** Order type */
+/**
+ * Supported order types.
+ */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OrderType {
     Limit,
     Market,
 }
 
-/** A single order in the book */
+/**
+ * A single order entry in the book.
+ */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Order {
     pub id: u64,
@@ -68,7 +76,9 @@ impl Order {
     }
 }
 
-/** A price level in the book, containing multiple orders */
+/**
+ * A price level in the book, maintaining a FIFO queue of orders.
+ */
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct PriceLevel {
     pub price: f64,
@@ -107,7 +117,9 @@ impl PriceLevel {
     }
 }
 
-/** Trade execution result */
+/**
+ * Record of a trade execution between maker and taker orders.
+ */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Trade {
     pub maker_order_id: u64,
@@ -118,7 +130,9 @@ pub struct Trade {
     pub timestamp: u64,
 }
 
-/** Central Limit Order Book */
+/**
+ * Central Limit Order Book (CLOB) simulator.
+ */
 #[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderBook {

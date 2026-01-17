@@ -1,11 +1,15 @@
-//! Error types for the arena.
-//!
-//! Standardizes error handling and result types across
-//! the simulation and model components.
+/*!
+ * Error types for the arena.
+ *
+ * Standardizes error handling and result types across
+ * the simulation and model components.
+ */
 
 use thiserror::Error;
 
-/** Main error type for the arena */
+/**
+ * Comprehensive error enumeration for all arena and simulation failures.
+ */
 #[derive(Error, Debug)]
 pub enum ArenaError {
     #[error("Order book error: {0}")]
@@ -42,5 +46,7 @@ pub enum ArenaError {
     Network(#[from] reqwest::Error),
 }
 
-/** Result type alias for arena operations */
+/**
+ * Specialized Result type for arena operations.
+ */
 pub type ArenaResult<T> = Result<T, ArenaError>;

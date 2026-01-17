@@ -1,7 +1,16 @@
+/*!
+ * AutoRegressive Integrated Moving Average (ARIMA) simulation.
+ *
+ * Provides a simplified ARIMA(p,d,q) model for generating
+ * synthetic time series data.
+ */
+
 use rand_distr::{Distribution, StandardNormal};
 use serde::{Deserialize, Serialize};
 
-/** Parameters for ARIMA simulation. */
+/**
+ * Parameters for the ARIMA simulation.
+ */
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct ArimaParams {
     pub ar: Vec<f64>, // AR coefficients (phi)
@@ -13,7 +22,9 @@ pub struct ArimaParams {
     pub data: Option<Vec<f64>>, // Past data
 }
 
-/** Result containing the simulated path. */
+/**
+ * Result containing the simulated ARIMA path.
+ */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ArimaResult {
     pub path: Vec<f64>,
@@ -21,7 +32,9 @@ pub struct ArimaResult {
 }
 
 /**
- * Simulate an ARIMA(p,d,q) process.
+ * Simulate an ARIMA(p,d,q) process for the specified number of steps.
+ *
+ * @param params ARIMA model and simulation parameters.
  */
 pub fn simulate(params: ArimaParams) -> Result<ArimaResult, String> {
     let seed = if let Some(s) = params.seed {

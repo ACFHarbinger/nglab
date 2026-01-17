@@ -1,2 +1,4 @@
-//! Utility functions and helpers for visualization and logging.
+/*!
+ * Utility functions and helpers for visualization and logging.
+ */
 pub mod visualizer;

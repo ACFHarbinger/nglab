@@ -1,7 +1,9 @@
-//! Visualization and logging utilities using Rerun.
-//!
-//! Provides real-time and post-simulation data logging
-//! for order books, account stats, and model parameters.
+/*!
+ * Visualization and logging utilities using Rerun.
+ *
+ * Provides real-time and post-simulation data logging
+ * for order books, account stats, and model parameters.
+ */
 
 use crate::simulation::orderbook::OrderBook;
 
@@ -10,13 +12,20 @@ use rerun::archetypes::{Points2D, Scalars};
 #[cfg(feature = "logging")]
 use rerun::{RecordingStream, RecordingStreamBuilder};
 
-/** Logger that streams simulation events to Rerun. */
+/**
+ * Logger that streams simulation events and metrics to Rerun.
+ */
 pub struct RerunLogger {
     #[cfg(feature = "logging")]
     rec: Option<RecordingStream>,
 }
 
 impl RerunLogger {
+    /**
+     * Create a new RerunLogger instance.
+     *
+     * @param enabled Whether logging should be active.
+     */
     #[cfg(feature = "logging")]
     pub fn new(enabled: bool) -> Self {
         if !enabled {
@@ -37,6 +46,13 @@ impl RerunLogger {
         Self {}
     }
 
+    /**
+     * Log a single simulation step's data.
+     *
+     * @param step Current step sequence number.
+     * @param orderbook Reference to the order book.
+     * @param portfolio_value Current total portfolio value.
+     */
     #[cfg(feature = "logging")]
     pub fn log_step(&self, step: u64, orderbook: &OrderBook, portfolio_value: f64) {
         if let Some(rec) = &self.rec {

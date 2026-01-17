@@ -1,12 +1,17 @@
-//! Rough Bergomi (rBergomi) stochastic volatility model.
-//!
-//! Implements the rough volatility model for option pricing
-//! using Monte Carlo simulation and Cholesky decomposition.
+/*!
+ * Rough Bergomi (rBergomi) stochastic volatility model.
+ *
+ * Implements the rough volatility model for option pricing
+ * using Monte Carlo simulation and Cholesky decomposition.
+ */
 
 use ndarray::{Array1, Array2};
 use rand_distr::{Distribution, StandardNormal};
 use serde::{Deserialize, Serialize};
 
+/**
+ * Parameters for the Rough Bergomi Monte Carlo simulation.
+ */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RBergomiParams {
     pub spot: f64,
@@ -20,6 +25,9 @@ pub struct RBergomiParams {
     pub rho: f64, // Correlation
 }
 
+/**
+ * Results of the Rough Bergomi simulation.
+ */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RBergomiResult {
     pub price: f64,
@@ -54,6 +62,13 @@ pub fn cholesky_decomposition(matrix: &Array2<f64>) -> Result<Array2<f64>, Strin
     Ok(l)
 }
 
+/**
+ * Generate a fractional Brownian motion (fBm) path covariance matrix and its Cholesky factor.
+ *
+ * @param n Number of steps.
+ * @param h Hurst parameter.
+ * @param dt Time step size.
+ */
 pub fn generate_fbm_cholesky(n: usize, h: f64, dt: f64) -> Result<Array2<f64>, String> {
     let mut cov = Array2::zeros((n, n));
     for i in 0..n {
@@ -74,7 +89,9 @@ pub fn generate_fbm_cholesky(n: usize, h: f64, dt: f64) -> Result<Array2<f64>, S
 }
 
 /**
- * Simulate price paths under the rBergomi model.
+ * Simulate price paths under the rBergomi model and estimate option price.
+ *
+ * @param params rBergomi model and simulation parameters.
  */
 pub fn simulate(params: RBergomiParams) -> Result<RBergomiResult, String> {
     let dt = params.t / (params.steps as f64);

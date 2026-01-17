@@ -1,10 +1,15 @@
-//! Black-Scholes-Merton option pricing.
-//!
-//! Provides closed-form solutions for European vanilla options
-//! and their Greeks (Delta, Gamma, Vega).
+/*!
+ * Black-Scholes-Merton option pricing.
+ *
+ * Provides closed-form solutions for European vanilla options
+ * and their Greeks (Delta, Gamma, Vega).
+ */
 
 use serde::{Deserialize, Serialize};
 
+/**
+ * Input parameters for the Black-Scholes model.
+ */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlackScholesParams {
     pub spot: f64,
@@ -14,6 +19,9 @@ pub struct BlackScholesParams {
     pub maturity: f64,
 }
 
+/**
+ * Output results from the Black-Scholes calculation, including option values and Greeks.
+ */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlackScholesResult {
     pub call: f64,
@@ -45,7 +53,9 @@ fn norm_cdf(x: f64) -> f64 {
 }
 
 /**
- * Price European vanilla options and calculate Greeks.
+ * Price European vanilla options and calculate primary Greeks.
+ *
+ * @param params Input parameters (spot, strike, etc.)
  */
 pub fn price(params: BlackScholesParams) -> BlackScholesResult {
     let safe_vol = params.volatility.max(1e-8);

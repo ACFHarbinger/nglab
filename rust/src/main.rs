@@ -1,7 +1,9 @@
-//! nglab-tui - Real-time terminal dashboard for the trading arena.
-//!
-//! This binary provides a TUI built with `ratatui` to visualize
-//! the order book, portfolio stats, and price action from the Rust backend.
+/*!
+ * nglab-tui - Real-time terminal dashboard for the trading arena.
+ *
+ * This binary provides a TUI built with `ratatui` to visualize
+ * the order book, portfolio stats, and price action from the Rust backend.
+ */
 
 use color_eyre::Result;
 use crossterm::{
@@ -19,12 +21,20 @@ use std::time::{Duration, Instant};
 
 /**
  * App state for the TUI dashboard.
+ *
+ * Contains the environment instance, current step information,
+ * and user interface state.
  */
 struct App {
+    /** The underlying trading environment */
     env: TradingEnv,
+    /** Latest step information and metrics */
     info: StepInfo,
+    /** Historical price data for visualization */
     price_history: Vec<f64>,
+    /** Flag to signal application termination */
     should_quit: bool,
+    /** String description of the last user action */
     last_action: String,
 }
 

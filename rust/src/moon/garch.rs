@@ -1,11 +1,16 @@
-//! Generalized AutoRegressive Conditional Heteroskedasticity (GARCH) modeling.
-//!
-//! Implements GARCH(1,1) for volatility clustering
-//! and conditional variance estimation in financial returns.
+/*!
+ * Generalized AutoRegressive Conditional Heteroskedasticity (GARCH) modeling.
+ *
+ * Implements GARCH(p,q) for volatility clustering
+ * and conditional variance estimation in financial returns.
+ */
 
 use rand_distr::{Distribution, StandardNormal};
 use serde::{Deserialize, Serialize};
 
+/**
+ * Configuration parameters for GARCH simulation and estimation.
+ */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GarchParams {
     pub omega: f64,
@@ -16,6 +21,9 @@ pub struct GarchParams {
     pub data: Option<Vec<f64>>, // Past returns
 }
 
+/**
+ * Results of the GARCH simulation, including returns and conditional volatility.
+ */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GarchResult {
     pub returns: Vec<f64>,
@@ -23,7 +31,9 @@ pub struct GarchResult {
 }
 
 /**
- * Simulate a GARCH(1,1) process.
+ * Simulate a GARCH(p,q) process for the specified number of steps.
+ *
+ * @param params Garch model and simulation parameters.
  */
 pub fn simulate(params: GarchParams) -> Result<GarchResult, String> {
     let mut rng = if let Some(s) = params.seed {

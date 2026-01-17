@@ -1,12 +1,17 @@
-//! Facebook Prophet-inspired forecasting model.
-//!
-//! Provides flexible trend and seasonality modeling
-//! for structural time series with changepoints.
+/*!
+ * Facebook Prophet-inspired forecasting model.
+ *
+ * Provides flexible trend and seasonality modeling
+ * for structural time series with changepoints.
+ */
 
 use ndarray::{Array1, Array2};
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 
+/**
+ * Configuration parameters for the Prophet model.
+ */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProphetParams {
     pub growth: String,                   // "linear" or "flat"
@@ -22,6 +27,9 @@ pub struct ProphetParams {
     pub values: Vec<f64>,
 }
 
+/**
+ * Result container for Prophet forecasts.
+ */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProphetResult {
     pub times: Vec<i64>,
@@ -30,7 +38,9 @@ pub struct ProphetResult {
     pub seasonal: Vec<f64>,
 }
 
-/** A simplified Prophet implementation in pure Rust. */
+/**
+ * A simplified Prophet implementation for time-series forecasting.
+ */
 pub struct Prophet {
     params: ProphetParams,
     // Model coefficients
@@ -53,9 +63,10 @@ impl Prophet {
     }
 
     /**
-     * Fit the model to historical data.
-     * `times` should be timestamps (e.g., seconds/milliseconds).
-     * `y` is the target time series.
+     * Fit the model to historical data using ridge regression.
+     *
+     * @param times Array of timestamps.
+     * @param y Array of target values.
      */
     pub fn fit(&mut self, times: &[i64], y: &[f64]) -> Result<(), String> {
         if times.len() != y.len() || times.is_empty() {
@@ -286,7 +297,9 @@ impl Prophet {
 }
 
 /**
- * Simulate/Forecast using the Prophet model.
+ * Run a forecast / simulation using the Prophet model.
+ *
+ * @param params Prophet configuration and historical data.
  */
 pub fn simulate(params: ProphetParams) -> Result<ProphetResult, String> {
     let historical_times = &params.times;

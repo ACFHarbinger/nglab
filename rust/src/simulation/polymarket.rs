@@ -1,10 +1,12 @@
-//! Polymarket prediction market simulation engine
-//!
-//! Implements the Conditional Token Framework (CTF) with:
-//! - Binary outcome markets (Yes/No)
-//! - Merge/Split mechanics
-//! - NegRisk accounting for cross-collateralization
-//! - Market resolution and price replay.
+/*!
+ * Polymarket prediction market simulation engine
+ *
+ * Implements the Conditional Token Framework (CTF) with:
+ * - Binary outcome markets (Yes/No)
+ * - Merge/Split mechanics
+ * - NegRisk accounting for cross-collateralization
+ * - Market resolution and price replay.
+ */
 
 use crate::errors::{ArenaError, ArenaResult};
 #[cfg(feature = "python")]
@@ -12,7 +14,9 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/** A prediction market with binary outcomes */
+/**
+ * Represents a prediction market with binary outcomes.
+ */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Market {
     pub id: String,
@@ -23,14 +27,18 @@ pub struct Market {
     pub outcome: Option<String>,
 }
 
-/** A price update for a market */
+/**
+ * A historical price update for a specific market.
+ */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PriceTick {
     pub timestamp: u64,
     pub price: f64,
 }
 
-/** Account holding conditional tokens */
+/**
+ * Trading account holding USDC and conditional tokens.
+ */
 #[derive(Debug, Clone, Default)]
 pub struct Account {
     /** USDC collateral balance */
@@ -73,7 +81,9 @@ impl Account {
     }
 }
 
-/** Polymarket trading arena */
+/**
+ * Polymarket trading arena for simulation and backtesting.
+ */
 #[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone)]
 pub struct PolymarketArena {

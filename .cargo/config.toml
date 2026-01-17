@@ -14,8 +14,8 @@ incremental = true
 
 [target.x86_64-unknown-linux-gnu]
 # Linux-specific optimizations
-linker = "clang"
-rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+linker = "gcc"
+rustflags = ["-C", "link-arg=-fuse-ld=bfd"]
 
 [target.x86_64-apple-darwin]
 # macOS-specific optimizations

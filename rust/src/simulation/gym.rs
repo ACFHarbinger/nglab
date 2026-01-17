@@ -1,9 +1,11 @@
-//! Gymnasium-compatible trading environment
-//!
-//! Implements the standard RL interface (reset, step) with:
-//! - Discrete and continuous action spaces
-//! - Normalized observations via zero-copy numpy arrays
-//! - Risk-adjusted reward functions
+/*!
+ * Gymnasium-compatible trading environment
+ *
+ * Implements the standard RL interface (reset, step) with:
+ * - Discrete and continuous action spaces
+ * - Normalized observations via zero-copy numpy arrays
+ * - Risk-adjusted reward functions
+ */
 
 use crate::simulation::orderbook::{OrderBook, Side};
 #[cfg(feature = "python")]
@@ -13,7 +15,9 @@ use pyo3::prelude::*;
 #[cfg(feature = "python")]
 use pyo3::types::PyDict;
 
-/** Action space types */
+/**
+ * Action space types for the agent.
+ */
 #[derive(Debug, Clone, Copy)]
 pub enum ActionType {
     /** Hold current position */
@@ -35,7 +39,11 @@ impl From<i32> for ActionType {
     }
 }
 
-/** Step result returned to Python */
+/**
+ * Step result returned to high-level callers (e.g., Python).
+ *
+ * Bundles observation, reward, and transition info.
+ */
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct StepResult {
     pub observation: Vec<f64>,
@@ -45,7 +53,9 @@ pub struct StepResult {
     pub info: StepInfo,
 }
 
-/** Additional info for each step */
+/**
+ * Additional metrics and diagnostics for each step.
+ */
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct StepInfo {
     pub portfolio_value: f64,
@@ -55,7 +65,9 @@ pub struct StepInfo {
     pub total_steps: u64,
 }
 
-/** Observation buffer for zero-copy access */
+/**
+ * Observation buffer for high-performance zero-copy access.
+ */
 pub struct ObservationBuffer {
     data: Vec<f64>,
     shape: (usize, usize),
@@ -76,9 +88,12 @@ impl ObservationBuffer {
     }
 }
 
-/** Trading environment with Gymnasium interface */
+/**
+ * Trading environment with Gymnasium interface.
+ *
+ * Wraps market simulation logic into a standard RL format.
+ */
 #[cfg_attr(feature = "python", pyclass)]
-/** Trading environment for reinforcement learning. */
 pub struct TradingEnv {
     /** Order book for simulation */
     orderbook: OrderBook,
@@ -156,7 +171,11 @@ impl TradingEnv {
         }
     }
 
-    /** Load price data for backtesting */
+    /**
+     * Load historical price data for backtesting.
+     *
+     * @param prices A vector of price points.
+     */
     pub fn load_prices(&mut self, prices: Vec<f64>) {
         self.prices = prices;
     }
@@ -178,7 +197,11 @@ impl TradingEnv {
         self.get_observation(py)
     }
 
-    /** Pure Rust reset (no Python dependency) */
+    /**
+     * Pure Rust reset implementation (independent of Python bindings).
+     *
+     * Returns the initial observation vector.
+     */
     pub fn reset_rs(&mut self) -> Vec<f64> {
         self.current_step = self.lookback;
         self.position = 0.0;
