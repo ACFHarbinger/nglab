@@ -2,7 +2,7 @@
  * @module components/TrainingTab
  * @description Comprehensive deep learning training interface with support for multiple architectures.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Play,
   Square,
@@ -16,11 +16,18 @@ import {
   ChevronDown,
   ChevronRight,
   Info,
+  Upload,
+  FileText,
+  CheckCircle,
 } from "lucide-react";
 import clsx from "clsx";
+import { invoke } from "@tauri-apps/api/core";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { open } from "@tauri-apps/plugin-dialog";
 
 // Model categories with their models
 const MODEL_CATEGORIES = {
+  // Deep Learning Models
   "Recurrent Networks": [
     {
       name: "LSTM",
@@ -37,6 +44,21 @@ const MODEL_CATEGORIES = {
       description: "Extended LSTM with sLSTM/mLSTM cells",
       params: ["hidden_dim", "n_layers", "cell_type", "num_heads"],
     },
+    {
+      name: "ESN",
+      description: "Echo State Network (reservoir computing)",
+      params: ["reservoir_dim", "spectral_radius", "sparsity"],
+    },
+    {
+      name: "LSM",
+      description: "Liquid State Machine",
+      params: ["liquid_size", "connection_prob", "spectral_radius"],
+    },
+    {
+      name: "Mamba",
+      description: "State-space model with selective scan",
+      params: ["hidden_dim", "n_layers", "forecast_horizon"],
+    },
   ],
   Transformers: [
     {
@@ -45,9 +67,9 @@ const MODEL_CATEGORIES = {
       params: ["embed_dim", "hidden_dim", "pred_len", "seq_len"],
     },
     {
-      name: "AttentionNet",
+      name: "Attention",
       description: "Multi-Head Attention Network",
-      params: ["hidden_dim", "num_heads", "num_layers"],
+      params: ["d_model", "num_heads", "num_layers", "d_ff"],
     },
   ],
   Convolutional: [
@@ -65,6 +87,26 @@ const MODEL_CATEGORIES = {
       name: "ResNet",
       description: "Deep Residual Network",
       params: ["hidden_dim", "num_blocks", "dropout"],
+    },
+    {
+      name: "Deconv",
+      description: "Deconvolutional Network",
+      params: ["hidden_channels"],
+    },
+    {
+      name: "AutoDeconv",
+      description: "Auto Deconvolutional Network",
+      params: ["latent_dim", "hidden_channels"],
+    },
+    {
+      name: "DCIGN",
+      description: "Deep Convolutional Inverse Graphics Network",
+      params: ["latent_dim", "hidden_channels", "num_intrinsic"],
+    },
+    {
+      name: "Capsule",
+      description: "Capsule Network layer",
+      params: ["in_caps", "out_caps", "out_dim"],
     },
   ],
   Autoencoders: [
@@ -84,26 +126,21 @@ const MODEL_CATEGORIES = {
       params: ["hidden_dims", "latent_dim", "sparsity_target"],
     },
     {
-      name: "VAE",
-      description: "Variational AutoEncoder",
+      name: "StackedAE",
+      description: "Stacked AutoEncoder",
       params: ["hidden_dims", "latent_dim"],
     },
+    {
+      name: "VAE",
+      description: "Variational AutoEncoder",
+      params: ["latent_dim", "d_model", "encoder_type"],
+    },
   ],
-  "Spiking & Reservoir": [
+  "Spiking": [
     {
       name: "SNN",
       description: "Spiking Neural Network with LIF neurons",
       params: ["hidden_dim", "n_layers", "decay", "threshold"],
-    },
-    {
-      name: "ESN",
-      description: "Echo State Network (reservoir computing)",
-      params: ["reservoir_dim", "spectral_radius", "sparsity"],
-    },
-    {
-      name: "LSM",
-      description: "Liquid State Machine",
-      params: ["liquid_size", "connection_prob", "spectral_radius"],
     },
   ],
   "Memory Networks": [
@@ -117,9 +154,13 @@ const MODEL_CATEGORIES = {
       description: "Differentiable Neural Computer",
       params: ["hidden_dim", "memory_size", "memory_dim", "num_reads"],
     },
-    { name: "Hopfield", description: "Modern Hopfield Network", params: [] },
+    {
+      name: "Hopfield",
+      description: "Modern Hopfield Network",
+      params: [],
+    },
   ],
-  Probabilistic: [
+  "Probabilistic": [
     {
       name: "RBM",
       description: "Restricted Boltzmann Machine",
@@ -130,14 +171,23 @@ const MODEL_CATEGORIES = {
       description: "Deep Belief Network",
       params: ["hidden_dims"],
     },
-    { name: "BM", description: "Boltzmann Machine", params: [] },
+    {
+      name: "BM",
+      description: "Boltzmann Machine",
+      params: [],
+    },
     {
       name: "MarkovChain",
       description: "Learnable Markov Chain",
       params: ["num_states"],
     },
+    {
+      name: "Flow",
+      description: "Normalizing Flow for density estimation",
+      params: ["hidden_dim", "num_layers"],
+    },
   ],
-  Classical: [
+  "General Neural Networks": [
     {
       name: "MLP",
       description: "Multi-Layer Perceptron",
@@ -159,41 +209,262 @@ const MODEL_CATEGORIES = {
       params: ["activation"],
     },
     {
+      name: "PINN",
+      description: "Physics-Informed Neural Network",
+      params: ["hidden_dim", "num_layers"],
+    },
+    {
+      name: "NODE",
+      description: "Neural Ordinary Differential Equation",
+      params: ["hidden_dim", "num_layers"],
+    },
+  ],
+  "Competitive Learning": [
+    {
       name: "SOM",
       description: "Self-Organizing Map (Kohonen)",
       params: ["grid_size"],
     },
+    {
+      name: "LVQ",
+      description: "Learning Vector Quantization",
+      params: ["num_classes", "prototypes_per_class"],
+    },
   ],
-  Advanced: [
+
+  // Classical Machine Learning Models
+  "Linear Models": [
     {
-      name: "Mamba",
-      description: "State-space model with selective scan",
-      params: ["hidden_dim", "n_layers", "forecast_horizon"],
+      name: "LinearRegression",
+      description: "Ordinary Least Squares Regression",
+      params: [],
     },
     {
-      name: "Capsule",
-      description: "Capsule Network layer",
-      params: ["in_caps", "out_caps", "out_dim"],
+      name: "Ridge",
+      description: "Ridge Regression (L2 regularization)",
+      params: ["alpha"],
     },
     {
-      name: "NormalizingFlow",
-      description: "Normalizing Flow for density estimation",
-      params: ["hidden_dim", "num_flows"],
+      name: "Lasso",
+      description: "Lasso Regression (L1 regularization)",
+      params: ["alpha"],
     },
     {
-      name: "NeuralODE",
-      description: "Neural Ordinary Differential Equation",
-      params: ["hidden_dim"],
+      name: "ElasticNet",
+      description: "Elastic Net (L1 + L2 regularization)",
+      params: ["alpha", "l1_ratio"],
     },
     {
-      name: "PINN",
-      description: "Physics-Informed Neural Network",
-      params: ["hidden_dims"],
+      name: "LARS",
+      description: "Least Angle Regression",
+      params: ["n_nonzero_coefs"],
     },
     {
-      name: "DCIGN",
-      description: "Deep Convolutional Inverse Graphics Network",
-      params: ["latent_dim", "hidden_channels"],
+      name: "LogisticRegression",
+      description: "Logistic Regression for classification",
+      params: [],
+    },
+    {
+      name: "Polynomial",
+      description: "Polynomial Regression",
+      params: ["degree"],
+    },
+    {
+      name: "OLSR",
+      description: "Ordinary Least Squares Regression (alias)",
+      params: [],
+    },
+    {
+      name: "Stepwise",
+      description: "Stepwise Regression with feature selection",
+      params: ["direction", "n_features_to_select"],
+    },
+    {
+      name: "MARS",
+      description: "Multivariate Adaptive Regression Splines",
+      params: ["n_segments"],
+    },
+    {
+      name: "LOESS",
+      description: "Locally Estimated Scatterplot Smoothing",
+      params: ["frac", "it"],
+    },
+  ],
+  "Decision Trees": [
+    {
+      name: "DecisionTree",
+      description: "Decision Tree (CART)",
+      params: ["task", "max_depth"],
+    },
+    {
+      name: "CART",
+      description: "Classification and Regression Tree",
+      params: ["task", "max_depth"],
+    },
+    {
+      name: "ID3",
+      description: "Iterative Dichotomiser 3",
+      params: ["task"],
+    },
+    {
+      name: "C45",
+      description: "C4.5 Algorithm",
+      params: ["task"],
+    },
+    {
+      name: "C50",
+      description: "C5.0 Algorithm",
+      params: ["task"],
+    },
+    {
+      name: "CHAID",
+      description: "Chi-squared Automatic Interaction Detection",
+      params: ["task"],
+    },
+    {
+      name: "DecisionStump",
+      description: "Decision Stump (depth=1)",
+      params: ["task"],
+    },
+    {
+      name: "ConditionalTree",
+      description: "Conditional Decision Tree",
+      params: ["task", "min_impurity_decrease"],
+    },
+    {
+      name: "M5",
+      description: "M5 Model Tree",
+      params: [],
+    },
+    {
+      name: "RandomForest",
+      description: "Random Forest ensemble",
+      params: ["task", "n_estimators"],
+    },
+  ],
+  "Boosting Methods": [
+    {
+      name: "GradientBoosting",
+      description: "Gradient Boosting Machine",
+      params: ["task", "n_estimators", "learning_rate"],
+    },
+    {
+      name: "GBRT",
+      description: "Gradient Boosted Regression Trees",
+      params: ["task", "n_estimators"],
+    },
+    {
+      name: "AdaBoost",
+      description: "Adaptive Boosting",
+      params: ["task", "n_estimators"],
+    },
+    {
+      name: "XGBoost",
+      description: "Extreme Gradient Boosting",
+      params: ["task", "n_estimators", "max_depth"],
+    },
+    {
+      name: "LightGBM",
+      description: "Light Gradient Boosting Machine",
+      params: ["task", "n_estimators", "num_leaves"],
+    },
+  ],
+  "Ensemble Methods": [
+    {
+      name: "Bagging",
+      description: "Bootstrap Aggregating",
+      params: ["task", "n_estimators"],
+    },
+    {
+      name: "Stacking",
+      description: "Stacked Generalization",
+      params: ["task"],
+    },
+    {
+      name: "Voting",
+      description: "Voting Ensemble",
+      params: ["task"],
+    },
+    {
+      name: "WeightedAverage",
+      description: "Weighted Average (Blending)",
+      params: ["task"],
+    },
+  ],
+  "Support Vector Machines": [
+    {
+      name: "SVM",
+      description: "Support Vector Machine",
+      params: ["task", "kernel"],
+    },
+    {
+      name: "SVR",
+      description: "Support Vector Regression",
+      params: ["kernel"],
+    },
+    {
+      name: "LinearSVM",
+      description: "Linear SVM",
+      params: ["task"],
+    },
+    {
+      name: "NuSVM",
+      description: "Nu-Support Vector Machine",
+      params: ["task", "nu"],
+    },
+    {
+      name: "OneClassSVM",
+      description: "One-Class SVM (anomaly detection)",
+      params: ["nu"],
+    },
+    {
+      name: "LSSVM",
+      description: "Least-Squares SVM",
+      params: ["alpha", "kernel"],
+    },
+    {
+      name: "TWSVM",
+      description: "Twin Support Vector Machine",
+      params: ["c1", "c2"],
+    },
+  ],
+  "Naive Bayes": [
+    {
+      name: "NaiveBayes",
+      description: "Naive Bayes Classifier",
+      params: ["type"],
+    },
+    {
+      name: "GaussianNB",
+      description: "Gaussian Naive Bayes",
+      params: [],
+    },
+    {
+      name: "MultinomialNB",
+      description: "Multinomial Naive Bayes",
+      params: [],
+    },
+    {
+      name: "AODE",
+      description: "Averaged One-Dependence Estimators",
+      params: ["n_estimators"],
+    },
+    {
+      name: "BayesianNetwork",
+      description: "Bayesian Belief Network",
+      params: ["structure"],
+    },
+  ],
+  "Nearest Neighbors": [
+    {
+      name: "kNN",
+      description: "k-Nearest Neighbors",
+      params: ["task", "n_neighbors"],
+    },
+    {
+      name: "LWL",
+      description: "Locally Weighted Learning",
+      params: ["task", "n_neighbors", "kernel"],
     },
   ],
 };
@@ -250,6 +521,15 @@ export default function TrainingTab() {
     num_heads: 4,
   });
 
+  // CSV file state
+  const [csvPath, setCsvPath] = useState<string | null>(null);
+  const [csvColumns, setCsvColumns] = useState<string[]>([]);
+  const [targetColumn, setTargetColumn] = useState<string | null>(null);
+  const [loadingColumns, setLoadingColumns] = useState(false);
+  const [trainLoss, setTrainLoss] = useState<number | null>(null);
+  const [valLoss, setValLoss] = useState<number | null>(null);
+  const [currentEpoch, setCurrentEpoch] = useState(0);
+
   const toggleCategory = (category: string) => {
     const newExpanded = new Set(expandedCategories);
     if (newExpanded.has(category)) {
@@ -260,42 +540,116 @@ export default function TrainingTab() {
     setExpandedCategories(newExpanded);
   };
 
-  const handleStartTraining = () => {
-    if (!selectedModel) return;
-    setIsTraining(true);
-    setTrainingProgress(0);
-    setTrainingLogs([
-      `[${new Date().toLocaleTimeString()}] Starting training with ${selectedModel}...`,
-    ]);
+  const handleSelectCsv = async () => {
+    try {
+      const selected = await open({
+        multiple: false,
+        filters: [{ name: "CSV", extensions: ["csv"] }],
+      });
+      if (selected && typeof selected === "string") {
+        setCsvPath(selected);
+        setTargetColumn(null);
+        setCsvColumns([]);
+        setLoadingColumns(true);
 
-    // Simulate training progress
-    const interval = setInterval(() => {
-      setTrainingProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsTraining(false);
+        try {
+          const columns = await invoke<string[]>("list_csv_columns", {
+            csvPath: selected,
+          });
+          setCsvColumns(columns);
+          if (columns.length > 0) {
+            setTargetColumn(columns[0]);
+          }
+        } catch (err) {
+          console.error("Failed to load columns:", err);
           setTrainingLogs((logs) => [
             ...logs,
-            `[${new Date().toLocaleTimeString()}] Training completed!`,
+            `[${new Date().toLocaleTimeString()}] Error loading CSV columns: ${err}`,
           ]);
-          return 100;
+        } finally {
+          setLoadingColumns(false);
         }
-        const newProgress = prev + Math.random() * 5;
-        if (Math.random() > 0.7) {
-          setTrainingLogs((logs) =>
-            [
-              ...logs,
-              `[${new Date().toLocaleTimeString()}] Epoch ${Math.floor(newProgress)}: loss=0.${Math.floor(
-                Math.random() * 1000,
-              )
-                .toString()
-                .padStart(4, "0")}`,
-            ].slice(-20),
-          );
+      }
+    } catch (err) {
+      console.error("Failed to open file dialog:", err);
+    }
+  };
+
+  const handleStartTraining = async () => {
+    if (!selectedModel || !csvPath || !targetColumn) return;
+    setIsTraining(true);
+    setTrainingProgress(0);
+    setCurrentEpoch(0);
+    setTrainLoss(null);
+    setValLoss(null);
+    setTrainingLogs([
+      `[${new Date().toLocaleTimeString()}] Starting training with ${selectedModel}...`,
+      `[${new Date().toLocaleTimeString()}] CSV: ${csvPath}`,
+      `[${new Date().toLocaleTimeString()}] Target: ${targetColumn}`,
+    ]);
+
+    // Listen for training progress events
+    let unlisten: UnlistenFn | null = null;
+    try {
+      unlisten = await listen<{
+        type: string;
+        epoch?: number;
+        total_epochs?: number;
+        train_loss?: number;
+        val_loss?: number;
+        percent?: number;
+        model_path?: string;
+        message?: string;
+      }>("training-progress", (event) => {
+        const data = event.payload;
+        if (data.type === "progress") {
+          setTrainingProgress(data.percent || 0);
+          setCurrentEpoch(data.epoch || 0);
+          setTrainLoss(data.train_loss || null);
+          setValLoss(data.val_loss || null);
+          if (data.epoch && data.epoch % 10 === 0) {
+            setTrainingLogs((logs) =>
+              [
+                ...logs,
+                `[${new Date().toLocaleTimeString()}] Epoch ${data.epoch}/${data.total_epochs}: train_loss=${data.train_loss?.toFixed(6)}, val_loss=${data.val_loss?.toFixed(6) || "N/A"}`,
+              ].slice(-30)
+            );
+          }
         }
-        return Math.min(newProgress, 100);
       });
-    }, 200);
+
+      // Call training command
+      const modelPath = await invoke<string>("train_model", {
+        csvPath,
+        targetColumn,
+        modelName: selectedModel,
+        epochs: config.epochs,
+        batchSize: config.batchSize,
+        learningRate: config.learningRate,
+        seqLen: config.seqLen,
+        predLen: config.predLen,
+        trainSplit: config.trainSplit,
+        modelParams,
+      });
+
+      setTrainingLogs((logs) => [
+        ...logs,
+        `[${new Date().toLocaleTimeString()}] Training completed!`,
+        `[${new Date().toLocaleTimeString()}] Model saved to: ${modelPath}`,
+      ]);
+      setTrainingProgress(100);
+    } catch (err) {
+      console.error("Training failed:", err);
+      setTrainingLogs((logs) => [
+        ...logs,
+        `[${new Date().toLocaleTimeString()}] Training failed: ${err}`,
+      ]);
+    } finally {
+      if (unlisten) {
+        unlisten();
+      }
+      setIsTraining(false);
+    }
   };
 
   const handleStopTraining = () => {
@@ -392,7 +746,13 @@ export default function TrainingTab() {
                   {!isTraining ? (
                     <button
                       onClick={handleStartTraining}
-                      className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg transition-colors font-medium text-sm"
+                      disabled={!csvPath || !targetColumn}
+                      className={clsx(
+                        "flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium text-sm",
+                        csvPath && targetColumn
+                          ? "bg-indigo-600 hover:bg-indigo-500"
+                          : "bg-slate-700 cursor-not-allowed opacity-50"
+                      )}
                     >
                       <Play size={16} fill="currentColor" /> Start Training
                     </button>
@@ -568,15 +928,15 @@ export default function TrainingTab() {
                         <input
                           type={
                             param.includes("dropout") ||
-                            param.includes("rate") ||
-                            param.includes("prob")
+                              param.includes("rate") ||
+                              param.includes("prob")
                               ? "number"
                               : "text"
                           }
                           step={
                             param.includes("dropout") ||
-                            param.includes("rate") ||
-                            param.includes("prob")
+                              param.includes("rate") ||
+                              param.includes("prob")
                               ? "0.01"
                               : undefined
                           }
@@ -605,31 +965,64 @@ export default function TrainingTab() {
                   <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
                     <Database size={14} /> Data Source
                   </h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <button className="p-4 bg-indigo-500/20 border border-indigo-500/50 rounded-lg text-left hover:bg-indigo-500/30 transition-colors">
-                      <div className="text-sm font-medium text-white">
-                        Polymarket Live
+                  <div className="space-y-4">
+                    {/* CSV File Selection */}
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={handleSelectCsv}
+                        className="flex items-center gap-2 px-4 py-2 bg-indigo-500/20 border border-indigo-500/50 rounded-lg hover:bg-indigo-500/30 transition-colors"
+                      >
+                        <Upload size={16} />
+                        <span className="text-sm font-medium">
+                          Select CSV File
+                        </span>
+                      </button>
+                      {csvPath && (
+                        <div className="flex items-center gap-2 text-sm text-slate-400">
+                          <FileText size={16} className="text-emerald-400" />
+                          <span className="truncate max-w-xs">
+                            {csvPath.split("/").pop()}
+                          </span>
+                          <CheckCircle size={14} className="text-emerald-400" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Column Selection */}
+                    {csvColumns.length > 0 && (
+                      <div>
+                        <label className="text-xs text-slate-500 uppercase">
+                          Target Column
+                        </label>
+                        <select
+                          value={targetColumn || ""}
+                          onChange={(e) => setTargetColumn(e.target.value)}
+                          className="w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        >
+                          {csvColumns.map((col) => (
+                            <option key={col} value={col}>
+                              {col}
+                            </option>
+                          ))}
+                        </select>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Select the column containing values to predict
+                        </p>
                       </div>
-                      <div className="text-xs text-slate-400 mt-1">
-                        Real-time market data
+                    )}
+
+                    {loadingColumns && (
+                      <div className="text-sm text-slate-400 animate-pulse">
+                        Loading columns...
                       </div>
-                    </button>
-                    <button className="p-4 bg-slate-800/50 border border-slate-700 rounded-lg text-left hover:bg-slate-800 transition-colors">
-                      <div className="text-sm font-medium text-slate-300">
-                        Historical CSV
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        Import from file
-                      </div>
-                    </button>
-                    <button className="p-4 bg-slate-800/50 border border-slate-700 rounded-lg text-left hover:bg-slate-800 transition-colors">
-                      <div className="text-sm font-medium text-slate-300">
-                        Synthetic
-                      </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        Generated test data
-                      </div>
-                    </button>
+                    )}
+
+                    {!csvPath && (
+                      <p className="text-sm text-slate-500">
+                        Upload a CSV file containing time series data for
+                        training.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -683,7 +1076,7 @@ export default function TrainingTab() {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-900/50 rounded-lg p-3 text-center">
                 <div className="text-lg font-mono font-bold text-indigo-400">
-                  {Math.floor(trainingProgress)}
+                  {currentEpoch}/{config.epochs}
                 </div>
                 <div className="text-[10px] text-slate-500 uppercase">
                   Epoch
@@ -691,10 +1084,7 @@ export default function TrainingTab() {
               </div>
               <div className="bg-slate-900/50 rounded-lg p-3 text-center">
                 <div className="text-lg font-mono font-bold text-emerald-400">
-                  0.
-                  {Math.floor(Math.random() * 100)
-                    .toString()
-                    .padStart(2, "0")}
+                  {valLoss !== null ? valLoss.toFixed(4) : "--"}
                 </div>
                 <div className="text-[10px] text-slate-500 uppercase">
                   Val Loss

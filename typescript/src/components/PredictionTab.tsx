@@ -66,11 +66,11 @@ export default /**
  * Allows users to upload historical price data and visualize
  * future predictions onto a chart.
  */
-function PredictionTab({
-  livePrices,
-  isStreaming,
-  activeMarket,
-}: PredictionTabProps) {
+  function PredictionTab({
+    livePrices,
+    isStreaming,
+    activeMarket,
+  }: PredictionTabProps) {
   const [activeModel, setActiveModel] = useState<
     "arima" | "garch" | "holt_winters" | "prophet" | "trained_model"
   >("arima");
@@ -1377,7 +1377,7 @@ function PredictionTab({
                   {trainedModels.length === 0 ? (
                     <div className="p-3 bg-red-900/20 border border-red-800 rounded text-xs text-red-400">
                       No trained models found in{" "}
-                      <code>python/trained_models/</code>
+                      <code>model_weights/</code>
                     </div>
                   ) : (
                     <label className="block text-xs text-slate-400">
@@ -1471,9 +1471,9 @@ function PredictionTab({
             ) : activeModel === "trained_model" ? (
               <p>
                 Uses a pre-trained PyTorch model from your{" "}
-                <code>part-2/trained_models</code> directory. The model is
-                loaded in a separate Python process to run inference on the
-                recent context window.
+                <code>model_weights</code> directory. The model is loaded in a
+                separate Python process to run inference on the recent context
+                window.
               </p>
             ) : (
               <p>

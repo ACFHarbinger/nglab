@@ -5,11 +5,11 @@ PyTorch Lightning Modules for NGLab.
 from .base import BaseModule
 from .diffusion_module import DiffusionLightningModule
 from .gan_module import GANLightningModule
-from .rl_module import RLLightningModule
+from .reinforcement_learning import RLLightningModule
 from .self_supervised import SelfSupervisedModule
 from .semi_supervised import SemiSupervisedModule
-from .sl_module import SLLightningModule
-from .unsupervised import UnsupervisedModule
+from .supervised_learning import SLLightningModule
+from .unsupervised_learning import UnsupervisedModule
 
 __all__ = [
     "BaseModule",

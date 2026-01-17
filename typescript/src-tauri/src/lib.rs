@@ -52,7 +52,9 @@ pub fn run() {
             commands::moon::predict_holt_winters,
             commands::moon::predict_prophet,
             commands::inference::list_trained_models,
-            commands::inference::predict_trained_model
+            commands::inference::predict_trained_model,
+            commands::inference::train_model,
+            commands::inference::list_csv_columns
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

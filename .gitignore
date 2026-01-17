@@ -433,3 +433,6 @@ android/build/intermediates/ktLint/
 
 # LLM agents
 .claude/
+
+# Local directories
+model_weights/

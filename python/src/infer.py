@@ -65,39 +65,51 @@ def main():
                 metadata = ModelMetadata.from_json(f.read())
 
         # 3. Instantiate Model
-        # metadata.hyperparameters should match the config structure expected by TimeSeriesBackbone
-        # 'model' key in config usually holds the backbone params
-
-        # NOTE: The Metadata usually stores the FULL config (cfg).
-        # So it might look like { model: { ... }, task: ... }
-        # Or it might be just the model config.
-        # Let's assume metadata.hyperparameters is the full config used in training.
-
         config = metadata.hyperparameters
-        model_config = config.get(
-            "model", config
-        )  # Fallback if it was just model config
-
+        model_config = config.get("model", config)
         model = TimeSeriesBackbone(model_config)
 
         # 4. Load Weights
-        # We explicitly rely on our util, which handles the "metadata" key inside the pt file
-        # We wrap model in a way that load_model_with_metadata expects?
-        # Actually load_model_with_metadata takes (model, path).
-
         model, _ = load_model_with_metadata(model, model_path, map_location="cpu")
         model.eval()
 
-        # 5. Run Inference
+        # 5. Handle Normalization
+        norm_cfg = config.get("normalization")
+        if norm_cfg:
+            method = norm_cfg.get("method")
+            if method == "minmax":
+                raw_min, raw_max = norm_cfg["min"], norm_cfg["max"]
+                if raw_max - raw_min > 1e-8:
+                    x = (x - raw_min) / (raw_max - raw_min)
+                else:
+                    x = x - raw_min
+            elif method == "zscore":
+                raw_mean, raw_std = norm_cfg["mean"], norm_cfg["std"]
+                if raw_std > 1e-8:
+                    x = (x - raw_mean) / raw_std
+                else:
+                    x = x - raw_mean
+
+        # 6. Run Inference
         with torch.no_grad():
             output = model(x)
 
-        # output is likely (Batch, Seq, OutDim) or (Batch, OutDim).
-        # For time series forecasting, we probably want the last value or the full sequence?
-        # If the model is sequence-to-sequence, it returns (B, L, D).
-        # We'll flatten the output to a list.
+        # 7. Denormalize Output
+        if norm_cfg:
+            method = norm_cfg.get("method")
+            if method == "minmax":
+                raw_min, raw_max = norm_cfg["min"], norm_cfg["max"]
+                output = output * (raw_max - raw_min) + raw_min
+            elif method == "zscore":
+                raw_mean, raw_std = norm_cfg["mean"], norm_cfg["std"]
+                output = output * raw_std + raw_mean
 
-        result = output.squeeze().tolist()
+        # output is likely (Batch, OutDim) or (Batch, Seq, OutDim).
+        # We ensure it's a flat list for the frontend.
+        if output.dim() > 1:
+            result = output.view(-1).tolist()
+        else:
+            result = [output.item()]
 
         # Wrap in standard response
         response = {
