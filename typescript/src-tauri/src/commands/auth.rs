@@ -1,11 +1,8 @@
 /*!
  * Tauri commands for user authentication.
- *
- * Exposes create_account, login, logout, and get_current_user to the frontend.
  */
 
-use nglab::secret::auth::{AuthError, AuthManager};
-use serde::{Deserialize, Serialize};
+use nglab::secret::auth::{AuthError, AuthManager, AuthResponse};
 use std::sync::Mutex;
 use tauri::State;
 
@@ -18,32 +15,6 @@ impl Default for AuthState {
     fn default() -> Self {
         Self {
             current_user: Mutex::new(None),
-        }
-    }
-}
-
-/// Response for authentication commands
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AuthResponse {
-    pub success: bool,
-    pub message: String,
-    pub username: Option<String>,
-}
-
-impl AuthResponse {
-    fn success(message: &str, username: Option<String>) -> Self {
-        Self {
-            success: true,
-            message: message.to_string(),
-            username,
-        }
-    }
-
-    fn error(message: &str) -> Self {
-        Self {
-            success: false,
-            message: message.to_string(),
-            username: None,
         }
     }
 }

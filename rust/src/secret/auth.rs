@@ -14,6 +14,32 @@ use keyring::Entry;
 use password_hash::rand_core::OsRng;
 use serde::{Deserialize, Serialize};
 
+/// Standard response wrapper for authentication operations
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AuthResponse {
+    pub success: bool,
+    pub message: String,
+    pub username: Option<String>,
+}
+
+impl AuthResponse {
+    pub fn success(message: &str, username: Option<String>) -> Self {
+        Self {
+            success: true,
+            message: message.to_string(),
+            username,
+        }
+    }
+
+    pub fn error(message: &str) -> Self {
+        Self {
+            success: false,
+            message: message.to_string(),
+            username: None,
+        }
+    }
+}
+
 /// Service name for keyring entries
 const SERVICE_NAME: &str = "nglab";
 

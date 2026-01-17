@@ -3,3 +3,4 @@
  */
 pub mod polymarket;
 pub mod scraper;
+pub mod streaming;

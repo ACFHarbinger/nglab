@@ -8,6 +8,7 @@
 use argon2::{password_hash::SaltString, Argon2};
 use rusqlite::{params, Connection, Result as SqlResult};
 use serde::{Deserialize, Serialize};
+use std::fs;
 use std::path::PathBuf;
 
 /// Summary of a vault entry (for listing)
@@ -27,6 +28,32 @@ pub struct VaultEntry {
     pub created_at: String,
 }
 
+/// Standard response wrapper for vault operations
+#[derive(Debug, Serialize, Deserialize)]
+pub struct VaultResponse<T> {
+    pub success: bool,
+    pub message: String,
+    pub data: Option<T>,
+}
+
+impl<T> VaultResponse<T> {
+    pub fn success(message: &str, data: Option<T>) -> Self {
+        Self {
+            success: true,
+            message: message.to_string(),
+            data,
+        }
+    }
+
+    pub fn error(message: &str) -> Self {
+        Self {
+            success: false,
+            message: message.to_string(),
+            data: None,
+        }
+    }
+}
+
 pub struct VaultManager {
     db_path: PathBuf,
 }
@@ -34,6 +61,28 @@ pub struct VaultManager {
 impl VaultManager {
     pub fn new(db_path: PathBuf) -> Self {
         Self { db_path }
+    }
+
+    /// Get the default vault path in assets/secrets
+    pub fn get_default_path() -> Result<PathBuf, String> {
+        // Relocate to assets/secrets in the project root
+        // Using an absolute path for now as per project requirements
+        let mut path = PathBuf::from("/home/pkhunter/Repositories/nglab");
+        path.push("assets");
+        path.push("secrets");
+
+        // Ensure the directory exists
+        if !path.exists() {
+            fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+        }
+
+        path.push("vault.db");
+        Ok(path)
+    }
+
+    /// Create a manager with the default path
+    pub fn with_default_path() -> Result<Self, String> {
+        Ok(Self::new(Self::get_default_path()?))
     }
 
     /// Open an encrypted connection to the database

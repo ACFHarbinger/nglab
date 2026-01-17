@@ -2,10 +2,7 @@
  * Tauri commands for the SQLCipher encrypted vault.
  */
 
-use nglab::secret::vault::{VaultEntry, VaultManager, VaultSummary};
-use serde::{Deserialize, Serialize};
-use std::fs;
-use std::path::PathBuf;
+use nglab::secret::vault::{VaultEntry, VaultManager, VaultResponse, VaultSummary};
 use std::sync::Mutex;
 use tauri::{AppHandle, State};
 
@@ -22,59 +19,31 @@ impl Default for VaultState {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct VaultResponse<T> {
-    pub success: bool,
-    pub message: String,
-    pub data: Option<T>,
-}
-
-fn get_vault_path(_app: &AppHandle) -> Result<PathBuf, String> {
-    // Relocate to assets/secrets in the project root
-    let mut path = PathBuf::from("/home/pkhunter/Repositories/nglab");
-    path.push("assets");
-    path.push("secrets");
-
-    // Ensure the directory exists
-    if !path.exists() {
-        fs::create_dir_all(&path).map_err(|e| e.to_string())?;
-    }
-
-    path.push("vault.db");
-    Ok(path)
-}
-
 /// Unlock the vault by deriving the master key
 #[tauri::command]
 pub async fn unlock_vault(
-    app: AppHandle,
+    _app: AppHandle,
     password: String,
     state: State<'_, VaultState>,
 ) -> Result<VaultResponse<()>, String> {
     let salt = b"nglab-vault-salt-2026";
     let key_str = VaultManager::derive_key_string(&password, salt);
 
-    let path = get_vault_path(&app)?;
-    let manager = VaultManager::new(path);
+    let manager = VaultManager::with_default_path()?;
 
     // Test open and initialize
     if let Err(e) = manager.init_db(&key_str) {
-        return Ok(VaultResponse {
-            success: false,
-            message: format!("Failed to unlock or initialize vault: {}", e),
-            data: None,
-        });
+        return Ok(VaultResponse::error(&format!(
+            "Failed to unlock or initialize vault: {}",
+            e
+        )));
     }
 
     if let Ok(mut master_key) = state.master_key.lock() {
         *master_key = Some(key_str);
     }
 
-    Ok(VaultResponse {
-        success: true,
-        message: "Vault unlocked".to_string(),
-        data: None,
-    })
+    Ok(VaultResponse::success("Vault unlocked", None))
 }
 
 /// Check if vault is unlocked
@@ -98,7 +67,7 @@ pub async fn lock_vault(state: State<'_, VaultState>) -> Result<(), String> {
 /// Add a secret to the vault
 #[tauri::command]
 pub async fn add_vault_secret(
-    app: AppHandle,
+    _app: AppHandle,
     label: String,
     value: String,
     state: State<'_, VaultState>,
@@ -106,148 +75,96 @@ pub async fn add_vault_secret(
     let master_key = if let Ok(key_guard) = state.master_key.lock() {
         match key_guard.as_ref() {
             Some(key) => key.clone(),
-            None => {
-                return Ok(VaultResponse {
-                    success: false,
-                    message: "Vault is locked".to_string(),
-                    data: None,
-                })
-            }
+            None => return Ok(VaultResponse::error("Vault is locked")),
         }
     } else {
         return Err("Failed to lock state".to_string());
     };
 
-    let path = get_vault_path(&app)?;
-    let manager = VaultManager::new(path);
+    let manager = VaultManager::with_default_path()?;
     match manager.add_secret(&master_key, &label, &value) {
-        Ok(id) => Ok(VaultResponse {
-            success: true,
-            message: "Secret added".to_string(),
-            data: Some(id),
-        }),
-        Err(e) => Ok(VaultResponse {
-            success: false,
-            message: format!("Failed to add secret: {}", e),
-            data: None,
-        }),
+        Ok(id) => Ok(VaultResponse::success("Secret added", Some(id))),
+        Err(e) => Ok(VaultResponse::error(&format!(
+            "Failed to add secret: {}",
+            e
+        ))),
     }
 }
 
 /// List all secrets in the vault
 #[tauri::command]
 pub async fn list_vault_secrets(
-    app: AppHandle,
+    _app: AppHandle,
     state: State<'_, VaultState>,
 ) -> Result<VaultResponse<Vec<VaultSummary>>, String> {
     let master_key = if let Ok(key_guard) = state.master_key.lock() {
         match key_guard.as_ref() {
             Some(key) => key.clone(),
-            None => {
-                return Ok(VaultResponse {
-                    success: false,
-                    message: "Vault is locked".to_string(),
-                    data: None,
-                })
-            }
+            None => return Ok(VaultResponse::error("Vault is locked")),
         }
     } else {
         return Err("Failed to lock state".to_string());
     };
 
-    let path = get_vault_path(&app)?;
-    let manager = VaultManager::new(path);
+    let manager = VaultManager::with_default_path()?;
     match manager.list_secrets(&master_key) {
-        Ok(entries) => Ok(VaultResponse {
-            success: true,
-            message: "Secrets listed".to_string(),
-            data: Some(entries),
-        }),
-        Err(e) => Ok(VaultResponse {
-            success: false,
-            message: format!("Failed to list secrets: {}", e),
-            data: None,
-        }),
+        Ok(entries) => Ok(VaultResponse::success("Secrets listed", Some(entries))),
+        Err(e) => Ok(VaultResponse::error(&format!(
+            "Failed to list secrets: {}",
+            e
+        ))),
     }
 }
 
 /// Get a secret (decrypted automatically by SQLCipher)
 #[tauri::command]
 pub async fn get_vault_secret(
-    app: AppHandle,
+    _app: AppHandle,
     id: i64,
     state: State<'_, VaultState>,
 ) -> Result<VaultResponse<VaultEntry>, String> {
     let master_key = if let Ok(key_guard) = state.master_key.lock() {
         match key_guard.as_ref() {
             Some(key) => key.clone(),
-            None => {
-                return Ok(VaultResponse {
-                    success: false,
-                    message: "Vault is locked".to_string(),
-                    data: None,
-                })
-            }
+            None => return Ok(VaultResponse::error("Vault is locked")),
         }
     } else {
         return Err("Failed to lock state".to_string());
     };
 
-    let path = get_vault_path(&app)?;
-    let manager = VaultManager::new(path);
+    let manager = VaultManager::with_default_path()?;
     match manager.get_secret(&master_key, id) {
-        Ok(Some(entry)) => Ok(VaultResponse {
-            success: true,
-            message: "Secret retrieved".to_string(),
-            data: Some(entry),
-        }),
-        Ok(None) => Ok(VaultResponse {
-            success: false,
-            message: "Secret not found".to_string(),
-            data: None,
-        }),
-        Err(e) => Ok(VaultResponse {
-            success: false,
-            message: format!("Failed to retrieve secret: {}", e),
-            data: None,
-        }),
+        Ok(Some(entry)) => Ok(VaultResponse::success("Secret retrieved", Some(entry))),
+        Ok(None) => Ok(VaultResponse::error("Secret not found")),
+        Err(e) => Ok(VaultResponse::error(&format!(
+            "Failed to retrieve secret: {}",
+            e
+        ))),
     }
 }
 
 /// Delete a secret
 #[tauri::command]
 pub async fn delete_vault_secret(
-    app: AppHandle,
+    _app: AppHandle,
     id: i64,
     state: State<'_, VaultState>,
 ) -> Result<VaultResponse<()>, String> {
     let master_key = if let Ok(key_guard) = state.master_key.lock() {
         match key_guard.as_ref() {
             Some(key) => key.clone(),
-            None => {
-                return Ok(VaultResponse {
-                    success: false,
-                    message: "Vault is locked".to_string(),
-                    data: None,
-                })
-            }
+            None => return Ok(VaultResponse::error("Vault is locked")),
         }
     } else {
         return Err("Failed to lock state".to_string());
     };
 
-    let path = get_vault_path(&app)?;
-    let manager = VaultManager::new(path);
+    let manager = VaultManager::with_default_path()?;
     match manager.delete_secret(&master_key, id) {
-        Ok(()) => Ok(VaultResponse {
-            success: true,
-            message: "Secret deleted".to_string(),
-            data: None,
-        }),
-        Err(e) => Ok(VaultResponse {
-            success: false,
-            message: format!("Failed to delete secret: {}", e),
-            data: None,
-        }),
+        Ok(()) => Ok(VaultResponse::success("Secret deleted", None)),
+        Err(e) => Ok(VaultResponse::error(&format!(
+            "Failed to delete secret: {}",
+            e
+        ))),
     }
 }

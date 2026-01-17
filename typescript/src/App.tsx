@@ -449,6 +449,8 @@ function App() {
           <TrainingTab />
         ) : activeTab === "news" ? (
           <NewsTab />
+        ) : activeTab === "pricing" ? (
+          <PricingTab />
         ) : activeTab === "vault" ? (
           <VaultTab />
         ) : null}
