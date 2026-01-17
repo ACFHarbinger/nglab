@@ -19,7 +19,9 @@ All notable changes to the NGLab project will be documented in this file.
   - **Ensemble Methods**: Implemented AdaBoost, Bagging, Stacking, Voting, WeightedAverage (Blending), and GBRT.
   - **Bayesian**: Added GaussianNB, MultinomialNB, AODE, and BayesianNetwork (BBN).
   - **SVM Variants**: Added LinearSVM, NuSVM, OneClassSVM (Anomaly), LS-SVM, and Twin SVM (TWSVM).
-  - **Integration**: All models wrapped in `ClassicalModel` and integrated into `TimeSeriesBackbone` for seamless PyTorch interoperability.
+  - **Clustering**: Added K-Medians (custom L1) and Expectation Maximisation (EM via GMM).
+  - **Association Rules**: Added Eclat algorithm for vertical itemset mining.
+  - **Integration**: All models wrapped in `ClassicalModel` and integrated into `TimeSeriesBackbone` or `HelperModelFactory` for seamless PyTorch interoperability.
 - **CI/CD & Code Quality**:
   - Integrated a comprehensive quality suite with `Black`, `Ruff`, `MyPy`, `Pip-Audit`, and `Pytest-Cov` for Python.
   - Re-integrated `cargo fmt` and `cargo clippy` for Rust quality assurance.
@@ -68,6 +70,7 @@ All notable changes to the NGLab project will be documented in this file.
   - **Normalizing Flow (Flow)**: RealNVP-based generative model with invertible affine coupling layers.
   - **Neural ODE (NODE)**: Continuous-time depth model with RK4 solver.
   - **Physics-Informed Neural Network (PINN)**: MLP with gradient supervision for PDE solving.
+  - **Stacked Auto-Encoders (SAE)**: Deep AutoEncoder composed of stacked shallow AEs.
 - **Neural Network Architectures (Standard)**:
   - Implemented Spiking Neural Network (SNN) with custom `LIFCell`.
   - Added MLP, RBF, AE, DAE, SAE, Hopfield Network, ESN, ELM, KohonenMap (SOM), and Capsule Layers.

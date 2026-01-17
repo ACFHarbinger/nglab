@@ -12,12 +12,12 @@ def test_ml_factory_listing():
     assert "kmeans" in models
     assert "pca" in models
     assert "apriori" in models
-    assert len(models) == 9
+    assert len(models) == 12
 
 def test_clustering_via_factory():
     X = torch.randn(20, 5)
     
-    clustering_types = ["kmeans", "hierarchical", "dbscan", "gmm"]
+    clustering_types = ["kmeans", "hierarchical", "dbscan", "gmm", "kmedians", "em"]
     for mtype in clustering_types:
         model = HelperModelFactory.create_model(mtype)
         model.fit(X, None)
@@ -53,7 +53,7 @@ def test_association_via_factory():
         [1, 1, 0, 1]
     ], dtype=torch.float32)
     
-    assoc_types = ["apriori", "fpgrowth"]
+    assoc_types = ["apriori", "fpgrowth", "eclat"]
     for mtype in assoc_types:
         model = HelperModelFactory.create_model(mtype, min_support=0.1)
         model.fit(X, None)

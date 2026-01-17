@@ -32,6 +32,7 @@ from .rbm import RBM
 from .resnet import DeepResNet
 from .rnn import GRU, LSTM
 from .sae import SparseAE
+from .stacked_ae import StackedAutoEncoder
 from .snn import SNN, LIFCell, SurrogateHeaviside
 from .som import KohonenMap
 from .tsmamba import TSMamba
@@ -72,6 +73,7 @@ __all__ = [
     "GRU",
     "LSTM",
     "SparseAE",
+    "StackedAutoEncoder",
     "SNN",
     "LIFCell",
     "SurrogateHeaviside",

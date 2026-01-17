@@ -125,6 +125,13 @@ class TimeSeriesBackbone(nn.Module):
                 sparsity_weight=cfg.get("sparsity_weight", 0.1),
                 output_type=cfg.get("output_type", "embedding"),
             )
+        elif model_name == "StackedAE":
+            self.model = StackedAutoEncoder(
+                layer_sizes=[cfg.get("feature_dim", 12)]
+                + cfg.get("hidden_dims", [64, 32])
+                + [cfg.get("latent_dim", 16)],
+                 output_type=cfg.get("output_type", "prediction"),
+            )
         elif model_name == "Hopfield":
             self.model = HopfieldNetwork(
                 size=cfg.get("feature_dim", 12),
@@ -508,6 +515,7 @@ class TimeSeriesBackbone(nn.Module):
             "AE",
             "DAE",
             "SAE",
+            "StackedAE",
             "Hopfield",
             "RBM",
             "SOM",

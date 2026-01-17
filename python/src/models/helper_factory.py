@@ -6,7 +6,10 @@ from .helper.clustering import (
     KMeansModel,
     HierarchicalClusteringModel,
     DBSCANModel,
+    DBSCANModel,
     GMMModel,
+    KMediansModel,
+    EMModel,
 )
 
 from .helper.dim_reduction import (
@@ -16,7 +19,9 @@ from .helper.dim_reduction import (
 )
 from .helper.association_rule import (
     AprioriModel,
-    FPGrowthModel
+    AprioriModel,
+    FPGrowthModel,
+    EclatModel,
 )
 
 class HelperModelFactory:
@@ -30,7 +35,10 @@ class HelperModelFactory:
         "kmeans": KMeansModel,
         "hierarchical": HierarchicalClusteringModel,
         "dbscan": DBSCANModel,
+        "dbscan": DBSCANModel,
         "gmm": GMMModel,
+        "em": EMModel,
+        "kmedians": KMediansModel,
         
         # Dimensionality Reduction
         "pca": PCAModel,
@@ -39,7 +47,9 @@ class HelperModelFactory:
         
         # Association Rule Learning
         "apriori": AprioriModel,
+        "apriori": AprioriModel,
         "fpgrowth": FPGrowthModel,
+        "eclat": EclatModel,
     }
 
     @classmethod

@@ -16,6 +16,7 @@ from python.src.models.deep import (
     KohonenMap,
     RollingWindowCNN,
     SparseAE,
+    StackedAutoEncoder,
 )
 from python.src.models.deep.attention_net import AttentionNetwork
 from python.src.models.deep.boltzmann import BoltzmannMachine
@@ -103,7 +104,20 @@ class TestAutoEncoders:
         z = sae(x)
         assert z.shape == (4, 4)
         loss = sae.sparsity_loss(z)
+        loss = sae.sparsity_loss(z)
         assert loss > 0
+
+    def test_stacked_ae(self):
+        x = torch.randn(4, 10)
+        st_ae = StackedAutoEncoder(
+            layer_sizes=[10, 8, 4], output_type="prediction"
+        )
+        # 10 -> 8 -> 4 (latent) -> 8 -> 10 (recon)
+        assert st_ae(x).shape == (4, 10)
+        
+        # Test sequences
+        x_seq = torch.randn(4, 5, 10)
+        assert st_ae(x_seq, return_sequence=True).shape == (4, 5, 10)
 
 
 class TestTimeSeriesVAE:
@@ -408,7 +422,9 @@ class TestBackboneIntegration:
             "RBF",
             "AE",
             "DAE",
+            "DAE",
             "SAE",
+            "StackedAE",
             "Hopfield",
             "RBM",
             "ESN",
