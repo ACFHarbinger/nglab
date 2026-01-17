@@ -2,6 +2,22 @@
 
 All notable changes to the NGLab project will be documented in this file.
 
+## [Unreleased] - 2026-01-17
+
+### Added
+- **Comprehensive Documentation**:
+    - Added high-fidelity JSDoc to the entire TypeScript frontend, including React components (Tabs, Dashboard, Terminal), custom hooks, and utility functions.
+    - Converted Rust codebase documentation to standard inner-module style (`//!`) and added detailed item-level documentation for all structs, enums, traits, and functions in `rust/src/`.
+    - Added module-level documentation to CSS files (`App.css`, `index.css`) to improve stylistic transparency.
+
+### Changed
+- **Tauri Backend Refactoring**:
+    - Modularized the Tauri `lib.rs` into specialized submodules for state management (`state.rs`) and categorized command handlers (`commands/`).
+- **Project Structure**: Improved maintainability of `typescript/src-tauri/src/` by decoupling commands from the main library entry point.
+
+### Fixed
+- **Build Environment**: Resolved linker issues in `.cargo/config.toml` to support `cargo doc` and standard builds in heterogeneous environments.
+
 ## [Unreleased] - 2026-01-16
 
 ### Added

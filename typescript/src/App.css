@@ -1,3 +1,7 @@
+/**
+ * @module App.css
+ * @description Component-level styles for the root App and legacy logo animations.
+ */
 /* Component-level styles for the root App and legacy logo animations */
 .logo.vite:hover {
   filter: drop-shadow(0 0 2em #747bff);

@@ -3,6 +3,11 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
 /**
+ * @module hooks/useArena
+ * @description Provides a React hook for managing the real-time trading arena simulation.
+ */
+
+/**
  * A single order in the book.
  */
 export interface Order {
@@ -55,6 +60,13 @@ export interface ArenaUpdate {
  *
  * Listens for 'arena-update' events from the Tauri backend and maintains
  * state for the latest update, tick history, and simulation status.
+ *
+ * @returns {object} An object containing:
+ * - `data`: The latest `ArenaUpdate` or `null`.
+ * - `history`: An array of the last 200 `ArenaUpdate` snapshots.
+ * - `isRunning`: Boolean indicating if if the simulation is active.
+ * - `start`: Function to start the simulation.
+ * - `stop`: Function to stop the simulation.
  */
 export function useArena() {
     const [data, setData] = useState<ArenaUpdate | null>(null);

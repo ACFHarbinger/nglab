@@ -1,4 +1,13 @@
+/**
+ * @module components/dashboard/GlobalActivityWidget
+ * @description Real-time feed of market trades and OSINT/Social media intelligence.
+ */
 import { useState } from 'react';
+/**
+ * @module components/dashboard/MarketStatsWidget
+ * @description High-level overview of global market volume, active traders, and peak activity times.
+ */
+import { Activity, Users, Clock, Calendar, Zap, Eye } from 'lucide-react';
 import { ExternalLink, Twitter, Info, Radio } from 'lucide-react';
 import clsx from 'clsx';
 

@@ -1,3 +1,7 @@
+/**
+ * @module components/terminal/RecentTradesWidget
+ * @description Log of the most recent trades executed in the active market.
+ */
 import { useMemo } from 'react';
 import clsx from 'clsx';
 

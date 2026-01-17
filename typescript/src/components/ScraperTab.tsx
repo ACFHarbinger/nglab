@@ -1,3 +1,7 @@
+/**
+ * @module components/ScraperTab
+ * @description Interface for resolving Polymarket metadata and scraping historical price data.
+ */
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core"; // Updated for Tauri v2
 import { save } from "@tauri-apps/plugin-dialog";
@@ -13,12 +17,21 @@ interface MarketMetadata {
     outcomes: OutcomeInfo[];
 }
 
+/**
+ * Props for the ScraperTab component.
+ */
 export interface ScraperTabProps {
+    /** Map of outcome IDs to latest live prices. */
     livePrices: Record<string, number>;
+    /** Boolean indicating if a live Polymarket stream is active. */
     isStreaming: boolean;
+    /** Function to start a live price stream for a specific market. */
     startStream: (marketSource: string, metadata: MarketMetadata) => Promise<void>;
+    /** Function to stop the active live price stream. */
     stopStream: () => Promise<void>;
+    /** Metadata of the currently streamed Polymarket market, if any. */
     activeMarket: MarketMetadata | null;
+    /** Function to set the active market metadata in the parent state. */
     setActiveMarket: (metadata: MarketMetadata | null) => void;
 }
 

@@ -1,3 +1,7 @@
+/**
+ * @module components/TrainingTab
+ * @description Comprehensive deep learning training interface with support for multiple architectures.
+ */
 import { useState } from 'react';
 import { Play, Square, Settings, Cpu, Database, TrendingUp, Zap, Clock, BarChart3, ChevronDown, ChevronRight, Info } from 'lucide-react';
 import clsx from 'clsx';
@@ -57,15 +61,30 @@ const MODEL_CATEGORIES = {
     ],
 };
 
+/**
+ * Configuration for the training process.
+ */
 interface TrainingConfig {
+    /** Number of training epochs. */
     epochs: number;
+    /** Size of each training batch. */
     batchSize: number;
+    /** Rate at which the model learns. */
     learningRate: number;
+    /** Length of the input sequence context. */
     seqLen: number;
+    /** Number of future steps to predict. */
     predLen: number;
+    /** Ratio of data used for training vs validation (0.0 to 1.0). */
     trainSplit: number;
 }
 
+/**
+ * Main component for configuring and running deep learning model training.
+ *
+ * Provides a categorized list of architectures (RNN, Transformers, CNN, etc.)
+ * and exposes hyperparameters for tuning.
+ */
 export default function TrainingTab() {
     const [selectedModel, setSelectedModel] = useState<string | null>(null);
     const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['Recurrent Networks', 'Transformers']));

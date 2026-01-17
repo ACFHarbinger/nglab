@@ -1,5 +1,10 @@
 
 /**
+ * @module utils/dataHelpers
+ * @description Utility functions for processing and formatting financial data for visualization.
+ */
+
+/**
  * Prepares raw CSV/JSON data for use in financial charts (Lightweight Charts).
  *
  * Handles timestamp normalization, deduplication, and sorting.

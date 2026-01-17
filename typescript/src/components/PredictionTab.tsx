@@ -1,3 +1,7 @@
+/**
+ * @module components/PredictionTab
+ * @description Advanced forecasting lab integrating econometric and deep learning models.
+ */
 import { useState, useEffect, useRef } from 'react';
 import { Brain, Loader2, LineChart as LineChartIcon, Activity, FileSpreadsheet } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
@@ -30,9 +34,15 @@ type ProphetResult = {
     seasonal: number[];
 };
 
+/**
+ * Props for the PredictionTab component.
+ */
 interface PredictionTabProps {
+    /** Map of outcome IDs to latest live prices. */
     livePrices: Record<string, number>;
+    /** Boolean indicating if a live Polymarket stream is active. */
     isStreaming: boolean;
+    /** Metadata of the currently streamed Polymarket market, if any. */
     activeMarket: MarketMetadata | null;
 }
 

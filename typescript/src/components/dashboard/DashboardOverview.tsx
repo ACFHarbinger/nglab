@@ -1,3 +1,7 @@
+/**
+ * @module components/dashboard/DashboardOverview
+ * @description Master layout for the landing dashboard, aggregating profile, stats, and trending markets.
+ */
 import { UserProfileWidget } from './UserProfileWidget';
 import { MarketStatsWidget } from './MarketStatsWidget';
 import { TrendingMarketsWidget } from './TrendingMarketsWidget';

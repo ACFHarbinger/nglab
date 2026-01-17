@@ -1,3 +1,7 @@
+/**
+ * @module components/NewsTab
+ * @description Aggregated news and social media feed with sentiment analysis indicators.
+ */
 import { useState } from 'react';
 import { Newspaper, Twitter, Globe, MessageCircle, Filter, Search, ExternalLink, ThumbsUp, MessageSquare, Repeat2 } from 'lucide-react';
 import clsx from 'clsx';
@@ -78,6 +82,10 @@ const MOCK_FEED = [
     }
 ];
 
+/**
+ * Main component for viewing market-related news, social media posts, and alerts.
+ * Supports filtering by source and switching between live feed and sentiment analysis views.
+ */
 export default function NewsTab() {
     const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set(['coindesk', 'cointelegraph', 'polynomial_x', 'vitalik_x', 'polymarket_whales']));
     const [activeTab, setActiveTab] = useState<'feed' | 'sentiment'>('feed');

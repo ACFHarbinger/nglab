@@ -1,8 +1,32 @@
+/**
+ * @module components/terminal/TerminalLayout
+ * @description High-fidelity trading terminal layout with chart, order book, trades, and execution form.
+ */
 import { useState, useEffect } from 'react';
+/**
+ * @module components/terminal/MarketSidebar
+ * @description Searchable sidebar for quickly switching between different trading pairs/markets.
+ */
 import { MarketSidebar } from './MarketSidebar';
+/**
+ * @module components/terminal/TerminalChart
+ * @description Real-time price chart visualization for a selected market.
+ */
 import { TerminalChart } from './TerminalChart';
+/**
+ * @module components/terminal/OrderBookWidget
+ * @description Vertical limit order book visualization optimized for the trading terminal view.
+ */
 import { OrderBookWidget } from './OrderBookWidget';
+/**
+ * @module components/terminal/RecentTradesWidget
+ * @description Displays a list of the most recent trades for the active market.
+ */
 import { RecentTradesWidget, Trade } from './RecentTradesWidget';
+/**
+ * @module components/terminal/TradingFormWidget
+ * @description Form for placing buy/sell orders for the selected market.
+ */
 import { TradingFormWidget } from './TradingFormWidget';
 import { usePolymarket } from '../../hooks/usePolymarket';
 import { Wallet, Settings } from 'lucide-react';

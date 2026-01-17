@@ -1,3 +1,7 @@
+/**
+ * @module components/AnalysisTab
+ * @description Provides a comprehensive suite for exploratory data analysis on financial time-series.
+ */
 import { useState, useEffect, useRef } from 'react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { readTextFile } from '@tauri-apps/plugin-fs';
@@ -33,9 +37,15 @@ interface CsvRow {
  * Candlestick, and Heatmap visualizations. Supports technical indicators
  * and timeframe filtering using Highcharts.
  */
+/**
+ * Props for the AnalysisTab component.
+ */
 interface AnalysisTabProps {
+    /** Map of outcome IDs to latest live prices. */
     livePrices: Record<string, number>;
+    /** Boolean indicating if a live Polymarket stream is active. */
     isStreaming: boolean;
+    /** Metadata of the currently streamed Polymarket market, if any. */
     activeMarket: MarketMetadata | null;
 }
 

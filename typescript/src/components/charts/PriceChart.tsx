@@ -1,3 +1,7 @@
+/**
+ * @module components/charts/PriceChart
+ * @description High-performance financial line chart for visualizing market prices and portfolio value.
+ */
 import { createChart, ColorType, IChartApi, ISeriesApi, LineSeries } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 import { ArenaUpdate } from '../../hooks/useArena';

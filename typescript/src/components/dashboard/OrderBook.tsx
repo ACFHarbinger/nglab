@@ -1,3 +1,7 @@
+/**
+ * @module components/dashboard/OrderBook
+ * @description Real-time Limit Order Book (LOB) depth visualization for the dashboard.
+ */
 import { useMemo } from 'react';
 import { OrderBook as OrderBookData } from '../../hooks/useArena';
 

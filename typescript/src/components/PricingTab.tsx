@@ -1,3 +1,7 @@
+/**
+ * @module components/PricingTab
+ * @description Quantitative options pricing laboratory for stochastic and credit risk models.
+ */
 import { useState } from 'react';
 import { Calculator, Loader2 } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';

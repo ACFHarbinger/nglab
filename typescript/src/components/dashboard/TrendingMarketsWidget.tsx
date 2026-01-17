@@ -1,3 +1,11 @@
+/**
+ * @module components/dashboard/TrendingMarketsWidget
+ * @description Visualizes the most active and hot markets with probability bars and sparklines.
+ */
+/**
+ * @module components/dashboard/UserProfileWidget
+ * @description Displays user account summary, equity curves, and performance metrics.
+ */
 import { TrendingUp, Flame } from 'lucide-react';
 import clsx from 'clsx';
 
