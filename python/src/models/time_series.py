@@ -2,38 +2,7 @@
 Unified Backbone for Time Series Models.
 """
 import torch.nn as nn
-from .nstransformer import NSTransformer 
-from .tsmamba import TSMamba
-from .rnn import LSTM, GRU
-from .xlstm import xLSTM
-from .snn import SNN
-from .mlp import MLP
-from .rbf import RBF
-from .ae import AutoEncoder
-from .dae import DenoisingAE
-from .sae import SparseAE
-from .hopfield import HopfieldNetwork
-from .rbm import RBM
-from .esn import EchoStateNetwork
-from .elm import ELM
-from .som import KohonenMap
-from .capsule import CapsuleLayer
-from .cnn import RollingWindowCNN
-from .perceptron import Perceptron
-from .markov_chain import MarkovChain
-from .boltzmann import BoltzmannMachine
-from .dbn import DeepBeliefNetwork
-from .dcn import DeepConvNet
-from .deconv import DeconvNet, AutoDeconvNet
-from .dcign import DCIGN
-from .lsm import LiquidStateMachine
-from .resnet import DeepResNet
-from .dnc import DNC
-from .ntm import NTM
-from .attention_net import AttentionNetwork
-from .flow import NormalizingFlow
-from .node import NeuralODE
-from .pinn import PINN
+from .deep import *
 
 class TimeSeriesBackbone(nn.Module):
     """
@@ -348,8 +317,7 @@ class TimeSeriesBackbone(nn.Module):
             'LSTM', 'GRU', 'Mamba', 'xLSTM', 'SNN', 'ESN', 'MLP', 'ELM',
             'RBF', 'AE', 'DAE', 'SAE', 'Hopfield', 'RBM', 'SOM', 'Capsule',
             'Perceptron', 'MarkovChain', 'BM', 'DBN', 'DCN', 'Deconv', 'AutoDeconv',
-            'DCIGN', 'LSM', 'ResNet', 'DNC', 'NTM', 'Attention', 'Flow',
-            'NODE', 'PINN'
+            'DCIGN', 'LSM', 'ResNet', 'DNC', 'NTM', 'Attention', 'Flow', 'NODE', 'PINN'
         ]
         
         if self.cfg.get('name') in sequence_supported:

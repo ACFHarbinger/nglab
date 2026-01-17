@@ -29,6 +29,16 @@ All notable changes to the NGLab project will be documented in this file.
     - Fully integrated all new models into the `TimeSeriesBackbone` factory.
     - Added support for `output_type` ('prediction' vs 'embedding') across all backbone models.
     - Added `return_sequence` support for all applicable architectures.
+- **Frontend / Dashboard**:
+    - **News Tab**: New tab for aggregating news feeds from customized sources (Crypto, Social, Market Data).
+    - **Training Tab**: Dedicated interface for configuring and training neural network models directly from the UI.
+    - **Prediction Tab**: Added "Deep Learning" model selection to run inference with pre-trained PyTorch models.
+    - **Dashboard UI**: Refined `UserProfileWidget` with "Profile Stats" design and improved PnL charts (dynamic coloring, sparkline style).
+    - **Navigation**: optimizing tab ordering for better workflow (News moved to end).
+- **Backend (Rust & Python)**:
+    - **Commands**: Added `list_trained_models` and `predict_trained_model` Tauri commands.
+    - **Inference**: Created `infer.py` for standalone model inference via subprocess.
+    - **Refactoring**: Reorganized deep learning models into `python/src/models/deep/` for better structure.
 - **CI/CD**:
     - Created GitHub Actions workflow for automated Python, Rust, and TypeScript testing/linting.
 
