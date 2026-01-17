@@ -13,6 +13,7 @@ use pyo3::prelude::*;
 pub mod errors;
 pub mod models;
 pub mod moon;
+pub mod secret;
 pub mod simulation;
 pub mod utils;
 pub mod web;

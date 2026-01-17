@@ -144,6 +144,19 @@ clean-all: clean
     rm -rf typescript/node_modules
     @echo "✅ Deep clean complete"
 
+# Reset all credentials (clears OS keyring and deletes local databases)
+reset-credentials:
+    @echo "🧹 Resetting all credentials..."
+    @rm -f assets/secrets/*.db
+    @echo "✅ Local databases deleted."
+    @if [ "$(uname)" = "Linux" ] && command -v secret-tool > /dev/null; then \
+        echo "Searching for nglab entries in OS keyring..."; \
+        secret-tool search --all service nglab 2>/dev/null | grep -E "attribute.(account|username) =" | cut -d'=' -f2 | tr -d '" ' | sort -u | xargs -I {} sh -c 'secret-tool clear service nglab account "{}" 2>/dev/null; secret-tool clear service nglab username "{}" 2>/dev/null'; \
+        echo "✅ OS keyring checked."; \
+    elif [ "$(uname)" = "Linux" ]; then \
+        echo "⚠️  secret-tool not found, skipping keyring clear."; \
+    fi
+
 # Run development server for Tauri app
 dev:
     @echo "🚀 Starting Tauri development server..."

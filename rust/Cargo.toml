@@ -47,6 +47,13 @@ crossterm = { version = "0.29", features = ["event-stream"], optional = true }
 color-eyre = { version = "0.6", optional = true }
 rand_distr = "0.5"
 
+# Authentication
+argon2 = { version = "0.5", features = ["std"] }
+password-hash = { version = "0.5", features = ["rand_core"] }
+keyring = { version = "3", features = ["linux-native"] }
+rusqlite = { version = "0.32", features = ["bundled-sqlcipher"] }
+zeroize = { version = "1.8", features = ["derive"] }
+
 [features]
 extension-module = ["pyo3/extension-module"]
 python = ["dep:pyo3", "dep:numpy"]

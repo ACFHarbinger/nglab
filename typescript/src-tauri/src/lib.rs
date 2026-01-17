@@ -8,6 +8,8 @@
 pub mod commands;
 pub mod state;
 
+use crate::commands::auth::AuthState;
+use crate::commands::vault::VaultState;
 use crate::state::ArenaState;
 use nglab::simulation::gym::TradingEnv;
 use std::sync::atomic::AtomicBool;
@@ -36,6 +38,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .manage(state)
+        .manage(AuthState::default())
+        .manage(VaultState::default())
         .invoke_handler(tauri::generate_handler![
             commands::simulation::start_simulation,
             commands::simulation::stop_simulation,
@@ -54,7 +58,18 @@ pub fn run() {
             commands::inference::list_trained_models,
             commands::inference::predict_trained_model,
             commands::inference::train_model,
-            commands::inference::list_csv_columns
+            commands::inference::list_csv_columns,
+            commands::auth::create_account,
+            commands::auth::login,
+            commands::auth::logout,
+            commands::auth::get_current_user,
+            commands::vault::unlock_vault,
+            commands::vault::lock_vault,
+            commands::vault::is_vault_unlocked,
+            commands::vault::add_vault_secret,
+            commands::vault::list_vault_secrets,
+            commands::vault::get_vault_secret,
+            commands::vault::delete_vault_secret
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

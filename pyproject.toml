@@ -35,6 +35,7 @@ dependencies = [
     "yfinance==0.2.66",
     "statsmodels>=0.14.6",
     "umap-learn>=0.5.11",
+    "keyring>=25.7.0",
 ]
 
 [build-system]
@@ -64,6 +65,7 @@ dev = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "ruff>=0.14.13",
+    "secretstorage>=3.5.0",
     "sphinx>=9.0.4",
 ]
 

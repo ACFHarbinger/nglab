@@ -7,6 +7,8 @@ import PricingTab from "./components/PricingTab";
 import PredictionTab from "./components/PredictionTab";
 import TrainingTab from "./components/TrainingTab";
 import NewsTab from "./components/NewsTab";
+import VaultTab from "./components/VaultTab";
+import { LoginModal } from "./components/LoginModal";
 import { useArena } from "./hooks/useArena";
 import {
   Play,
@@ -27,6 +29,7 @@ import {
   User,
   GraduationCap,
   Newspaper,
+  ShieldCheck,
 } from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
 import { usePolymarket } from "./hooks/usePolymarket";
@@ -61,7 +64,11 @@ function App() {
     | "terminal"
     | "training"
     | "news"
+    | "vault"
   >("dashboard");
+
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
 
   // Listen for logs
   useEffect(() => {
@@ -221,6 +228,17 @@ function App() {
             >
               <Newspaper size={16} /> News
             </button>
+            <button
+              onClick={() => setActiveTab("vault")}
+              className={clsx(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                activeTab === "vault"
+                  ? "text-white bg-slate-800"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
+              )}
+            >
+              <ShieldCheck size={16} /> Vault
+            </button>
           </nav>
         </div>
 
@@ -261,11 +279,33 @@ function App() {
           )}
 
           {/* Login Button */}
-          <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-lg transition-colors font-medium text-sm">
-            <LogIn size={16} /> Login
-          </button>
+          {currentUser ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-slate-300">Hi, <span className="font-medium text-white">{currentUser}</span></span>
+              <button
+                onClick={() => setCurrentUser(null)}
+                className="text-sm text-slate-400 hover:text-white transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-lg transition-colors font-medium text-sm"
+            >
+              <LogIn size={16} /> Login
+            </button>
+          )}
         </div>
       </header>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={(username) => setCurrentUser(username)}
+      />
 
       {/* Live Indicator Bar (only shows when streaming) */}
       {isStreaming && activeMarket && (
@@ -409,9 +449,9 @@ function App() {
           <TrainingTab />
         ) : activeTab === "news" ? (
           <NewsTab />
-        ) : (
-          <PricingTab />
-        )}
+        ) : activeTab === "vault" ? (
+          <VaultTab />
+        ) : null}
       </main>
     </div>
   );
