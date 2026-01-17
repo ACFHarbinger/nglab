@@ -33,6 +33,8 @@ from models.dnc import DNC
 from models.ntm import NTM
 from models.attention_net import AttentionNetwork
 from models.flow import NormalizingFlow, flow_loss
+from models.node import NeuralODE
+from models.pinn import PINN, pinn_loss
 
 # --- Feed-Forward & Basic Layers ---
 
@@ -286,6 +288,44 @@ class TestNormalizingFlow:
         assert x_recon.shape == (3, seq_len, input_dim)
         assert torch.allclose(x, x_recon, atol=1e-5)
 
+class TestNeuralODE:
+    def test_node_forward(self):
+        model = NeuralODE(input_dim=2, hidden_dim=10, time_steps=5, horizon=1.0)
+        x = torch.randn(4, 2)
+        out = model(x)
+        assert out.shape == (4, 5, 1) # (batch, steps, output_dim=1 default)
+        
+    def test_node_solver(self):
+        # Test if simple decay exponential solution is valid
+        # dy/dt = -y => y(t) = y0 * exp(-t)
+        from models.node import odesolve
+        class Decay(nn.Module):
+            def forward(self, t, y): return -y
+            
+        y0 = torch.tensor([[1.0]])
+        t = torch.linspace(0, 1.0, 10) # More steps for accuracy
+        y = odesolve(Decay(), y0, t)
+        
+        expected_last = torch.exp(torch.tensor(-1.0))
+        assert torch.allclose(y[-1, 0, 0], expected_last, atol=1e-4)
+
+class TestPINN:
+    def test_pinn_gradient(self):
+        model = PINN(input_dim=1, output_dim=1)
+        x = torch.tensor([[1.0], [2.0]], requires_grad=True)
+        u = model(x)
+        grad = model.gradient(u, x)
+        assert grad.shape == (2, 1)
+        
+    def test_pinn_loss(self):
+        model = PINN(input_dim=1, output_dim=1)
+        x = torch.randn(4, 1, requires_grad=True)
+        u = model(x)
+        # Fake PDE residual: du/dx = 0
+        grad = model.gradient(u, x)
+        loss_dict = pinn_loss(u, torch.randn_like(u), grad)
+        assert 'total_loss' in loss_dict
+
 # --- Integration ---
 
 class TestBackboneIntegration:
@@ -306,9 +346,9 @@ class TestBackboneIntegration:
             
     def test_backbone_new_models_forward(self):
         # Smoke test for forward pass of some of the complex new models via backbone
-        complex_models = ['LSM', 'ResNet', 'DNC', 'NTM', 'Attention', 'DCIGN', 'DCN']
+        complex_models = ['LSM', 'ResNet', 'DNC', 'NTM', 'Attention', 'DCIGN', 'DCN', 'NODE', 'PINN']
         for name in complex_models:
-            cfg = {'name': name, 'feature_dim': 12, 'output_dim': 12}
+            cfg = {'name': name, 'feature_dim': 12, 'output_dim': 12, 'seq_len': 5}
             backbone = TimeSeriesBackbone(cfg)
             x = torch.randn(2, 20, 12)
             out = backbone(x)

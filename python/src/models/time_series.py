@@ -32,6 +32,8 @@ from .dnc import DNC
 from .ntm import NTM
 from .attention_net import AttentionNetwork
 from .flow import NormalizingFlow
+from .node import NeuralODE
+from .pinn import PINN
 
 class TimeSeriesBackbone(nn.Module):
     """
@@ -310,6 +312,25 @@ class TimeSeriesBackbone(nn.Module):
                 hidden_dim=cfg.get('hidden_dim', 64),
                 seq_len=cfg.get('seq_len', 1)
             )
+        elif model_name == 'NODE':
+            self.model = NeuralODE(
+                input_dim=cfg.get('feature_dim', 12),
+                hidden_dim=cfg.get('hidden_dim', 64),
+                output_dim=cfg.get('output_dim', 1),
+                num_layers=cfg.get('num_layers', 2),
+                time_steps=cfg.get('seq_len', 10),
+                horizon=cfg.get('horizon', 1.0),
+                output_type=cfg.get('output_type', 'prediction')
+            )
+        elif model_name == 'PINN':
+            self.model = PINN(
+                input_dim=cfg.get('feature_dim', 2), # e.g. (x, t)
+                hidden_dim=cfg.get('hidden_dim', 20),
+                output_dim=cfg.get('output_dim', 1),
+                num_layers=cfg.get('num_layers', 4),
+                activation=cfg.get('activation', 'tanh'),
+                output_type=cfg.get('output_type', 'prediction')
+            )
         else:
             raise ValueError(f"Unknown model: {model_name}")
 
@@ -327,7 +348,8 @@ class TimeSeriesBackbone(nn.Module):
             'LSTM', 'GRU', 'Mamba', 'xLSTM', 'SNN', 'ESN', 'MLP', 'ELM',
             'RBF', 'AE', 'DAE', 'SAE', 'Hopfield', 'RBM', 'SOM', 'Capsule',
             'Perceptron', 'MarkovChain', 'BM', 'DBN', 'DCN', 'Deconv', 'AutoDeconv',
-            'DCIGN', 'LSM', 'ResNet', 'DNC', 'NTM', 'Attention', 'Flow'
+            'DCIGN', 'LSM', 'ResNet', 'DNC', 'NTM', 'Attention', 'Flow',
+            'NODE', 'PINN'
         ]
         
         if self.cfg.get('name') in sequence_supported:

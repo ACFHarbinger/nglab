@@ -18,6 +18,9 @@ All notable changes to the NGLab project will be documented in this file.
     - **Differentiable Neural Computer (DNC)**: External addressable memory with content/temporal linkage.
     - **Neural Turing Machine (NTM)**: Addressable external memory with shift/sharpening mechanisms.
     - **Attention Network (AN)**: Multi-head self-attention mechanism with positional encoding.
+    - **Normalizing Flow (Flow)**: RealNVP-based generative model with invertible affine coupling layers.
+    - **Neural ODE (NODE)**: Continuous-time depth model with RK4 solver.
+    - **Physics-Informed Neural Network (PINN)**: MLP with gradient supervision for PDE solving.
 - **Neural Network Architectures (Standard)**:
     - Implemented Spiking Neural Network (SNN) with custom `LIFCell`.
     - Added MLP, RBF, AE, DAE, SAE, Hopfield Network, ESN, ELM, KohonenMap (SOM), and Capsule Layers.

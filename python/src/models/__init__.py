@@ -38,3 +38,5 @@ from .dnc import DNC, DNCMemory
 from .ntm import NTM, NTMMemory, NTMReadHead, NTMWriteHead
 from .attention_net import AttentionNetwork, MultiHeadAttention, AttentionBlock
 from .flow import NormalizingFlow, flow_loss
+from .node import NeuralODE, odesolve
+from .pinn import PINN, pinn_loss
