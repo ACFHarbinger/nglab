@@ -10,7 +10,9 @@ import NewsTab from "./components/NewsTab";
 import VaultTab from "./components/VaultTab";
 import { AccountTab } from "./components/AccountTab";
 import { LoginModal } from "./components/LoginModal";
+import { FavoritesTab } from "./components/FavoritesTab";
 import { useArena } from "./hooks/useArena";
+import { useFavorites } from "./hooks/useFavorites";
 import {
   Play,
   Square,
@@ -67,7 +69,17 @@ function App() {
     | "news"
     | "vault"
     | "account"
+    | "favorites"
   >("dashboard");
+
+  const {
+    favorites,
+    favoriteIds,
+    addFavorite,
+    removeFavorite,
+    isFavorite,
+    toggleFavorite,
+  } = useFavorites();
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
@@ -163,8 +175,21 @@ function App() {
             >
               <ShoppingCart size={16} /> Positions
             </button>
-            <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">
+            <button
+              onClick={() => setActiveTab("favorites")}
+              className={clsx(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                activeTab === "favorites"
+                  ? "text-white bg-slate-800"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
+              )}
+            >
               <Star size={16} /> Favorites
+              {favorites.length > 0 && (
+                <span className="text-[10px] bg-yellow-500/20 text-yellow-500 px-1.5 py-0.5 rounded-full">
+                  {favorites.length}
+                </span>
+              )}
             </button>
             <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">
               <Users size={16} /> Friends
@@ -337,6 +362,8 @@ function App() {
               // Future: Set active market by ID here
             }}
             livePrices={livePrices}
+            favorites={favorites}
+            onNavigateToFavorites={() => setActiveTab("favorites")}
           />
         ) : activeTab === "simulation" ? (
           <div className="grid grid-cols-12 gap-6 h-full p-4">
@@ -474,6 +501,20 @@ function App() {
             isStreaming={isStreaming}
             startStream={startStream}
             stopStream={stopStream}
+          />
+        ) : activeTab === "favorites" ? (
+          <FavoritesTab
+            favorites={favorites}
+            favoriteIds={favoriteIds}
+            addFavorite={addFavorite}
+            removeFavorite={removeFavorite}
+            isFavorite={isFavorite}
+            toggleFavorite={toggleFavorite}
+            livePrices={livePrices}
+            onNavigateToMarket={(marketId) => {
+              console.log("Navigate to market:", marketId);
+              setActiveTab("terminal");
+            }}
           />
         ) : null}
       </main>

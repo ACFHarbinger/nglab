@@ -2,11 +2,9 @@
  * @module components/dashboard/TrendingMarketsWidget
  * @description Visualizes the most active and hot markets with probability bars and sparklines.
  */
-/**
- * @module components/dashboard/UserProfileWidget
- * @description Displays user account summary, equity curves, and performance metrics.
- */
-import { TrendingUp, Flame } from "lucide-react";
+import { useState, useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core";
+import { TrendingUp, Flame, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import clsx from "clsx";
 
 interface TrendingMarketsProps {
@@ -14,100 +12,98 @@ interface TrendingMarketsProps {
   livePrices?: Record<string, number>;
 }
 
-// Mock Data for the list - updated to match pve.trade style
-const TRENDING_DATA = [
-  {
-    id: "1",
-    name: "Fed decision in January?",
-    vol: "$43.905M",
-    yesPrice: 0.0,
-    noPrice: 1.0,
-    change: 0.02,
-    outcomes: 4,
-    type: "MONTHLY",
-    yesPercent: 0,
-    trend: [10, 20, 15, 10, 12, 10, 8, 5, 2, 0],
-    icon: "🏛️",
-  },
-  {
-    id: "2",
-    name: "Who will Trump nominate as Fed Chair?",
-    vol: "$11.797M",
-    yesPrice: 0.14,
-    noPrice: 0.85,
-    change: 0.1,
-    outcomes: 39,
-    type: "MONTHLY",
-    yesPercent: 14,
-    trend: [20, 22, 25, 30, 45, 50, 55, 60, 80, 95],
-    icon: "🇺🇸",
-  },
-  {
-    id: "3",
-    name: "US strikes Iran by...?",
-    vol: "$13.609M",
-    yesPrice: 0.08,
-    noPrice: 0.93,
-    change: 0.02,
-    outcomes: 14,
-    type: "MONTHLY",
-    yesPercent: 8,
-    trend: [10, 12, 11, 15, 20, 18, 25, 30, 40, 35],
-    icon: "🇺🇸",
-  },
-  {
-    id: "4",
-    name: "Suns vs. Pistons",
-    vol: "$5.404M",
-    yesPrice: 1.0,
-    noPrice: 0.0,
-    change: 0.02,
-    outcomes: 48,
-    type: "DAILY",
-    yesPercent: 100,
-    trend: [50, 50, 50, 55, 50, 60, 80, 90, 95, 100],
-    icon: "🏀",
-  },
-  {
-    id: "5",
-    name: "XRP Up or Down - January 17, 5:45AM-6:...",
-    vol: "$1.00",
-    yesPrice: 1.0,
-    noPrice: 0.0,
-    change: 0.0,
-    outcomes: 2,
-    type: "DAILY",
-    yesPercent: 100,
-    trend: [40, 45, 42, 50, 55, 60, 58, 65, 70, 75],
-    icon: "💰",
-  },
-  {
-    id: "6",
-    name: "Ethereum Up or Down - January 17, 5:45...",
-    vol: "$3.25",
-    yesPrice: 0.65,
-    noPrice: 0.35,
-    change: 0.0,
-    outcomes: 2,
-    type: "DAILY",
-    yesPercent: 65,
-    trend: [30, 35, 40, 45, 50, 55, 60, 65, 60, 65],
-    icon: "💎",
-  },
-  {
-    id: "7",
-    name: "Will the price of XRP be between $2.10...",
-    vol: "$40.00",
-    yesPrice: 0.99,
-    noPrice: 0.01,
-    change: 0.0,
-    outcomes: 2,
-    type: "DAILY",
-    yesPercent: 99,
-    trend: [90, 92, 94, 95, 96, 97, 98, 99, 99, 99],
-    icon: "📊",
-  },
-];
+/** Market search result from backend */
+interface MarketSearchResult {
+  id: string;
+  event_id: string;
+  title: string;
+  question: string;
+  outcomes: string[];
+  clob_token_ids: string[];
+  volume: number | null;
+  liquidity: number | null;
+  end_date: string | null;
+  active: boolean;
+}
+
+interface TrendingMarket {
+  id: string;
+  name: string;
+  vol: string;
+  yesPrice: number;
+  noPrice: number;
+  outcomes: number;
+  type: "MONTHLY" | "DAILY";
+  yesPercent: number;
+  trend: number[];
+  icon: string;
+  clobTokenIds: string[];
+}
+
+/** Format volume for display */
+function formatVolume(volume: number | null): string {
+  if (!volume) return "$0";
+  if (volume >= 1_000_000) {
+    return `$${(volume / 1_000_000).toFixed(2)}M`;
+  } else if (volume >= 1_000) {
+    return `$${(volume / 1_000).toFixed(1)}K`;
+  }
+  return `$${volume.toFixed(2)}`;
+}
+
+/** Get icon based on market title */
+function getMarketIcon(title: string): string {
+  const lowerTitle = title.toLowerCase();
+  if (lowerTitle.includes("bitcoin") || lowerTitle.includes("btc")) return "₿";
+  if (lowerTitle.includes("ethereum") || lowerTitle.includes("eth")) return "💎";
+  if (lowerTitle.includes("trump") || lowerTitle.includes("president") || lowerTitle.includes("election")) return "🇺🇸";
+  if (lowerTitle.includes("fed") || lowerTitle.includes("rate") || lowerTitle.includes("inflation")) return "🏛️";
+  if (lowerTitle.includes("nba") || lowerTitle.includes("basketball") || lowerTitle.includes("vs.")) return "🏀";
+  if (lowerTitle.includes("nfl") || lowerTitle.includes("football") || lowerTitle.includes("super bowl")) return "🏈";
+  if (lowerTitle.includes("soccer") || lowerTitle.includes("fifa") || lowerTitle.includes("world cup")) return "⚽";
+  if (lowerTitle.includes("crypto") || lowerTitle.includes("xrp") || lowerTitle.includes("sol")) return "💰";
+  if (lowerTitle.includes("ai") || lowerTitle.includes("openai") || lowerTitle.includes("gpt")) return "🤖";
+  if (lowerTitle.includes("war") || lowerTitle.includes("strike") || lowerTitle.includes("military")) return "⚔️";
+  if (lowerTitle.includes("stock") || lowerTitle.includes("market") || lowerTitle.includes("nasdaq")) return "📈";
+  return "📊";
+}
+
+/** Get market type based on end date */
+function getMarketType(endDate: string | null): "MONTHLY" | "DAILY" {
+  if (!endDate) return "MONTHLY";
+  const end = new Date(endDate);
+  const now = new Date();
+  const daysUntilEnd = (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+  return daysUntilEnd <= 7 ? "DAILY" : "MONTHLY";
+}
+
+/** Generate fake trend data (since we don't have historical data) */
+function generateTrendData(): number[] {
+  const trend = [];
+  let value = 30 + Math.random() * 40;
+  for (let i = 0; i < 10; i++) {
+    value = Math.max(0, Math.min(100, value + (Math.random() - 0.5) * 15));
+    trend.push(Math.round(value));
+  }
+  return trend;
+}
+
+/** Transform backend result to display format */
+function transformToTrendingMarket(result: MarketSearchResult): TrendingMarket {
+  return {
+    id: result.id,
+    name: result.title,
+    vol: formatVolume(result.volume),
+    yesPrice: 0.5,
+    noPrice: 0.5,
+    outcomes: result.outcomes.length,
+    type: getMarketType(result.end_date),
+    yesPercent: 50,
+    trend: generateTrendData(),
+    icon: getMarketIcon(result.title),
+    clobTokenIds: result.clob_token_ids,
+  };
+}
 
 const MiniSpark = ({ data, color }: { data: number[]; color: string }) => (
   <svg viewBox="0 0 60 24" className="w-20 h-8 overflow-visible">
@@ -145,6 +141,65 @@ export function TrendingMarketsWidget({
   onSelectMarket,
   livePrices,
 }: TrendingMarketsProps) {
+  const [markets, setMarkets] = useState<TrendingMarket[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchTrendingMarkets = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // Use public API that doesn't require authentication
+      const response: any = await invoke("get_public_polymarket_markets", {
+        limit: 10,
+      });
+      console.log("Trending markets response:", response);
+      if (response.success && response.data) {
+        const transformed = response.data.map(transformToTrendingMarket);
+        console.log("Transformed markets:", transformed);
+        setMarkets(transformed);
+      } else if (!response.success) {
+        console.error("API error:", response.message);
+        setError(response.message || "Failed to fetch markets");
+      } else {
+        console.warn("Unexpected response format:", response);
+        setError("Unexpected response from server");
+      }
+    } catch (e) {
+      console.error("Failed to fetch trending markets:", e);
+      setError("Failed to load markets. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTrendingMarkets();
+  }, []);
+
+  // Update prices from live data
+  const getMarketPrices = (market: TrendingMarket) => {
+    if (!livePrices || market.clobTokenIds.length === 0) {
+      return { yesPrice: market.yesPrice, noPrice: market.noPrice, isLive: false };
+    }
+
+    const yesTokenId = market.clobTokenIds[0];
+    const noTokenId = market.clobTokenIds[1];
+
+    const yesPrice = livePrices[yesTokenId];
+    const noPrice = livePrices[noTokenId];
+
+    if (yesPrice !== undefined) {
+      return {
+        yesPrice,
+        noPrice: noPrice ?? 1 - yesPrice,
+        isLive: true,
+      };
+    }
+
+    return { yesPrice: market.yesPrice, noPrice: market.noPrice, isLive: false };
+  };
+
   return (
     <div className="flex flex-col h-full bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
       <div className="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
@@ -155,108 +210,132 @@ export function TrendingMarketsWidget({
           <span className="text-[10px] text-slate-500 uppercase font-bold">
             Top by Volume
           </span>
-          <button className="text-[10px] text-slate-500 hover:text-white transition-colors uppercase font-bold">
-            View All Markets +
+          <button
+            onClick={fetchTrendingMarkets}
+            className="text-[10px] text-slate-500 hover:text-white transition-colors uppercase font-bold flex items-center gap-1"
+            disabled={isLoading}
+          >
+            <RefreshCw size={10} className={isLoading ? "animate-spin" : ""} />
+            Refresh
           </button>
         </div>
       </div>
 
       <div className="flex-1 overflow-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="text-[10px] text-slate-500 uppercase font-bold border-b border-slate-800/50">
-              <th className="px-5 py-3 font-medium">Market</th>
-              <th className="px-5 py-3 font-medium text-center">Chart</th>
-              <th className="px-5 py-3 font-medium text-right">Price</th>
-              <th className="px-5 py-3 font-medium text-right">24h</th>
-              <th className="px-5 py-3 font-medium text-right">Volume</th>
-              <th className="px-5 py-3 font-medium text-right">Outcomes</th>
-            </tr>
-          </thead>
-          <tbody className="text-sm font-mono text-slate-300">
-            {TRENDING_DATA.map((market) => {
-              const livePrice = livePrices?.[market.id];
-              const isLive = livePrice !== undefined;
-              const displayPrice = isLive ? livePrice : market.yesPrice;
+        {error ? (
+          <div className="flex flex-col items-center justify-center h-48 text-slate-500 px-4">
+            <AlertCircle size={32} className="mb-3 text-amber-500" />
+            <p className="text-sm text-center mb-3">{error}</p>
+            <button
+              onClick={fetchTrendingMarkets}
+              className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+            >
+              <RefreshCw size={12} /> Try again
+            </button>
+          </div>
+        ) : isLoading ? (
+          <div className="flex items-center justify-center h-48">
+            <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
+            <span className="ml-2 text-sm text-slate-400">Loading markets...</span>
+          </div>
+        ) : markets.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-48 text-slate-500">
+            <TrendingUp size={32} className="mb-3 opacity-30" />
+            <p className="text-sm">No trending markets available</p>
+          </div>
+        ) : (
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="text-[10px] text-slate-500 uppercase font-bold border-b border-slate-800/50">
+                <th className="px-5 py-3 font-medium">Market</th>
+                <th className="px-5 py-3 font-medium text-center">Chart</th>
+                <th className="px-5 py-3 font-medium text-right">Price</th>
+                <th className="px-5 py-3 font-medium text-right">Volume</th>
+                <th className="px-5 py-3 font-medium text-right">Outcomes</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm font-mono text-slate-300">
+              {markets.map((market) => {
+                const { yesPrice, noPrice, isLive } = getMarketPrices(market);
+                const yesPercent = Math.round(yesPrice * 100);
 
-              return (
-                <tr
-                  key={market.id}
-                  onClick={() => onSelectMarket(market.id)}
-                  className="group cursor-pointer hover:bg-slate-800/40 border-b border-slate-800/30 transition-colors"
-                >
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 group-hover:border-indigo-500/50 transition-colors text-lg">
-                        {market.icon}
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <div className="flex items-center gap-2">
-                          <TrendingUp
-                            size={12}
-                            className="text-orange-500 shrink-0"
-                          />
-                          <span
-                            className={clsx(
-                              "text-[9px] font-bold px-1.5 py-0.5 rounded uppercase",
-                              market.type === "MONTHLY"
-                                ? "bg-indigo-500/20 text-indigo-400"
-                                : "bg-slate-700 text-slate-400",
-                            )}
-                          >
-                            {market.type}
-                          </span>
+                return (
+                  <tr
+                    key={market.id}
+                    onClick={() => onSelectMarket(market.id)}
+                    className="group cursor-pointer hover:bg-slate-800/40 border-b border-slate-800/30 transition-colors"
+                  >
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 group-hover:border-indigo-500/50 transition-colors text-lg">
+                          {market.icon}
                         </div>
-                        <span className="font-sans font-medium text-slate-200 group-hover:text-white transition-colors truncate max-w-[240px] text-sm mt-0.5">
-                          {market.name}
-                        </span>
-                        <ProbabilityBar yesPercent={market.yesPercent} />
+                        <div className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp
+                              size={12}
+                              className="text-orange-500 shrink-0"
+                            />
+                            <span
+                              className={clsx(
+                                "text-[9px] font-bold px-1.5 py-0.5 rounded uppercase",
+                                market.type === "MONTHLY"
+                                  ? "bg-indigo-500/20 text-indigo-400"
+                                  : "bg-slate-700 text-slate-400"
+                              )}
+                            >
+                              {market.type}
+                            </span>
+                            {isLive && (
+                              <span className="flex items-center gap-1 text-[9px] text-emerald-400">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                LIVE
+                              </span>
+                            )}
+                          </div>
+                          <span className="font-sans font-medium text-slate-200 group-hover:text-white transition-colors truncate max-w-[240px] text-sm mt-0.5">
+                            {market.name}
+                          </span>
+                          <ProbabilityBar yesPercent={yesPercent} />
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3 text-center">
-                    <MiniSpark
-                      data={market.trend}
-                      color={market.change >= 0 ? "#10b981" : "#f43f5e"}
-                    />
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    <div className={clsx("font-bold", isLive ? "text-emerald-400" : "text-white")}>
-                      ${displayPrice.toFixed(2)}
-                      {isLive && <span className="ml-1.5 w-1 h-1 rounded-full bg-emerald-500 inline-block align-middle animate-pulse" />}
-                    </div>
-                    <div className="text-[10px] text-slate-500">
-                      ${market.noPrice.toFixed(2)} NO
-                    </div>
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    <span
-                      className={clsx(
-                        "text-xs",
-                        market.change > 0
-                          ? "text-emerald-400"
-                          : market.change < 0
-                            ? "text-rose-400"
-                            : "text-slate-500",
-                      )}
-                    >
-                      {market.change > 0 ? "↑" : market.change < 0 ? "↓" : "~"}{" "}
-                      {Math.abs(market.change).toFixed(1)}%
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-right text-slate-400">
-                    {market.vol}
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    <span className="text-indigo-400 font-bold">
-                      {market.outcomes}
-                    </span>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="px-5 py-3 text-center">
+                      <MiniSpark
+                        data={market.trend}
+                        color={yesPercent >= 50 ? "#10b981" : "#f43f5e"}
+                      />
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <div
+                        className={clsx(
+                          "font-bold",
+                          isLive ? "text-emerald-400" : "text-white"
+                        )}
+                      >
+                        ${yesPrice.toFixed(2)}
+                        {isLive && (
+                          <span className="ml-1.5 w-1 h-1 rounded-full bg-emerald-500 inline-block align-middle animate-pulse" />
+                        )}
+                      </div>
+                      <div className="text-[10px] text-slate-500">
+                        ${noPrice.toFixed(2)} NO
+                      </div>
+                    </td>
+                    <td className="px-5 py-3 text-right text-slate-400">
+                      {market.vol}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <span className="text-indigo-400 font-bold">
+                        {market.outcomes}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

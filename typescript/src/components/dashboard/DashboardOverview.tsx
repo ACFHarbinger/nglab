@@ -6,15 +6,21 @@ import { UserProfileWidget } from "./UserProfileWidget";
 import { MarketStatsWidget } from "./MarketStatsWidget";
 import { TrendingMarketsWidget } from "./TrendingMarketsWidget";
 import { GlobalActivityWidget } from "./GlobalActivityWidget";
+import { FavoriteMarketsWidget } from "./FavoriteMarketsWidget";
+import { FavoriteMarket } from "../../hooks/useFavorites";
 
 interface DashboardOverviewProps {
   onNavigateToTerminal: (marketId: string) => void;
   livePrices?: Record<string, number>;
+  favorites?: FavoriteMarket[];
+  onNavigateToFavorites?: () => void;
 }
 
 export function DashboardOverview({
   onNavigateToTerminal,
   livePrices,
+  favorites = [],
+  onNavigateToFavorites,
 }: DashboardOverviewProps) {
   return (
     <div className="flex h-full w-full bg-slate-950 overflow-hidden">
@@ -29,6 +35,18 @@ export function DashboardOverview({
         <div className="p-6 pb-4">
           <MarketStatsWidget />
         </div>
+
+        {/* Favorites Section (if any) */}
+        {favorites.length > 0 && (
+          <div className="px-6 pb-4">
+            <FavoriteMarketsWidget
+              favorites={favorites}
+              livePrices={livePrices}
+              onSelectMarket={onNavigateToTerminal}
+              onViewAll={onNavigateToFavorites}
+            />
+          </div>
+        )}
 
         {/* Bottom Section: Trending Markets */}
         <div className="flex-1 px-6 pb-6 min-h-0">
