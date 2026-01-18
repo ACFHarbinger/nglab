@@ -25,6 +25,92 @@ beforeEach(() => {
 
     mockInvoke.withArgs("get_current_user").resolves(null);
 
+    // Vault commands
+    mockInvoke.withArgs("is_vault_unlocked").resolves({
+      success: true,
+      data: false,
+    });
+
+    mockInvoke.withArgs("list_vault_secrets").resolves({
+      success: true,
+      data: [],
+    });
+
+    mockInvoke.withArgs("list_integrations").resolves({
+      success: true,
+      data: [],
+    });
+
+    // Training commands
+    mockInvoke.withArgs("list_trained_models").resolves({
+      success: true,
+      data: [],
+    });
+
+    mockInvoke.withArgs("list_csv_columns").resolves({
+      success: true,
+      data: ["timestamp", "price", "volume"],
+    });
+
+    // Simulation commands
+    mockInvoke.withArgs("start_simulation").resolves({ success: true });
+    mockInvoke.withArgs("stop_simulation").resolves({ success: true });
+
+    // Prediction commands
+    mockInvoke.withArgs("predict_arima").resolves({
+      success: true,
+      predictions: [0.55, 0.58, 0.60],
+    });
+
+    mockInvoke.withArgs("predict_garch").resolves({
+      success: true,
+      volatility: [0.15, 0.18],
+    });
+
+    mockInvoke.withArgs("predict_holt_winters").resolves({
+      success: true,
+      predictions: [0.55, 0.60],
+    });
+
+    mockInvoke.withArgs("predict_prophet").resolves({
+      success: true,
+      predictions: [0.55, 0.58],
+    });
+
+    // Pricing commands
+    mockInvoke.withArgs("pricing_black_scholes").resolves({
+      call: 10.45,
+      put: 5.67,
+      delta: 0.65,
+      gamma: 0.02,
+      vega: 25.3,
+      d1: 0.5,
+      d2: 0.3,
+    });
+
+    mockInvoke.withArgs("pricing_rbergomi").resolves({
+      price: 12.34,
+      std_error: 0.05,
+      mean_terminal: 105.5,
+    });
+
+    mockInvoke.withArgs("pricing_rough_heston").resolves({
+      price: 11.23,
+      std_error: 0.03,
+      mean_terminal: 102.5,
+      p05: 80,
+      p95: 130,
+      paths: 10000,
+      steps: 100,
+    });
+
+    mockInvoke.withArgs("pricing_credit_risk").resolves({
+      base: 100,
+      adjusted: 95.5,
+      survival: 0.98,
+      cva: 4.5,
+    });
+
     // Default fallback for unhandled commands
     mockInvoke.resolves({ success: true, data: null });
 
