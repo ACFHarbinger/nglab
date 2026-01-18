@@ -8,7 +8,7 @@
 use crate::errors::{ArenaError, ArenaResult};
 use crate::web::scraper::WebScraper;
 use chrono::{DateTime, Utc};
-use reqwest::blocking::Client;
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -146,30 +146,30 @@ impl PolymarketScraper {
      *
      * @param market_id The Polymarket ID or human-readable slug.
      */
-    pub fn resolve_market(&mut self, market_id: &str) -> ArenaResult<()> {
+    pub async fn resolve_market(&mut self, market_id: &str) -> ArenaResult<()> {
         let url = format!("https://gamma-api.polymarket.com/markets/{}", market_id);
 
         // Try to fetch as a single market first
-        let response = self.client.get(&url).send()?.error_for_status();
+        let response = self.client.get(&url).send().await?.error_for_status();
 
         match response {
             Ok(resp) => {
-                let market: MarketResponse = resp.json()?;
+                let market: MarketResponse = resp.json().await?;
                 self.process_market(market);
                 Ok(())
             }
             Err(_) => {
                 // If failed, maybe it's an Event ID? Try events endpoint
                 let url = format!("https://gamma-api.polymarket.com/events?id={}", market_id);
-                if let Ok(response) = self.client.get(&url).send()?.error_for_status() {
-                    let events: Vec<EventResponse> = response.json()?;
+                if let Ok(response) = self.client.get(&url).send().await?.error_for_status() {
+                    let events: Vec<EventResponse> = response.json().await?;
                     self.process_events(events)?;
                     Ok(())
                 } else {
                     // Finally, try as a SLUG (Event first, then Market)
                     let url = format!("https://gamma-api.polymarket.com/events?slug={}", market_id);
-                    if let Ok(response) = self.client.get(&url).send()?.error_for_status() {
-                        let events: Vec<EventResponse> = response.json()?;
+                    if let Ok(response) = self.client.get(&url).send().await?.error_for_status() {
+                        let events: Vec<EventResponse> = response.json().await?;
                         if !events.is_empty() {
                             self.process_events(events)?;
                             return Ok(());
@@ -181,8 +181,8 @@ impl PolymarketScraper {
                         "https://gamma-api.polymarket.com/markets?slug={}",
                         market_id
                     );
-                    if let Ok(response) = self.client.get(&url).send()?.error_for_status() {
-                        let markets: Vec<MarketResponse> = response.json()?;
+                    if let Ok(response) = self.client.get(&url).send().await?.error_for_status() {
+                        let markets: Vec<MarketResponse> = response.json().await?;
                         if !markets.is_empty() {
                             for market in markets {
                                 self.process_market(market);
@@ -253,7 +253,7 @@ impl PolymarketScraper {
         }
     }
 
-    fn fetch_history(&self, token_id: &str) -> ArenaResult<Vec<HistoryItem>> {
+    async fn fetch_history(&self, token_id: &str) -> ArenaResult<Vec<HistoryItem>> {
         let (_, fidelity) = self.frequency.to_interval();
 
         let fidelity_str = fidelity.to_string();
@@ -284,33 +284,54 @@ impl PolymarketScraper {
             .client
             .get(url)
             .query(&params)
-            .send()?
+            .send()
+            .await?
             .error_for_status()?;
 
-        let data: HistoryResponse = response.json()?;
+        let data: HistoryResponse = response.json().await?;
 
         Ok(data.history)
     }
+
+    pub async fn get_trending_events(&self, limit: usize) -> ArenaResult<Vec<EventResponse>> {
+        let url = "https://gamma-api.polymarket.com/events";
+        let params = [
+            ("limit", limit.to_string()),
+            ("sort", "volume".to_string()),
+            ("order", "desc".to_string()),
+        ];
+
+        let response = self
+            .client
+            .get(url)
+            .query(&params)
+            .send()
+            .await?
+            .error_for_status()?;
+
+        let events: Vec<EventResponse> = response.json().await?;
+        Ok(events)
+    }
 }
 
-#[derive(Deserialize, Debug, Clone)]
-struct MarketResponse {
-    // id: String,
-    question: String,
-    outcomes: String, // Stringified JSON array: "[\"Yes\", \"No\"]"
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct MarketResponse {
+    pub id: String,
+    pub question: String,
+    pub outcomes: String, // Stringified JSON array: "[\"Yes\", \"No\"]"
     #[serde(rename = "clobTokenIds")]
-    clob_token_ids: String, // Stringified JSON array
+    pub clob_token_ids: String, // Stringified JSON array
 }
 
-#[derive(Deserialize, Debug)]
-struct EventResponse {
-    // id: String,
-    title: String,
-    markets: Vec<MarketResponse>,
+#[derive(Deserialize, Serialize, Debug)]
+pub struct EventResponse {
+    pub id: String,
+    pub title: String,
+    pub markets: Vec<MarketResponse>,
 }
 
 impl WebScraper for PolymarketScraper {
-    fn download_csv(&self, output_path: &str) -> ArenaResult<()> {
+    async fn download_csv(&self, output_path: &str) -> ArenaResult<()> {
         if self.token_ids.is_empty() {
             return Err(ArenaError::InvalidOrder(
                 "No options (token IDs) selected".to_string(),
@@ -322,7 +343,7 @@ impl WebScraper for PolymarketScraper {
         let mut all_timestamps = Vec::new();
 
         for token_id in &self.token_ids {
-            let history = self.fetch_history(token_id)?;
+            let history = self.fetch_history(token_id).await?;
             for item in &history {
                 all_timestamps.push(item.t);
             }

@@ -106,6 +106,11 @@ fix:
     cd python && ruff check --fix .
     cd typescript && npm run lint:fix || npx eslint "src/**/*.{ts,tsx}" --fix
 
+# Detect cases of undefined behavior (e.g., out-of-bounds memory access)
+detect-undefined-behavior:
+    @echo "🔍 Detecting undefined behavior..."
+    cargo miri test
+
 # Build everything
 build:
     @echo "🔨 Building all components..."

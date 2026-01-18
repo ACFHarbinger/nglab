@@ -9,18 +9,21 @@ interface Market {
   change24h: number;
   volume24h: number;
   isFavorite?: boolean;
+  marketData?: any;
 }
 
 interface MarketSidebarProps {
   markets: Market[];
   activeMarketId?: string;
   onSelectMarket: (id: string) => void;
+  livePrices?: Record<string, number>;
 }
 
 export function MarketSidebar({
   markets,
   activeMarketId,
   onSelectMarket,
+  livePrices,
 }: MarketSidebarProps) {
   return (
     <div className="flex flex-col h-full bg-slate-900 border-r border-slate-800 w-80">
@@ -38,68 +41,95 @@ export function MarketSidebar({
 
       {/* Market List */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        {markets.map((market) => (
-          <div
-            key={market.id}
-            onClick={() => onSelectMarket(market.id)}
-            className={clsx(
-              "group px-3 py-3 border-b border-slate-800/50 cursor-pointer transition-colors hover:bg-slate-800/50",
-              activeMarketId === market.id
-                ? "bg-slate-800 border-l-2 border-l-indigo-500"
-                : "border-l-2 border-l-transparent",
-            )}
-          >
-            <div className="flex justify-between items-start mb-1">
-              <div className="flex items-center gap-2">
-                <span
-                  className={clsx(
-                    "font-bold text-sm",
-                    activeMarketId === market.id
-                      ? "text-white"
-                      : "text-slate-300 group-hover:text-white",
-                  )}
-                >
-                  {market.symbol}
-                </span>
-                {market.isFavorite && (
-                  <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
-                )}
-              </div>
-              <span className="font-mono text-sm text-white">
-                {market.price < 1
-                  ? market.price.toFixed(3)
-                  : market.price.toFixed(2)}
-              </span>
-            </div>
+        {markets.map((market) => {
+          // Resolve price: check livePrices by markeId OR by outcome ID (Polymarket)
+          let currentPrice = market.price;
+          let isLive = false;
 
-            <div className="flex justify-between items-center text-xs">
-              <span
-                className="text-slate-500 truncate max-w-[120px]"
-                title={market.name}
-              >
-                {market.name}
-              </span>
-              <div className="flex items-center gap-1">
-                <span className="text-slate-600">
-                  ${(market.volume24h / 1000).toFixed(1)}k
-                </span>
+          if (livePrices) {
+            if (livePrices[market.id] !== undefined) {
+              currentPrice = livePrices[market.id];
+              isLive = true;
+            } else if (market.marketData?.outcomes?.length > 0) {
+              const yesId = market.marketData.outcomes[0].id;
+              if (livePrices[yesId] !== undefined) {
+                currentPrice = livePrices[yesId];
+                isLive = true;
+              }
+            }
+          }
+
+          return (
+            <div
+              key={market.id}
+              onClick={() => onSelectMarket(market.id)}
+              className={clsx(
+                "group px-3 py-3 border-b border-slate-800/50 cursor-pointer transition-colors hover:bg-slate-800/50",
+                activeMarketId === market.id
+                  ? "bg-slate-800 border-l-2 border-l-indigo-500"
+                  : "border-l-2 border-l-transparent",
+              )}
+            >
+              <div className="flex justify-between items-start mb-1">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={clsx(
+                      "font-bold text-sm",
+                      activeMarketId === market.id
+                        ? "text-white"
+                        : "text-slate-300 group-hover:text-white",
+                    )}
+                  >
+                    {market.symbol}
+                  </span>
+                  {market.isFavorite && (
+                    <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
+                  )}
+                  {isLive && (
+                    <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  )}
+                </div>
                 <span
                   className={clsx(
-                    "flex items-center",
-                    market.change24h >= 0 ? "text-green-400" : "text-rose-400",
+                    "font-mono text-sm",
+                    isLive ? "text-emerald-400" : "text-white",
                   )}
                 >
-                  {market.change24h >= 0 ? (
-                    <TrendingUp size={10} className="mr-0.5" />
-                  ) : (
-                    <TrendingDown size={10} className="mr-0.5" />
-                  )}
-                  {Math.abs(market.change24h).toFixed(2)}%
+                  {currentPrice < 1
+                    ? currentPrice.toFixed(3)
+                    : currentPrice.toFixed(2)}
                 </span>
               </div>
+
+              <div className="flex justify-between items-center text-xs">
+                <span
+                  className="text-slate-500 truncate max-w-[120px]"
+                  title={market.name}
+                >
+                  {market.name}
+                </span>
+                <div className="flex items-center gap-1">
+                  <span className="text-slate-600">
+                    ${(market.volume24h / 1000).toFixed(1)}k
+                  </span>
+                  <span
+                    className={clsx(
+                      "flex items-center",
+                      market.change24h >= 0 ? "text-green-400" : "text-rose-400",
+                    )}
+                  >
+                    {market.change24h >= 0 ? (
+                      <TrendingUp size={10} className="mr-0.5" />
+                    ) : (
+                      <TrendingDown size={10} className="mr-0.5" />
+                    )}
+                    {Math.abs(market.change24h).toFixed(2)}%
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

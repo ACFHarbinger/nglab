@@ -49,7 +49,7 @@ export function usePolymarket() {
       unlisten = await listen<{ asset_id: string; price: number }>(
         "polymarket-price-update",
         (event) => {
-          console.log("📊 Price update received:", event.payload);
+          console.log("🌎 GLOBAL Price update in usePolymarket.ts:", event.payload);
           setLivePrices((prev) => {
             const updated = {
               ...prev,

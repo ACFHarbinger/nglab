@@ -9,10 +9,12 @@ import { GlobalActivityWidget } from "./GlobalActivityWidget";
 
 interface DashboardOverviewProps {
   onNavigateToTerminal: (marketId: string) => void;
+  livePrices?: Record<string, number>;
 }
 
 export function DashboardOverview({
   onNavigateToTerminal,
+  livePrices,
 }: DashboardOverviewProps) {
   return (
     <div className="flex h-full w-full bg-slate-950 overflow-hidden">
@@ -30,7 +32,10 @@ export function DashboardOverview({
 
         {/* Bottom Section: Trending Markets */}
         <div className="flex-1 px-6 pb-6 min-h-0">
-          <TrendingMarketsWidget onSelectMarket={onNavigateToTerminal} />
+          <TrendingMarketsWidget
+            onSelectMarket={onNavigateToTerminal}
+            livePrices={livePrices}
+          />
         </div>
       </div>
 

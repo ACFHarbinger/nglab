@@ -4,6 +4,7 @@
 
 pub mod auth;
 pub mod inference;
+pub mod integrations;
 pub mod moon;
 pub mod pricing;
 pub mod scraping;

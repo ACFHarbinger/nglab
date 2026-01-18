@@ -106,7 +106,7 @@ export function TerminalChart({
     if (sortedData.length > 0 && chartRef.current) {
       chartRef.current.timeScale().fitContent();
     }
-  }, [data.length]);
+  }, [data]);
 
   return (
     <div ref={chartContainerRef} className="w-full h-full min-h-[300px]" />

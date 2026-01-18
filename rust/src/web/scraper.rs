@@ -13,5 +13,5 @@ pub trait WebScraper {
      *
      * @param output_path Path where the CSV will be saved.
      */
-    fn download_csv(&self, output_path: &str) -> ArenaResult<()>;
+    async fn download_csv(&self, output_path: &str) -> ArenaResult<()>;
 }

@@ -8,6 +8,7 @@ import PredictionTab from "./components/PredictionTab";
 import TrainingTab from "./components/TrainingTab";
 import NewsTab from "./components/NewsTab";
 import VaultTab from "./components/VaultTab";
+import { AccountTab } from "./components/AccountTab";
 import { LoginModal } from "./components/LoginModal";
 import { useArena } from "./hooks/useArena";
 import {
@@ -65,6 +66,7 @@ function App() {
     | "training"
     | "news"
     | "vault"
+    | "account"
   >("dashboard");
 
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -167,7 +169,15 @@ function App() {
             <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">
               <Users size={16} /> Friends
             </button>
-            <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all">
+            <button
+              onClick={() => setActiveTab("account")}
+              className={clsx(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                activeTab === "account"
+                  ? "text-white bg-slate-800"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
+              )}
+            >
               <User size={16} /> Account
             </button>
             {/* Separator */}
@@ -326,6 +336,7 @@ function App() {
               setActiveTab("terminal");
               // Future: Set active market by ID here
             }}
+            livePrices={livePrices}
           />
         ) : activeTab === "simulation" ? (
           <div className="grid grid-cols-12 gap-6 h-full p-4">
@@ -444,7 +455,12 @@ function App() {
             activeMarket={activeMarket}
           />
         ) : activeTab === "terminal" ? (
-          <TerminalLayout />
+          <TerminalLayout
+            livePrices={livePrices}
+            activeMarket={activeMarket}
+            startStream={startStream}
+            stopStream={stopStream}
+          />
         ) : activeTab === "training" ? (
           <TrainingTab />
         ) : activeTab === "news" ? (
@@ -453,6 +469,12 @@ function App() {
           <PricingTab />
         ) : activeTab === "vault" ? (
           <VaultTab />
+        ) : activeTab === "account" ? (
+          <AccountTab
+            isStreaming={isStreaming}
+            startStream={startStream}
+            stopStream={stopStream}
+          />
         ) : null}
       </main>
     </div>

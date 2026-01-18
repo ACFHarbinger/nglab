@@ -22,11 +22,10 @@ pub async fn stream_polymarket_prices(
 ) -> Result<(), String> {
     eprintln!("🚀 Starting Polymarket stream for: {}", market_source);
 
-    // 1. Resolve Token IDs in a blocking task
-    let token_ids =
-        tauri::async_runtime::spawn_blocking(move || resolve_polymarket_token_ids(&market_source))
-            .await
-            .map_err(|e| format!("Task failed: {}", e))??;
+    // 1. Resolve Token IDs (now async)
+    let token_ids = resolve_polymarket_token_ids(&market_source)
+        .await
+        .map_err(|e| format!("Failed to resolve: {}", e))?;
 
     if token_ids.is_empty() {
         return Err("No token IDs found for this market".to_string());

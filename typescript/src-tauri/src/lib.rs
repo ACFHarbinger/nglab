@@ -69,7 +69,11 @@ pub fn run() {
             commands::vault::add_vault_secret,
             commands::vault::list_vault_secrets,
             commands::vault::get_vault_secret,
-            commands::vault::delete_vault_secret
+            commands::vault::delete_vault_secret,
+            commands::integrations::save_polymarket_integration,
+            commands::integrations::list_integrations,
+            commands::integrations::delete_integration,
+            commands::integrations::get_trending_markets
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

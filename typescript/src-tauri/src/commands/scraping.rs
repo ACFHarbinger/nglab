@@ -52,95 +52,93 @@ pub async fn scrape_polymarket(
         None
     };
 
-    tauri::async_runtime::spawn_blocking(move || {
-        let mut scraper = PolymarketScraper::new().with_frequency(freq);
+    let mut scraper = PolymarketScraper::new().with_frequency(freq);
 
-        if let Some((start, end)) = date_range {
-            scraper = scraper.with_date_range(start, end);
-        }
+    if let Some((start, end)) = date_range {
+        scraper = scraper.with_date_range(start, end);
+    }
 
-        if let Some(mut source) = market_source {
-            if !source.trim().is_empty() {
-                // If source passes, resolve full market first to get Names
+    if let Some(mut source) = market_source {
+        if !source.trim().is_empty() {
+            // If source passes, resolve full market first to get Names
 
-                // Clean URL if needed
-                if source.starts_with("http") {
-                    if let Ok(url) = url::Url::parse(&source) {
-                        if let Some(segments) = url.path_segments() {
-                            let segments_vec: Vec<&str> = segments.collect();
-                            if let Some(last) = segments_vec.last() {
-                                if !last.is_empty() {
-                                    source = last.to_string();
-                                } else if segments_vec.len() > 1 {
-                                    source = segments_vec[segments_vec.len() - 2].to_string();
-                                }
+            // Clean URL if needed
+            if source.starts_with("http") {
+                if let Ok(url) = url::Url::parse(&source) {
+                    if let Some(segments) = url.path_segments() {
+                        let segments_vec: Vec<&str> = segments.collect();
+                        if let Some(last) = segments_vec.last() {
+                            if !last.is_empty() {
+                                source = last.to_string();
+                            } else if segments_vec.len() > 1 {
+                                source = segments_vec[segments_vec.len() - 2].to_string();
                             }
                         }
                     }
                 }
+            }
 
-                scraper
-                    .resolve_market(&source)
-                    .map_err(|e| format!("Failed to resolve market source: {}", e))?;
+            scraper
+                .resolve_market(&source)
+                .await
+                .map_err(|e| format!("Failed to resolve market source: {}", e))?;
 
-                // If user selected specific tokens, filter them now
-                if !token_ids.is_empty() {
-                    scraper = scraper.filter_options(token_ids);
-                }
-            } else {
-                // Empty string source, fallback to legacy
-                if !token_ids.is_empty() {
-                    scraper = scraper.with_options(token_ids);
-                }
+            // If user selected specific tokens, filter them now
+            if !token_ids.is_empty() {
+                scraper = scraper.filter_options(token_ids);
             }
         } else {
-            // Legacy mode: Try to infer from first token_id if it looks like a URL/Slug
-            if token_ids.is_empty() {
-                return Err("No input provided".to_string());
+            // Empty string source, fallback to legacy
+            if !token_ids.is_empty() {
+                scraper = scraper.with_options(token_ids);
             }
+        }
+    } else {
+        // Legacy mode: Try to infer from first token_id if it looks like a URL/Slug
+        if token_ids.is_empty() {
+            return Err("No input provided".to_string());
+        }
 
-            let mut target_id = token_ids[0].clone();
-            let mut is_url = false;
+        let mut target_id = token_ids[0].clone();
+        let mut is_url = false;
 
-            if target_id.starts_with("http") || !target_id.chars().all(char::is_numeric) {
-                is_url = true; // Heuristic
-                               // ... clean url logic ...
-                if target_id.starts_with("http") {
-                    if let Ok(url) = url::Url::parse(&target_id) {
-                        if let Some(segments) = url.path_segments() {
-                            let segments_vec: Vec<&str> = segments.collect();
-                            if let Some(last) = segments_vec.last() {
-                                if !last.is_empty() {
-                                    target_id = last.to_string();
-                                } else if segments_vec.len() > 1 {
-                                    target_id = segments_vec[segments_vec.len() - 2].to_string();
-                                }
+        if target_id.starts_with("http") || !target_id.chars().all(char::is_numeric) {
+            is_url = true; // Heuristic
+                           // ... clean url logic ...
+            if target_id.starts_with("http") {
+                if let Ok(url) = url::Url::parse(&target_id) {
+                    if let Some(segments) = url.path_segments() {
+                        let segments_vec: Vec<&str> = segments.collect();
+                        if let Some(last) = segments_vec.last() {
+                            if !last.is_empty() {
+                                target_id = last.to_string();
+                            } else if segments_vec.len() > 1 {
+                                target_id = segments_vec[segments_vec.len() - 2].to_string();
                             }
                         }
                     }
                 }
             }
-
-            // Try resolve
-            if scraper.resolve_market(&target_id).is_ok() {
-                // Good
-            } else {
-                // Failure
-                if !is_url {
-                    // Maybe it was just a token ID?
-                    scraper = scraper.with_options(token_ids);
-                } else {
-                    return Err(format!("Failed to resolve: {}", target_id));
-                }
-            }
         }
 
-        scraper
-            .download_csv(&output_path)
-            .map_err(|e| format!("Scraping failed: {}", e))
-    })
-    .await
-    .map_err(|e| format!("Task failed: {}", e))?
+        // Try resolve
+        if scraper.resolve_market(&target_id).await.is_ok() {
+            // Good
+        } else {
+            // Failure
+            if !is_url {
+                // Maybe it was just a token ID?
+                scraper = scraper.with_options(token_ids);
+            } else {
+                return Err(format!("Failed to resolve: {}", target_id));
+            }
+        }
+    }
+
+    scraper
+        .download_csv(&output_path)
+        .await
+        .map_err(|e| format!("Scraping failed: {}", e))
 }
 
 /**
@@ -153,32 +151,29 @@ pub async fn scrape_polymarket(
 pub async fn resolve_polymarket_id(
     input: String,
 ) -> Result<nglab::web::polymarket::MarketMetadata, String> {
-    tauri::async_runtime::spawn_blocking(move || {
-        let mut scraper = PolymarketScraper::new();
+    let mut scraper = PolymarketScraper::new();
 
-        // precise URL parsing to get the slug (Reuse logic)
-        let mut target_id = input.clone();
-        if target_id.starts_with("http") {
-            if let Ok(url) = url::Url::parse(&target_id) {
-                if let Some(segments) = url.path_segments() {
-                    let segments_vec: Vec<&str> = segments.collect();
-                    if let Some(last) = segments_vec.last() {
-                        if !last.is_empty() {
-                            target_id = last.to_string();
-                        } else if segments_vec.len() > 1 {
-                            target_id = segments_vec[segments_vec.len() - 2].to_string();
-                        }
+    // precise URL parsing to get the slug (Reuse logic)
+    let mut target_id = input.clone();
+    if target_id.starts_with("http") {
+        if let Ok(url) = url::Url::parse(&target_id) {
+            if let Some(segments) = url.path_segments() {
+                let segments_vec: Vec<&str> = segments.collect();
+                if let Some(last) = segments_vec.last() {
+                    if !last.is_empty() {
+                        target_id = last.to_string();
+                    } else if segments_vec.len() > 1 {
+                        target_id = segments_vec[segments_vec.len() - 2].to_string();
                     }
                 }
             }
         }
+    }
 
-        scraper
-            .resolve_market(&target_id)
-            .map_err(|e| format!("Failed to resolve market: {}", e))?;
+    scraper
+        .resolve_market(&target_id)
+        .await
+        .map_err(|e| format!("Failed to resolve market: {}", e))?;
 
-        Ok(scraper.get_metadata())
-    })
-    .await
-    .map_err(|e| format!("Task failed: {}", e))?
+    Ok(scraper.get_metadata())
 }
