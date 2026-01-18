@@ -2,7 +2,7 @@
  * @module components/terminal/TerminalLayout
  * @description High-fidelity trading terminal layout with chart, order book, trades, and execution form.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 /**
  * @module components/terminal/MarketSidebar
  * @description Searchable sidebar for quickly switching between different trading pairs/markets.
@@ -30,7 +30,6 @@ import { RecentTradesWidget, Trade } from "./RecentTradesWidget";
 import { TradingFormWidget } from "./TradingFormWidget";
 import { MarketMetadata } from "../../hooks/usePolymarket";
 import { Wallet, Settings } from "lucide-react";
-import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 
 // Mock Data Generators
@@ -173,7 +172,20 @@ export function TerminalLayout({ livePrices, activeMarket, startStream, stopStre
   const [trendingMarkets, setTrendingMarkets] = useState<any[]>([]);
 
   // Always use fresh mock data + trending state
-  const markets = [...generateMockMarkets(), ...trendingMarkets];
+  const markets = useMemo(
+    () => [...generateMockMarkets(), ...trendingMarkets],
+    [trendingMarkets],
+  );
+
+  // Sync activeMarket with selectedMarketId
+  useEffect(() => {
+    if (activeMarket?.title) {
+      const match = markets.find((m) => m.name === activeMarket.title);
+      if (match && match.id !== selectedMarketId) {
+        setSelectedMarketId(match.id);
+      }
+    }
+  }, [activeMarket, markets, selectedMarketId]);
 
   useEffect(() => {
     fetchTrending();

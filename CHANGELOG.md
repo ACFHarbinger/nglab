@@ -2,6 +2,29 @@
 
 All notable changes to the NGLab project will be documented in this file.
 
+## [Unreleased] - 2026-01-18
+
+### Added
+
+- **Frontend Testing Suite**:
+  - **Vitest Integration**: Setup Vitest with `@testing-library/react` and `jsdom` environment for component testing.
+  - **Mocking Infrastructure**: Created robust mocks for Tauri APIs (`invoke`, `listen`), `ResizeObserver`, and `lightweight-charts` to enable isolated unit testing.
+  - **Component Tests**:
+    - **Dashboard**: Added tests for `GlobalActivityWidget`, `UserProfileWidget`, `OrderBook` (LOB visualization), `TrendingMarketsWidget`, and `DashboardOverview`.
+    - **Terminal**: Added tests for `TerminalLayout`, `TerminalChart`, `OrderBookWidget`, `MarketSidebar`, `TradingFormWidget`, and `RecentTradesWidget`.
+    - **Charts**: Added tests for `PriceChart` data updates and lifecycle.
+    - **Tabs**: Added tests for all major application tabs: `ScraperTab`, `AnalysisTab`, `PredictionTab`, `TrainingTab`, `NewsTab`, `VaultTab`, `AccountTab`, `FavoritesTab`, `PricingTab`.
+    - **App Logic**: Verified main `App` routing and global modal interactions.
+    - **Hooks**: Added unit tests for custom hooks `useArena`, `usePolymarket`, and `useFavorites`.
+  - **Coverage**: Achieved 100% pass rate across 28 test files and 115 test cases, providing full regression coverage for the UI layer.
+- **Cypress E2E Test Suite**:
+  - Added comprehensive Cypress end-to-end testing infrastructure for the TypeScript frontend.
+  - Created 13 test spec files covering all major components: Navigation, Dashboard, Favorites, Login Modal, Simulation, Scraper, Pricing, Training, Vault, Account, Terminal/Markets, Prediction/Intelligence, and News tabs.
+  - Implemented Tauri API mocking in `cypress/support/e2e.ts` with default responses for all backend commands (markets, vault, training, simulation, prediction, pricing).
+  - Added custom Cypress commands (`mockTauriInvoke`, `navigateToTab`, `waitForMarketsToLoad`, `clearFavorites`) in `cypress/support/commands.ts`.
+  - Created mock market data fixtures in `cypress/fixtures/markets.json`.
+  - Added npm scripts for running tests: `cy:open`, `cy:run`, `cy:e2e`, `cy:e2e:open`.
+
 ## [Unreleased] - 2026-01-17
 
 ### Added

@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import React from "react";
 
 // Mock Tauri's invoke
 vi.mock("@tauri-apps/api/core", () => ({
