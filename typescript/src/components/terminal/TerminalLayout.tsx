@@ -29,6 +29,7 @@ import { RecentTradesWidget, Trade } from "./RecentTradesWidget";
  */
 import { TradingFormWidget } from "./TradingFormWidget";
 import { MarketMetadata } from "../../hooks/usePolymarket";
+import { useFavorites } from "../../hooks/useFavorites";
 import { Wallet, Settings } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -161,7 +162,7 @@ interface Props {
 }
 
 export function TerminalLayout({ livePrices, activeMarket, startStream, stopStream }: Props) {
-  // const { livePrices } = usePolymarket(); // Removed internal hook call
+  const { favoriteIds, toggleFavorite } = useFavorites();
   const [selectedMarketId, setSelectedMarketId] = useState("1");
   const [chartData, setChartData] = useState<any[]>([]);
   const [orderBook, setOrderBook] = useState<{ bids: any; asks: any }>({
@@ -173,8 +174,15 @@ export function TerminalLayout({ livePrices, activeMarket, startStream, stopStre
 
   // Always use fresh mock data + trending state
   const markets = useMemo(
-    () => [...generateMockMarkets(), ...trendingMarkets],
-    [trendingMarkets],
+    () => {
+      const allMarkets = [...generateMockMarkets(), ...trendingMarkets];
+      // Sync isFavorite status from hook
+      return allMarkets.map(m => ({
+        ...m,
+        isFavorite: favoriteIds.has(m.id)
+      }));
+    },
+    [trendingMarkets, favoriteIds],
   );
 
   // Sync activeMarket with selectedMarketId
@@ -343,6 +351,8 @@ export function TerminalLayout({ livePrices, activeMarket, startStream, stopStre
         activeMarketId={selectedMarketId}
         onSelectMarket={setSelectedMarketId}
         livePrices={livePrices}
+        favoriteIds={favoriteIds}
+        onToggleFavorite={toggleFavorite}
       />
 
       {/* 2. Main Center Area (Chart & Header) */}
@@ -402,6 +412,8 @@ export function TerminalLayout({ livePrices, activeMarket, startStream, stopStre
         <TradingFormWidget
           symbol={selectedMarket.symbol}
           currentPrice={currentPrice}
+          outcomes={selectedMarket.marketData?.outcomes}
+          livePrices={livePrices}
         />
       </div>
     </div>

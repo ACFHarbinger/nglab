@@ -25,6 +25,13 @@ All notable changes to the NGLab project will be documented in this file.
   - Created mock market data fixtures in `cypress/fixtures/markets.json`.
   - Added npm scripts for running tests: `cy:open`, `cy:run`, `cy:e2e`, `cy:e2e:open`.
 
+### Changed
+
+- **Terminal**:
+  - **Favorites**: Integrated `useFavorites` hook into `TerminalLayout` and `MarketSidebar` for persistent favorite markets.
+  - **Multi-Outcome**: Updated `TradingFormWidget` and `MarketSidebar` to support multi-outcome markets (e.g., electing Fed Chair) with dynamic outcome selection and pricing.
+  - **UI**: Improved `TradingFormWidget` outcome toggle and button text for clarity.
+
 ## [Unreleased] - 2026-01-17
 
 ### Added
