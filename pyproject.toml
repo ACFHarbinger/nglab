@@ -36,6 +36,8 @@ dependencies = [
     "statsmodels>=0.14.6",
     "umap-learn>=0.5.11",
     "keyring>=25.7.0",
+    "flask>=3.0.0",
+    "psutil>=5.9.0",
 ]
 
 [build-system]
@@ -50,7 +52,7 @@ manifest-path = "rust/Cargo.toml"
 
 [tool.basedpyright]
 typeCheckingMode = "basic"
-include = ["python", "environment"]
+include = ["python", "environment", "nglab"]
 reportUnusedImport = "warning"
 
 # Create an override for __init__.py files

@@ -5,6 +5,9 @@ All notable changes to the NGLab project will be documented in this file.
 ## [Unreleased] - 2026-01-19
 
 ### Added
+- **Health Checks**:
+  - Implemented Flask-based health monitoring API in `python/src/api/health.py` (CPU, Memory, GPU).
+  - Added `rust/src/health.rs` with serializable health status structures for Tauri integration.
 - **Configuration Management**:
   - Added `config` crate for environment-based settings loading.
   - Created `config/development.toml`, `staging.toml`, and `production.toml` for tiered deployment configuration.

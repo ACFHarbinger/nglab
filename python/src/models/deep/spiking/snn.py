@@ -31,9 +31,9 @@ class SurrogateHeaviside(torch.autograd.Function):
         return grad_input, None
 
 
-def surrogate_heaviside(x, alpha=25.0):
+def surrogate_heaviside(x: torch.Tensor, alpha: float = 25.0) -> torch.Tensor:
     """Compute Heaviside with surrogate gradient."""
-    return SurrogateHeaviside.apply(x, alpha)
+    return SurrogateHeaviside.apply(x, alpha)  # type: ignore
 
 
 class LIFCell(nn.Module):

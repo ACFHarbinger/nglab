@@ -9,15 +9,16 @@ from ..base import ClassicalModel
 
 class StepwiseRegressionModel(ClassicalModel):
     """Stepwise Regression using Sequential Feature Selection."""
-    def __init__(self, direction="forward", n_features_to_select="auto", **kwargs):
+    def __init__(self, direction: str = "forward", n_features_to_select: str | int | float = "auto", **kwargs):
         super().__init__()
         self.base_estimator = LinearRegression()
         self.model = SequentialFeatureSelector(
             self.base_estimator,
-            n_features_to_select=n_features_to_select,
+            n_features_to_select=n_features_to_select,  # type: ignore
             direction=direction,
             **kwargs
         )
+        self.selected_features_ = None
 
     def fit(self, X, y):
         super().fit(X, y)

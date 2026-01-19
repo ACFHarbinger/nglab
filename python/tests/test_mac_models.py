@@ -68,6 +68,7 @@ def test_stepwise_model(regression_data):
     out = model(X)
     assert out.shape == (50, 1)
     # Check if only 2 features were selected in the internal model
+    assert model.selected_features_ is not None
     assert model.selected_features_.sum() == 2
 
 
@@ -286,7 +287,12 @@ class TestClassicalCommon:
         backbone = TimeSeriesBackbone(classical_cfg)
         X = torch.randn(100, 10)
         y = torch.randn(100, 1)
-        backbone.model.fit(X, y)
+        from python.src.models.mac.base import ClassicalModel
+        
+        # Static analysis tools can sometimes misidentify nn.Module attributes as Tensors
+        # Explicitly checking the type helps resolve "Object of type 'Tensor' is not callable"
+        if isinstance(backbone.model, ClassicalModel):
+            backbone.model.fit(X, y)
         assert backbone.model._is_fitted
         out = backbone(X)
         assert out.shape == (100, 1)

@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from python.src.pipeline.lightning.sl_module import SLLightningModule
+from python.src.pipeline.lightning.supervised_learning import SLLightningModule
 
 
 class TestSupervised(unittest.TestCase):

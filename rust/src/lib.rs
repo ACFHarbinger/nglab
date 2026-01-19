@@ -12,6 +12,7 @@ use pyo3::prelude::*;
 
 pub mod config;
 pub mod errors;
+pub mod health;
 pub mod logging;
 pub mod models;
 pub mod moon;

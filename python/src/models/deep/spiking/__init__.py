@@ -4,4 +4,5 @@ __all__ = [
     "SNN",
     "LIFCell",
     "SurrogateHeaviside",
+    "surrogate_heaviside",
 ]
