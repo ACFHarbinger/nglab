@@ -77,7 +77,9 @@ pub fn run() {
             commands::integrations::search_polymarket_markets,
             commands::integrations::get_open_polymarket_markets,
             commands::integrations::get_public_polymarket_markets,
-            commands::integrations::search_public_polymarket_markets
+            commands::integrations::search_public_polymarket_markets,
+            commands::health::health_check,
+            commands::health::get_system_info
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

@@ -120,8 +120,8 @@ def create_dataloader(
         csv_path = str(Path(data_path).with_suffix(".csv"))
         df.to_csv(csv_path, index=False)
     elif format == "hdf5":
-        # Convert HDF5 to CSV for now
-        df = pd.read_hdf(data_path)
+        # Read HDF5 file (key must be specified or uses default)
+        df = pd.read_hdf(data_path, key="data")
         csv_path = str(Path(data_path).with_suffix(".csv"))
         df.to_csv(csv_path, index=False)
     else:

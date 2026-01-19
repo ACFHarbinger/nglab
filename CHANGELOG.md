@@ -5,6 +5,29 @@ All notable changes to the NGLab project will be documented in this file.
 ## [Unreleased] - 2026-01-19
 
 ### Added
+- **Developer Experience (Quick Wins)**:
+  - Created comprehensive **Makefile** with colorized output and emojis for common development tasks (`make test`, `make build`, `make lint`, `make fmt`, `make clean`, `make dev`, `make run-tauri`).
+  - Added **.env.example** documenting all environment variables (WANDB, MLflow, CUDA, data paths, cloud storage, training configs).
+  - Added **pytest GPU markers** with automatic skip logic for tests requiring CUDA (`@pytest.mark.gpu`).
+  - Enhanced `conftest.py` with `cuda_available` fixture and `pytest_collection_modifyitems` hook for GPU test management.
+- **RNG Seeding for Reproducibility**:
+  - Added `StdRng` field to `TradingEnv` for deterministic random number generation.
+  - Added optional `seed: Option<u64>` parameter to `TradingEnv::new()` and PyO3 `new_py()` constructors.
+  - Implemented `set_seed(&mut self, seed: u64)` method for runtime re-seeding.
+  - Updated `reset()` method to properly initialize RNG from seed parameter.
+  - Updated all Rust tests, benchmarks, and Tauri initialization to use new seed API.
+- **DataLoader Infrastructure for Non-RL Tasks**:
+  - Created `FinancialDataset` class extending `TimeSeriesDataset` with financial preprocessing support.
+  - Implemented `create_dataloader()` factory function supporting CSV, Parquet, and HDF5 formats.
+  - Added proper train/val/test splits with shared normalization statistics.
+  - Created `conf/data/dataloader.yaml` Hydra config for dataloader settings.
+  - Integrated DataLoader into `main.py` replacing stub implementation.
+- **Health Check Integration (Tauri + React)**:
+  - Created `commands/health.rs` with `health_check()` and `get_system_info()` Tauri commands.
+  - Implemented `HealthStatus` struct with component-level health monitoring (Arena, OrderBook, Polymarket, Python bindings).
+  - Added uptime tracking and system info (CPU count, OS, architecture).
+  - Created `HealthDashboard.tsx` React widget with auto-refresh, status indicators, and styled UI.
+  - Registered health commands in Tauri invoke handler.
 - **Logging & Visualization (P3 Phase 3)**:
   - Implemented **Logit Lens** for `NSTransformer` models in `visualize_utils.py`, allowing visualization of internal prediction evolution.
   - Modernized `visualize_utils.py` and `loss_landscape_workflow.py` to support sequential trading data and the `TradingEnv`.
