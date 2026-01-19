@@ -16,6 +16,8 @@ use numpy::{PyArray2, ToPyArray};
 use pyo3::prelude::*;
 #[cfg(feature = "python")]
 use pyo3::types::PyDict;
+use rand::rngs::StdRng;
+use rand::SeedableRng;
 use smallvec::SmallVec;
 #[cfg(feature = "python")]
 use tracing::info;
@@ -177,6 +179,8 @@ pub struct TradingEnv {
     logger: crate::utils::visualizer::RerunLogger,
     /** Pre-allocated observation buffer */
     obs_buffer: ObservationBuffer,
+    /** Random number generator for reproducibility */
+    rng: StdRng,
 }
 
 // =========================================================================
@@ -187,13 +191,14 @@ pub struct TradingEnv {
 #[pymethods]
 impl TradingEnv {
     #[new]
-    #[pyo3(signature = (initial_capital=10000.0, transaction_cost=0.001, lookback=30, max_steps=1000, enable_logging=true))]
+    #[pyo3(signature = (initial_capital=10000.0, transaction_cost=0.001, lookback=30, max_steps=1000, enable_logging=true, seed=None))]
     pub fn new_py(
         initial_capital: f64,
         transaction_cost: f64,
         lookback: usize,
         max_steps: usize,
         enable_logging: bool,
+        seed: Option<u64>,
     ) -> Self {
         Self::new(
             initial_capital,
@@ -201,6 +206,7 @@ impl TradingEnv {
             lookback,
             max_steps,
             enable_logging,
+            seed,
         )
     }
 
@@ -220,10 +226,10 @@ impl TradingEnv {
         options: Option<PyObject>,
     ) -> PyResult<(Bound<'py, PyArray2<f64>>, PyObject)> {
         if let Some(s) = seed {
-            info!("Reseting environment with seed: {}", s);
-            // TODO: Seed RNG
+            info!("Resetting environment with seed: {}", s);
+            self.set_seed(s);
         } else {
-            info!("Reseting environment with random seed");
+            info!("Resetting environment with existing seed");
         }
         self.reset_rs();
 
@@ -323,8 +329,18 @@ impl TradingEnv {
         lookback: usize,
         max_steps: usize,
         enable_logging: bool,
+        seed: Option<u64>,
     ) -> Self {
         let num_features = 6; // price, return, volume, imbalance, position, cash
+        let rng = match seed {
+            Some(s) => StdRng::seed_from_u64(s),
+            None => {
+                // Use rand::rng() to generate a random seed (rand 0.9 API)
+                use rand::Rng;
+                let random_seed = rand::rng().random::<u64>();
+                StdRng::seed_from_u64(random_seed)
+            }
+        };
         TradingEnv {
             orderbook: OrderBook::new(),
             prices: Vec::new(),
@@ -341,6 +357,7 @@ impl TradingEnv {
             total_steps: 0,
             logger: crate::utils::visualizer::RerunLogger::new(enable_logging),
             obs_buffer: ObservationBuffer::new(num_features, lookback),
+            rng,
         }
     }
 
@@ -585,6 +602,17 @@ impl TradingEnv {
             0.0
         }
     }
+
+    /**
+     * Set the random seed for reproducibility.
+     *
+     * # Arguments
+     *
+     * * `seed` - Random seed value.
+     */
+    pub fn set_seed(&mut self, seed: u64) {
+        self.rng = StdRng::seed_from_u64(seed);
+    }
 }
 
 #[cfg(test)]
@@ -593,7 +621,7 @@ mod tests {
 
     #[test]
     fn test_env_creation() {
-        let env = TradingEnv::new(10000.0, 0.001, 30, 1000, true);
+        let env = TradingEnv::new(10000.0, 0.001, 30, 1000, true, Some(42));
         assert_eq!(env.portfolio_value(), 10000.0);
         assert_eq!(env.observation_shape(), (30, 6));
     }

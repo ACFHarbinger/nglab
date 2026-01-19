@@ -24,8 +24,8 @@ use tauri::Manager;
  */
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Initialize TradingEnv with default parameters
-    let env = TradingEnv::new(10000.0, 0.001, 30, 1000, false);
+    // Initialize TradingEnv with default parameters and fixed seed for reproducibility
+    let env = TradingEnv::new(10000.0, 0.001, 30, 1000, false, Some(42));
 
     let state = ArenaState {
         env: Mutex::new(env),

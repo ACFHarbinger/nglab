@@ -201,6 +201,7 @@ markers = [
     "policies: marks tests for simulation policies",
     "model: marks tests for classical machine learning models",
     "data: marks tests for data processing",
+    "gpu: marks tests requiring GPU/CUDA",
     "skip: skip this test",
     "skipif: skip this test if condition is true",
     "xfail: expected to fail",

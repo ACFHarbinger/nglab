@@ -20,7 +20,7 @@ fn env_step_performance(c: &mut Criterion) {
             |b, &lookback| {
                 b.iter(|| {
                     // Constructor: initial_capital, transaction_cost, lookback, max_steps, logging
-                    let mut env = TradingEnv::new(10000.0, 0.001, lookback, 1000, false);
+                    let mut env = TradingEnv::new(10000.0, 0.001, lookback, 1000, false, Some(42));
                     env.reset_rs();
 
                     // Run 100 steps
@@ -39,7 +39,7 @@ fn env_step_performance(c: &mut Criterion) {
  */
 fn env_reset_performance(c: &mut Criterion) {
     c.bench_function("trading_env_reset", |b| {
-        let mut env = TradingEnv::new(10000.0, 0.001, 50, 1000, false);
+        let mut env = TradingEnv::new(10000.0, 0.001, 50, 1000, false, Some(42));
 
         b.iter(|| {
             env.reset_rs();
@@ -53,7 +53,7 @@ fn env_reset_performance(c: &mut Criterion) {
 fn env_episode_performance(c: &mut Criterion) {
     c.bench_function("trading_env_full_episode", |b| {
         b.iter(|| {
-            let mut env = TradingEnv::new(10000.0, 0.001, 50, 1000, false);
+            let mut env = TradingEnv::new(10000.0, 0.001, 50, 1000, false, Some(42));
             // Need some dummy data or it terminates instantly?
             // reset_rs populates prices via generate_observation_data but uses self.prices which are empty by default?
             // Ah, env.load_prices needed for meaningful step execution.
@@ -85,7 +85,7 @@ fn env_episode_performance(c: &mut Criterion) {
  */
 fn env_reward_calculation(c: &mut Criterion) {
     c.bench_function("trading_env_reward_calc", |b| {
-        let mut env = TradingEnv::new(10000.0, 0.001, 50, 1000, false);
+        let mut env = TradingEnv::new(10000.0, 0.001, 50, 1000, false, Some(42));
         let prices: Vec<f64> = (0..200).map(|i| 100.0 + (i as f64).sin()).collect();
         env.load_prices(prices);
 
