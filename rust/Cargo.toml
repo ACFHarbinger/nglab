@@ -65,6 +65,7 @@ opentelemetry = "0.27"
 opentelemetry-otlp = { version = "0.27", features = ["tonic", "tokio"] }
 opentelemetry_sdk = { version = "0.27", features = ["rt-tokio"] }
 tracing-opentelemetry = "0.28"
+sysinfo = "0.33"
 
 [features]
 extension-module = ["pyo3/extension-module"]

@@ -10,12 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # ADDED: Install uv binary
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      # ADDED: Install Python via uv
+      - name: Set up Python
+        run: uv python install
+
       - uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y pkg-config libssl-dev python3-dev
+
+      # SYNC: Required to build the Rust-to-Python extension (nglab)
+      - name: Sync environment
+        run: uv sync --dev
 
       - name: Run GPU Benchmarks
         run: |

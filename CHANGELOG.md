@@ -29,6 +29,24 @@ All notable changes to the NGLab project will be documented in this file.
   - **Online Learning Infrastructure**: Created `OnlineTrainer` with support for incremental `partial_fit` updates and experience replay for real-time model adaptation.
   - **Portfolio Optimization Layer**: Added `PortfolioOptimizer` with support for Markowitz Mean-Variance and Hierarchical Risk Parity (HRP) algorithms.
   - **Pipeline Integration**: Seamlessly integrated advanced selection methods into the `FeaturePipeline` for automated dimensionality reduction.
+- **Risk Management Integration (Phase 4.3)**:
+  - Integrated `RiskManager` into the core Rust simulation types (`MultiAssetEnv` and `TradingEnv`).
+  - Added real-time tracking of **Risk Score**, **Current Drawdown**, and **Value at Risk (VaR)**.
+  - Implemented automatic position sizing limits via `position_multiplier` that scales down exposure on limit breaches (drawdown, daily loss, VaR).
+  - Exposed risk metrics and configuration to Python via PyO3 bindings.
+  - Added native Rust unit tests for risk integration (`test_risk_integration`).
+- **Portfolio Optimization Enhancements**:
+  - Implemented **Risk Parity (Inverse Volatility)** allocation in `PortfolioOptimizer`.
+  - Added automated calculation of risk-equalizing weights for multi-asset portfolios.
+- **Debug & Observability (Phase 5.3)**:
+  - **Risk Dashboard**: Created a dedicated `RiskDashboardWidget` in the React frontend for real-time risk monitoring.
+  - **Global Debug Mode**: Implemented a global `debug_mode` toggle in the Tauri backend with a dedicated toggle switch in the Account/Settings UI.
+  - **Extended Debug Infrastructure**:
+    - Enabled **production source maps** in Vite configuration.
+    - Configured Rust **debug symbols** in the release profile for better production troubleshooting.
+    - Added **`@timeit`** and **`@memory_profile`** decorators in Python for high-performance timing and memory tracking.
+    - Implemented a real-time **`get_memory_usage`** Tauri command to monitor process RSS and VMS.
+  - **Telemetry**: Extended the `ArenaUpdate` event to include real-time risk status for live visualization.
 - **Developer Experience & Tooling (Phase 5)**:
   - **Troubleshooting Guide**: Created `TROUBLESHOOTING.md` covering common simulation, environment, and frontend issues.
   - **VS Code Integration**: Added `.devcontainer/devcontainer.json` for standardized development environments.

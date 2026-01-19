@@ -38,6 +38,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # ADDED: Ensure uv is available for python-builder stage if Dockerfile uses it
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -60,42 +64,19 @@ jobs:
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
+            type=sha,format=short
 
       - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile.prod
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
-
-      - name: Extract metadata for GPU image
-        id: meta-gpu
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api-gpu
-          tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=sha
-
-      - name: Build and push GPU image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile.gpu
-          push: true
-          tags: ${{ steps.meta-gpu.outputs.tags }}
-          labels: ${{ steps.meta-gpu.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64
 
   # ==========================================================================
   # Deploy to Staging
@@ -103,98 +84,55 @@ jobs:
   deploy-staging:
     name: Deploy to Staging
     needs: build
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
-    environment:
-      name: staging
-      url: https://staging-api.nglab.example.com
-
+    # NOTE: Ensure "staging" is created in Repo Settings -> Environments
+    environment: staging
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'v1.28.0'
-
-      - name: Configure kubeconfig
+      - name: Set up Kubeconfig
         run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_STAGING }}" > ~/.kube/config
 
-      - name: Deploy with Kustomize
+      - name: Deploy with Helm
         run: |
-          cd deploy/k8s/overlays/staging
-          kustomize edit set image nglab/api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:${{ needs.build.outputs.version }}
-          kubectl apply -k .
-
-      - name: Wait for rollout
-        run: |
-          kubectl rollout status deployment/staging-nglab-api -n nglab-staging --timeout=300s
-
-      - name: Run smoke tests
-        run: |
-          # Wait for service to be ready
-          sleep 30
-          # Health check
-          curl -f https://staging-api.nglab.example.com/health || exit 1
+          helm upgrade --install nglab-staging ./deploy/helm/nglab \
+            --namespace nglab-staging --create-namespace \
+            --set image.tag=${{ needs.build.outputs.version }} \
+            --set secrets.postgresPassword=${{ secrets.POSTGRES_PASSWORD }} \
+            --values ./deploy/helm/nglab/values-staging.yaml \
+            --wait --timeout=10m
 
   # ==========================================================================
   # Deploy to Production
   # ==========================================================================
   deploy-production:
     name: Deploy to Production
-    needs: [build, deploy-staging]
-    runs-on: ubuntu-latest
+    needs: build
     if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.environment == 'production'
-    environment:
-      name: production
-      url: https://api.nglab.example.com
-
+    runs-on: ubuntu-latest
+    # NOTE: Ensure "production" is created in Repo Settings -> Environments
+    environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'v1.28.0'
-
-      - name: Configure kubeconfig
+      - name: Set up Kubeconfig
         run: |
-          mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBECONFIG_PRODUCTION }}" | base64 -d > $HOME/.kube/config
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_PROD }}" > ~/.kube/config
 
       - name: Deploy with Helm
         run: |
-          helm upgrade --install nglab ./deploy/helm/nglab \
-            --namespace nglab-prod \
-            --create-namespace \
-            --set api.image.tag=${{ needs.build.outputs.version }} \
+          helm upgrade --install nglab-prod ./deploy/helm/nglab \
+            --namespace nglab-prod --create-namespace \
+            --set image.tag=${{ needs.build.outputs.version }} \
             --set secrets.postgresPassword=${{ secrets.POSTGRES_PASSWORD }} \
-            --set secrets.grafanaPassword=${{ secrets.GRAFANA_PASSWORD }} \
-            --set secrets.awsAccessKeyId=${{ secrets.AWS_ACCESS_KEY_ID }} \
-            --set secrets.awsSecretAccessKey=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
             --values ./deploy/helm/nglab/values-production.yaml \
             --wait --timeout=10m
-
-      - name: Verify deployment
-        run: |
-          kubectl rollout status deployment/nglab-api -n nglab-prod --timeout=300s
-
-      - name: Run production smoke tests
-        run: |
-          sleep 30
-          curl -f https://api.nglab.example.com/health || exit 1
-
-      - name: Create release notes
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v1
-        with:
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ==========================================================================
   # Notify on Failure

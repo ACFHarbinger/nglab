@@ -81,7 +81,8 @@ pub fn run() {
             commands::integrations::search_public_polymarket_markets,
             commands::health::health_check,
             commands::health::get_system_info,
-            commands::health::set_debug_mode
+            commands::health::set_debug_mode,
+            commands::health::get_memory_usage
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

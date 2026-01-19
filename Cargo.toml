@@ -4,3 +4,6 @@ members = [
     "rust",
     "typescript/src-tauri"
 ]
+
+[profile.release]
+debug = true
