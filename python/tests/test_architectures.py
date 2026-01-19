@@ -109,12 +109,10 @@ class TestAutoEncoders:
 
     def test_stacked_ae(self):
         x = torch.randn(4, 10)
-        st_ae = StackedAutoEncoder(
-            layer_sizes=[10, 8, 4], output_type="prediction"
-        )
+        st_ae = StackedAutoEncoder(layer_sizes=[10, 8, 4], output_type="prediction")
         # 10 -> 8 -> 4 (latent) -> 8 -> 10 (recon)
         assert st_ae(x).shape == (4, 10)
-        
+
         # Test sequences
         x_seq = torch.randn(4, 5, 10)
         assert st_ae(x_seq, return_sequence=True).shape == (4, 5, 10)
@@ -487,6 +485,7 @@ class TestBackboneIntegration:
         assert z.shape == (4, 10)
         assert log_det.shape == (4,)
 
+
 class TestLVQ:
     def test_lvq_forward(self):
         model = LVQ(input_dim=10, num_classes=3, output_type="prediction")
@@ -494,7 +493,7 @@ class TestLVQ:
         # Check prediction shape
         out = model(x)
         assert out.shape == (4, 1)
-        
+
     def test_lvq_embedding(self):
         model = LVQ(input_dim=10, num_classes=3, output_type="embedding")
         x = torch.randn(4, 10)
@@ -509,4 +508,6 @@ class TestLVQ:
         y = torch.randint(0, 2, (4, 1))
         loss = model.training_step(x, y)
         assert loss is not None
-        assert loss.grad_fn is not None or loss.requires_grad # Ensure it's part of graph
+        assert (
+            loss.grad_fn is not None or loss.requires_grad
+        )  # Ensure it's part of graph

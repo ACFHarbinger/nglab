@@ -8,6 +8,7 @@ from typing import Dict, List, Optional, Any, Tuple
 from nglab import PolymarketArena
 from .strategy import Strategy
 
+
 class BacktestEngine:
     """
     Python wrapper for driving backtests using PolymarketArena.
@@ -28,13 +29,13 @@ class BacktestEngine:
     def load_data(self, markets_json: str, price_histories: Dict[str, str]) -> None:
         """
         Load market metadata and price history into the arena.
-        
+
         Args:
             markets_json: JSON string containing market metadata.
             price_histories: Dict mapping market_id to CSV string data.
         """
         self.arena.load_markets(markets_json)
-        
+
         # Extract market IDs from JSON to facilitate looping
         try:
             markets = json.loads(markets_json)
@@ -53,7 +54,7 @@ class BacktestEngine:
             raise ValueError("No strategy assigned to the engine.")
 
         self.history = []
-        
+
         running = True
         while running:
             # 1. Update strategy with current prices
@@ -62,15 +63,19 @@ class BacktestEngine:
                 if price is not None:
                     # In a real event-driven engine, we'd only signal changes,
                     # but for replay we can signal every tick.
-                    self.strategy.on_market_data(market_id, price, self.arena.current_step())
+                    self.strategy.on_market_data(
+                        market_id, price, self.arena.current_step()
+                    )
 
             # 2. Record state
-            self.history.append({
-                "step": self.arena.current_step(),
-                "collateral": self.arena.collateral(),
-                "account_value": self.arena.account_value(),
-                "realized_pnl": self.arena.realized_pnl(),
-            })
+            self.history.append(
+                {
+                    "step": self.arena.current_step(),
+                    "collateral": self.arena.collateral(),
+                    "account_value": self.arena.account_value(),
+                    "realized_pnl": self.arena.realized_pnl(),
+                }
+            )
 
             # 3. Advance to next tick
             running = self.arena.advance()

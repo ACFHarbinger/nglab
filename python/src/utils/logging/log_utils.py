@@ -23,7 +23,7 @@ def log_timeseries_values(
     step: int,
     output: torch.Tensor,
     tb_logger: Any,
-    opts: Dict[str, Any]
+    opts: Dict[str, Any],
 ) -> None:
     """
     Log training metrics to console, TensorBoard, and WandB.
@@ -33,12 +33,14 @@ def log_timeseries_values(
     # Log values to screen
     if step % (opts.get("log_step", 1) * 10) == 0:
         print(f"epoch: {epoch}, train_batch_id: {batch_id}, loss: {loss:.6f}")
-        print(f"grad_norm: {grad_norms_all[0]:.6f}, clipped: {grad_norms_clipped[0]:.6f}")
+        print(
+            f"grad_norm: {grad_norms_all[0]:.6f}, clipped: {grad_norms_clipped[0]:.6f}"
+        )
 
     # Log values to tensorboard
     if not opts.get("no_tensorboard", False):
         tb_logger.log_value("loss", loss, step)
-        
+
         # Log representative predictions
         if output.dim() >= 1:
             representative_out = output[0].detach().cpu().numpy()
@@ -50,13 +52,15 @@ def log_timeseries_values(
 
     # Log to WandB
     if opts.get("wandb_mode") != "disabled":
-        wandb.log({
-            "train/loss": loss,
-            "train/grad_norm": grad_norms_all[0],
-            "train/grad_norm_clipped": grad_norms_clipped[0],
-            "epoch": epoch,
-            "step": step
-        })
+        wandb.log(
+            {
+                "train/loss": loss,
+                "train/grad_norm": grad_norms_all[0],
+                "train/grad_norm_clipped": grad_norms_clipped[0],
+                "epoch": epoch,
+                "step": step,
+            }
+        )
 
 
 def log_epoch(
@@ -64,7 +68,7 @@ def log_epoch(
     epoch_duration: float,
     optimizer: torch.optim.Optimizer,
     opts: Dict[str, Any],
-    avg_loss: Optional[float] = None
+    avg_loss: Optional[float] = None,
 ) -> None:
     """
     Log summary of an epoch.
@@ -76,20 +80,14 @@ def log_epoch(
     print(log_msg)
 
     if opts.get("wandb_mode") != "disabled":
-        wandb_log = {
-            "epoch/duration": epoch_duration,
-            "epoch/lr": lr,
-            "epoch": epoch
-        }
+        wandb_log = {"epoch/duration": epoch_duration, "epoch/lr": lr, "epoch": epoch}
         if avg_loss is not None:
             wandb_log["epoch/avg_loss"] = avg_loss
         wandb.log(wandb_log)
 
 
 def plot_training_results(
-    df: pd.DataFrame,
-    save_path: str,
-    title: str = "Training Progress"
+    df: pd.DataFrame, save_path: str, title: str = "Training Progress"
 ) -> None:
     """
     Generate and save training progress plots.
@@ -97,7 +95,7 @@ def plot_training_results(
     plt.figure(figsize=(10, 6))
     if "loss" in df.columns:
         plt.plot(df["loss"], label="Loss")
-    
+
     plt.title(title)
     plt.xlabel("Step")
     plt.ylabel("Value")
@@ -123,16 +121,14 @@ def _convert_numpy(obj: Any) -> Any:
 
 
 def log_to_json_resilient(
-    json_path: str,
-    data: Dict[str, Any],
-    lock: Optional[Any] = None
+    json_path: str, data: Dict[str, Any], lock: Optional[Any] = None
 ) -> None:
     """
     Thread-safe and error-resilient JSON logger using a temporary file fallback.
     """
     if lock is not None:
         lock.acquire()
-    
+
     try:
         current_data = {}
         if os.path.isfile(json_path):
@@ -141,10 +137,10 @@ def log_to_json_resilient(
                     current_data = json.load(f)
             except (json.JSONDecodeError, IOError):
                 print(f"Warning: Failed to read {json_path}, starting fresh.")
-        
+
         # Merge data
         current_data.update(data)
-        
+
         # Write with fallback
         try:
             with open(json_path, "w") as f:
@@ -155,7 +151,7 @@ def log_to_json_resilient(
             print(f"Error writing to {json_path}: {e}. Falling back to {fallback_path}")
             with open(fallback_path, "w") as f:
                 json.dump(_convert_numpy(current_data), f, indent=4)
-                
+
     finally:
         if lock is not None:
             lock.release()

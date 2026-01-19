@@ -8,6 +8,7 @@ A collection of Autoencoder implementations for representation learning:
 - Stacked AutoEncoder
 - Variational AutoEncoder (VAE)
 """
+
 from .ae import AutoEncoder
 from .dae import DenoisingAE
 from .sae import SparseAE

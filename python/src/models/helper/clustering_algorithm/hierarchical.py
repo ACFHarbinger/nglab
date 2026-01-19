@@ -1,5 +1,6 @@
 from sklearn.cluster import AgglomerativeClustering
 
+
 class HierarchicalClusteringAlgorithm:
     def __init__(self, n_clusters=2, **kwargs):
         self.model = AgglomerativeClustering(n_clusters=n_clusters, **kwargs)

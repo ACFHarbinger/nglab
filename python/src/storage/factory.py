@@ -38,6 +38,5 @@ def create_storage(config: StorageConfig | None = None) -> ModelStorage:
         return GCSStorage(config)
     else:
         raise ValueError(
-            f"Unknown storage type: {storage_type}. "
-            f"Supported types: local, s3, gcs"
+            f"Unknown storage type: {storage_type}. " f"Supported types: local, s3, gcs"
         )

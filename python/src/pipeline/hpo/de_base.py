@@ -89,7 +89,9 @@ class DifferentialEvolutionBase:
             for i, hp in enumerate(list(cs.values())):
                 # maps hyperparameter name to positional index in vector form
                 self.hps[hp.name] = i
-        self.output_path = Path(kwargs["output_path"]) if "output_path" in kwargs else Path("./")
+        self.output_path = (
+            Path(kwargs["output_path"]) if "output_path" in kwargs else Path("./")
+        )
         self.output_path.mkdir(parents=True, exist_ok=True)
 
         if config_repository:
@@ -165,14 +167,20 @@ class DifferentialEvolutionBase:
                 population = [population]
             # the population is maintained in a list-of-vector form where each CS
             # configuration is scaled to a unit hypercube, i.e., all dimensions scaled to [0,1]
-            population = [self.configspace_to_vector(individual) for individual in population]
+            population = [
+                self.configspace_to_vector(individual) for individual in population
+            ]
         else:
             # if no CS representation available, uniformly sample from [0, 1]
-            population = self.rng.uniform(low=0.0, high=1.0, size=(pop_size, self.dimensions))
+            population = self.rng.uniform(
+                low=0.0, high=1.0, size=(pop_size, self.dimensions)
+            )
 
         return np.array(population)
 
-    def sample_population(self, size: int = 3, alt_pop: NDArray[np.float64] = None) -> NDArray[np.float64]:
+    def sample_population(
+        self, size: int = 3, alt_pop: NDArray[np.float64] = None
+    ) -> NDArray[np.float64]:
         """Samples 'size' individuals
 
         If alt_pop is None or a list/array of None, sample from own population
@@ -181,16 +189,22 @@ class DifferentialEvolutionBase:
         if isinstance(alt_pop, list) or isinstance(alt_pop, np.ndarray):
             idx = [indv is None for indv in alt_pop]
             if any(idx):
-                selection = self.rng.choice(np.arange(len(self.population)), size, replace=False)
+                selection = self.rng.choice(
+                    np.arange(len(self.population)), size, replace=False
+                )
                 return self.population[selection]
             else:
                 if len(alt_pop) < 3:
                     alt_pop = np.vstack((alt_pop, self.population))
-                selection = self.rng.choice(np.arange(len(alt_pop)), size, replace=False)
+                selection = self.rng.choice(
+                    np.arange(len(alt_pop)), size, replace=False
+                )
                 alt_pop = np.stack(alt_pop)
                 return alt_pop[selection]
         else:
-            selection = self.rng.choice(np.arange(len(self.population)), size, replace=False)
+            selection = self.rng.choice(
+                np.arange(len(self.population)), size, replace=False
+            )
             return self.population[selection]
 
     def boundary_check(self, vector: np.ndarray) -> np.ndarray:
@@ -213,7 +227,9 @@ class DifferentialEvolutionBase:
         if len(violations) == 0:
             return vector
         if self.fix_type == "random":
-            vector[violations] = self.rng.uniform(low=0.0, high=1.0, size=len(violations))
+            vector[violations] = self.rng.uniform(
+                low=0.0, high=1.0, size=len(violations)
+            )
         else:
             vector[violations] = np.clip(vector[violations], a_min=0, a_max=1)
         return vector
@@ -224,7 +240,9 @@ class DifferentialEvolutionBase:
         Works when self.cs is a CS object and the input vector is in the domain [0, 1].
         """
         # creates a CS object dict with all hyperparameters present, the inactive too
-        new_config = CSU.impute_inactive_values(self.cs.get_default_configuration()).get_dictionary()
+        new_config = CSU.impute_inactive_values(
+            self.cs.get_default_configuration()
+        ).get_dictionary()
         # iterates over all hyperparameters and normalizes each based on its type
         for i, hyper in enumerate(list(self.cs.values())):
             if isinstance(hyper, CS.OrdinalHyperparameter):
@@ -243,13 +261,17 @@ class DifferentialEvolutionBase:
                 else:
                     param_value = hyper.lower + (hyper.upper - hyper.lower) * vector[i]
                 if isinstance(hyper, CS.UniformIntegerHyperparameter):
-                    param_value = int(np.round(param_value))  # converting to discrete (int)
+                    param_value = int(
+                        np.round(param_value)
+                    )  # converting to discrete (int)
                 else:
                     param_value = float(param_value)
             new_config[hyper.name] = param_value
         # the mapping from unit hypercube to the actual config space may lead to illegal
         # configurations based on conditions defined, which need to be deactivated/removed
-        new_config = CSU.deactivate_inactive_hyperparameters(configuration=new_config, configuration_space=self.cs)
+        new_config = CSU.deactivate_inactive_hyperparameters(
+            configuration=new_config, configuration_space=self.cs
+        )
         return new_config
 
     def configspace_to_vector(self, config: CS.Configuration) -> np.ndarray:
@@ -273,12 +295,16 @@ class DifferentialEvolutionBase:
                 nlevels = len(hyper.choices)
                 vector[i] = hyper.choices.index(config[name]) / nlevels
             elif isinstance(hyper, CS.Constant):
-                vector[i] = 0  # set constant to 0, so that it wont be affected by mutation
+                vector[i] = (
+                    0  # set constant to 0, so that it wont be affected by mutation
+                )
             else:
                 bounds = (hyper.lower, hyper.upper)
                 param_value = config[name]
                 if hyper.log:
-                    vector[i] = np.log(param_value / bounds[0]) / np.log(bounds[1] / bounds[0])
+                    vector[i] = np.log(param_value / bounds[0]) / np.log(
+                        bounds[1] / bounds[0]
+                    )
                 else:
                     vector[i] = (config[name] - bounds[0]) / (bounds[1] - bounds[0])
         return np.array(vector)

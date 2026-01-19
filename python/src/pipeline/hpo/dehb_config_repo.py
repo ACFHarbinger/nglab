@@ -123,7 +123,9 @@ class ConfigRepository:
         }
         config_item.results[fidelity] = result_item
 
-    def tell_result(self, config_id: int, fidelity: float, score: float, cost: float, info: dict):
+    def tell_result(
+        self, config_id: int, fidelity: float, score: float, cost: float, info: dict
+    ):
         """Logs the achieved performance, cost etc. of a specific configuration-fidelity pair.
 
         Args:

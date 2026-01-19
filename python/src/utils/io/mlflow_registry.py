@@ -5,11 +5,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class ModelRegistry:
     """
     MLflow-based model versioning and registry.
-    
-    Handles logging of hyperparameters, metrics, and PyTorch models to a 
+
+    Handles logging of hyperparameters, metrics, and PyTorch models to a
     centralized tracking server or local storage.
     """
 
@@ -32,7 +33,7 @@ class ModelRegistry:
     ) -> None:
         """
         Log a model with its evaluation metrics and hyperparameters.
-        
+
         Args:
             model: The PyTorch model instance to log.
             artifact_path: Local path or relative name for the model artifact.
@@ -66,7 +67,7 @@ class ModelRegistry:
     def load_model(self, model_name: str, version: str = "latest") -> Any:
         """
         Load a registered model from the registry.
-        
+
         Args:
             model_name: Name of the model in the registry.
             version: Specific version number or 'latest'.
@@ -80,9 +81,7 @@ class ModelRegistry:
             logger.error(f"Failed to load model from MLflow: {e}")
             raise
 
-    def transition_model_stage(
-        self, model_name: str, version: int, stage: str
-    ) -> None:
+    def transition_model_stage(self, model_name: str, version: int, stage: str) -> None:
         """
         Transition a model version to a different stage (e.g., 'Staging', 'Production').
         """

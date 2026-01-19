@@ -17,7 +17,9 @@ from python.src.utils.functions.model_utils import get_inner_model
 from python.src.utils.logging.log_utils import log_epoch, log_timeseries_values
 
 
-def rollout(model: torch.nn.Module, dataset: torch.utils.data.Dataset[Any], opts: Dict[str, Any]) -> torch.Tensor:
+def rollout(
+    model: torch.nn.Module, dataset: torch.utils.data.Dataset[Any], opts: Dict[str, Any]
+) -> torch.Tensor:
     """
     Perform evaluation rollout on a dataset.
 
@@ -36,21 +38,25 @@ def rollout(model: torch.nn.Module, dataset: torch.utils.data.Dataset[Any], opts
         Evaluate a single batch.
         """
         with torch.no_grad():
-            cost, _ = cast(Tuple[torch.Tensor, Any], model(move_to(bat, opts["device"])))
+            cost, _ = cast(
+                Tuple[torch.Tensor, Any], model(move_to(bat, opts["device"]))
+            )
         return cost.data.cpu()
 
     dataloader = torch.utils.data.DataLoader(
         dataset, batch_size=opts["eval_batch_size"], pin_memory=True
     )
-    
+
     results = []
     for bat in tqdm(dataloader, disable=opts["no_progress_bar"]):
         results.append(eval_model_bat(bat))
-        
+
     return torch.cat(results, 0)
 
 
-def clip_grad_norms(param_groups: Any, max_norm: float = math.inf) -> Tuple[List[float], List[float]]:
+def clip_grad_norms(
+    param_groups: Any, max_norm: float = math.inf
+) -> Tuple[List[float], List[float]]:
     """
     Clips the norms for all param groups to max_norm and returns gradient norms before clipping
     :param param_groups:
@@ -81,7 +87,7 @@ def train_epoch(
     epoch: int,
     dataset: torch.utils.data.Dataset[Any],
     tb_logger: Any,
-    opts: Dict[str, Any]
+    opts: Dict[str, Any],
 ) -> None:
     """
     Train the model for one epoch.
@@ -102,7 +108,7 @@ def train_epoch(
     training_dataloader = torch.utils.data.DataLoader(
         dataset, batch_size=opts["batch_size"], shuffle=True
     )
-    
+
     for batch_id, batch in enumerate(
         tqdm(training_dataloader, disable=opts["no_progress_bar"])
     ):
@@ -144,7 +150,7 @@ def train_batch(
     batch: Dict[str, torch.Tensor],
     step: int,
     tb_logger: Any,
-    opts: Dict[str, Any]
+    opts: Dict[str, Any],
 ) -> None:
     """
     Train the model on a single batch.

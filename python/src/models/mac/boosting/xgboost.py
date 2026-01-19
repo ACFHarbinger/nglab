@@ -8,6 +8,7 @@ class XGBoostModel(ClassicalModel):
     """
     XGBoost wrapper for classification or regression.
     """
+
     def __init__(self, task="regression", **kwargs):
         """
         Initialize the XGBoost model.

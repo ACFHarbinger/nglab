@@ -32,6 +32,7 @@ class TradingEnvWrapper(GymWrapper):
             if num_envs > 1:
                 env = make_vec_env(num_envs=num_envs, **kwargs)
                 import torch
+
                 batch_size = torch.Size([num_envs])
             else:
                 env = TradingEnv(**kwargs)

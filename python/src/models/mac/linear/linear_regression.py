@@ -8,6 +8,7 @@ class LinearRegressionModel(ClassicalModel):
     """
     Linear Regression wrapper.
     """
+
     def __init__(self, **kwargs):
         """
         Initialize the Linear Regression model.

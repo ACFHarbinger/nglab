@@ -238,5 +238,5 @@ class GCSStorage(ModelStorage):
         """Remove old versions beyond max_versions."""
         versions = self.list_versions(name)
         if len(versions) > self.config.max_versions:
-            for old_version in versions[self.config.max_versions:]:
+            for old_version in versions[self.config.max_versions :]:
                 self.delete(name, old_version)

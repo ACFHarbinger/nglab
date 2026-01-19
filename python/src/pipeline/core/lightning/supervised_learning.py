@@ -187,7 +187,7 @@ def train_from_csv(
             "max": train_dataset.raw_max,
             "mean": train_dataset.raw_mean,
             "std": train_dataset.raw_std,
-        }
+        },
     }
 
     # Add any extra model params with intelligent casting
@@ -223,7 +223,7 @@ def train_from_csv(
     # Training loop
     best_val_loss = float("inf")
     best_model_state = None
-    
+
     for epoch in range(epochs):
         # Train
         model.train()
@@ -233,7 +233,7 @@ def train_from_csv(
             y = batch["target"].to(device)
 
             optimizer.zero_grad()
-            pred = model(x) # [B, pred_len]
+            pred = model(x)  # [B, pred_len]
             # y is already [B, pred_len] from dataset collate
             loss = F.mse_loss(pred, y)
             loss.backward()
@@ -259,6 +259,7 @@ def train_from_csv(
         if avg_val_loss is not None and avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
             import copy
+
             best_model_state = copy.deepcopy(model.state_dict())
 
         # Step scheduler
@@ -275,7 +276,9 @@ def train_from_csv(
     if output_path is None:
         output_dir = Path(__file__).parent.parent.parent.parent.parent / "model_weights"
         output_dir.mkdir(exist_ok=True)
-        output_path_resolved = str(output_dir / f"{model_name.lower()}_{target_column}.pt")
+        output_path_resolved = str(
+            output_dir / f"{model_name.lower()}_{target_column}.pt"
+        )
     else:
         output_path_resolved = output_path
 

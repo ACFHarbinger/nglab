@@ -19,9 +19,5 @@ def add_hpo_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--gpus_per_trial", type=float, default=0.0, help="GPUs to allocate per trial"
     )
-    parser.add_argument(
-        "--data_dir", help="Path to data directory"
-    )
-    parser.add_argument(
-        "--seed", type=int, default=1234, help="Random seed"
-    )
+    parser.add_argument("--data_dir", help="Path to data directory")
+    parser.add_argument("--seed", type=int, default=1234, help="Random seed")

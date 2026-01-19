@@ -3,11 +3,13 @@ import numpy as np
 
 class Arena:
     """The main simulation environment."""
+
     def __init__(self) -> None: ...
     def step_count(self) -> int: ...
 
 class OrderBook:
     """Central Limit Order Book (CLOB) simulator."""
+
     def __init__(self) -> None: ...
     def best_bid(self) -> float: ...
     def best_ask(self) -> float: ...
@@ -19,6 +21,7 @@ class OrderBook:
 
 class PolymarketArena:
     """Polymarket trading arena for simulation and backtesting."""
+
     def __init__(self, initial_collateral: float, taker_fee: float) -> None: ...
     def account_value(self) -> float: ...
     def collateral(self) -> float: ...
@@ -42,23 +45,20 @@ class TradingEnv:
     Trading environment with Gymnasium interface.
     Wraps market simulation logic into a standard RL format.
     """
+
     def __init__(
-        self, 
-        initial_capital: float = 10000.0, 
-        transaction_cost: float = 0.001, 
-        lookback: int = 30, 
-        max_steps: int = 1000, 
-        enable_logging: bool = True
+        self,
+        initial_capital: float = 10000.0,
+        transaction_cost: float = 0.001,
+        lookback: int = 30,
+        max_steps: int = 1000,
+        enable_logging: bool = True,
     ) -> None: ...
-    
     def reset(
-        self, 
-        seed: Optional[int] = None, 
-        options: Optional[Dict[str, Any]] = None
+        self, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None
     ) -> Tuple[np.ndarray, Dict[str, Any]]: ...
-    
-    def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]: ...
-    
+    def step(
+        self, action: int
+    ) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]: ...
     def load_prices(self, prices: List[float]) -> None: ...
-    
     def get_observation(self) -> np.ndarray: ...

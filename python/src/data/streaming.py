@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class StreamingFinancialDataset(IterableDataset):
     """
     Iterable Dataset for streaming large financial datasets from CSV/Parquet files.
-    
+
     Supports:
     - Chunked reading to minimize memory usage
     - Multi-worker support (splitting files or chunks across workers)
@@ -80,18 +80,21 @@ class StreamingFinancialDataset(IterableDataset):
 
                 parquet_file = pq.ParquetFile(self.filepath)
                 # Convert pyarrow batches to pandas
-                return (batch.to_pandas() for batch in parquet_file.iter_batches(batch_size=self.chunk_size))
+                return (
+                    batch.to_pandas()
+                    for batch in parquet_file.iter_batches(batch_size=self.chunk_size)
+                )
             except ImportError:
-                 logger.error("PyArrow is required for streaming Parquet files.")
-                 raise
+                logger.error("PyArrow is required for streaming Parquet files.")
+                raise
         else:
             raise ValueError(f"Unsupported file format: {self.file_format}")
 
     def _process_chunk(self, chunk: pd.DataFrame) -> Iterator[Dict[str, Any]]:
         """Yield individual samples from a chunk."""
-        # Convert to dict records or keep as tensor rows? 
+        # Convert to dict records or keep as tensor rows?
         # Usually datasets yield individual items.
-        
+
         # If we have a huge shuffle buffer, we would add to buffer here.
         # For simplicity, we iterate rows.
         for _, row in chunk.iterrows():
@@ -104,7 +107,7 @@ class StreamingFinancialDataset(IterableDataset):
     def __iter__(self) -> Iterator[Dict[str, Any]]:
         """Iterate over the dataset."""
         worker_info = get_worker_info()
-        
+
         # NOTE: For a single huge file, splitting work among workers is tricky without
         # distinct files. Common strategy:
         # 1. Each worker reads the whole file but skips items (inefficient IO).
@@ -115,25 +118,25 @@ class StreamingFinancialDataset(IterableDataset):
         # A simple naive approach for CSV:
         # Worker i processes every Nth chunk? Or we just duplicate data if not careful.
         #
-        # Improved Strategy: 
+        # Improved Strategy:
         # If we had multiple files, we'd split file list.
-        # With one file, we might warn or just accept that multiple workers duplicate data 
+        # With one file, we might warn or just accept that multiple workers duplicate data
         # unless manual sharding logic is added (e.g. byte offsets).
         #
         # For now, we will log a warning if standard workers > 0 and single file.
-        
+
         if worker_info is not None and worker_info.num_workers > 1:
             logger.warning(
                 f"StreamingFinancialDataset used with {worker_info.num_workers} workers on a single file. "
                 "Data might be duplicated or handling split inefficiently."
             )
-        
+
         # Shuffle buffer state
         buffer: List[Dict[str, Any]] = []
 
         def iterator_logic():
             dataset_iter = self._get_iterator()
-            
+
             for chunk in dataset_iter:
                 # Naive shuffling: Accumulate a buffer
                 if self.shuffle_buffer_size > 0:
@@ -141,7 +144,7 @@ class StreamingFinancialDataset(IterableDataset):
                         item = row.to_dict()
                         if self.transform:
                             item = self.transform(item)
-                        
+
                         if len(buffer) < self.shuffle_buffer_size:
                             buffer.append(item)
                         else:
@@ -152,7 +155,7 @@ class StreamingFinancialDataset(IterableDataset):
                 else:
                     # Direct yield
                     yield from self._process_chunk(chunk)
-            
+
             # Yield remaining buffer
             if self.shuffle_buffer_size > 0:
                 random.shuffle(buffer)

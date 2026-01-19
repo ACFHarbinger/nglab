@@ -39,6 +39,7 @@ def cuda_available():
 def device(cuda_available):
     """Return the primary device (cuda:0 or cpu)."""
     import torch
+
     return torch.device("cuda:0" if cuda_available else "cpu")
 
 
@@ -48,20 +49,20 @@ def clean_gpu_cache(cuda_available):
     yield
     if cuda_available:
         import torch
+
         torch.cuda.empty_cache()
 
 
 def pytest_configure(config):
     """Register the 'gpu' marker."""
-    config.addinivalue_line(
-        "markers", "gpu: mark tests that require a GPU"
-    )
+    config.addinivalue_line("markers", "gpu: mark tests that require a GPU")
 
 
 def pytest_collection_modifyitems(config, items):
     """Automatically skip GPU tests when CUDA is not available."""
     try:
         import torch
+
         has_cuda = torch.cuda.is_available()
     except ImportError:
         has_cuda = False
@@ -71,5 +72,3 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "gpu" in item.keywords and not has_cuda:
             item.add_marker(skip_gpu)
-
-

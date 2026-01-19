@@ -2,15 +2,16 @@
 Non-stationary Transformer for Time Series Forecasting.
 Adapted from the Time-Series-Library.
 """
+
 import torch
-from torch import nn 
+from torch import nn
 from python.src.models.deep.modules import (
     AttentionLayer,
     DSAttention,
     Normalization,
     SkipConnection,
     Transpose,
-    DataEmbedding
+    DataEmbedding,
 )
 
 

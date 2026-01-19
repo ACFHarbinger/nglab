@@ -93,7 +93,7 @@ def run_landscape_analysis() -> None:
     # deepcopy_model=True ensures the original model isn't modified
     landscape = loss_landscapes.random_plane(
         model,
-        lambda m: evaluate_model(m, env), # type: ignore[arg-type]
+        lambda m: evaluate_model(m, env),  # type: ignore[arg-type]
         distance=1,
         steps=steps,
         normalization="filter",

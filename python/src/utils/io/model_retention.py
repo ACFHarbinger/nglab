@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RetentionConfig:
     """Configuration for model retention."""
+
     keep_latest_n: int = 5
     keep_best_metric: Optional[str] = "val_loss"
     keep_best_n: int = 1
@@ -27,10 +28,11 @@ class RetentionConfig:
 
 class CheckpointManagerProtocol(Protocol):
     """Protocol for checkpoint managers (local or cloud)."""
-    
+
     def list_versions(self, model_type: str) -> List[str]: ...
-    
+
     def delete(self, model_type: str, version: str) -> bool: ...
+
     # Note: different managers might unfortunately use delete vs delete_checkpoint
     # We'll need to adapt.
 
@@ -38,18 +40,18 @@ class CheckpointManagerProtocol(Protocol):
 class ModelRetentionPolicy:
     """
     Enforces retention policies on model checkpoints.
-    
+
     Can clean up old versions based on count, age, or performance metrics.
     """
 
     def __init__(
         self,
         config: RetentionConfig,
-        manager: Union[ModelRegistry, CloudCheckpointManager], 
+        manager: Union[ModelRegistry, CloudCheckpointManager],
     ):
         """
         Initialize retention policy.
-        
+
         Args:
             config: Retention rules.
             manager: The storage manager to act upon (ModelRegistry or CloudCheckpointManager).
@@ -81,7 +83,7 @@ class ModelRetentionPolicy:
     def cleanup_versions(self, model_type: str) -> int:
         """
         Clean up versions for a specific model type according to policy.
-        
+
         Returns:
             Number of versions deleted.
         """
@@ -89,18 +91,18 @@ class ModelRetentionPolicy:
         if not versions:
             logger.info(f"No versions found for {model_type}")
             return 0
-        
+
         # Sort versions. Assuming semantic versioning or comparable strings.
-        # We might want to sort by timestamp if available, but here we assume 
+        # We might want to sort by timestamp if available, but here we assume
         # lexicographical or semantic sort roughly correlates with time for now,
         # or that list_versions returns sorted.
         # Ideally, we'd fetch metadata for all to get timestamps.
-        
+
         # For simple 'keep latest N', we assume the list is sorted or we sort it.
         # Let's try to sort assuming semantic versioning if possible.
         try:
             # Simple sort (lexicographical usually works for fixed-width or simple semver)
-            sorted_versions = sorted(versions) 
+            sorted_versions = sorted(versions)
         except Exception:
             sorted_versions = versions
 
@@ -112,21 +114,21 @@ class ModelRetentionPolicy:
             return 0
 
         # Versions to keep based on recency
-        versions_to_keep = set(sorted_versions[-self.config.keep_latest_n:])
-        
+        versions_to_keep = set(sorted_versions[-self.config.keep_latest_n :])
+
         # Identify versions to delete
         versions_to_delete = []
         for v in sorted_versions:
             if v not in versions_to_keep:
                 versions_to_delete.append(v)
-        
+
         # Perform deletion
         deleted_count = 0
         for v in versions_to_delete:
             if self._delete_version(model_type, v):
                 deleted_count += 1
                 logger.info(f" Deleted {model_type} v{v}")
-        
+
         return deleted_count
 
     def enforce_all(self, model_types: List[str]) -> Dict[str, int]:

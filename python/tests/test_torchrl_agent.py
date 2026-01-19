@@ -29,10 +29,10 @@ class TestTorchRLAgent(unittest.TestCase):
 
         # TorchRL GymWrapper typically puts resulting state in 'next'
         self.assertTrue("next" in next_td.keys())
-        
+
         # Explicitly cast to TensorDict for type checking
         next_state = cast(TensorDict, next_td["next"])
-        
+
         self.assertTrue("reward" in next_state.keys())
         self.assertTrue(
             "done" in next_state.keys() or "terminated" in next_state.keys()

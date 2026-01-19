@@ -8,6 +8,7 @@ class kNNModel(ClassicalModel):
     """
     k-Nearest Neighbors wrapper for classification or regression.
     """
+
     def __init__(self, task="regression", n_neighbors=5, **kwargs):
         """
         Initialize the k-NN model.

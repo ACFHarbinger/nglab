@@ -92,9 +92,7 @@ class LocalStorage(ModelStorage):
 
         model_path = self._version_path(name, version)
         if not model_path.exists():
-            raise FileNotFoundError(
-                f"Model '{name}' version '{version}' not found"
-            )
+            raise FileNotFoundError(f"Model '{name}' version '{version}' not found")
 
         with open(model_path, "rb") as f:
             compressed_data = f.read()
@@ -133,7 +131,8 @@ class LocalStorage(ModelStorage):
         if not self.base_path.exists():
             return []
         return [
-            d.name for d in self.base_path.iterdir()
+            d.name
+            for d in self.base_path.iterdir()
             if d.is_dir() and not d.name.startswith(".")
         ]
 
@@ -143,10 +142,7 @@ class LocalStorage(ModelStorage):
         if not model_dir.exists():
             return []
         return sorted(
-            [
-                f.stem for f in model_dir.glob("*.pt")
-                if f.stem != "latest"
-            ],
+            [f.stem for f in model_dir.glob("*.pt") if f.stem != "latest"],
             reverse=True,
         )
 
@@ -183,5 +179,5 @@ class LocalStorage(ModelStorage):
         """Remove old versions beyond max_versions."""
         versions = self.list_versions(name)
         if len(versions) > self.config.max_versions:
-            for old_version in versions[self.config.max_versions:]:
+            for old_version in versions[self.config.max_versions :]:
                 self.delete(name, old_version)

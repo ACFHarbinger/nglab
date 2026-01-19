@@ -88,11 +88,11 @@ DEEP_MODEL_NAMES = [
 def create_deep_model(model_name: str, cfg: dict):
     """
     Factory function to create deep learning models.
-    
+
     Args:
         model_name: Name of the model to create.
         cfg: Configuration dictionary.
-        
+
     Returns:
         Instantiated model or None if not a deep model.
     """
@@ -274,8 +274,7 @@ def create_deep_model(model_name: str, cfg: dict):
         )
     elif model_name == "DBN":
         return DeepBeliefNetwork(
-            layer_sizes=[cfg.get("feature_dim", 12)]
-            + cfg.get("hidden_dims", [64, 32]),
+            layer_sizes=[cfg.get("feature_dim", 12)] + cfg.get("hidden_dims", [64, 32]),
             output_type=cfg.get("output_type", "prediction"),
         )
     elif model_name == "DCN":
@@ -413,5 +412,5 @@ def create_deep_model(model_name: str, cfg: dict):
             dropout=cfg.get("dropout", 0.1),
             activation=cfg.get("activation", "gelu"),
         )
-    
+
     return None

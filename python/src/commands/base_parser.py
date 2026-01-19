@@ -18,7 +18,9 @@ class ConfigsParser(argparse.ArgumentParser):
         self.print_help()
         sys.exit(2)
 
-    def parse_process_args(self, args: Optional[List[str]] = None) -> Tuple[str, Dict[str, Any]]:
+    def parse_process_args(
+        self, args: Optional[List[str]] = None
+    ) -> Tuple[str, Dict[str, Any]]:
         """
         Parses arguments and returns the command and options dictionary.
         """
@@ -27,10 +29,10 @@ class ConfigsParser(argparse.ArgumentParser):
 
         parsed_args = vars(self.parse_args(args))
         command = parsed_args.pop("command", None)
-        
+
         if command is None:
             self.error("No command specified.")
-            
+
         return str(command), parsed_args
 
 
@@ -56,5 +58,7 @@ class StoreDictKeyPair(argparse.Action):
                     k, v = kv.split("=", 1)
                     my_dict[k] = v
                 else:
-                    raise argparse.ArgumentError(self, f"Could not parse argument '{kv}' as key=value format")
+                    raise argparse.ArgumentError(
+                        self, f"Could not parse argument '{kv}' as key=value format"
+                    )
         setattr(namespace, self.dest, my_dict)

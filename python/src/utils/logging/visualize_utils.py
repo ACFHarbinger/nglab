@@ -28,7 +28,9 @@ from python.src.utils.functions.functions import load_model
 # --- UTILS ---
 
 
-def get_batch(device: torch.device, seq_len: int = 30, batch_size: int = 32, feature_dim: int = 12) -> torch.Tensor:
+def get_batch(
+    device: torch.device, seq_len: int = 30, batch_size: int = 32, feature_dim: int = 12
+) -> torch.Tensor:
     """
     Generates a random batch of sequential trading data for visualization purposes.
 
@@ -59,7 +61,9 @@ class MyModelWrapper(nn.Module):
         return self.model(x)
 
 
-def load_model_instance(model_path: str, device: torch.device) -> Tuple[nn.Module, Dict[str, Any]]:
+def load_model_instance(
+    model_path: str, device: torch.device
+) -> Tuple[nn.Module, Dict[str, Any]]:
     """
     Loads a model for visualization using the project's standard loading utility.
 
@@ -112,11 +116,13 @@ def plot_weight_trajectories(checkpoint_dir: str, output_file: str) -> None:
             state_dict = checkpoint.get("model", checkpoint)
 
             # Flatten all parameters into a single vector
-            tensors = [p.flatten() for p in state_dict.values() if isinstance(p, torch.Tensor)]
+            tensors = [
+                p.flatten() for p in state_dict.values() if isinstance(p, torch.Tensor)
+            ]
             if not tensors:
                 continue
             flat_weight = torch.cat(tensors).numpy()
-            
+
             weights.append(flat_weight)
             epochs.append(f.replace(".pt", ""))
         except Exception as e:
@@ -144,7 +150,9 @@ def plot_weight_trajectories(checkpoint_dir: str, output_file: str) -> None:
     print(f"Trajectory saved to {output_file}")
 
 
-def log_weight_distributions(model: nn.Module, epoch: int, log_dir: str, writer: Optional[SummaryWriter] = None) -> None:
+def log_weight_distributions(
+    model: nn.Module, epoch: int, log_dir: str, writer: Optional[SummaryWriter] = None
+) -> None:
     """
     Logs histograms of model weight distributions to TensorBoard.
 
@@ -168,7 +176,9 @@ def log_weight_distributions(model: nn.Module, epoch: int, log_dir: str, writer:
         print("Distributions logged.")
 
 
-def plot_logit_lens(model: nn.Module, x_batch: torch.Tensor, output_file: str, epoch: int = 0) -> None:
+def plot_logit_lens(
+    model: nn.Module, x_batch: torch.Tensor, output_file: str, epoch: int = 0
+) -> None:
     """
     Implements the 'Logit Lens' technique for NSTransformer models.
     Projects intermediate encoder layer outputs through the final projection
@@ -192,7 +202,7 @@ def plot_logit_lens(model: nn.Module, x_batch: torch.Tensor, output_file: str, e
     with torch.no_grad():
         # Dummy marks if models requires them
         x_mark = torch.zeros(x_batch.size(0), x_batch.size(1), 1, device=dev)
-        
+
         try:
             # We follow the forward pass logic
             if hasattr(model, "enc_embedding"):
@@ -201,7 +211,7 @@ def plot_logit_lens(model: nn.Module, x_batch: torch.Tensor, output_file: str, e
                 curr = x_batch
 
             layer_outputs = []
-            layer_outputs.append(curr) # Layer 0: Embedding
+            layer_outputs.append(curr)  # Layer 0: Embedding
 
             # Encoder layers
             encoder = getattr(model, "encoder")
@@ -225,7 +235,7 @@ def plot_logit_lens(model: nn.Module, x_batch: torch.Tensor, output_file: str, e
             plt.title(f"Logit Lens - Prediction Evolution (Epoch {epoch})")
             plt.xlabel("Output Dimension")
             plt.ylabel("Layer Index (0=Embed, 1..N=Encoder)")
-            
+
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
             plt.savefig(output_file)
             plt.close()
@@ -253,14 +263,14 @@ def mae_loss_fn(m: Any, x_batch: torch.Tensor, target: torch.Tensor) -> float:
 
 
 def plot_loss_landscape(
-    model: nn.Module, 
-    opts: Dict[str, Any], 
-    output_dir: str, 
-    epoch: int = 0, 
-    seq_len: int = 30, 
-    batch_size: int = 16, 
-    resolution: int = 10, 
-    span: float = 1.0
+    model: nn.Module,
+    opts: Dict[str, Any],
+    output_dir: str,
+    epoch: int = 0,
+    seq_len: int = 30,
+    batch_size: int = 16,
+    resolution: int = 10,
+    span: float = 1.0,
 ) -> None:
     """
     Computes and plots 2D loss landscapes for MAE loss.
@@ -280,17 +290,19 @@ def plot_loss_landscape(
     device = torch.device(opts.get("device", "cpu"))
 
     x_batch = get_batch(device, seq_len=seq_len, batch_size=batch_size)
-    
+
     with torch.no_grad():
         target = model(x_batch)
 
     print(f"Generating landscape surface ({resolution}x{resolution} grid)...")
-    
+
     try:
         landscape = loss_landscapes.random_plane(
             model,
-            lambda m: mae_loss_fn(m, x_batch, target), # type: ignore[arg-type]
-            distance=int(span) if span >= 1 else 1, # random_plane distance usually takes int steps? Wait, Mypy said int.
+            lambda m: mae_loss_fn(m, x_batch, target),  # type: ignore[arg-type]
+            distance=(
+                int(span) if span >= 1 else 1
+            ),  # random_plane distance usually takes int steps? Wait, Mypy said int.
             steps=resolution,
             normalization="filter",
             deepcopy_model=True,
@@ -302,7 +314,7 @@ def plot_loss_landscape(
         plt.title(f"Loss Landscape Contour (Epoch {epoch})")
         plt.savefig(os.path.join(output_dir, f"landscape_2d_epoch_{epoch}.png"))
         plt.close()
-        
+
         print(f"Loss landscape saved to {output_dir}")
     except Exception as e:
         print(f"Failed to compute Loss Landscape: {e}")
@@ -311,7 +323,9 @@ def plot_loss_landscape(
 # --- MAIN CONTROLLER ---
 
 
-def visualize_epoch(model: nn.Module, opts: Dict[str, Any], epoch: int, tb_logger: Optional[Any] = None) -> None:
+def visualize_epoch(
+    model: nn.Module, opts: Dict[str, Any], epoch: int, tb_logger: Optional[Any] = None
+) -> None:
     """
     Main entry point for visualization during training.
     """
@@ -346,7 +360,9 @@ def visualize_epoch(model: nn.Module, opts: Dict[str, Any], epoch: int, tb_logge
             )
 
         if "logit_lens" in viz_modes:
-            x_batch = get_batch(viz_opts["device"], seq_len=opts.get("lookback", 30), batch_size=1)
+            x_batch = get_batch(
+                viz_opts["device"], seq_len=opts.get("lookback", 30), batch_size=1
+            )
             plot_logit_lens(
                 model,
                 x_batch,

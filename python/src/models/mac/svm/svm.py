@@ -8,6 +8,7 @@ class SVMModel(ClassicalModel):
     """
     Support Vector Machine wrapper for classification (SVC) or regression (SVR).
     """
+
     def __init__(self, task="regression", kernel="rbf", **kwargs):
         """
         Initialize the SVM model.
@@ -26,5 +27,6 @@ class SVMModel(ClassicalModel):
 
 class SVRModel(SVMModel):
     """Support Vector Regression - Alias/Wrapper forcing regression task."""
+
     def __init__(self, **kwargs):
         super().__init__(task="regression", **kwargs)

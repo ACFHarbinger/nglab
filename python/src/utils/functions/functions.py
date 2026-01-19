@@ -44,7 +44,9 @@ def load_args(filename: str) -> Dict[str, Any]:
     return args
 
 
-def _load_model_file(load_path: str, model: torch.nn.Module) -> Tuple[torch.nn.Module, Optional[Dict[str, Any]]]:
+def _load_model_file(
+    load_path: str, model: torch.nn.Module
+) -> Tuple[torch.nn.Module, Optional[Dict[str, Any]]]:
     """
     Loads model parameters from a file.
 
@@ -78,7 +80,9 @@ def _load_model_file(load_path: str, model: torch.nn.Module) -> Tuple[torch.nn.M
     return model, load_optimizer_state_dict
 
 
-def load_model(path: str, epoch: Optional[int] = None) -> Tuple[torch.nn.Module, Dict[str, Any]]:
+def load_model(
+    path: str, epoch: Optional[int] = None
+) -> Tuple[torch.nn.Module, Dict[str, Any]]:
     """
     Load a model and its configuration from a directory or specific file.
 
@@ -110,7 +114,7 @@ def load_model(path: str, epoch: Optional[int] = None) -> Tuple[torch.nn.Module,
         args.get("model", "attention"), None
     )
     assert model_class is not None, f"Unknown model: {model_class}"
-    
+
     # Cast is needed because model_class is Union[Type[LSTM], Type[NSTransformer]]
     # but they share the same constructor signature
     model = model_class(

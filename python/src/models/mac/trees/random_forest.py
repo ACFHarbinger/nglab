@@ -8,6 +8,7 @@ class RandomForestModel(ClassicalModel):
     """
     Random Forest wrapper for classification or regression.
     """
+
     def __init__(self, task="regression", **kwargs):
         """
         Initialize the Random Forest model.

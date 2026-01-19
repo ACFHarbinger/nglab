@@ -170,9 +170,7 @@ class MixedPrecisionTrainer:
             # Unscale gradients for clipping
             if clip_grad_norm is not None:
                 self._scaler.unscale_(self.optimizer)
-                torch.nn.utils.clip_grad_norm_(
-                    self.model.parameters(), clip_grad_norm
-                )
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), clip_grad_norm)
 
             # Step with scaler
             self._scaler.step(self.optimizer)
@@ -180,9 +178,7 @@ class MixedPrecisionTrainer:
         else:
             # Standard step
             if clip_grad_norm is not None:
-                torch.nn.utils.clip_grad_norm_(
-                    self.model.parameters(), clip_grad_norm
-                )
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), clip_grad_norm)
             self.optimizer.step()
 
     def state_dict(self) -> dict:
@@ -311,25 +307,29 @@ def estimate_memory_savings(
     fp16_bytes = 2
 
     # Model weights memory
-    fp32_model_memory = total_params * fp32_bytes / (1024 ** 2)  # MB
+    fp32_model_memory = total_params * fp32_bytes / (1024**2)  # MB
 
     if "16" in precision or "bf16" in precision:
-        mixed_model_memory = total_params * fp16_bytes / (1024 ** 2)
+        mixed_model_memory = total_params * fp16_bytes / (1024**2)
     else:
         mixed_model_memory = fp32_model_memory
 
     # Optimizer states (Adam has 2 states per param)
-    fp32_optimizer_memory = trainable_params * fp32_bytes * 2 / (1024 ** 2)
+    fp32_optimizer_memory = trainable_params * fp32_bytes * 2 / (1024**2)
 
     # Gradients
-    fp32_gradient_memory = trainable_params * fp32_bytes / (1024 ** 2)
-    mixed_gradient_memory = trainable_params * fp16_bytes / (1024 ** 2)
+    fp32_gradient_memory = trainable_params * fp32_bytes / (1024**2)
+    mixed_gradient_memory = trainable_params * fp16_bytes / (1024**2)
 
     # Activations (rough estimate based on batch size and sequence length)
     # This is highly model-dependent
     activation_factor = batch_size * sequence_length
-    fp32_activation_memory = activation_factor * total_params * 0.01 * fp32_bytes / (1024 ** 2)
-    mixed_activation_memory = activation_factor * total_params * 0.01 * fp16_bytes / (1024 ** 2)
+    fp32_activation_memory = (
+        activation_factor * total_params * 0.01 * fp32_bytes / (1024**2)
+    )
+    mixed_activation_memory = (
+        activation_factor * total_params * 0.01 * fp16_bytes / (1024**2)
+    )
 
     fp32_total = (
         fp32_model_memory

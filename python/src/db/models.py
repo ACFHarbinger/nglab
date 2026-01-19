@@ -1,12 +1,20 @@
 from datetime import datetime
 from sqlalchemy import (
-    Column, String, Numeric, DateTime, Index, CheckConstraint, BigInteger
+    Column,
+    String,
+    Numeric,
+    DateTime,
+    Index,
+    CheckConstraint,
+    BigInteger,
 )
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import DeclarativeBase
 
+
 class Base(DeclarativeBase):
     pass
+
 
 class Trade(Base):
     __tablename__ = "trades"
@@ -29,6 +37,7 @@ class Trade(Base):
         Index("idx_trades_agent_id", "agent_id"),
     )
 
+
 class PortfolioSnapshot(Base):
     __tablename__ = "portfolio_snapshots"
 
@@ -47,11 +56,14 @@ class PortfolioSnapshot(Base):
         Index("idx_portfolio_agent_id", "agent_id"),
     )
 
+
 class ModelCheckpoint(Base):
     __tablename__ = "model_checkpoints"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
-    created_at = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, default=datetime.utcnow
+    )
     model_name = Column(String(100), nullable=False)
     version = Column(String(50), nullable=False)
     architecture = Column(String, nullable=False)
@@ -61,8 +73,11 @@ class ModelCheckpoint(Base):
     git_commit = Column(String(40))
 
     __table_args__ = (
-        Index("idx_model_checkpoints_name_version", "model_name", "version", unique=True),
+        Index(
+            "idx_model_checkpoints_name_version", "model_name", "version", unique=True
+        ),
     )
+
 
 class MarketData(Base):
     __tablename__ = "market_data"
@@ -78,5 +93,10 @@ class MarketData(Base):
     extra_metadata = Column(JSONB)
 
     __table_args__ = (
-        Index("idx_market_data_symbol_timestamp", "symbol", "timestamp", postgresql_using="btree"),
+        Index(
+            "idx_market_data_symbol_timestamp",
+            "symbol",
+            "timestamp",
+            postgresql_using="btree",
+        ),
     )

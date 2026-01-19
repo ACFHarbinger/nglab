@@ -5,6 +5,7 @@ This module provides the core logic and abstract base class for implementing
 DEHB optimization, which combines Differential Evolution with the Hyperband
 algorithm for efficient hyperparameter tuning with multi-fidelity support.
 """
+
 import sys
 import time
 from pathlib import Path
@@ -90,7 +91,9 @@ class DifferentialEvolutionHyperbandBase:
 
         # Benchmark related variables
         self.cs = cs
-        self.use_configspace = True if isinstance(self.cs, CS.ConfigurationSpace) else False
+        self.use_configspace = (
+            True if isinstance(self.cs, CS.ConfigurationSpace) else False
+        )
         if self.use_configspace:
             self.cs.seed(self._original_seed)
             self.dimensions = len(list(self.cs.values()))
@@ -122,7 +125,9 @@ class DifferentialEvolutionHyperbandBase:
         self.min_fidelity = min_fidelity
         self.max_fidelity = max_fidelity
         if self.max_fidelity is None or self.max_fidelity <= self.min_fidelity:
-            self.logger.error("Only (Max Fidelity > Min Fidelity) is supported for DEHB.")
+            self.logger.error(
+                "Only (Max Fidelity > Min Fidelity) is supported for DEHB."
+            )
             if self.max_fidelity == self.min_fidelity:
                 self.logger.error(
                     "If you have a fixed fidelity, "
@@ -152,7 +157,9 @@ class DifferentialEvolutionHyperbandBase:
         log_level = kwargs["log_level"] if "log_level" in kwargs else "WARNING"
         _logger_props["level"] = log_level
         logger.configure(handlers=[{"sink": sys.stdout, "level": log_level}])
-        self.output_path = Path(kwargs["output_path"]) if "output_path" in kwargs else Path("./")
+        self.output_path = (
+            Path(kwargs["output_path"]) if "output_path" in kwargs else Path("./")
+        )
         self.output_path.mkdir(parents=True, exist_ok=True)
         self.logger = logger
         # Only append to log if resuming an optimization run, else overwrite
@@ -167,8 +174,16 @@ class DifferentialEvolutionHyperbandBase:
         """Precompute fidelity levels and bracket sizes for Hyperband."""
         self.max_SH_iter = 0
         self.fidelities = []
-        if self.min_fidelity is not None and self.max_fidelity is not None and self.eta is not None and self.eta > 0:
-            self.max_SH_iter = -int(np.log(self.min_fidelity / self.max_fidelity) / np.log(self.eta)) + 1
+        if (
+            self.min_fidelity is not None
+            and self.max_fidelity is not None
+            and self.eta is not None
+            and self.eta > 0
+        ):
+            self.max_SH_iter = (
+                -int(np.log(self.min_fidelity / self.max_fidelity) / np.log(self.eta))
+                + 1
+            )
             self.fidelities = self.max_fidelity * np.power(
                 self.eta,
                 -np.linspace(start=self.max_SH_iter - 1, stop=0, num=self.max_SH_iter),

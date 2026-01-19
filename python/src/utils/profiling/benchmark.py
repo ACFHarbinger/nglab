@@ -170,7 +170,9 @@ class GPUBenchmark:
     ) -> BenchmarkResult:
         """Run single inference benchmark."""
         # Create sample input
-        sample_input = torch.randn(batch_size, *input_shape, dtype=dtype, device=self.device)
+        sample_input = torch.randn(
+            batch_size, *input_shape, dtype=dtype, device=self.device
+        )
 
         # Clear cache
         if torch.cuda.is_available():
@@ -241,7 +243,9 @@ class GPUBenchmark:
             throughput_samples_per_sec=batch_size * 1000 / times_tensor.mean().item(),
             throughput_batches_per_sec=1000 / times_tensor.mean().item(),
             peak_memory_mb=max(memory_readings) if memory_readings else 0,
-            avg_memory_mb=sum(memory_readings) / len(memory_readings) if memory_readings else 0,
+            avg_memory_mb=(
+                sum(memory_readings) / len(memory_readings) if memory_readings else 0
+            ),
             batch_size=batch_size,
             sequence_length=input_shape[0] if len(input_shape) > 0 else 0,
             num_iterations=num_iterations,
@@ -324,11 +328,19 @@ class GPUBenchmark:
 
         # Create optimizer and scaler
         optimizer = optimizer_class(self.model.parameters(), lr=1e-4)
-        scaler = torch.cuda.amp.GradScaler() if mixed_precision and torch.cuda.is_available() else None
+        scaler = (
+            torch.cuda.amp.GradScaler()
+            if mixed_precision and torch.cuda.is_available()
+            else None
+        )
 
         # Create sample data
-        sample_input = torch.randn(batch_size, *input_shape, dtype=dtype, device=self.device)
-        sample_target = torch.randn(batch_size, *target_shape, dtype=dtype, device=self.device)
+        sample_input = torch.randn(
+            batch_size, *input_shape, dtype=dtype, device=self.device
+        )
+        sample_target = torch.randn(
+            batch_size, *target_shape, dtype=dtype, device=self.device
+        )
 
         # Clear cache
         if torch.cuda.is_available():
@@ -407,7 +419,9 @@ class GPUBenchmark:
             throughput_samples_per_sec=batch_size * 1000 / times_tensor.mean().item(),
             throughput_batches_per_sec=1000 / times_tensor.mean().item(),
             peak_memory_mb=max(memory_readings) if memory_readings else 0,
-            avg_memory_mb=sum(memory_readings) / len(memory_readings) if memory_readings else 0,
+            avg_memory_mb=(
+                sum(memory_readings) / len(memory_readings) if memory_readings else 0
+            ),
             batch_size=batch_size,
             sequence_length=input_shape[0] if len(input_shape) > 0 else 0,
             num_iterations=num_iterations,
@@ -434,9 +448,7 @@ class GPUBenchmark:
 
         return str(path)
 
-    def compare_with_baseline(
-        self, baseline_path: str
-    ) -> Dict[str, float]:
+    def compare_with_baseline(self, baseline_path: str) -> Dict[str, float]:
         """
         Compare current results with a baseline.
 

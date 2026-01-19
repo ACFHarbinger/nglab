@@ -96,7 +96,7 @@ def main(cfg: DictConfig):
 
         # Get dataloader config (with defaults if not present)
         data_cfg = cfg.get("data", {})
-        
+
         train_loader, val_loader, test_loader = create_dataloader(
             data_path=data_cfg.get("data_path", "data/polymarket/"),
             target_column=data_cfg.get("target_column", "price"),
@@ -112,7 +112,7 @@ def main(cfg: DictConfig):
             streaming=data_cfg.get("streaming", False),
             add_technical_indicators=data_cfg.get("add_technical_indicators", False),
         )
-        
+
         trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
 

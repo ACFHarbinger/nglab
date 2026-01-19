@@ -5,10 +5,12 @@ Simple SMA Crossover strategy for backtest verification.
 from typing import Optional
 from python.src.backtesting.strategy import BaseStrategy
 
+
 class SMACrossoverStrategy(BaseStrategy):
     """
     Very simple strategy that buys when price increases.
     """
+
     def __init__(self, amount_to_buy: float = 10.0):
         super().__init__("SMACrossover")
         self.amount_to_buy = amount_to_buy
@@ -29,7 +31,7 @@ class SMACrossoverStrategy(BaseStrategy):
                 yes, no = self.engine.get_position(market_id)
                 if yes >= self.amount_to_buy:
                     self.engine.sell_yes(market_id, self.amount_to_buy)
-        
+
         self.last_price = price
 
     def on_fill(self, market_id: str, amount: float, price: float, side: str) -> None:

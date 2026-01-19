@@ -8,6 +8,7 @@ class DecisionTreeModel(ClassicalModel):
     """
     Decision Tree wrapper for classification or regression.
     """
+
     def __init__(self, task="regression", **kwargs):
         """
         Initialize the Decision Tree model.

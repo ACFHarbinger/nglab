@@ -9,6 +9,7 @@ Contains implementations of generative and probabilistic models such as:
 - Markov Chains
 - Denoising Diffusion Probabilistic Models (DDPM)
 """
+
 from .gan import TimeGANGenerator, TimeGANDiscriminator
 from .flow import NormalizingFlow
 from .boltzmann import BoltzmannMachine

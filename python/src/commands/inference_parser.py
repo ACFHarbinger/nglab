@@ -15,6 +15,4 @@ def add_inference_args(parser: argparse.ArgumentParser) -> None:
         "--load_path", help="Path to load model parameters and optimizer state from"
     )
     parser.add_argument("--id", help="ID of time series to predict")
-    parser.add_argument(
-        "--seed", type=int, default=1234, help="Random seed to use"
-    )
+    parser.add_argument("--seed", type=int, default=1234, help="Random seed to use")

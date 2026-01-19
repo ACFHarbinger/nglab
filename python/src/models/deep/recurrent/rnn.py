@@ -78,11 +78,12 @@ class LSTM(nn.Module):
             return state
 
         output = self.fc(state)
-        
+
         if self.apply_softmax and self.output_type == "prediction":
             import torch.nn.functional as F
+
             output = F.softmax(output, dim=-1)
-            
+
         return output
 
 

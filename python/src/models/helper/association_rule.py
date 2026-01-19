@@ -8,8 +8,10 @@ from .association_rule_learning.apriori import AprioriAlgorithm
 from .association_rule_learning.fpgrowth import FPGrowthAlgorithm
 from .association_rule_learning.eclat import EclatAlgorithm
 
+
 class AssociationRuleModel(ClassicalModel):
     """Base class for association rule models."""
+
     def __init__(self, **kwargs):
         super().__init__(output_type="rules")
 
@@ -26,17 +28,26 @@ class AssociationRuleModel(ClassicalModel):
             return self.model.rules
         return []
 
+
 class AprioriModel(AssociationRuleModel):
     def __init__(self, min_support=0.5, min_confidence=0.7, **kwargs):
         super().__init__()
-        self.model = AprioriAlgorithm(min_support=min_support, min_confidence=min_confidence, **kwargs)
+        self.model = AprioriAlgorithm(
+            min_support=min_support, min_confidence=min_confidence, **kwargs
+        )
+
 
 class FPGrowthModel(AssociationRuleModel):
     def __init__(self, min_support=0.5, min_confidence=0.7, **kwargs):
         super().__init__()
-        self.model = FPGrowthAlgorithm(min_support=min_support, min_confidence=min_confidence, **kwargs)
+        self.model = FPGrowthAlgorithm(
+            min_support=min_support, min_confidence=min_confidence, **kwargs
+        )
+
 
 class EclatModel(AssociationRuleModel):
     def __init__(self, min_support=0.5, min_confidence=0.7, **kwargs):
         super().__init__()
-        self.model = EclatAlgorithm(min_support=min_support, min_confidence=min_confidence, **kwargs)
+        self.model = EclatAlgorithm(
+            min_support=min_support, min_confidence=min_confidence, **kwargs
+        )

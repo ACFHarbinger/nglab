@@ -9,6 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def setup_distributed() -> int:
     """
     Initialize the distributed process group and set the device.
@@ -16,21 +17,25 @@ def setup_distributed() -> int:
         local_rank: The rank of the current process on the local node.
     """
     if "RANK" not in os.environ or "WORLD_SIZE" not in os.environ:
-        logger.warning("Distributed environment variables not set. Defaulting to single-process.")
+        logger.warning(
+            "Distributed environment variables not set. Defaulting to single-process."
+        )
         return 0
 
     dist.init_process_group(backend="nccl" if torch.cuda.is_available() else "gloo")
-    
+
     local_rank = int(os.environ.get("LOCAL_RANK", 0))
     if torch.cuda.is_available():
         torch.cuda.set_device(local_rank)
-    
+
     return local_rank
+
 
 def cleanup_distributed() -> None:
     """Destroy the distributed process group."""
     if dist.is_initialized():
         dist.destroy_process_group()
+
 
 def wrap_model_ddp(model: torch.nn.Module, local_rank: int) -> DDP:
     """
@@ -39,6 +44,7 @@ def wrap_model_ddp(model: torch.nn.Module, local_rank: int) -> DDP:
     device = torch.device(f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
     return DDP(model, device_ids=[local_rank] if torch.cuda.is_available() else None)
+
 
 class DistributedTrainer:
     """

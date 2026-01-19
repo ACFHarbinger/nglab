@@ -34,12 +34,13 @@ from .helper.association_rule import (
     EclatModel,
 )
 
+
 class HelperModelFactory:
     """
     Factory class to create instances of supplemental ML models.
     Supports Clustering, Dimensionality Reduction, and Association Rule Learning.
     """
-    
+
     _MODELS = {
         # Clustering
         "kmeans": KMeansModel,
@@ -49,7 +50,6 @@ class HelperModelFactory:
         "gmm": GMMModel,
         "em": EMModel,
         "kmedians": KMediansModel,
-        
         # Dimensionality Reduction
         "pca": PCAModel,
         "tsne": TSNEModel,
@@ -65,7 +65,6 @@ class HelperModelFactory:
         "qda": QDAModel,
         "fda": FDAModel,
         "umap": UMAPModel,
-        
         # Association Rule Learning
         "apriori": AprioriModel,
         "apriori": AprioriModel,
@@ -77,18 +76,20 @@ class HelperModelFactory:
     def create_model(cls, model_name: str, **kwargs):
         """
         Create a model instance based on the provided name.
-        
+
         Args:
             model_name: Name of the algorithm (e.g., 'kmeans', 'pca', 'apriori').
             **kwargs: Hyperparameters for the model.
-            
+
         Returns:
             An instance of ClassicalModel.
         """
         model_class = cls._MODELS.get(model_name.lower())
         if model_class is None:
-            raise ValueError(f"Unknown model type: {model_name}. Available: {list(cls._MODELS.keys())}")
-        
+            raise ValueError(
+                f"Unknown model type: {model_name}. Available: {list(cls._MODELS.keys())}"
+            )
+
         return model_class(**kwargs)
 
     @classmethod

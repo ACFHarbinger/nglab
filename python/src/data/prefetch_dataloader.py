@@ -409,7 +409,9 @@ def benchmark_dataloader(
         "min_latency_ms": times_tensor.min().item(),
         "max_latency_ms": times_tensor.max().item(),
         "throughput_batches_per_sec": 1000 / times_tensor.mean().item(),
-        "throughput_samples_per_sec": avg_batch_size * 1000 / times_tensor.mean().item(),
+        "throughput_samples_per_sec": avg_batch_size
+        * 1000
+        / times_tensor.mean().item(),
         "avg_batch_size": avg_batch_size,
         "num_batches": num_batches,
     }

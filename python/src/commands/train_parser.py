@@ -55,9 +55,7 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--lr_decay", type=float, default=1.0, help="Learning rate decay per epoch"
     )
-    parser.add_argument(
-        "--seed", type=int, default=1234, help="Random seed to use"
-    )
+    parser.add_argument("--seed", type=int, default=1234, help="Random seed to use")
     parser.add_argument("--no_cuda", action="store_true", help="Disable CUDA")
     parser.add_argument(
         "--max_grad_norm",
@@ -73,9 +71,7 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
         default="logs",
         help="Directory to write TensorBoard information to",
     )
-    parser.add_argument(
-        "--run_name", default="run", help="Name to identify the run"
-    )
+    parser.add_argument("--run_name", default="run", help="Name to identify the run")
     parser.add_argument(
         "--output_dir", default="results", help="Directory to write output models to"
     )

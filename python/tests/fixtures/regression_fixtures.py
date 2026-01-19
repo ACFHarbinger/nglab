@@ -1,6 +1,7 @@
 import torch
 import pytest
 
+
 @pytest.fixture
 def regression_data():
     X = torch.randn(50, 5)

@@ -8,21 +8,22 @@ from ..base import ClassicalModel
 
 class VotingModel(ClassicalModel):
     """Voting Ensemble (Soft/Hard Voting or Weighted Average)."""
+
     def __init__(self, task="regression", **kwargs):
         super().__init__()
-        
+
         if "estimators" not in kwargs:
-             if task == "regression":
+            if task == "regression":
                 kwargs["estimators"] = [
-                    ('lr', LinearRegression()),
-                    ('tree', DecisionTreeRegressor(max_depth=5))
+                    ("lr", LinearRegression()),
+                    ("tree", DecisionTreeRegressor(max_depth=5)),
                 ]
-             else:
+            else:
                 kwargs["estimators"] = [
-                    ('lr', LogisticRegression()),
-                    ('tree', DecisionTreeClassifier(max_depth=5))
+                    ("lr", LogisticRegression()),
+                    ("tree", DecisionTreeClassifier(max_depth=5)),
                 ]
-        
+
         if task == "regression":
             self.model = VotingRegressor(**kwargs)
         else:
@@ -31,4 +32,5 @@ class VotingModel(ClassicalModel):
 
 class WeightedAverageModel(VotingModel):
     """Weighted Average (Blending). Alias for VotingModel."""
+
     pass

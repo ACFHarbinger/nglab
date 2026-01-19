@@ -5,10 +5,11 @@ Strategy interface and base class for backtesting.
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Protocol, runtime_checkable
 
+
 @runtime_checkable
 class Strategy(Protocol):
     """Protocol defining the interface for a trading strategy."""
-    
+
     def on_market_data(self, market_id: str, price: float, timestamp: int) -> None:
         """React to a market price update."""
         ...
@@ -17,9 +18,10 @@ class Strategy(Protocol):
         """React to an order fill."""
         ...
 
+
 class BaseStrategy(ABC):
     """Base class for implementing trading strategies."""
-    
+
     def __init__(self, name: str = "BaseStrategy"):
         self.name = name
         self.engine: Optional[Any] = None

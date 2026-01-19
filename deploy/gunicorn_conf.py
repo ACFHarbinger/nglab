@@ -1,4 +1,3 @@
-
 import multiprocessing
 import os
 
@@ -22,7 +21,7 @@ keepalive = 2
 # Logging
 loglevel = "info"
 accesslog = "-"  # stdout
-errorlog = "-"   # stderr
+errorlog = "-"  # stderr
 
 # Process Naming
 proc_name = "nglab_inference"

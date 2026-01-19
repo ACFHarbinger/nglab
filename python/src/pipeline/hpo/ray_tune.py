@@ -19,35 +19,37 @@ def train_func(config: Dict[str, Any], opts: Dict[str, Any]) -> None:
     """
     # 1. Update config with HPO suggestions
     model_cfg = opts.get("model_cfg", {}).copy()
-    model_cfg.update({
-        "hidden_dim": config.get("hidden_dim", 128),
-        "lr": config.get("lr", 1e-3),
-    })
-    
+    model_cfg.update(
+        {
+            "hidden_dim": config.get("hidden_dim", 128),
+            "lr": config.get("lr", 1e-3),
+        }
+    )
+
     # 2. Instantiate Model and Module
     backbone = TimeSeriesBackbone(model_cfg)
     model = SLLightningModule(backbone, model_cfg)
-    
+
     # 3. Ray Tune Callback for Lightning
     report_callback = RayTrainReportCallback()
-    
+
     # 4. Trainer with Ray Integration
     trainer = pl.Trainer(
         max_epochs=opts.get("max_epochs", 10),
         devices="auto",
         accelerator="auto",
-        strategy=RayDDPStrategy(), # For distributed training within Ray trial
+        strategy=RayDDPStrategy(),  # For distributed training within Ray trial
         callbacks=[report_callback],
         enable_checkpointing=False,
         logger=False,
     )
-    
+
     # 5. Fit
-    # Note: Requires a proper DataModule or dataloader setup. 
+    # Note: Requires a proper DataModule or dataloader setup.
     # For now, we assume dataloaders are provided via opts or global factory.
     train_loader = opts["train_loader_factory"]()
     val_loader = opts["val_loader_factory"]()
-    
+
     trainer.fit(model, train_dataloader=train_loader, val_dataloaders=val_loader)
 
 
@@ -55,7 +57,7 @@ def run_hpo_search(
     opts: Dict[str, Any],
     num_samples: int = 10,
     max_epochs: int = 10,
-    gpus_per_trial: float = 0.0
+    gpus_per_trial: float = 0.0,
 ) -> Dict[str, Any]:
     """
     Run distributed hyperparameter search using Ray Tune.
@@ -65,16 +67,12 @@ def run_hpo_search(
         "hidden_dim": tune.choice([128, 256, 512]),
     }
 
-    scheduler = ASHAScheduler(
-        max_t=max_epochs,
-        grace_period=1,
-        reduction_factor=2
-    )
+    scheduler = ASHAScheduler(max_t=max_epochs, grace_period=1, reduction_factor=2)
 
     tuner = tune.Tuner(
         tune.with_resources(
             lambda config: train_func(config, opts),
-            resources={"cpu": 2, "gpu": gpus_per_trial}
+            resources={"cpu": 2, "gpu": gpus_per_trial},
         ),
         tune_config=tune.TuneConfig(
             metric="val/sl_loss",

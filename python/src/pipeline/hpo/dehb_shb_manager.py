@@ -109,7 +109,10 @@ class SynchronousHalvingBracketManager(object):
 
     def _is_rung_waiting(self, rung):
         """Returns True if at least one job is still pending/running and waits for results"""
-        job_count = self._sh_bracket[self.fidelities[rung]] + self.sh_bracket[self.fidelities[rung]]
+        job_count = (
+            self._sh_bracket[self.fidelities[rung]]
+            + self.sh_bracket[self.fidelities[rung]]
+        )
         if job_count < self.n_configs[rung]:
             return True
         return False
@@ -133,11 +136,15 @@ class SynchronousHalvingBracketManager(object):
 
     def is_pending(self):
         """Returns True if any of the rungs/fidelities have still a configuration to submit"""
-        return np.any([self._is_rung_pending(i) > 0 for i, _ in enumerate(self.fidelities)])
+        return np.any(
+            [self._is_rung_pending(i) > 0 for i, _ in enumerate(self.fidelities)]
+        )
 
     def is_waiting(self):
         """Returns True if any of the rungs/fidelities have a configuration pending/running"""
-        return np.any([self._is_rung_waiting(i) > 0 for i, _ in enumerate(self.fidelities)])
+        return np.any(
+            [self._is_rung_waiting(i) > 0 for i, _ in enumerate(self.fidelities)]
+        )
 
     def reset_waiting_jobs(self):
         """Resets all waiting jobs and updates the current_rung pointer accordingly."""

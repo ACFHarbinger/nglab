@@ -388,9 +388,7 @@ def profile_training_step(
             end.record()
             torch.cuda.synchronize()
             times.append(start.elapsed_time(end))
-            memory_used.append(
-                torch.cuda.max_memory_allocated() / (1024 * 1024)
-            )
+            memory_used.append(torch.cuda.max_memory_allocated() / (1024 * 1024))
         else:
             import time
 

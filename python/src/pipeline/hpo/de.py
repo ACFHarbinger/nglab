@@ -133,7 +133,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         else:
             config = x.copy()
 
-        if fidelity is not None:  # to be used when called by multi-fidelity based optimizers
+        if (
+            fidelity is not None
+        ):  # to be used when called by multi-fidelity based optimizers
             res = self.f(config, fidelity=fidelity, **kwargs)
         else:
             res = self.f(config, **kwargs)
@@ -144,7 +146,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
     def init_eval_pop(self, fidelity=None, eval=True, **kwargs):
         """Creates new population of 'pop_size' and evaluates individuals."""
         self.population = self.init_population(self.pop_size)
-        self.population_ids = self.config_repository.announce_population(self.population, fidelity)
+        self.population_ids = self.config_repository.announce_population(
+            self.population, fidelity
+        )
         self.fitness = np.array([np.inf for i in range(self.pop_size)])
         self.age = np.array([self.max_age] * self.pop_size)
 
@@ -165,10 +169,14 @@ class DifferentialEvolution(DifferentialEvolutionBase):
                 self.inc_score = self.fitness[i]
                 self.inc_config = config
                 self.inc_id = config_id
-            self.config_repository.tell_result(config_id, float(fidelity or 0), res["fitness"], res["cost"], info)
+            self.config_repository.tell_result(
+                config_id, float(fidelity or 0), res["fitness"], res["cost"], info
+            )
             traj.append(self.inc_score)
             runtime.append(cost)
-            history.append((config.tolist(), float(self.fitness[i]), float(fidelity or 0), info))
+            history.append(
+                (config.tolist(), float(self.fitness[i]), float(fidelity or 0), info)
+            )
 
         return traj, runtime, history
 
@@ -200,7 +208,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             self.config_repository.tell_result(pop_ids[i], float(fidelity or 0), info)
             traj.append(self.inc_score)
             runtime.append(cost)
-            history.append((pop[i].tolist(), float(fitness), float(fidelity or 0), info))
+            history.append(
+                (pop[i].tolist(), float(fitness), float(fidelity or 0), info)
+            )
             fitnesses.append(fitness)
             costs.append(cost)
             ages.append(self.max_age)
@@ -313,7 +323,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             fitness, cost = res["fitness"], res["cost"]
             info = res["info"] if "info" in res else dict()
             # log result to config repo
-            self.config_repository.tell_result(trial_ids[i], float(fidelity or 0), fitness, cost, info)
+            self.config_repository.tell_result(
+                trial_ids[i], float(fidelity or 0), fitness, cost, info
+            )
             # selection -- competition between parent[i] -- child[i]
             ## equality is important for landscape exploration
             if fitness <= self.fitness[i]:
@@ -332,7 +344,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
                 self.inc_id = self.population[i]
             traj.append(self.inc_score)
             runtime.append(cost)
-            history.append((trials[i].tolist(), float(fitness), float(fidelity or 0), info))
+            history.append(
+                (trials[i].tolist(), float(fitness), float(fidelity or 0), info)
+            )
         return traj, runtime, history
 
     def evolve_generation(self, fidelity=None, best=None, alt_pop=None, **kwargs):
@@ -344,7 +358,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             donor = self.mutation(current=target, best=best, alt_pop=alt_pop)
             trial = self.crossover(target, donor)
             trial = self.boundary_check(trial)
-            trial_id = self.config_repository.announce_config(trial, float(fidelity or 0))
+            trial_id = self.config_repository.announce_config(
+                trial, float(fidelity or 0)
+            )
             trials.append(trial)
             trial_ids.append(trial_id)
         trials = np.array(trials)
@@ -376,13 +392,19 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             self.reset()
             if verbose:
                 print("Initializing and evaluating new population...")
-            self.traj, self.runtime, self.history = self.init_eval_pop(fidelity=fidelity, **kwargs)
+            self.traj, self.runtime, self.history = self.init_eval_pop(
+                fidelity=fidelity, **kwargs
+            )
 
         if verbose:
             print("Running evolutionary search...")
         for i in range(generations):
             if verbose:
-                print("Generation {:<2}/{:<2} -- {:<0.7}".format(i + 1, generations, self.inc_score))
+                print(
+                    "Generation {:<2}/{:<2} -- {:<0.7}".format(
+                        i + 1, generations, self.inc_score
+                    )
+                )
             traj, runtime, history = self.evolve_generation(fidelity=fidelity, **kwargs)
             self.traj.extend(traj)
             self.runtime.extend(runtime)

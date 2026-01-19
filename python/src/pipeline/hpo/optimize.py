@@ -1,7 +1,7 @@
 """
 Hyperparameter Optimization (HPO) for NGLab.
 
-Uses Optuna, Ray Tune, and DEHB to perform automated search for optimal model 
+Uses Optuna, Ray Tune, and DEHB to perform automated search for optimal model
 and training hyperparameters across different pipeline tasks.
 """
 
@@ -20,18 +20,21 @@ from pathlib import Path
 from python.src.models.time_series import TimeSeriesBackbone
 from python.src.pipeline.core.lightning.supervised_learning import SLLightningModule
 from python.src.pipeline.hpo.ray_tune import run_hpo_search
-from python.src.pipeline.hpo.dehb import DifferentialEvolutionHyperband, get_config_space
+from python.src.pipeline.hpo.dehb import (
+    DifferentialEvolutionHyperband,
+    get_config_space,
+)
 
 
 def optimize_model(
-    config: Dict[str, Any], 
-    opts: Dict[str, Any], 
-    fidelity: Optional[Union[int, float]] = None
+    config: Dict[str, Any],
+    opts: Dict[str, Any],
+    fidelity: Optional[Union[int, float]] = None,
 ) -> float:
     """
     Core evaluation worker that trains a model with given hyperparameters.
     Uses PyTorch Lightning for training.
-    
+
     Args:
         config: Hyperparameters to evaluate.
         opts: Static configuration and factories.
@@ -68,15 +71,13 @@ def optimize_model(
     # 7. Return validation metric
     val_loss = trainer.callback_metrics.get("val/sl_loss")
     score = float(val_loss) if val_loss is not None else float("inf")
-    
+
     logger.debug(f"Evaluation finished. Fidelity: {max_epochs}, Score: {score:.6f}")
     return score
 
 
 def bayesian_optimization(
-    opts: Dict[str, Any],
-    n_trials: int = 20,
-    storage_path: Optional[str] = None
+    opts: Dict[str, Any], n_trials: int = 20, storage_path: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Native Optuna-based Bayesian Optimization for single-node search.
@@ -105,8 +106,12 @@ def bayesian_optimization(
     if opts.get("save_plots", False):
         plot_dir = os.path.join(opts.get("output_dir", "results"), "plots")
         os.makedirs(plot_dir, exist_ok=True)
-        plot_optimization_history(study).write_image(os.path.join(plot_dir, "opt_history.png"))
-        plot_param_importances(study).write_image(os.path.join(plot_dir, "param_importance.png"))
+        plot_optimization_history(study).write_image(
+            os.path.join(plot_dir, "opt_history.png")
+        )
+        plot_param_importances(study).write_image(
+            os.path.join(plot_dir, "param_importance.png")
+        )
 
     logger.info(f"Bayesian Optimization finished. Best params: {study.best_params}")
     return study.best_params
@@ -121,15 +126,17 @@ def run_dehb_search(
     """
     Differential Evolution Hyperband (DEHB) Optimization.
     """
-    logger.info(f"Starting DEHB Search. Budget: {fevals} evals, Fidelity: [{min_fidelity}, {max_fidelity}].")
-    
+    logger.info(
+        f"Starting DEHB Search. Budget: {fevals} evals, Fidelity: [{min_fidelity}, {max_fidelity}]."
+    )
+
     def dehb_objective(config, fidelity, **kwargs):
         # Update opts with config
         score = optimize_model(config, opts, fidelity=fidelity)
         return {
             "fitness": score,
-            "cost": fidelity, # Use fidelity as cost proxy
-            "info": {"fidelity": fidelity}
+            "cost": fidelity,  # Use fidelity as cost proxy
+            "info": {"fidelity": fidelity},
         }
 
     # Initialize DEHB
@@ -144,11 +151,10 @@ def run_dehb_search(
 
     # Run
     traj, runtime, history = dehb.run(fevals=fevals)
-    
+
     best_config, best_fitness = dehb.get_incumbents()
     logger.info(f"DEHB Search finished. Best fitness: {best_fitness}")
     return dict(best_config) if best_config is not None else {}
-
 
     return best_config
 
@@ -159,8 +165,10 @@ def grid_search(opts: Dict[str, Any], search_space: Dict[str, Any]) -> Dict[str,
     """
     logger.info("Starting Grid Search.")
     # Implementation can use Optuna's GridSampler for consistency
-    study = optuna.create_study(direction="minimize", sampler=optuna.samplers.GridSampler(search_space))
-    
+    study = optuna.create_study(
+        direction="minimize", sampler=optuna.samplers.GridSampler(search_space)
+    )
+
     def objective(trial: optuna.Trial) -> float:
         config = {k: trial.suggest_categorical(k, v) for k, v in search_space.items()}
         return optimize_model(config, opts)
@@ -174,8 +182,11 @@ def random_search(opts: Dict[str, Any], n_trials: int = 10) -> Dict[str, Any]:
     Convenience wrapper for Random Search.
     """
     logger.info(f"Starting Random Search with {n_trials} trials.")
-    study = optuna.create_study(direction="minimize", sampler=optuna.samplers.RandomSampler(seed=opts.get("seed")))
-    
+    study = optuna.create_study(
+        direction="minimize",
+        sampler=optuna.samplers.RandomSampler(seed=opts.get("seed")),
+    )
+
     def objective(trial: optuna.Trial) -> float:
         # User defined search space via trial suggestions
         config = {
@@ -192,7 +203,7 @@ def distributed_hpo(
     opts: Dict[str, Any],
     num_samples: int = 10,
     max_epochs: int = 10,
-    gpus_per_trial: float = 1.0
+    gpus_per_trial: float = 1.0,
 ) -> Dict[str, Any]:
     """
     Distributed HPO using Ray Tune.
@@ -202,5 +213,5 @@ def distributed_hpo(
         opts=opts,
         num_samples=num_samples,
         max_epochs=max_epochs,
-        gpus_per_trial=gpus_per_trial
+        gpus_per_trial=gpus_per_trial,
     )

@@ -1,5 +1,6 @@
 from sklearn.manifold import TSNE
 
+
 class TSNEAlgorithm:
     def __init__(self, n_components=2, **kwargs):
         self.model = TSNE(n_components=n_components, **kwargs)

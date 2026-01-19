@@ -125,7 +125,9 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
         """
         population = None
         if isinstance(alt_pop, list) or isinstance(alt_pop, np.ndarray):
-            idx = [indv is None for indv in alt_pop]  # checks if all individuals are valid
+            idx = [
+                indv is None for indv in alt_pop
+            ]  # checks if all individuals are valid
             if any(idx):
                 # default to the object's initialized population
                 population = self.population
@@ -146,7 +148,9 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
         if len(population) < self._min_pop_size:
             # compensate if target was part of the population and deleted earlier
             filler = self._min_pop_size - len(population)
-            new_pop = self.init_population(pop_size=filler)  # chosen in a uniformly random manner
+            new_pop = self.init_population(
+                pop_size=filler
+            )  # chosen in a uniformly random manner
             population = np.concatenate((population, new_pop))
 
         selection = self.rng.choice(np.arange(len(population)), size, replace=False)
@@ -173,10 +177,14 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
                 self.inc_score = fitness
                 self.inc_config = pop[i]
                 self.inc_id = pop_ids[i]
-            self.config_repository.tell_result(pop_ids[i], float(fidelity or 0), fitness, cost, info)
+            self.config_repository.tell_result(
+                pop_ids[i], float(fidelity or 0), fitness, cost, info
+            )
             traj.append(self.inc_score)
             runtime.append(cost)
-            history.append((pop[i].tolist(), float(fitness), float(fidelity or 0), info))
+            history.append(
+                (pop[i].tolist(), float(fitness), float(fidelity or 0), info)
+            )
             fitnesses.append(fitness)
             costs.append(cost)
             ages.append(self.max_age)
@@ -185,15 +193,21 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
     def mutation(self, current=None, best=None, alt_pop=None):
         """Performs DE mutation"""
         if self.mutation_strategy == "rand1":
-            r1, r2, r3 = self._sample_population(size=3, alt_pop=alt_pop, target=current)
+            r1, r2, r3 = self._sample_population(
+                size=3, alt_pop=alt_pop, target=current
+            )
             mutant = self.mutation_rand1(r1, r2, r3)
 
         elif self.mutation_strategy == "rand2":
-            r1, r2, r3, r4, r5 = self._sample_population(size=5, alt_pop=alt_pop, target=current)
+            r1, r2, r3, r4, r5 = self._sample_population(
+                size=5, alt_pop=alt_pop, target=current
+            )
             mutant = self.mutation_rand2(r1, r2, r3, r4, r5)
 
         elif self.mutation_strategy == "rand2dir":
-            r1, r2, r3 = self._sample_population(size=3, alt_pop=alt_pop, target=current)
+            r1, r2, r3 = self._sample_population(
+                size=3, alt_pop=alt_pop, target=current
+            )
             mutant = self.mutation_rand2dir(r1, r2, r3)
 
         elif self.mutation_strategy == "best1":
@@ -203,7 +217,9 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
             mutant = self.mutation_rand1(best, r1, r2)
 
         elif self.mutation_strategy == "best2":
-            r1, r2, r3, r4 = self._sample_population(size=4, alt_pop=alt_pop, target=current)
+            r1, r2, r3, r4 = self._sample_population(
+                size=4, alt_pop=alt_pop, target=current
+            )
             if best is None:
                 best = self.population[np.argmin(self.fitness)]
             mutant = self.mutation_rand2(best, r1, r2, r3, r4)
@@ -215,7 +231,9 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
             mutant = self.mutation_currenttobest1(current, best, r1, r2)
 
         elif self.mutation_strategy == "randtobest1":
-            r1, r2, r3 = self._sample_population(size=3, alt_pop=alt_pop, target=current)
+            r1, r2, r3 = self._sample_population(
+                size=3, alt_pop=alt_pop, target=current
+            )
             if best is None:
                 best = self.population[np.argmin(self.fitness)]
             mutant = self.mutation_currenttobest1(r1, best, r2, r3)
@@ -230,7 +248,9 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
         mutants = self.rng.uniform(low=0.0, high=1.0, size=(size, self.dimensions))
         for i in range(size):
             j = self.rng.choice(np.arange(len(population)))
-            mutant = self.mutation(current=population[j], best=self.inc_config, alt_pop=population)
+            mutant = self.mutation(
+                current=population[j], best=self.inc_config, alt_pop=population
+            )
             mutants[i] = self.boundary_check(mutant)
 
         return mutants
@@ -249,13 +269,17 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
                 donor = self.mutation(current=target, best=best, alt_pop=alt_pop)
                 trial = self.crossover(target, donor)
                 trial = self.boundary_check(trial)
-                trial_id = self.config_repository.announce_config(trial, float(fidelity or 0))
+                trial_id = self.config_repository.announce_config(
+                    trial, float(fidelity or 0)
+                )
                 trials.append(trial)
                 trial_ids.append(trial_id)
             # selection takes place on a separate trial population only after
             # one iteration through the population has taken place
             trials = np.array(trials)
-            traj, runtime, history = self.selection(trials, trial_ids, fidelity, **kwargs)
+            traj, runtime, history = self.selection(
+                trials, trial_ids, fidelity, **kwargs
+            )
             return traj, runtime, history
 
         elif self.async_strategy == "immediate":
@@ -264,7 +288,9 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
                 donor = self.mutation(current=target, best=best, alt_pop=alt_pop)
                 trial = self.crossover(target, donor)
                 trial = self.boundary_check(trial)
-                trial_id = self.config_repository.announce_config(trial, float(fidelity or 0))
+                trial_id = self.config_repository.announce_config(
+                    trial, float(fidelity or 0)
+                )
                 # evaluating a single trial population for the i-th individual
                 de_traj, de_runtime, de_history, fitnesses, costs = self.eval_pop(
                     trial.reshape(1, self.dimensions),
@@ -294,7 +320,9 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
                 mutant = self.mutation(current=target, best=best, alt_pop=alt_pop)
                 trial = self.crossover(target, mutant)
                 trial = self.boundary_check(trial)
-                trial_id = self.config_repository.announce_config(trial, float(fidelity or 0))
+                trial_id = self.config_repository.announce_config(
+                    trial, float(fidelity or 0)
+                )
                 # evaluating a single trial population for the i-th individual
                 de_traj, de_runtime, de_history, fitnesses, costs = self.eval_pop(
                     trial.reshape(1, self.dimensions),
@@ -320,14 +348,22 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
             self.reset()
             if verbose:
                 print("Initializing and evaluating new population...")
-            self.traj, self.runtime, self.history = self.init_eval_pop(fidelity=fidelity, **kwargs)
+            self.traj, self.runtime, self.history = self.init_eval_pop(
+                fidelity=fidelity, **kwargs
+            )
 
         if verbose:
             print("Running evolutionary search...")
         for i in range(generations):
             if verbose:
-                print("Generation {:<2}/{:<2} -- {:<0.7}".format(i + 1, generations, self.inc_score))
-            traj, runtime, history = self.evolve_generation(fidelity=fidelity, best=self.inc_config, **kwargs)
+                print(
+                    "Generation {:<2}/{:<2} -- {:<0.7}".format(
+                        i + 1, generations, self.inc_score
+                    )
+                )
+            traj, runtime, history = self.evolve_generation(
+                fidelity=fidelity, best=self.inc_config, **kwargs
+            )
             self.traj.extend(traj)
             self.runtime.extend(runtime)
             self.history.extend(history)

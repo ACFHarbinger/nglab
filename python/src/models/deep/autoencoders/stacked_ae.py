@@ -21,16 +21,16 @@ class StackedAutoEncoder(nn.Module):
         self.layer_sizes = layer_sizes
         self.output_type = output_type
 
-        #Create a stack of shallow AutoEncoders (no internal hidden layers between steps)
+        # Create a stack of shallow AutoEncoders (no internal hidden layers between steps)
         # AE_i maps dim[i] -> dim[i+1] (latent) -> dim[i] (recon)
         self.aes = nn.ModuleList()
         for i in range(len(layer_sizes) - 1):
             # Shallow AE: input=sizes[i], hidden=[], latent=sizes[i+1]
             ae = AutoEncoder(
-                input_dim=layer_sizes[i], 
-                hidden_dims=[], 
-                latent_dim=layer_sizes[i+1],
-                output_type="embedding" # Internal AEs act as encoders in the stack
+                input_dim=layer_sizes[i],
+                hidden_dims=[],
+                latent_dim=layer_sizes[i + 1],
+                output_type="embedding",  # Internal AEs act as encoders in the stack
             )
             self.aes.append(ae)
 
@@ -41,22 +41,22 @@ class StackedAutoEncoder(nn.Module):
         Otherwise, returns reconstruction.
         """
         # Handle sequence input similar to AutoEncoder base
-        is_sequence = (x.dim() == 3)
+        is_sequence = x.dim() == 3
         if is_sequence:
-             b, s, f = x.shape
-             x_flat = x.view(b * s, f)
-             current = x_flat
+            b, s, f = x.shape
+            x_flat = x.view(b * s, f)
+            current = x_flat
         else:
-             current = x
+            current = x
 
         # Encode path
-        encoded_features = [] # Store intermediate activations if needed
+        encoded_features = []  # Store intermediate activations if needed
         for ae in self.aes:
             current = ae.encode(current)
             encoded_features.append(current)
-            
+
         latent = current
-        
+
         should_return_embedding = (
             return_embedding
             if return_embedding is not None
@@ -75,11 +75,11 @@ class StackedAutoEncoder(nn.Module):
         decoded = latent
         for i in reversed(range(len(self.aes))):
             decoded = self.aes[i].decode(decoded)
-            
+
         out = decoded
         if is_sequence:
             out = out.view(b, s, -1)
             if not return_sequence:
                 return out[:, -1, :]
-                
+
         return out

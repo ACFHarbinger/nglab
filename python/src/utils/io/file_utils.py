@@ -7,11 +7,15 @@ def compose_dirpath(func: Callable[..., Any]) -> Callable[..., Any]:
     """
     Decorator to ensure the directory of the file path passed to the function exists.
     """
+
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         path = args[0] if args else kwargs.get("json_path") or kwargs.get("dir_path")
         if path:
-            os.makedirs(os.path.dirname(path) if os.path.isfile(path) else path, exist_ok=True)
+            os.makedirs(
+                os.path.dirname(path) if os.path.isfile(path) else path, exist_ok=True
+            )
         return func(*args, **kwargs)
+
     return wrapper
 
 

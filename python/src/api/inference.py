@@ -29,24 +29,34 @@ _MODEL: Optional[torch.nn.Module] = None
 _OPTS: Optional[Dict[str, Any]] = None
 _REDIS: Optional[redis.Redis] = None
 
+
 class PredictionRequest(BaseModel):
     """Schema for model prediction request."""
-    observations: List[List[float]] = Field(..., description="Batch of observation tensors.")
-    model_path: Optional[str] = Field(None, description="Path to specific model checkpoint.")
+
+    observations: List[List[float]] = Field(
+        ..., description="Batch of observation tensors."
+    )
+    model_path: Optional[str] = Field(
+        None, description="Path to specific model checkpoint."
+    )
     temperature: float = Field(1.0, ge=0.01, le=2.0)
+
 
 class PredictionResponse(BaseModel):
     """Schema for model prediction response."""
+
     predictions: List[List[float]]
     model_version: str
     latency_ms: float
     cached: bool = False
+
 
 class BatchInferenceHandler:
     """
     Handles request batching for GPU inference.
     Incoming requests are added to a queue. background worker processes them in batches.
     """
+
     def __init__(self, model_loader_func):
         self.queue = asyncio.Queue()
         self.model_loader = model_loader_func
@@ -76,7 +86,7 @@ class BatchInferenceHandler:
         """Background loop to process batches."""
         while not self._shutdown:
             batch = []
-            
+
             # 1. Fetch first item (blocking)
             try:
                 item = await asyncio.wait_for(self.queue.get(), timeout=1.0)
@@ -96,25 +106,27 @@ class BatchInferenceHandler:
                     batch.append(item)
                 except asyncio.TimeoutError:
                     break
-            
+
             if batch:
                 await self._process_batch(batch)
 
-    async def _process_batch(self, batch: List[Tuple[PredictionRequest, asyncio.Future]]):
+    async def _process_batch(
+        self, batch: List[Tuple[PredictionRequest, asyncio.Future]]
+    ):
         """Process a batch of requests."""
         requests, futures = zip(*batch)
-        
+
         try:
-            # Assume all requests use the same model version for now 
+            # Assume all requests use the same model version for now
             # (or group by model version if needed - keeping simple for P4.1)
             # In a real heavy setup, we'd have separate queues per model.
             # Here we just use the default model for efficiency.
-            
+
             # Load model (cached globally)
             model = self.model_loader()
             if model is None:
                 raise RuntimeError("Model not initialized")
-                
+
             # Prepare batch tensor
             # Flatten all observations from all requests: [req1_obs, req2_obs...] -> single batch
             # Track slice indices to split results back
@@ -123,38 +135,39 @@ class BatchInferenceHandler:
             for req in requests:
                 all_obs.extend(req.observations)
                 splits.append(len(req.observations))
-            
+
             device = next(model.parameters()).device
             obs_tensor = torch.tensor(all_obs, dtype=torch.float32).to(device)
-            
+
             # Inference
             with torch.no_grad():
                 output = model(obs_tensor)
                 output_list = output.cpu().tolist()
-            
+
             # Distribute results
             cursor = 0
             for i, future in enumerate(futures):
                 num_samples = splits[i]
                 result = output_list[cursor : cursor + num_samples]
                 cursor += num_samples
-                
+
                 if not future.done():
                     future.set_result(result)
-                    
+
         except Exception as e:
             for future in futures:
                 if not future.done():
                     future.set_exception(e)
 
+
 def get_model(model_path: Optional[str] = None) -> torch.nn.Module:
     """Singleton model loader with caching."""
     global _MODEL, _OPTS
-    
+
     default_path = "outputs/model_last.pt"
     target_path = model_path or default_path
-    
-    if _MODEL is None: # Only load once for this demo scaling
+
+    if _MODEL is None:  # Only load once for this demo scaling
         try:
             model, opts = load_model(target_path)
             model.eval()
@@ -167,14 +180,16 @@ def get_model(model_path: Optional[str] = None) -> torch.nn.Module:
         except Exception as e:
             print(f"Warning: Failed to load model from {target_path}: {e}")
             # Initialize dummy model for testing if file missing
-            _MODEL = torch.nn.Linear(10, 2) 
+            _MODEL = torch.nn.Linear(10, 2)
             if torch.cuda.is_available():
                 _MODEL = _MODEL.cuda()
-            
+
     return _MODEL
+
 
 # Initialize Batch Handler
 batch_handler = BatchInferenceHandler(get_model)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -182,27 +197,31 @@ async def lifespan(app: FastAPI):
     global _REDIS
     await batch_handler.start()
     try:
-        _REDIS = redis.from_url(definitions.REDIS_URL, encoding="utf-8", decode_responses=True)
+        _REDIS = redis.from_url(
+            definitions.REDIS_URL, encoding="utf-8", decode_responses=True
+        )
         # Ping to check connection
-        # await _REDIS.ping() 
+        # await _REDIS.ping()
         print("Redis connected")
     except Exception as e:
         print(f"Redis connection failed: {e}")
         _REDIS = None
-        
+
     yield
-    
+
     # Shutdown
     await batch_handler.stop()
     if _REDIS:
         await _REDIS.close()
 
+
 app = FastAPI(
     title="NGLab Inference API",
     description="High-performance batched inference service.",
     version="2.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
+
 
 @app.get("/health")
 async def health_check() -> Dict[str, Any]:
@@ -211,8 +230,9 @@ async def health_check() -> Dict[str, Any]:
         "status": "online",
         "gpu_available": torch.cuda.is_available(),
         "redis_connected": _REDIS is not None,
-        "batch_queue_size": batch_handler.queue.qsize()
+        "batch_queue_size": batch_handler.queue.qsize(),
     }
+
 
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(request: PredictionRequest) -> PredictionResponse:
@@ -220,15 +240,17 @@ async def predict(request: PredictionRequest) -> PredictionResponse:
     Generate predictions with batching and caching.
     """
     start_time = time.perf_counter()
-    
+
     # 1. Check Cache
     cache_key = None
     if _REDIS:
         # Create stable hash of input
-        payload = json.dumps(request.observations) # Canonical serialization needed in prod
+        payload = json.dumps(
+            request.observations
+        )  # Canonical serialization needed in prod
         key_str = f"{request.model_path}:{payload}"
         cache_key = hashlib.sha256(key_str.encode()).hexdigest()
-        
+
         cached_res = await _REDIS.get(cache_key)
         if cached_res:
             latency = (time.perf_counter() - start_time) * 1000
@@ -236,29 +258,32 @@ async def predict(request: PredictionRequest) -> PredictionResponse:
                 predictions=json.loads(cached_res),
                 model_version=request.model_path or "default",
                 latency_ms=round(latency, 2),
-                cached=True
+                cached=True,
             )
 
     # 2. Batched Inference
     try:
         predictions = await batch_handler.predict(request)
-        
+
         # 3. Cache Result
         if _REDIS and cache_key:
             # Async cache set (fire and forget ideally, but await here for safety)
-            await _REDIS.set(cache_key, json.dumps(predictions), ex=definitions.CACHE_TTL)
-            
+            await _REDIS.set(
+                cache_key, json.dumps(predictions), ex=definitions.CACHE_TTL
+            )
+
         latency = (time.perf_counter() - start_time) * 1000
-        
+
         return PredictionResponse(
             predictions=predictions,
             model_version=request.model_path or "default",
             latency_ms=round(latency, 2),
-            cached=False
+            cached=False,
         )
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

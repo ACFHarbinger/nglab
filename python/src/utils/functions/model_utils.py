@@ -39,7 +39,9 @@ def get_inner_model(model: nn.Module) -> nn.Module:
     return model.module if isinstance(model, nn.DataParallel) else model
 
 
-def setup_model(name: str, general_path: str, device: torch.device, lock: Optional[Any] = None) -> nn.Module:
+def setup_model(
+    name: str, general_path: str, device: torch.device, lock: Optional[Any] = None
+) -> nn.Module:
     """
     Setup and load a model from disk.
 
@@ -53,7 +55,9 @@ def setup_model(name: str, general_path: str, device: torch.device, lock: Option
         nn.Module: The loaded and initialized model.
     """
 
-    def _load_model(general_path: str, model_path: str, device: torch.device, lock: Optional[Any]) -> nn.Module:
+    def _load_model(
+        general_path: str, model_path: str, device: torch.device, lock: Optional[Any]
+    ) -> nn.Module:
         model_path = os.path.join(general_path, model_path)
         if lock is not None:
             with lock:

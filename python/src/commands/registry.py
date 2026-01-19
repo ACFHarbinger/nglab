@@ -18,10 +18,14 @@ def get_parser() -> ConfigsParser:
     parser = ConfigsParser(
         description="Nothing Gambles Like A Bot, your personal stock market assistant!"
     )
-    subparsers = parser.add_subparsers(dest="command", help="The command to execute", required=True)
+    subparsers = parser.add_subparsers(
+        dest="command", help="The command to execute", required=True
+    )
 
     # Training
-    train_parser = subparsers.add_parser("train", help="Generic training for neural model")
+    train_parser = subparsers.add_parser(
+        "train", help="Generic training for neural model"
+    )
     add_train_args(train_parser)
 
     # Inference
@@ -29,19 +33,27 @@ def get_parser() -> ConfigsParser:
     add_inference_args(inference_parser)
 
     # Web Crawler
-    crawler_parser = subparsers.add_parser("webcrawler", aliases=["crawler"], help="Crawl websites for data")
+    crawler_parser = subparsers.add_parser(
+        "webcrawler", aliases=["crawler"], help="Crawl websites for data"
+    )
     add_crawler_args(crawler_parser)
 
     # HPO (Hyperparameter Optimization)
-    hpo_parser = subparsers.add_parser("hp_optim", aliases=["hpo"], help="Hyperparameter optimization")
+    hpo_parser = subparsers.add_parser(
+        "hp_optim", aliases=["hpo"], help="Hyperparameter optimization"
+    )
     add_hpo_args(hpo_parser)
 
     # Active Learning
-    al_parser = subparsers.add_parser("active-learning", aliases=["al"], help="Select informative samples")
+    al_parser = subparsers.add_parser(
+        "active-learning", aliases=["al"], help="Select informative samples"
+    )
     add_active_learning_args(al_parser)
 
     # Sentiment Analysis
-    sentiment_parser = subparsers.add_parser("sentiment", help="Analyze market sentiment")
+    sentiment_parser = subparsers.add_parser(
+        "sentiment", help="Analyze market sentiment"
+    )
     add_sentiment_args(sentiment_parser)
 
     return parser
