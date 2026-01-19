@@ -2,6 +2,13 @@
 
 All notable changes to the NGLab project will be documented in this file.
 
+## [Unreleased] - 2026-01-19
+
+### Fixed
+- **Rust Lints & Benchmarks**:
+  - Suppressed `async_fn_in_trait` lint in `scraper.rs` for cleaner internal API.
+  - Fixed compilation errors and deprecated usages in `rust/benchmarks/` (`arena_bench`, `orderbook_bench`, `trading_env_bench`), ensuring zero-warning baseline.
+
 ## [Unreleased] - 2026-01-18
 
 ### Added

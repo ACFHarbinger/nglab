@@ -7,6 +7,8 @@
  * - Risk-adjusted reward functions
  */
 
+#[cfg(feature = "python")]
+use crate::errors::ArenaError;
 use crate::simulation::orderbook::{OrderBook, Side};
 #[cfg(feature = "python")]
 use numpy::{PyArray2, ToPyArray};
@@ -14,6 +16,9 @@ use numpy::{PyArray2, ToPyArray};
 use pyo3::prelude::*;
 #[cfg(feature = "python")]
 use pyo3::types::PyDict;
+#[cfg(feature = "python")]
+use tracing::info;
+use tracing::{debug, instrument};
 
 /**
  * Action space types for the agent.
@@ -158,37 +163,38 @@ impl TradingEnv {
 
     /** Reset the environment */
     #[pyo3(signature = (seed=None, options=None))]
+    #[instrument(skip(self, py), fields(step = self.total_steps))]
     pub fn reset<'py>(
         &mut self,
         py: Python<'py>,
         seed: Option<u64>,
         options: Option<PyObject>,
-    ) -> (Bound<'py, PyArray2<f64>>, PyObject) {
+    ) -> PyResult<(Bound<'py, PyArray2<f64>>, PyObject)> {
         if let Some(s) = seed {
+            info!("Reseting environment with seed: {}", s);
             // TODO: Seed RNG
+        } else {
+            info!("Reseting environment with random seed");
         }
         self.reset_rs();
 
-        let obs = self.get_observation(py);
+        let obs = self.get_observation(py)?;
         let info = PyDict::new(py).into();
-        (obs, info)
+        Ok((obs, info))
     }
 
     /** Take a step in the environment */
+    #[instrument(skip(self, py), fields(step = self.total_steps, action = action))]
     pub fn step<'py>(
         &mut self,
         py: Python<'py>,
         action: i32,
-    ) -> (Bound<'py, PyArray2<f64>>, f64, bool, bool, PyObject) {
+    ) -> PyResult<(Bound<'py, PyArray2<f64>>, f64, bool, bool, PyObject)> {
         let action_type = ActionType::from(action);
         let lookback = self.lookback;
         let num_features = self.num_features;
 
-        // Run simulation logic without GIL
-        // Using Python::detach (allow_threads is deprecated) if possible, but simplest fix is allow_threads if it works
-        // or just run synchronously since execution is fast.
-        // For now, let's just run it directly to avoid thread issues/deprecation warinings if allow_threads is deprecated.
-        // Actually, let's keep it simple.
+        debug!("Executing action: {:?}", action_type);
 
         let trade_cost = self.execute_action(action_type);
         self.current_step += 1;
@@ -219,32 +225,30 @@ impl TradingEnv {
 
         // Build info dict
         let dict = PyDict::new(py);
-        dict.set_item("portfolio_value", step_info.portfolio_value)
-            .unwrap();
-        dict.set_item("position", step_info.position).unwrap();
-        dict.set_item("cash", step_info.cash).unwrap();
-        dict.set_item("sharpe_ratio", step_info.sharpe_ratio)
-            .unwrap();
-        dict.set_item("total_steps", step_info.total_steps).unwrap();
+        dict.set_item("portfolio_value", step_info.portfolio_value)?;
+        dict.set_item("position", step_info.position)?;
+        dict.set_item("cash", step_info.cash)?;
+        dict.set_item("sharpe_ratio", step_info.sharpe_ratio)?;
+        dict.set_item("total_steps", step_info.total_steps)?;
         let info = dict.into();
 
         // Create numpy array
         let obs_array = ndarray::Array2::from_shape_vec((lookback, num_features), obs_data)
-            .expect("Invalid shape");
+            .map_err(|e| ArenaError::DataLoading(format!("Invalid observation shape: {}", e)))?;
         let obs = obs_array.to_pyarray(py);
 
-        (obs, reward, terminated, truncated, info)
+        Ok((obs, reward, terminated, truncated, info))
     }
 
     /** Get current observation as numpy array */
-    pub fn get_observation<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
+    pub fn get_observation<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyArray2<f64>>> {
         let obs_data = self.generate_observation_data();
 
         // Reshape to (lookback, features)
         let array = ndarray::Array2::from_shape_vec((self.lookback, self.num_features), obs_data)
-            .expect("Invalid shape");
+            .map_err(|e| ArenaError::DataLoading(format!("Invalid shape: {}", e)))?;
 
-        array.to_pyarray(py)
+        Ok(array.to_pyarray(py))
     }
 }
 
@@ -302,7 +306,9 @@ impl TradingEnv {
      *
      * Returns the initial observation vector.
      */
+    #[instrument(skip(self))]
     pub fn reset_rs(&mut self) -> Vec<f64> {
+        debug!("Resetting environment (Rust)");
         self.current_step = self.lookback;
         self.position = 0.0;
         self.cash = self.initial_capital;
@@ -340,6 +346,7 @@ impl TradingEnv {
     }
 
     /** Pure Rust step function (no Python dependency) */
+    #[instrument(skip(self), fields(step = self.total_steps))]
     pub fn step_rs(&mut self, action: i32) -> (Vec<f64>, f64, bool, bool, StepInfo) {
         let action_type = ActionType::from(action);
 
