@@ -11,29 +11,22 @@ use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 
 /// Configuration for position sizing and risk limits.
-#[cfg_attr(feature = "python", pyclass)]
+#[cfg_attr(feature = "python", pyclass(get_all, set_all))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RiskConfig {
     /// Maximum position size as fraction of portfolio (0.0 - 1.0).
-    #[cfg_attr(feature = "python", pyo3(get, set))]
     pub max_position_fraction: f64,
     /// Maximum loss allowed per day as fraction of portfolio.
-    #[cfg_attr(feature = "python", pyo3(get, set))]
     pub daily_loss_limit: f64,
     /// Maximum drawdown before automatic position reduction.
-    #[cfg_attr(feature = "python", pyo3(get, set))]
     pub max_drawdown: f64,
     /// VaR confidence level (e.g., 0.95 for 95% VaR).
-    #[cfg_attr(feature = "python", pyo3(get, set))]
     pub var_confidence: f64,
     /// VaR limit as fraction of portfolio.
-    #[cfg_attr(feature = "python", pyo3(get, set))]
     pub var_limit: f64,
     /// Lookback period for VaR calculation (in observations).
-    #[cfg_attr(feature = "python", pyo3(get, set))]
     pub var_lookback: usize,
     /// Enable automatic position reduction on limit breaches.
-    #[cfg_attr(feature = "python", pyo3(get, set))]
     pub auto_reduce_positions: bool,
 }
 
@@ -52,32 +45,24 @@ impl Default for RiskConfig {
 }
 
 /// Current risk status and metrics.
-#[cfg_attr(feature = "python", pyclass)]
+#[cfg_attr(feature = "python", pyclass(get_all))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RiskStatus {
     /// Current Value at Risk.
-    #[cfg_attr(feature = "python", pyo3(get))]
     pub current_var: f64,
     /// Current drawdown from peak.
-    #[cfg_attr(feature = "python", pyo3(get))]
     pub current_drawdown: f64,
     /// Daily P&L.
-    #[cfg_attr(feature = "python", pyo3(get))]
     pub daily_pnl: f64,
     /// Is daily loss limit breached?
-    #[cfg_attr(feature = "python", pyo3(get))]
     pub daily_limit_breached: bool,
     /// Is drawdown limit breached?
-    #[cfg_attr(feature = "python", pyo3(get))]
     pub drawdown_breached: bool,
     /// Is VaR limit breached?
-    #[cfg_attr(feature = "python", pyo3(get))]
     pub var_breached: bool,
     /// Overall risk level (0-100).
-    #[cfg_attr(feature = "python", pyo3(get))]
     pub risk_score: u8,
     /// Recommended position size multiplier (0.0 - 1.0).
-    #[cfg_attr(feature = "python", pyo3(get))]
     pub position_multiplier: f64,
 }
 

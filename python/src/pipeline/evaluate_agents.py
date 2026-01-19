@@ -9,7 +9,7 @@ import argparse
 
 import numpy as np
 from stable_baselines3 import PPO, SAC
-from train_sac import ContinuousActionWrapper
+from core.train_sac import ContinuousActionWrapper
 
 from environment import TradingEnv
 

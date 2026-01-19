@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nglab-api-canary
+  namespace: nglab-prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nglab-api
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: nglab-api
+        version: canary
+    spec:
+      containers:
+      - name: api
+        image: nglab/api:canary
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: nglab-config
+        - secretRef:
+            name: nglab-secrets
+        resources:
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nglab-ingress-canary
+  namespace: nglab-prod
+  annotations:
+    nginx.ingress.kubernetes.io/canary: "true"
+    nginx.ingress.kubernetes.io/canary-weight: "10"
+spec:
+  rules:
+  - host: api.nglab.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nglab-api-canary-service
+            port:
+              number: 8000

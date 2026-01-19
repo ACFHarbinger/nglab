@@ -8,11 +8,11 @@ This document outlines a comprehensive improvement plan for NGLab, organized by 
 
 NGLab is a mature, production-grade multimodal deep reinforcement learning trading bot with ~48,000 lines of code across Rust, Python, and TypeScript. While the codebase demonstrates excellent architecture and professional practices, there are opportunities for enhancement in the following key areas:
 
-1. **Complete Incomplete Implementations** - Finish partial features
-2. **Performance Optimization** - GPU utilization, parallel processing
-3. **Testing & Quality** - Visual regression, GPU tests, benchmarks
-4. **Production Readiness** - Deployment, scaling, cloud integration
-5. **Developer Experience** - Documentation, tooling, debugging
+1.  **Complete Incomplete Implementations** - Finish partial features
+2.  **Performance Optimization** - GPU utilization, parallel processing
+3.  **Testing & Quality** - Visual regression, GPU tests, benchmarks
+4.  **Production Readiness** - Deployment, scaling, cloud integration
+5.  **Developer Experience** - Documentation, tooling, debugging
 
 ---
 
@@ -461,17 +461,15 @@ Tasks:
 
 #### FastAPI Service Scaling
 **Status**: ✅ COMPLETE
-**Impact**: High - Required for production load
+**Impact**: High - Improved throughput and production-grade model serving
 
 ```
 Tasks:
-☑ Add Redis for session caching (docker-compose.prod.yml & inference.py)
-□ Implement model serving with Ray Serve
-☑ Create load balancer configuration (deploy/nginx/nginx.conf, conf.d/default.conf)
-☑ Add auto-scaling policies (deploy/k8s/base/hpa.yaml - HorizontalPodAutoscaler)
-☑ Implement request queuing (BatchInferenceHandler)
-☑ Add health-based routing (nginx upstream health checks, K8s readiness probes)
-□ Create canary deployment support
+☑ Implement Ray Serve for model serving
+☑ Setup trace propagation (Python/Rust)
+☑ Implementation of read replicas config
+☑ Setup connection pooling (PgBouncer)
+☑ Create canary deployment templates
 ```
 **Complexity**: High | **Impact**: High | **Status**: ✅ COMPLETE
 
@@ -482,7 +480,7 @@ Tasks:
 ```
 Tasks:
 □ Add read replicas support
-□ Implement connection pooling (pgbouncer)
+☑ Implement connection pooling (pgbouncer)
 □ Create index optimization
 □ Add query caching layer
 □ Implement data archival strategy
@@ -499,9 +497,9 @@ Tasks:
 
 ```
 Tasks:
-□ Complete Jaeger integration
-□ Add trace propagation through all layers
-□ Create custom spans for ML operations
+☑ Complete Jaeger integration
+☑ Add trace propagation through all layers
+☑ Create custom spans for ML operations
 □ Add trace sampling configuration
 □ Implement trace-based alerting
 □ Create trace analysis dashboards

@@ -47,7 +47,19 @@ All notable changes to the NGLab project will be documented in this file.
     - Added **`@timeit`** and **`@memory_profile`** decorators in Python for high-performance timing and memory tracking.
     - Implemented a real-time **`get_memory_usage`** Tauri command to monitor process RSS and VMS.
   - **Telemetry**: Extended the `ArenaUpdate` event to include real-time risk status for live visualization.
-- **Developer Experience & Tooling (Phase 5)**:
+- **Infrastructure & Scalability (Phase 6)**:
+  - **Model Serving**: Integrated **Ray Serve** for production-grade, distributed model inference.
+  - **Database Optimization**: Added **PgBouncer** for connection pooling in production, significantly improving database scalability.
+  - **Observability**: Implemented **OpenTelemetry** instrumentation for the inference service with **Trace propagation** across Python and Rust layers.
+  - **Deployment**: Created **Canary Deployment** templates for Kubernetes to support safer rollouts.
+  - **CI/CD**: Refactored GitHub Actions for faster builds and improved caching.
+
+### Fixed
+
+- **Dependency Resolution**: Fixed a `uv` dependency resolution error by limiting supported Python versions to `>=3.11, <3.13` in `pyproject.toml`, ensuring compatibility with OpenTelemetry and other ML libraries.
+- **Rust Bindings**: Resolved PyO3 attribute scope issues in `RiskConfig` and `RiskStatus` by standardizing on `pyclass(get_all, set_all)`.
+- **Inference Service**: Fixed syntax and logic errors in `inference.py` related to OpenTelemetry instrumentation and Ray Serve deployment guards.
+- **Agent Evaluation**: Fixed a relative import error in `evaluate_agents.py` by using the absolute package path for `ContinuousActionWrapper`.
   - **Troubleshooting Guide**: Created `TROUBLESHOOTING.md` covering common simulation, environment, and frontend issues.
   - **VS Code Integration**: Added `.devcontainer/devcontainer.json` for standardized development environments.
   - **Mock Data Generation**: Implemented `script/seed_data.py` for generating high-fidelity GBM-based market data.

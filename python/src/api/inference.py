@@ -23,6 +23,23 @@ from contextlib import asynccontextmanager
 import python.src.utils.definitions as definitions
 from python.src.utils.functions.functions import load_model
 
+# OpenTelemetry Imports
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.resources import Resource
+
+# Ray Serve Imports
+import os
+try:
+    from ray import serve as ray_serve
+    RAY_AVAILABLE = True
+except ImportError:
+    ray_serve = None
+    RAY_AVAILABLE = False
+
 
 # Global State
 _MODEL: Optional[torch.nn.Module] = None
@@ -187,6 +204,46 @@ def get_model(model_path: Optional[str] = None) -> torch.nn.Module:
     return _MODEL
 
 
+# =============================================================================
+# Ray Serve Deployment
+# =============================================================================
+
+class RayModelDeployment:
+    def __init__(self) -> None:
+        # Load model on init to warm up the actor
+        get_model()
+
+    async def __call__(self, request: PredictionRequest) -> List[List[float]]:
+        return await batch_handler.predict(request)
+
+if RAY_AVAILABLE and ray_serve is not None:
+    RayModelDeployment = ray_serve.deployment( # type: ignore
+        name="nglab-prediction",
+        num_replicas=int(os.getenv("NGLAB_API_REPLICAS", "2")),
+        ray_actor_options={"num_cpus": 1, "num_gpus": 0.5 if torch.cuda.is_available() else 0}
+    )(RayModelDeployment)
+
+
+# =============================================================================
+# OpenTelemetry Instrumentation
+# =============================================================================
+
+def setup_telemetry(app: FastAPI):
+    resource = Resource(attributes={
+        "service.name": "nglab-inference-api"
+    })
+    
+    provider = TracerProvider(resource=resource)
+    processor = BatchSpanProcessor(OTLPSpanExporter(
+        endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://jaeger:4317"),
+        insecure=True
+    ))
+    provider.add_span_processor(processor)
+    trace.set_tracer_provider(provider)
+    
+    FastAPIInstrumentor.instrument_app(app)
+
+
 # Initialize Batch Handler
 batch_handler = BatchInferenceHandler(get_model)
 
@@ -221,6 +278,10 @@ app = FastAPI(
     version="2.0.0",
     lifespan=lifespan,
 )
+
+# Setup OTel
+if os.getenv("NGLAB_ENABLE_TELEMETRY", "true").lower() == "true":
+    setup_telemetry(app)
 
 
 @app.get("/health")
