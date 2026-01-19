@@ -26,3 +26,12 @@ def update_lock_wait_time(num_cpu_cores=None):
     else:
         LOCK_TIMEOUT = CORE_LOCK_WAIT_TIME * num_cpu_cores
     return LOCK_TIMEOUT
+
+
+# Configuration
+BATCH_SIZE = int(os.getenv("BATCH_SIZE", "32"))
+BATCH_TIMEOUT = float(os.getenv("BATCH_TIMEOUT", "0.01"))
+REDIS_HOST = os.getenv("NGLAB_REDIS_HOST", "localhost")
+REDIS_PORT = os.getenv("NGLAB_REDIS_PORT", "6379")
+REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
+CACHE_TTL = 60  # seconds

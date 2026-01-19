@@ -507,12 +507,12 @@ impl WebScraper for PolymarketScraper {
         // Rate limit: 10 concurrent requests
         const CONCURRENT_REQUESTS: usize = 10;
 
-        let token_ids = &self.token_ids;
-        let futures = token_ids.iter().map(|token_id| {
+        let token_ids = self.token_ids.clone();
+        let futures = token_ids.into_iter().map(|token_id| {
             let scraper = self;
             async move {
-                let history = scraper.fetch_history(token_id).await?;
-                Ok::<(String, Vec<HistoryItem>), ArenaError>((token_id.clone(), history))
+                let history = scraper.fetch_history(&token_id).await?;
+                Ok::<(String, Vec<HistoryItem>), ArenaError>((token_id, history))
             }
         });
 

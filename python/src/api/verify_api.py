@@ -6,11 +6,13 @@ import time
 import subprocess
 import requests  # type: ignore[import-untyped]
 
+import sys
+
 def verify() -> None:
     # 1. Start the server in the background
     print("Starting FastAPI server...")
     proc = subprocess.Popen(
-        ["python3", "python/src/api/inference.py"],
+        [sys.executable, "python/src/api/inference.py"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )

@@ -281,6 +281,11 @@ All notable changes to the NGLab project will be documented in this file.
   - **Benchmarking**: Added `benchmark_scaling.py` to profile FPS scaling across CPU cores.
   - **Property Testing**: Integrated `hypothesis` for robust property-based testing of GPU features, verifying correctness against CPU baselines and numerical stability.
 
+- **Phase 4 Completion (Scale & Polish)**:
+  - **FastAPI Scaling**: Implemented `BatchInferenceHandler` and Redis caching layer in `inference.py` to support high-throughput async prediction serving. Added production Gunicorn config.
+  - **Automated Pipeline**: Created `FeaturePipeline` combining `GPUFeatureEngineer`, `RobustScaler`, and `VarianceThreshold` for streamlined, automated feature engineering.
+
+
 ## [Unreleased] - 2026-01-18
 
 ### Added
