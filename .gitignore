@@ -446,3 +446,4 @@ android/build/intermediates/ktLint/
 
 # Local directories
 model_weights/
+results_verify/

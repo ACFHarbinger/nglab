@@ -16,6 +16,14 @@ All notable changes to the NGLab project will be documented in this file.
   - Integrated FinBERT sentiment analysis for financial news and social media.
   - Added intelligent sample selection (Entropy, BALD, Uncertainty samplers).
   - Created news crawler for RSS feeds (Yahoo Finance, MarketWatch, CNBC).
+- **Rust Performance Optimizations**:
+  - Added `SmallVec` for stack-allocated returns history (avoids heap for small windows).
+  - Implemented pre-allocated `ObservationBuffer` for zero-allocation observation generation.
+  - Verified with Criterion benchmarks: `trading_env_step` at 22.8µs, `reset` at 62.5ns.
+- **Advanced ML: Ensemble Models**:
+  - Implemented `EnsembleModel` wrapper with average, weighted, voting, and stacking strategies.
+  - Added `predict_with_uncertainty` for ensemble disagreement-based uncertainty estimation.
+  - Factory function `create_ensemble_from_configs` for easy ensemble creation.
 - **Modular CLI Framework (P3 Phase 4)**:
   - Refactored the monolithic `command_parser.py` into a modular architecture.
   - Created a centralized registry (`registry.py`) and specialized parsers for `train`, `inference`, `webcrawler`, and `hp_optim`.

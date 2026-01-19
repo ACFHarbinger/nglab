@@ -1956,20 +1956,20 @@ docs/adr/
 - ✅ News crawler (RSS feeds: Yahoo Finance, MarketWatch, CNBC)
 - ✅ CLI integration
 
-**Performance** (Planned):
-- SIMD optimizations
-- Profile-guided optimization
-- Memory pool allocations
+**Performance** (Partially Complete):
+- ✅ Memory pool allocations (SmallVec, ObservationBuffer)
+- [ ] SIMD optimizations (future)
+- [ ] Profile-guided optimization workflow
 
 **Scale:**
 - Kubernetes deployment
 - Auto-scaling policies
 - Multi-region setup
 
-**Advanced ML:**
-- Multi-agent learning
-- Meta-learning for strategy adaptation
-- Ensemble models
+**Advanced ML** (Partially Complete):
+- ✅ Ensemble models (average, weighted, voting, stacking strategies)
+- [ ] Multi-agent learning
+- [ ] Meta-learning for strategy adaptation
 
 ---
 

@@ -16,6 +16,7 @@ use numpy::{PyArray2, ToPyArray};
 use pyo3::prelude::*;
 #[cfg(feature = "python")]
 use pyo3::types::PyDict;
+use smallvec::SmallVec;
 #[cfg(feature = "python")]
 use tracing::info;
 use tracing::{debug, instrument};
@@ -79,9 +80,8 @@ pub struct StepInfo {
     pub total_steps: u64,
 }
 
-/**
- * Observation buffer for high-performance zero-copy access.
- */
+/// Pre-allocated observation buffer for zero-allocation hot path.
+/// Uses a fixed-size array internally to avoid heap allocations.
 pub struct ObservationBuffer {
     data: Vec<f64>,
     shape: (usize, usize),
@@ -95,12 +95,34 @@ impl ObservationBuffer {
         }
     }
 
+    /// Update a single row of observations. Zero-copy when possible.
+    #[inline]
     pub fn update(&mut self, row: usize, values: &[f64]) {
         let start = row * self.shape.1;
         let end = start + values.len().min(self.shape.1);
         self.data[start..end].copy_from_slice(&values[..end - start]);
     }
+
+    /// Get the underlying data as a slice.
+    #[inline]
+    pub fn as_slice(&self) -> &[f64] {
+        &self.data
+    }
+
+    /// Reset buffer to zeros.
+    #[inline]
+    pub fn reset(&mut self) {
+        self.data.fill(0.0);
+    }
+
+    /// Clone data into a new Vec (for Python interop).
+    pub fn to_vec(&self) -> Vec<f64> {
+        self.data.clone()
+    }
 }
+
+/// Stack-allocated returns history (avoids heap for typical window sizes).
+type ReturnsHistory = SmallVec<[f64; 64]>;
 
 /**
  * Trading environment with Gymnasium interface.
@@ -143,8 +165,8 @@ pub struct TradingEnv {
     lookback: usize,
     /** Number of features per timestep */
     num_features: usize,
-    /** Returns history for Sharpe calculation */
-    returns: Vec<f64>,
+    /** Returns history for Sharpe calculation (stack-allocated for small windows) */
+    returns: ReturnsHistory,
     /** Previous portfolio value for return calculation */
     prev_portfolio_value: f64,
     /** Maximum steps before truncation */
@@ -153,6 +175,8 @@ pub struct TradingEnv {
     total_steps: u64,
     /** Rerun logger for visualization */
     logger: crate::utils::visualizer::RerunLogger,
+    /** Pre-allocated observation buffer */
+    obs_buffer: ObservationBuffer,
 }
 
 // =========================================================================
@@ -300,6 +324,7 @@ impl TradingEnv {
         max_steps: usize,
         enable_logging: bool,
     ) -> Self {
+        let num_features = 6; // price, return, volume, imbalance, position, cash
         TradingEnv {
             orderbook: OrderBook::new(),
             prices: Vec::new(),
@@ -309,12 +334,13 @@ impl TradingEnv {
             initial_capital,
             transaction_cost,
             lookback,
-            num_features: 6, // price, return, volume, imbalance, position, cash
-            returns: Vec::new(),
+            num_features,
+            returns: SmallVec::new(),
             prev_portfolio_value: initial_capital,
             max_steps,
             total_steps: 0,
             logger: crate::utils::visualizer::RerunLogger::new(enable_logging),
+            obs_buffer: ObservationBuffer::new(num_features, lookback),
         }
     }
 
@@ -427,8 +453,8 @@ impl TradingEnv {
     }
 
     /** Internal method to generate observation data (pure Rust, no GIL) */
-    fn generate_observation_data(&self) -> Vec<f64> {
-        let mut obs = vec![0.0f64; self.lookback * self.num_features];
+    fn generate_observation_data(&mut self) -> Vec<f64> {
+        self.obs_buffer.reset();
 
         for i in 0..self.lookback {
             let idx = self
@@ -444,16 +470,18 @@ impl TradingEnv {
                     0.0
                 };
 
-                let row_start = i * self.num_features;
-                obs[row_start] = price / self.prices[0]; // Normalized price?
-                obs[row_start + 1] = returns; // Returns
-                obs[row_start + 2] = 0.0; // Volume (placeholder)
-                obs[row_start + 3] = self.orderbook.imbalance(); // Order book imbalance
-                obs[row_start + 4] = self.position / self.initial_capital; // Normalized position
-                obs[row_start + 5] = self.cash / self.initial_capital; // Normalized cash
+                let row_data = [
+                    price / self.prices[0],               // Normalized price
+                    returns,                              // Returns
+                    0.0,                                  // Volume (placeholder)
+                    self.orderbook.imbalance(),           // Order book imbalance
+                    self.position / self.initial_capital, // Normalized position
+                    self.cash / self.initial_capital,     // Normalized cash
+                ];
+                self.obs_buffer.update(i, &row_data);
             }
         }
-        obs
+        self.obs_buffer.to_vec()
     }
 
     /** Get current price */
