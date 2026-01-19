@@ -6,6 +6,7 @@ from python.src.commands.base_parser import ConfigsParser
 from python.src.commands.train_parser import add_train_args
 from python.src.commands.inference_parser import add_inference_args
 from python.src.commands.crawler_parser import add_crawler_args
+from python.src.commands.hpo_parser import add_hpo_args
 
 
 def get_parser() -> ConfigsParser:
@@ -28,5 +29,9 @@ def get_parser() -> ConfigsParser:
     # Web Crawler
     crawler_parser = subparsers.add_parser("webcrawler", aliases=["crawler"], help="Crawl websites for data")
     add_crawler_args(crawler_parser)
+
+    # HPO (Hyperparameter Optimization)
+    hpo_parser = subparsers.add_parser("hp_optim", aliases=["hpo"], help="Hyperparameter optimization")
+    add_hpo_args(hpo_parser)
 
     return parser

@@ -1,39 +1,67 @@
+"""
+Distributed Hyperparameter Optimization with Ray Tune and PyTorch Lightning.
+"""
+
 from typing import Any, Dict, cast
-import torch
+import pytorch_lightning as pl
 from ray import tune
 from ray.tune.schedulers import ASHAScheduler
 from ray.tune.search.optuna import OptunaSearch
+from ray.train.lightning import RayTrainReportCallback, RayDDPStrategy
 
-def train_func(config: Dict[str, Any], data_loader_factory: Any) -> None:
+from python.src.models.time_series import TimeSeriesBackbone
+from python.src.pipeline.core.lightning.supervised_learning import SLLightningModule
+
+
+def train_func(config: Dict[str, Any], opts: Dict[str, Any]) -> None:
     """
-    Ray Tune training function.
+    Ray Tune training function using PyTorch Lightning.
     """
-    # Initialize model from config
-    # model = MyModel(config)
-    # ... placeholder for actual model and data loading ...
+    # 1. Update config with HPO suggestions
+    model_cfg = opts.get("model_cfg", {}).copy()
+    model_cfg.update({
+        "hidden_dim": config.get("hidden_dim", 128),
+        "lr": config.get("lr", 1e-3),
+    })
     
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # model.to(device)
+    # 2. Instantiate Model and Module
+    backbone = TimeSeriesBackbone(model_cfg)
+    model = SLLightningModule(backbone, model_cfg)
     
-    # optimizer = optim.Adam(model.parameters(), lr=config["lr"])
-    # criterion = nn.MSELoss()
+    # 3. Ray Tune Callback for Lightning
+    report_callback = RayTrainReportCallback()
     
-    # for epoch in range(10):
-    #     loss = train_one_epoch(model, optimizer, criterion, data_loader_factory(), device)
-    #     train.report({"loss": loss})
-    pass
+    # 4. Trainer with Ray Integration
+    trainer = pl.Trainer(
+        max_epochs=opts.get("max_epochs", 10),
+        devices="auto",
+        accelerator="auto",
+        strategy=RayDDPStrategy(), # For distributed training within Ray trial
+        callbacks=[report_callback],
+        enable_checkpointing=False,
+        logger=False,
+    )
+    
+    # 5. Fit
+    # Note: Requires a proper DataModule or dataloader setup. 
+    # For now, we assume dataloaders are provided via opts or global factory.
+    train_loader = opts["train_loader_factory"]()
+    val_loader = opts["val_loader_factory"]()
+    
+    trainer.fit(model, train_dataloader=train_loader, val_dataloaders=val_loader)
+
 
 def run_hpo_search(
+    opts: Dict[str, Any],
     num_samples: int = 10,
     max_epochs: int = 10,
-    gpus_per_trial: float = 1.0
+    gpus_per_trial: float = 0.0
 ) -> Dict[str, Any]:
     """
     Run distributed hyperparameter search using Ray Tune.
     """
     search_space = {
         "lr": tune.loguniform(1e-5, 1e-2),
-        "batch_size": tune.choice([32, 64, 128]),
         "hidden_dim": tune.choice([128, 256, 512]),
     }
 
@@ -45,11 +73,11 @@ def run_hpo_search(
 
     tuner = tune.Tuner(
         tune.with_resources(
-            train_func,
+            lambda config: train_func(config, opts),
             resources={"cpu": 2, "gpu": gpus_per_trial}
         ),
         tune_config=tune.TuneConfig(
-            metric="loss",
+            metric="val/sl_loss",
             mode="min",
             scheduler=scheduler,
             search_alg=OptunaSearch(),
@@ -59,5 +87,5 @@ def run_hpo_search(
     )
 
     results = tuner.fit()
-    best_result = results.get_best_result(metric="loss", mode="min")
+    best_result = results.get_best_result(metric="val/sl_loss", mode="min")
     return cast(Dict[str, Any], best_result.config)

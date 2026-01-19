@@ -1,0 +1,28 @@
+import os
+from pathlib import Path
+
+# Paths
+path = Path(os.getcwd())
+parts = path.parts
+ROOT_DIR = Path(*parts[: parts.index("nglab") + 1])
+ICON_FILE = os.path.join(ROOT_DIR, "assets", "images", "logo-nglab.png")
+
+# Multi-core processing settings
+CORE_LOCK_WAIT_TIME = 10
+LOCK_TIMEOUT = CORE_LOCK_WAIT_TIME
+
+
+def update_lock_wait_time(num_cpu_cores=None):
+    """
+    Updates the global LOCK_TIMEOUT based on the number of CPU cores.
+
+    Returns:
+        The new (or default) value of LOCK_TIMEOUT.
+    """
+    global LOCK_TIMEOUT
+    global CORE_LOCK_WAIT_TIME
+    if num_cpu_cores is None:
+        LOCK_TIMEOUT = CORE_LOCK_WAIT_TIME
+    else:
+        LOCK_TIMEOUT = CORE_LOCK_WAIT_TIME * num_cpu_cores
+    return LOCK_TIMEOUT

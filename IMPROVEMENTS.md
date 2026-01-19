@@ -1918,10 +1918,12 @@ docs/adr/
 
 **Major Initiatives:**
 
-**Distributed Training (Weeks 13-16)**
-- PyTorch DDP setup (Planned)
-- Ray Tune integration (In-progress)
-- Multi-GPU benchmarks (Planned)
+**- [x] Phase 1: Distributed Training
+    - [x] PyTorch DDP setup (Completed)
+    - [x] Ray Tune integration (Completed)
+    - [x] HPO Bridge & Optimization Workers (Completed)
+- ✅ Ray Tune integration
+- [ ] Multi-GPU benchmarks (Planned)
 
 **Model Serving, Logging & CLI (Weeks 17-20)** (Completed)
 - ✅ FastAPI inference endpoints

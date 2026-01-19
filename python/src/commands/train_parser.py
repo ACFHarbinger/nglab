@@ -107,3 +107,11 @@ def add_train_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--log_step", type=int, default=1, help="Log info every log_step steps"
     )
+
+    # Distributed Training
+    parser.add_argument(
+        "--distributed", action="store_true", help="Enable distributed training"
+    )
+    parser.add_argument(
+        "--local_rank", type=int, default=0, help="Local rank for distributed training"
+    )

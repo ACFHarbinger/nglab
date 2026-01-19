@@ -41,6 +41,10 @@ dependencies = [
     "mlflow>=2.10.2",
     "ray>=2.53.0",
     "seaborn>=0.12.1",
+    "deap>=1.4.3",
+    "configspace>=1.2.2",
+    "loguru>=0.7.3",
+    "distributed>=2026.1.1",
 ]
 
 [build-system]

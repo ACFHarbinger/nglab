@@ -3,7 +3,8 @@ import torch
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data.distributed import DistributedSampler
-from typing import Any, Callable, Optional
+from tqdm import tqdm
+from typing import Any, Callable
 import logging
 
 logger = logging.getLogger(__name__)
@@ -43,25 +44,23 @@ class DistributedTrainer:
     """
     A boilerplate trainer for distributed training.
     """
+
     def __init__(
         self,
         model: torch.nn.Module,
-        train_loader_factory: Callable[[Optional[DistributedSampler[Any]]], torch.utils.data.DataLoader[Any]],
-        optimizer_factory: Callable[[torch.nn.Module], torch.optim.Optimizer],
+        train_loader: torch.utils.data.DataLoader[Any],
+        optimizer: torch.optim.Optimizer,
         criterion: torch.nn.Module,
         local_rank: int,
+        device: torch.device,
     ):
         self.local_rank = local_rank
-        self.device = torch.device(f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu")
-        
+        self.device = device
+
         self.model = wrap_model_ddp(model, local_rank)
-        self.optimizer = optimizer_factory(self.model)
+        self.optimizer = optimizer
         self.criterion = criterion
-        
-        # Sampler is required for DDP to ensure each process sees different data
-        # Note: This factory pattern is a placeholder. 
-        # In a real implementation, the factory should handle dataset/sampler internally.
-        self.train_loader = train_loader_factory(None) 
+        self.train_loader = train_loader
 
     def train_epoch(self, epoch: int) -> float:
         self.model.train()  # type: ignore[no-untyped-call]
@@ -69,17 +68,62 @@ class DistributedTrainer:
         if isinstance(sampler, DistributedSampler):
             sampler.set_epoch(epoch)
 
-            
         total_loss = 0.0
-        for batch_idx, (data, target) in enumerate(self.train_loader):
+        # Use tqdm only on Rank 0
+        loader = (
+            tqdm(self.train_loader, desc=f"Epoch {epoch}", disable=self.local_rank != 0)
+            if self.local_rank == 0
+            else self.train_loader
+        )
+
+        for batch_idx, (data, target) in enumerate(loader):
             data, target = data.to(self.device), target.to(self.device)
-            
+
             self.optimizer.zero_grad()
             output = self.model(data)
             loss = self.criterion(output, target)
             loss.backward()
             self.optimizer.step()
-            
+
             total_loss += loss.item()
-            
+
         return total_loss / len(self.train_loader)
+
+
+def train_ddp(
+    model: torch.nn.Module,
+    dataset: torch.utils.data.Dataset[Any],
+    optimizer_factory: Callable[[torch.nn.Module], torch.optim.Optimizer],
+    criterion: torch.nn.Module,
+    batch_size: int,
+    n_epochs: int,
+) -> None:
+    """
+    Standalone function to run DDP training.
+    """
+    local_rank = setup_distributed()
+    device = torch.device(f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu")
+
+    sampler = DistributedSampler(dataset, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=batch_size,
+        sampler=sampler,
+        pin_memory=torch.cuda.is_available(),
+    )
+
+    trainer = DistributedTrainer(
+        model=model,
+        train_loader=train_loader,
+        optimizer=optimizer_factory(model),
+        criterion=criterion,
+        local_rank=local_rank,
+        device=device,
+    )
+
+    for epoch in range(n_epochs):
+        avg_loss = trainer.train_epoch(epoch)
+        if local_rank == 0:
+            logger.info(f"Epoch {epoch}: Avg Loss = {avg_loss:.4f}")
+
+    cleanup_distributed()

@@ -11,8 +11,16 @@ All notable changes to the NGLab project will be documented in this file.
   - Achieved full **Mypy strict mode** compliance across all visualization utilities.
 - **Modular CLI Framework (P3 Phase 4)**:
   - Refactored the monolithic `command_parser.py` into a modular architecture.
-  - Created a centralized registry (`registry.py`) and specialized parsers for `train`, `inference`, and `webcrawler`.
-  - Implemented `base_parser.py` with shared `ConfigsParser` and custom argument actions.
+  - Created a centralized registry (`registry.py`) and specialized parsers for `train`, `inference`, `webcrawler`, and `hp_optim`.
+  - Consolidated HPO suite in `optimize.py` with support for Optuna, Ray Tune, and **DEHB**.
+  - Integrated **Loguru** for structured and colorized logging during HPO trials.
+  - Implemented multi-fidelity evaluation worker for efficient resource allocation in search.
+  - Finalized PyTorch **DDP** integration with standalone CLI support.
+  - Updated the modular CLI framework to include HPO and Distributed Training commands.
+- **Distributed Training (Ray Tune Integration)**:
+  - Integrated **Ray Tune** for hyperparameter optimization, leveraging PyTorch Lightning for training orchestration.
+  - Set up **ASHA scheduler** and **Optuna search** for efficient search space exploration.
+  - Implemented `ray_tune.py` with `RayTrainReportCallback` for seamless metric reporting.
 - **API Documentation**:
   - Expanded **Rust** crate documentation with detailed module overviews, architecture descriptions, and usage examples.
   - Created a dedicated `rust/docs` directory for native doc storage.
