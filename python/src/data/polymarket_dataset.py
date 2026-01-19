@@ -74,7 +74,8 @@ class PolymarketDataset(torch.utils.data.Dataset):
             # Keep only the Price column and rename it to the candidate ID/Name
             # Assuming 'Price' column exists
             if "Price" in df.columns:
-                df = df[["Price"]].rename(columns={"Price": f"Candidate_{md['id']}"})
+                df = df[["Price"]]
+                df.columns = [f"Candidate_{md['id']}"]
                 data_frames.append(df)
         
         if not data_frames:

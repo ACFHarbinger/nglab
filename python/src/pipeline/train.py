@@ -8,6 +8,7 @@ and handling gradient clipping.
 import math
 import os
 import time
+from typing import cast
 
 import torch
 from tqdm import tqdm
@@ -144,7 +145,7 @@ def train_batch(
     """
     batch = move_to(batch, opts["device"])
     x = batch["Price"]
-    y = batch["Labels"]
+    y = cast(torch.Tensor, batch["Labels"])
 
     # Compute output and loss
     output = model(x)
