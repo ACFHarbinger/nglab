@@ -12,10 +12,7 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use nglab::simulation::gym::{ActionType, StepInfo, TradingEnv};
-use ratatui::{
-    prelude::*,
-    widgets::{block::*, *},
-};
+use ratatui::{prelude::*, widgets::*};
 use std::io;
 use std::time::{Duration, Instant};
 
@@ -43,7 +40,7 @@ impl App {
      * Create a new instance of the TUI application.
      */
     fn new() -> Self {
-        let mut env = TradingEnv::new(10000.0, 0.001, 30, 2000, true);
+        let mut env = TradingEnv::new(10000.0, 0.001, 30, 2000, true, None);
 
         // Generate dummy price data for demonstration
         let mut prices = Vec::new();
