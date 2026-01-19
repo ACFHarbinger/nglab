@@ -21,12 +21,6 @@ interface VaultSummary {
     created_at: string;
 }
 
-interface VaultEntry {
-    id: number;
-    label: string;
-    value: string;
-    created_at: string;
-}
 
 const VaultTab: React.FC = () => {
     const [isUnlocked, setIsUnlocked] = useState(false);

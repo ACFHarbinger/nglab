@@ -27,9 +27,12 @@ from python.src.utils.functions.functions import load_model
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.trace.sampling import ParentBased, TraceIdRatioBased
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.sdk.resources import Resource
+
+tracer = trace.get_tracer(__name__)
 
 # Ray Serve Imports
 import os
@@ -131,50 +134,52 @@ class BatchInferenceHandler:
         self, batch: List[Tuple[PredictionRequest, asyncio.Future]]
     ):
         """Process a batch of requests."""
-        requests, futures = zip(*batch)
+        with tracer.start_as_current_span("process_batch") as span:
+            requests, futures = zip(*batch)
+            span.set_attribute("batch.size", len(requests))
 
-        try:
-            # Assume all requests use the same model version for now
-            # (or group by model version if needed - keeping simple for P4.1)
-            # In a real heavy setup, we'd have separate queues per model.
-            # Here we just use the default model for efficiency.
+            try:
+                # Assume all requests use the same model version for now
+                # (or group by model version if needed - keeping simple for P4.1)
+                # In a real heavy setup, we'd have separate queues per model.
+                # Here we just use the default model for efficiency.
 
-            # Load model (cached globally)
-            model = self.model_loader()
-            if model is None:
-                raise RuntimeError("Model not initialized")
+                # Load model (cached globally)
+                model = self.model_loader()
+                if model is None:
+                    raise RuntimeError("Model not initialized")
 
-            # Prepare batch tensor
-            # Flatten all observations from all requests: [req1_obs, req2_obs...] -> single batch
-            # Track slice indices to split results back
-            all_obs = []
-            splits = []
-            for req in requests:
-                all_obs.extend(req.observations)
-                splits.append(len(req.observations))
+                # Prepare batch tensor
+                # Flatten all observations from all requests: [req1_obs, req2_obs...] -> single batch
+                # Track slice indices to split results back
+                all_obs = []
+                splits = []
+                for req in requests:
+                    all_obs.extend(req.observations)
+                    splits.append(len(req.observations))
 
-            device = next(model.parameters()).device
-            obs_tensor = torch.tensor(all_obs, dtype=torch.float32).to(device)
+                device = next(model.parameters()).device
+                obs_tensor = torch.tensor(all_obs, dtype=torch.float32).to(device)
 
-            # Inference
-            with torch.no_grad():
-                output = model(obs_tensor)
-                output_list = output.cpu().tolist()
+                # Inference
+                with torch.no_grad():
+                    output = model(obs_tensor)
+                    output_list = output.cpu().tolist()
 
-            # Distribute results
-            cursor = 0
-            for i, future in enumerate(futures):
-                num_samples = splits[i]
-                result = output_list[cursor : cursor + num_samples]
-                cursor += num_samples
+                # Distribute results
+                cursor = 0
+                for i, future in enumerate(futures):
+                    num_samples = splits[i]
+                    result = output_list[cursor : cursor + num_samples]
+                    cursor += num_samples
 
-                if not future.done():
-                    future.set_result(result)
+                    if not future.done():
+                        future.set_result(result)
 
-        except Exception as e:
-            for future in futures:
-                if not future.done():
-                    future.set_exception(e)
+            except Exception as e:
+                for future in futures:
+                    if not future.done():
+                        future.set_exception(e)
 
 
 def get_model(model_path: Optional[str] = None) -> torch.nn.Module:
@@ -233,7 +238,10 @@ def setup_telemetry(app: FastAPI):
         "service.name": "nglab-inference-api"
     })
     
-    provider = TracerProvider(resource=resource)
+    # Trace Sampling: 10% sampling rate for production
+    sampler = ParentBased(root=TraceIdRatioBased(0.1))
+    
+    provider = TracerProvider(resource=resource, sampler=sampler)
     processor = BatchSpanProcessor(OTLPSpanExporter(
         endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://jaeger:4317"),
         insecure=True

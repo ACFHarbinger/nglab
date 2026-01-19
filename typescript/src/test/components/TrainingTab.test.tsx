@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import TrainingTab from "../../components/TrainingTab";
 import { invoke } from "@tauri-apps/api/core";
@@ -10,8 +10,6 @@ const mockListen = listen as unknown as ReturnType<typeof vi.fn>;
 const mockOpen = open as unknown as ReturnType<typeof vi.fn>;
 
 describe("TrainingTab", () => {
-    let progressCallback: any;
-
     beforeEach(() => {
         vi.clearAllMocks();
         mockInvoke.mockImplementation((cmd) => {
@@ -20,11 +18,7 @@ describe("TrainingTab", () => {
             return Promise.resolve(null);
         });
         mockOpen.mockResolvedValue(null);
-        mockListen.mockImplementation((event, cb) => {
-            if (event === "training-progress") {
-                progressCallback = cb;
-                return Promise.resolve(() => { });
-            }
+        mockListen.mockImplementation(() => {
             return Promise.resolve(() => { });
         });
     });

@@ -23,11 +23,8 @@ import { readTextFile } from "@tauri-apps/plugin-fs";
 import Papa from "papaparse";
 import { prepareChartData } from "../utils/dataHelpers";
 import { MarketMetadata } from "../hooks/usePolymarket";
-
-type ArimaResult = {
-  path: number[];
-  used_seed?: number;
-};
+import { ArimaResult } from "../../../rust/bindings/ArimaResult";
+import { ProphetResult } from "../../../rust/bindings/ProphetResult";
 
 type GarchResult = {
   returns: number[];
@@ -37,13 +34,6 @@ type GarchResult = {
 type HoltWintersResult = {
   path: number[];
   used_seed?: number;
-};
-
-type ProphetResult = {
-  times: number[];
-  values: number[];
-  trend: number[];
-  seasonal: number[];
 };
 
 /**

@@ -8,6 +8,7 @@
 use ndarray::{Array1, Array2};
 use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
+use ts_rs::TS;
 
 /**
  * Configuration parameters for the Prophet model.
@@ -30,7 +31,8 @@ pub struct ProphetParams {
 /**
  * Result container for Prophet forecasts.
  */
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
 pub struct ProphetResult {
     pub times: Vec<i64>,
     pub values: Vec<f64>,

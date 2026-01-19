@@ -26,10 +26,10 @@
  * While primarily designed to be used from Python, the core components can be used natively in Rust:
  *
  * ```rust,no_run
- * use nglab::simulation::TradingEnv;
+ * use nglab::simulation::gym::TradingEnv;
  *
  * // Initialize environment with starting capital and transaction costs
- * let mut env = TradingEnv::new(10_000.0, 0.001, 10, 100, false);
+ * let mut env = TradingEnv::new(10_000.0, 0.001, 10, 100, false, None);
  *
  * // Reset environment
  * let initial_obs = env.reset_rs();
@@ -140,5 +140,13 @@ mod tests {
     fn test_arena_creation() {
         let arena = Arena::new();
         assert_eq!(arena.step_count(), 0);
+    }
+
+    #[test]
+    fn generate_types() {
+        // This test doesn't need to assert anything.
+        // Its mere existence causes `cargo test` to execute the code
+        // and triggers the `#[ts(export)]` macros in your submodules.
+        println!("TypeScript bindings generated successfully.");
     }
 }

@@ -143,6 +143,23 @@ services:
         limits:
           memory: 1G
 
+  postgres-replica:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-nglab}
+      - POSTGRES_USER=${POSTGRES_USER:-nglab}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nglab-network
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 512M
+
   pgbouncer:
     image: edoburu/pgbouncer:latest
     environment:
@@ -181,6 +198,23 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    environment:
+      - DATA_SOURCE_NAME=postgresql://nglab:${POSTGRES_PASSWORD}@postgres:5432/nglab?sslmode=disable
+    ports:
+      - "9187:9187"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nglab-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
 
   # =============================================================================
   # Monitoring Stack

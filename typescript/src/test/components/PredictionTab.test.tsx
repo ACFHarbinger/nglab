@@ -4,7 +4,6 @@ import PredictionTab from "../../components/PredictionTab";
 import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { readTextFile } from "@tauri-apps/plugin-fs";
-import { createChart } from "lightweight-charts";
 
 const mockInvoke = invoke as unknown as ReturnType<typeof vi.fn>;
 const mockOpen = open as unknown as ReturnType<typeof vi.fn>;

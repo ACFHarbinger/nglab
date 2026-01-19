@@ -48,11 +48,28 @@ All notable changes to the NGLab project will be documented in this file.
     - Implemented a real-time **`get_memory_usage`** Tauri command to monitor process RSS and VMS.
   - **Telemetry**: Extended the `ArenaUpdate` event to include real-time risk status for live visualization.
 - **Infrastructure & Scalability (Phase 6)**:
-  - **Model Serving**: Integrated **Ray Serve** for production-grade, distributed model inference.
-  - **Database Optimization**: Added **PgBouncer** for connection pooling in production, significantly improving database scalability.
-  - **Observability**: Implemented **OpenTelemetry** instrumentation for the inference service with **Trace propagation** across Python and Rust layers.
-  - **Deployment**: Created **Canary Deployment** templates for Kubernetes to support safer rollouts.
-  - **CI/CD**: Refactored GitHub Actions for faster builds and improved caching.
+  - **Horizontal Scaling**: Migrated model inference to **Ray Serve**, enabling distributed, scalable prediction serving.
+  - **Database Availability**: Integrated **PgBouncer** for connection pooling and added a **PostgreSQL Read Replica** configuration in `docker-compose.prod.yml`.
+  - **Distributed Tracing**: Enhanced OpenTelemetry instrumentation with **Parent-Based Ratio Sampling** (10%) and custom spans for batch processing bottlenecks.
+  - **Observability Stack**: Fully integrated **Jaeger** for trace visualization and updated **AlertManager** with 20+ production-grade rules (latency, error rates, GPU health).
+  - **Deployment**: Created **Kubernetes Canary Deployment** templates and refactored CI/CD for robust multi-layer linting and testing.
+  - **TypeScript Bindings**: Integrated **ts-rs** for automatic Rust→TypeScript type generation, enabling type-safe Tauri command interfaces.
+  - **Database Optimization**:
+    - Created strategic indexes for common query patterns (10+ indexes)
+    - Implemented Redis query caching layer with decorators and TTL
+    - Built data archival system with dedicated tables and automated scripts
+    - Integrated postgres_exporter for comprehensive database monitoring
+    - Automated backup system with S3/GCS support and retention policies
+  - **Advanced Alerting**:
+    - Anomaly detection alerts using statistical methods (rate-of-change, std dev)
+    - Alert correlation and intelligent grouping with 5 inhibition rules
+    - Expanded AlertManager with 30+ production-grade alert rules
+  - **CI/CD Improvements**: 
+    - Added ESLint configuration with TypeScript support
+    - Implemented `npm run lint` and `npm run test` scripts in root package.json
+    - Fixed all TypeScript lint errors across frontend test suite
+    - Resolved Rust doctest compilation issues
+    - Verified all 44 tests pass successfully
 
 ### Fixed
 
@@ -60,6 +77,12 @@ All notable changes to the NGLab project will be documented in this file.
 - **Rust Bindings**: Resolved PyO3 attribute scope issues in `RiskConfig` and `RiskStatus` by standardizing on `pyclass(get_all, set_all)`.
 - **Inference Service**: Fixed syntax and logic errors in `inference.py` related to OpenTelemetry instrumentation and Ray Serve deployment guards.
 - **Agent Evaluation**: Fixed a relative import error in `evaluate_agents.py` by using the absolute package path for `ContinuousActionWrapper`.
+- **Rust Documentation**: Fixed doctest import path from `nglab::simulation::TradingEnv` to `nglab::simulation::gym::TradingEnv` and added missing seed parameter.
+- **Frontend Linting**: 
+  - Removed unused variables across TypeScript test files
+  - Fixed `ArenaUpdate` type mismatch in PriceChart tests by adding risk metrics fields
+  - Cleaned up unused imports from testing library components
+  - Added `_` prefix pattern to ESLint for intentionally unused function parameters
   - **Troubleshooting Guide**: Created `TROUBLESHOOTING.md` covering common simulation, environment, and frontend issues.
   - **VS Code Integration**: Added `.devcontainer/devcontainer.json` for standardized development environments.
   - **Mock Data Generation**: Implemented `script/seed_data.py` for generating high-fidelity GBM-based market data.

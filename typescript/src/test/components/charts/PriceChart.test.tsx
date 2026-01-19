@@ -34,7 +34,10 @@ describe("PriceChart", () => {
             step: 1,
             price: 100,
             portfolio_value: 5000,
-            orderbook: {} as any
+            orderbook: {} as any,
+            risk_score: 10,
+            current_drawdown: 0.05,
+            current_var: 0.02
         }];
 
         rerender(<PriceChart data={updateData} />);

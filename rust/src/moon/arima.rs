@@ -7,6 +7,7 @@
 
 use rand_distr::{Distribution, StandardNormal};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 /**
  * Parameters for the ARIMA simulation.
@@ -25,7 +26,8 @@ pub struct ArimaParams {
 /**
  * Result containing the simulated ARIMA path.
  */
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, TS)]
+#[ts(export)]
 pub struct ArimaResult {
     pub path: Vec<f64>,
     pub used_seed: Option<u64>,

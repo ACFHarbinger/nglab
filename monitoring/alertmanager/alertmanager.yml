@@ -80,3 +80,24 @@ inhibit_rules:
     target_match:
       alertname: 'NGLabHighLatency'
     equal: ['job']
+
+  # If database is down, suppress API errors
+  - source_match:
+      alertname: 'NGLabDatabaseDown'
+    target_match_re:
+      alertname: 'NGLabAPI.*'
+    equal: ['instance']
+
+  # If Redis is down, suppress cache-related alerts
+  - source_match:
+      alertname: 'NGLabRedisDown'
+    target_match:
+      alertname: 'NGLabHighLatency'
+    equal: ['instance']
+
+  # If GPU failure detected, suppress GPU metric alerts
+  - source_match:
+      alertname: 'NGLabGPUUtilizationDrop'
+    target_match_re:
+      alertname: 'NGLabGPU.*'
+    equal: ['instance']
