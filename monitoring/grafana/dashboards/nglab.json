@@ -1,0 +1,70 @@
+{
+    "dashboard": {
+        "title": "NGLab Trading Metrics",
+        "panels": [
+            {
+                "title": "Portfolio Value",
+                "targets": [
+                    {
+                        "expr": "nglab_portfolio_value"
+                    }
+                ],
+                "type": "timeseries",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                }
+            },
+            {
+                "title": "Trades Per Second",
+                "targets": [
+                    {
+                        "expr": "rate(nglab_trades_total[1m])"
+                    }
+                ],
+                "type": "timeseries",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 12,
+                    "y": 0
+                }
+            },
+            {
+                "title": "Step Duration (p99)",
+                "targets": [
+                    {
+                        "expr": "histogram_quantile(0.99, rate(nglab_step_duration_seconds_bucket[5m]))"
+                    }
+                ],
+                "type": "timeseries",
+                "gridPos": {
+                    "h": 8,
+                    "w": 24,
+                    "x": 0,
+                    "y": 8
+                }
+            },
+            {
+                "title": "Order Book Depth",
+                "targets": [
+                    {
+                        "expr": "nglab_orderbook_depth"
+                    }
+                ],
+                "type": "gauge",
+                "gridPos": {
+                    "h": 8,
+                    "w": 12,
+                    "x": 0,
+                    "y": 16
+                }
+            }
+        ],
+        "refresh": "5s",
+        "schemaVersion": 36,
+        "version": 1
+    }
+}

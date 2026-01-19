@@ -23,6 +23,10 @@ All notable changes to the NGLab project will be documented in this file.
   - Enabled **strict Mypy checks** in `pyproject.toml` for the Python codebase.
   - Defined initial PostgreSQL schema for trades, portfolio snapshots, and model checkpoints.
   - Implemented SQLAlchemy 2.0+ models in `python/src/db/models.py`.
+- **Observability & Versioning (P2 Phase 2)**:
+  - Implemented Rust Prometheus metrics exporter for real-time performance tracking.
+  - Created high-density **Grafana dashboard** for simulation metrics.
+  - Integrated **MLflow** for robust model versioning and experiment tracking in the Python pipeline.
 - **Health Checks**:
   - Implemented Flask-based health monitoring API in `python/src/api/health.py` (CPU, Memory, GPU).
   - Added `rust/src/health.rs` with serializable health status structures for Tauri integration.

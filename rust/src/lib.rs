@@ -49,6 +49,7 @@ pub mod config;
 pub mod errors;
 pub mod health;
 pub mod logging;
+pub mod metrics;
 pub mod models;
 pub mod moon;
 pub mod secret;
