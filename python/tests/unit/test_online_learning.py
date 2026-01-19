@@ -2,8 +2,8 @@
 import pytest
 import numpy as np
 import torch
-from python.src.online.drift import PageHinkley, MovingAverageDrift
-from python.src.online.normalization import OnlineNormalizer
+from python.src.pipeline.online_learning.drift import PageHinkley, MovingAverageDrift
+from python.src.pipeline.online_learning.normalization import OnlineNormalizer
 
 def test_page_hinkley_drift():
     ph = PageHinkley(min_instances=10, delta=0.1, threshold=10.0)

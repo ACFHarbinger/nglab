@@ -128,6 +128,7 @@ fn _nglab(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<simulation::orderbook::OrderBook>()?;
     m.add_class::<simulation::polymarket::PolymarketArena>()?;
     m.add_class::<simulation::gym::TradingEnv>()?;
+    m.add_class::<simulation::multi_asset::MultiAssetEnv>()?;
     Ok(())
 }
 

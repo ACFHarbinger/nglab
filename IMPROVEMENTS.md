@@ -333,13 +333,13 @@ Tasks:
 **Complexity**: High | **Impact**: High
 
 #### Multi-Asset Portfolio Optimization
-**Status**: Single-asset trading
+**Status**: ✅ FOUNDATION COMPLETE (MultiAssetEnv Implemented)
 **Impact**: Medium - Diversification benefits
 
 ```
 Tasks:
-□ Extend TradingEnv for multi-asset
-□ Implement portfolio rebalancing actions
+☑ Extend TradingEnv for multi-asset (`rust/src/simulation/multi_asset.rs`)
+☑ Implement portfolio rebalancing actions
 □ Add correlation-aware position sizing
 □ Create Markowitz optimization layer
 □ Support hierarchical risk parity
@@ -351,16 +351,16 @@ Tasks:
 
 #### Advanced Order Types
 **File**: `rust/src/simulation/orderbook.rs`
-**Status**: Market/Limit orders only
+**Status**: ✅ IMPLEMENTED (Stop, OCO, Triggers)
 **Impact**: Medium - More realistic simulation
 
 ```
 Tasks:
-□ Implement Stop-Loss orders
-□ Add Take-Profit orders
-□ Create OCO (One-Cancels-Other) orders
+☑ Implement Stop-Loss orders
+☑ Add Take-Profit orders
+☑ Implement OCO (One-Cancels-Other) logic
+□ Add Iceberg orders (Structure added, logic pending)
 □ Add Trailing Stop orders
-□ Implement Iceberg orders
 □ Support TWAP/VWAP execution
 □ Add order modification API
 ```

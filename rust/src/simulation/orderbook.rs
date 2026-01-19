@@ -38,6 +38,9 @@ pub enum Side {
 pub enum OrderType {
     Limit,
     Market,
+    StopLoss,   // Triggers Market Sell/Buy
+    TakeProfit, // Triggers Market Sell/Buy
+    StopLimit,  // Triggers Limit Order
 }
 
 /**
@@ -52,6 +55,12 @@ pub struct Order {
     pub side: Side,
     pub order_type: OrderType,
     pub timestamp: u64,
+
+    // Advanced fields
+    pub trigger_price: Option<f64>,    // For Stop/TakeProfit
+    pub iceberg_total: Option<f64>,    // Total quantity for Iceberg (if larger than quantity)
+    pub visible_quantity: Option<f64>, // Current visible slice
+    pub parent_id: Option<u64>,        // For OCO (points to linked order)
 }
 
 impl Order {
@@ -71,6 +80,37 @@ impl Order {
             side,
             order_type,
             timestamp,
+            trigger_price: None,
+            iceberg_total: None,
+            visible_quantity: None,
+            parent_id: None,
+        }
+    }
+
+    pub fn new_advanced(
+        id: u64,
+        price: f64,
+        quantity: f64,
+        side: Side,
+        order_type: OrderType,
+        timestamp: u64,
+        trigger_price: Option<f64>,
+        iceberg_total: Option<f64>,
+        visible_quantity: Option<f64>,
+        parent_id: Option<u64>,
+    ) -> Self {
+        Order {
+            id,
+            price,
+            quantity,
+            filled: 0.0,
+            side,
+            order_type,
+            timestamp,
+            trigger_price,
+            iceberg_total,
+            visible_quantity,
+            parent_id,
         }
     }
 
@@ -83,8 +123,32 @@ impl Order {
     pub fn is_filled(&self) -> bool {
         self.filled >= self.quantity
     }
-}
 
+    /// Check if this order is an iceberg order (has hidden quantity)
+    pub fn is_iceberg(&self) -> bool {
+        self.iceberg_total.is_some()
+    }
+
+    /// Reload visible quantity for iceberg orders from the hidden stash
+    pub fn refresh_iceberg(&mut self) {
+        if let (Some(total), Some(visible_max)) = (self.iceberg_total, self.visible_quantity) {
+            let current_filled_total = self.filled; // This is filled of the *current* slice?
+                                                    // Usually iceberg structure tracks total quantity separately.
+                                                    // Simplified: 'quantity' is the current visible order size.
+                                                    // We need to track total remaining.
+                                                    // Let's assume 'quantity' is current visible size. 'iceberg_total' is total remaining?
+
+            // Standard Iceberg:
+            // Displayed Amount = min(Total Remaining, Visible Amount)
+            // This implementation is a bit complex for single struct.
+            // Simplified: 'quantity' is always the current visible slice.
+            // When filled, we spawn a new order or update this one?
+            // Let's keep it simple: Icebergs are processed as standard orders,
+            // but we might re-insert them.
+            // Better strategy: Iceberg logic handled in OrderBook.
+        }
+    }
+}
 /**
  * A price level in the book, maintaining a FIFO queue of orders.
  */
@@ -145,24 +209,24 @@ pub struct Trade {
 
 /**
  * Central Limit Order Book (CLOB) simulator.
- *
- * Maintains a set of bid and ask price levels, each containing a FIFO queue
- * of limit orders. Supports both limit and market orders with automatic matching.
  */
 #[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderBook {
-    /** Bids ordered by price (highest first) - IndexMap preserves insertion order */
-    /** Key is price as integer (price * 10000 for precision) */
+    /** Bids ordered by price (highest first) */
     bids: IndexMap<i64, PriceLevel>,
     /** Asks ordered by price (lowest first) */
     asks: IndexMap<i64, PriceLevel>,
+    /** Orders waiting for a trigger price (Stop/TakeProfit) */
+    stop_orders: Vec<Order>,
     /** Next order ID */
     next_order_id: u64,
     /** Current timestamp */
     timestamp: u64,
     /** Price precision multiplier */
     price_precision: f64,
+    /** Last trade price for trigger checking */
+    last_price: f64,
 }
 
 impl Default for OrderBook {
@@ -228,10 +292,94 @@ impl OrderBook {
         OrderBook {
             bids: IndexMap::new(),
             asks: IndexMap::new(),
+            stop_orders: Vec::new(),
             next_order_id: 1,
             timestamp: 0,
             price_precision: 10000.0,
+            last_price: 100.0, // Default sane start
         }
+    }
+
+    /** Submit an advanced order (Stop, OCO, Iceberg) */
+    pub fn submit_advanced_order(
+        &mut self,
+        price: f64,
+        quantity: f64,
+        side: Side,
+        order_type: OrderType,
+        trigger_price: Option<f64>,
+        iceberg_total: Option<f64>,
+        parent_id: Option<u64>,
+    ) -> u64 {
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+
+        let order = Order::new_advanced(
+            order_id,
+            price,
+            quantity,
+            side,
+            order_type,
+            self.timestamp,
+            trigger_price,
+            iceberg_total,
+            iceberg_total.map(|t| t.min(quantity)), // Visible is min(total, slice)
+            parent_id,
+        );
+
+        // Handle stop orders
+        if matches!(
+            order_type,
+            OrderType::StopLoss | OrderType::TakeProfit | OrderType::StopLimit
+        ) {
+            self.stop_orders.push(order);
+        } else {
+            // Regular/Iceberg goes to matching immediately
+            self.match_order(order);
+        }
+
+        order_id
+    }
+
+    /// Check if any stop orders are triggered by current price
+    pub fn check_triggers(&mut self, current_price: f64) -> Vec<Trade> {
+        let mut triggered_trades = Vec::new();
+        let mut activated_orders = Vec::new();
+
+        // Update last price
+        self.last_price = current_price;
+
+        // Extract triggered orders
+        // Note: retain is O(N). For high-performance, use a specialized heap/tree.
+        // For NGLab simulation scale, Vec is fine.
+        let mut i = 0;
+        while i < self.stop_orders.len() {
+            let order = &self.stop_orders[i];
+            let should_trigger = match (order.side, order.trigger_price) {
+                (Side::Bid, Some(tp)) => current_price >= tp, // Stop Buy (e.g. Breakout)
+                (Side::Ask, Some(tp)) => current_price <= tp, // Stop Loss Sell
+                _ => false,
+            };
+
+            if should_trigger {
+                let mut triggered = self.stop_orders.remove(i);
+                // Convert to market/limit and activate
+                triggered.order_type = match triggered.order_type {
+                    OrderType::StopLimit => OrderType::Limit,
+                    _ => OrderType::Market,
+                };
+                activated_orders.push(triggered);
+            } else {
+                i += 1;
+            }
+        }
+
+        // Execute activated orders
+        for order in activated_orders {
+            triggered_trades.extend(self.match_order(order));
+        }
+
+        triggered_trades
     }
 
     /** Get the best bid price */
