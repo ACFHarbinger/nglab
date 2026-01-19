@@ -23,3 +23,8 @@ gradient_clip_val: 1.0
 
 # Task: unsupervised, supervised, rl
 task: rl
+
+# Model Params
+feature_dim: 5
+output_dim: 5
+probabilistic: true

@@ -148,7 +148,9 @@ def train_batch(
 
     # Compute output and loss
     output = model(x)
-    loss = baseline.loss(output, y)
+    # loss = baseline.loss(output, y)
+    # Use MAE (L1 Loss) as requested for Polymarket
+    loss = torch.nn.functional.l1_loss(output, y)
 
     # Perform backward pass and optimization step
     optimizer.zero_grad()

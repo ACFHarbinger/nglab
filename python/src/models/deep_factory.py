@@ -123,6 +123,7 @@ def create_deep_model(model_name: str, cfg: dict):
             n_layers=cfg.get("num_layers", 2),
             dropout=cfg.get("dropout", 0.0),
             output_type=cfg.get("output_type", "embedding"),
+            apply_softmax=cfg.get("probabilistic", False),
         )
     elif model_name == "GRU":
         return GRU(
