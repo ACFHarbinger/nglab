@@ -4,9 +4,9 @@ Functional utilities for model loading and tensor manipulation.
 
 import json
 import os
-from typing import Any, Dict, Optional, Tuple, Type, Union, cast
-
 import torch
+
+from typing import Any, Dict, Optional, Tuple, Union, cast
 
 
 def torch_load_cpu(load_path: str) -> Any:

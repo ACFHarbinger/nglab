@@ -1,5 +1,5 @@
 import mlflow
-import mlflow.pytorch
+from mlflow import pytorch, tracking
 from typing import Dict, Any, Optional
 import logging
 
@@ -54,7 +54,7 @@ class ModelRegistry:
                     mlflow.set_tags(tags)
 
                 # Log model using PyTorch flavor
-                mlflow.pytorch.log_model(
+                pytorch.log_model(
                     pytorch_model=model,
                     artifact_path=artifact_path,
                     registered_model_name=registered_model_name,
@@ -73,7 +73,7 @@ class ModelRegistry:
         """
         model_uri = f"models:/{model_name}/{version}"
         try:
-            model = mlflow.pytorch.load_model(model_uri)
+            model = pytorch.load_model(model_uri)
             logger.info(f"Model '{model_name}' version '{version}' loaded.")
             return model
         except Exception as e:
@@ -87,7 +87,7 @@ class ModelRegistry:
         Transition a model version to a different stage (e.g., 'Staging', 'Production').
         """
         try:
-            client = mlflow.tracking.MlflowClient()
+            client = tracking.MlflowClient()
             client.transition_model_version_stage(
                 name=model_name,
                 version=str(version),

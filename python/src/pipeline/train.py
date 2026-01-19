@@ -8,13 +8,13 @@ and handling gradient clipping.
 import math
 import os
 import time
-from typing import Any, Dict, List, Optional, Tuple, cast
+from typing import Any, Dict, List, Tuple, cast
 
 import torch
 from tqdm import tqdm
-from python.src.utils.functions import move_to
+from python.src.utils.functions.functions import move_to
+from python.src.utils.functions.model_utils import get_inner_model
 from python.src.utils.logging.log_utils import log_epoch, log_timeseries_values
-from python.src.utils.model_utils import get_inner_model
 
 
 def rollout(model: torch.nn.Module, dataset: torch.utils.data.Dataset[Any], opts: Dict[str, Any]) -> torch.Tensor:

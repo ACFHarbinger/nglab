@@ -3,16 +3,17 @@ Workflow for generating and visualizing reward landscapes.
 """
 
 import loss_landscapes
-import loss_landscapes.metrics
+import loss_landscapes
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torch import nn
 
-from environment import TradingEnv
+from typing import Any
+from python.src.env.trading_env import TradingEnv
 
 
-def evaluate_model(model, env, num_steps=100):
+def evaluate_model(model: Any, env: TradingEnv, num_steps: int = 100) -> float:
     """
     Evaluation function required by loss-landscapes.
     Returns the negative total reward (to treat it as a 'loss' to be minimized).
@@ -51,34 +52,35 @@ class SimplePolicy(nn.Module):
     Simple 2-layer MLP policy for landscape analysis.
     """
 
-    def __init__(self, input_dim=6, hidden_dim=64, output_dim=3):
+    def __init__(self, input_dim: int = 12, hidden_dim: int = 64, output_dim: int = 1):
         """
         Initialize.
         """
         super().__init__()
         self.net = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(30 * input_dim, hidden_dim),
+            nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, output_dim),
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass.
         """
         return self.net(x)
 
 
-def run_landscape_analysis():
+def run_landscape_analysis() -> None:
     """
     Main function to run the landscape analysis and save a plot.
     """
     print("Initializing environment...")
-    env = TradingEnv(lookback=30, max_steps=100)
+    feature_dim = 12
+    env = TradingEnv(lookback=30, max_steps=100, feature_dim=feature_dim)
 
     print("Initializing model...")
-    model = SimplePolicy()
+    model = SimplePolicy(input_dim=feature_dim)
 
     # We want to see how the landscape looks around the current weights
     # We'll use a random direction approach (standard for loss-landscapes)
@@ -87,14 +89,11 @@ def run_landscape_analysis():
     steps = 20
 
     print(f"Generating landscape surface ({steps}x{steps} grid)...")
-    # Metric targets 'evaluate_model' and varies model parameters along two random directions
-    metric = lambda model_copy: evaluate_model(model_copy, env)
-
     # Generate the landscape
-    # This might take a few seconds as it steps the env many times
+    # deepcopy_model=True ensures the original model isn't modified
     landscape = loss_landscapes.random_plane(
         model,
-        metric,
+        lambda m: evaluate_model(m, env), # type: ignore[arg-type]
         distance=1,
         steps=steps,
         normalization="filter",

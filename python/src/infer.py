@@ -13,7 +13,7 @@ import torch
 sys.path.append(str(Path(__file__).parent))
 
 from python.src.models.time_series import TimeSeriesBackbone
-from python.src.utils.model_versioning import ModelMetadata, load_model_with_metadata
+from python.src.utils.io.model_versioning import ModelMetadata, load_model_with_metadata
 
 
 def main():

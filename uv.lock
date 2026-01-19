@@ -2435,6 +2435,7 @@ dependencies = [
     { name = "rich" },
     { name = "scikit-learn" },
     { name = "scipy" },
+    { name = "seaborn" },
     { name = "stable-baselines3" },
     { name = "statsmodels" },
     { name = "tensorboard-logger" },
@@ -2488,6 +2489,7 @@ requires-dist = [
     { name = "rich", specifier = ">=14.2.0" },
     { name = "scikit-learn", specifier = ">=1.3.0" },
     { name = "scipy", specifier = "==1.10" },
+    { name = "seaborn", specifier = ">=0.12.1" },
     { name = "stable-baselines3", specifier = ">=2.5.0" },
     { name = "statsmodels", specifier = ">=0.14.6" },
     { name = "tensorboard-logger", specifier = "==0.1" },
@@ -4048,6 +4050,20 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/d5/80/b23382de9c50509afd151d6876dca33cafef2237a36f74ac7f3bfc327fc2/scipy-1.10.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:4df25a28bd22c990b22129d3c637fd5c3be4b7c94f975dca909d8bab3309b694", size = 30677591, upload-time = "2023-01-03T22:34:44.765Z" },
     { url = "https://files.pythonhosted.org/packages/da/b8/03dae1cd4fa687d84cd60513aef17efecf7c277bc771bb96a1d8780dd734/scipy-1.10.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2ad449db4e0820e4b42baccefc98ec772ad7818dcbc9e28b85aa05a536b0f1a2", size = 34124731, upload-time = "2023-01-03T22:34:48.641Z" },
     { url = "https://files.pythonhosted.org/packages/c3/c4/8efe05b8ee86c7276448ef54f71ddb194416b881bc7a0d3c353279eea6aa/scipy-1.10.0-cp311-cp311-win_amd64.whl", hash = "sha256:6faf86ef7717891195ae0537e48da7524d30bc3b828b30c9b115d04ea42f076f", size = 42226259, upload-time = "2023-01-03T22:34:52.955Z" },
+]
+
+[[package]]
+name = "seaborn"
+version = "0.12.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "matplotlib" },
+    { name = "numpy" },
+    { name = "pandas" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cf/c6/e605f937d0301c1d00a159d55c96ae9edc1adf2fabec6dbc5e43333e5943/seaborn-0.12.1.tar.gz", hash = "sha256:bb1eb1d51d3097368c187c3ef089c0288ec1fe8aa1c69fb324c68aa1d02df4c1", size = 1429609, upload-time = "2022-10-18T13:00:59.675Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/77/18/7354cb68dd7906d5a3118e0ed3e30c37502f9e6253139ecfcf4fa33af210/seaborn-0.12.1-py3-none-any.whl", hash = "sha256:a9eb39cba095fcb1e4c89a7fab1c57137d70a715a7f2eefcd41c9913c4d4ed65", size = 288222, upload-time = "2022-10-18T13:00:57.437Z" },
 ]
 
 [[package]]

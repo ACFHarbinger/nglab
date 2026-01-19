@@ -65,9 +65,10 @@ class DistributedTrainer:
 
     def train_epoch(self, epoch: int) -> float:
         self.model.train()  # type: ignore[no-untyped-call]
-        # Set epoch for sampler to ensure different shuffling across epochs
-        if hasattr(self.train_loader.sampler, "set_epoch"):
-            self.train_loader.sampler.set_epoch(epoch)
+        sampler = self.train_loader.sampler
+        if isinstance(sampler, DistributedSampler):
+            sampler.set_epoch(epoch)
+
             
         total_loss = 0.0
         for batch_idx, (data, target) in enumerate(self.train_loader):

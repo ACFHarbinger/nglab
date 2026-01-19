@@ -5,6 +5,14 @@ All notable changes to the NGLab project will be documented in this file.
 ## [Unreleased] - 2026-01-19
 
 ### Added
+- **Logging & Visualization (P3 Phase 3)**:
+  - Implemented **Logit Lens** for `NSTransformer` models in `visualize_utils.py`, allowing visualization of internal prediction evolution.
+  - Modernized `visualize_utils.py` and `loss_landscape_workflow.py` to support sequential trading data and the `TradingEnv`.
+  - Achieved full **Mypy strict mode** compliance across all visualization utilities.
+- **Modular CLI Framework (P3 Phase 4)**:
+  - Refactored the monolithic `command_parser.py` into a modular architecture.
+  - Created a centralized registry (`registry.py`) and specialized parsers for `train`, `inference`, and `webcrawler`.
+  - Implemented `base_parser.py` with shared `ConfigsParser` and custom argument actions.
 - **API Documentation**:
   - Expanded **Rust** crate documentation with detailed module overviews, architecture descriptions, and usage examples.
   - Created a dedicated `rust/docs` directory for native doc storage.
@@ -27,6 +35,11 @@ All notable changes to the NGLab project will be documented in this file.
   - Implemented Rust Prometheus metrics exporter for real-time performance tracking.
   - Created high-density **Grafana dashboard** for simulation metrics.
   - Integrated **MLflow** for robust model versioning and experiment tracking.
+- **Model Serving & Backtesting (P3 Phase 2)**:
+  - Implemented high-performance **FastAPI** inference service in `python/src/api/inference.py`.
+  - Developed a modular **Backtesting Framework** in `python/src/backtesting/` wrapping the Rust `PolymarketArena`.
+  - Integrated performance metrics (Sharpe, Sortino, Drawdown) for strategy evaluation.
+  - Achieved full **Mypy strict mode** compliance for the new modules.
 - **Enhanced Training Logging**:
   - Rebuilt `log_utils.py` with **WandB** integration, automated **Matplotlib** plotting, and JSON resilience.
   - Standardized training metrics logging in `train.py`, including loss, gradient norms, and representative predictions.

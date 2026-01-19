@@ -1919,14 +1919,15 @@ docs/adr/
 **Major Initiatives:**
 
 **Distributed Training (Weeks 13-16)**
-- PyTorch DDP setup
-- Ray Tune integration
-- Multi-GPU benchmarks
+- PyTorch DDP setup (Planned)
+- Ray Tune integration (In-progress)
+- Multi-GPU benchmarks (Planned)
 
-**Model Serving (Weeks 17-20)**
-- FastAPI inference endpoints
-- Model registry (MLflow)
-- A/B testing framework
+**Model Serving, Logging & CLI (Weeks 17-20)** (Completed)
+- ✅ FastAPI inference endpoints
+- ✅ Model registry (MLflow)
+- ✅ Logit Lens & Enhanced Visualizations
+- ✅ Modular CLI Framework
 
 **Production Trading (Weeks 21-24)**
 - Backtesting engine
