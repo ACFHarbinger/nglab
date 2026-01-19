@@ -1,0 +1,39 @@
+{{- if .Values.api.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nglab.fullname" . }}-api
+  labels:
+    {{- include "nglab.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  type: {{ .Values.api.service.type }}
+  ports:
+    - port: {{ .Values.api.service.port }}
+      targetPort: {{ .Values.api.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "nglab.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+{{- end }}
+---
+{{- if .Values.apiGpu.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nglab.fullname" . }}-api-gpu
+  labels:
+    {{- include "nglab.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gpu
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "nglab.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api-gpu
+{{- end }}

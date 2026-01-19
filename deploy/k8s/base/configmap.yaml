@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nglab-config
+  namespace: nglab
+  labels:
+    app.kubernetes.io/name: nglab
+    app.kubernetes.io/component: config
+data:
+  NGLAB_ENV: "production"
+  NGLAB_LOG_LEVEL: "INFO"
+  NGLAB_DB_PORT: "5432"
+  NGLAB_DB_NAME: "nglab"
+  NGLAB_REDIS_PORT: "6379"
+  OTEL_SERVICE_NAME: "nglab-api"
+  PROMETHEUS_MULTIPROC_DIR: "/tmp/prometheus"
+  # Model configuration
+  NGLAB_MODEL_STORAGE: "s3"
+  # Training defaults
+  TORCH_CUDNN_V8_API_ENABLED: "1"
+  CUDA_MODULE_LOADING: "LAZY"

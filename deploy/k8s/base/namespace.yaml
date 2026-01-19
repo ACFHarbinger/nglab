@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nglab
+  labels:
+    app.kubernetes.io/name: nglab
+    app.kubernetes.io/part-of: nglab

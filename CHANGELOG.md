@@ -5,6 +5,111 @@ All notable changes to the NGLab project will be documented in this file.
 ## [Unreleased] - 2026-01-19
 
 ### Added
+
+- **Production Deployment Infrastructure (Phase 3)**:
+  - Created **docker-compose.prod.yml** with full production stack:
+    - Scaled API service with health checks and resource limits
+    - GPU API service with NVIDIA container runtime support
+    - PostgreSQL 16 with health checks and persistence
+    - Redis 7 for caching with AOF persistence
+    - Prometheus v2.48 with 15-day retention and alert rules
+    - Grafana 10.2 with provisioned datasources and dashboards
+    - AlertManager v0.26 with severity-based routing
+    - Jaeger 1.52 for distributed tracing (Badger storage)
+    - Nginx reverse proxy with rate limiting and SSL termination
+  - Created **Dockerfile.prod** - multi-stage optimized production image (~500MB)
+  - Created **Dockerfile.gpu** - CUDA 12.1 enabled GPU inference image
+  - **Kubernetes Deployment** (deploy/k8s/):
+    - Kustomize base with namespace, configmaps, secrets
+    - Deployments for API and GPU API with proper resource limits
+    - HorizontalPodAutoscaler with CPU/memory scaling
+    - Services, Ingress with TLS, PersistentVolumeClaims
+    - ServiceAccount with RBAC for pod access
+    - Production overlay with replica scaling
+  - **Helm Charts** (deploy/helm/nglab/):
+    - Full chart with configurable values for all services
+    - PostgreSQL and Redis as Bitnami dependencies
+    - Secrets management and ingress configuration
+    - GPU node selector and tolerations support
+  - **CI/CD Pipeline** (.github/workflows/deploy.yml):
+    - Multi-architecture Docker builds (amd64, arm64)
+    - Staging deployment with Kustomize
+    - Production deployment with Helm
+    - Smoke tests and rollout verification
+    - Slack notifications on failure
+  - **Monitoring Configuration** (monitoring/):
+    - Prometheus scrape configs and alert rules (API latency, error rates, GPU metrics, database, Redis, trading alerts)
+    - AlertManager routing with severity-based escalation
+    - Grafana datasource provisioning (Prometheus, Jaeger)
+    - Dashboard provisioning configuration
+  - **Nginx Configuration** (deploy/nginx/):
+    - Load balancer with upstream pools
+    - Rate limiting (100 req/s with burst)
+    - SSL/TLS configuration with modern ciphers
+    - WebSocket support for streaming endpoints
+    - Separate routing for GPU inference endpoints
+
+- **Model Storage Backends** (python/src/storage/):
+  - Created unified **ModelStorage** abstract interface with versioning support
+  - Implemented **LocalStorage** backend with file-based versioning
+  - Implemented **S3Storage** backend with boto3 (async-capable)
+  - Implemented **GCSStorage** backend with google-cloud-storage
+  - Added zstd/gzip compression for checkpoint transfer
+  - Automatic version cleanup (configurable max_versions)
+  - Local caching layer for cloud backends
+  - Factory function `create_storage()` with environment detection
+
+- **GPU Profiling & Optimization** (python/src/utils/profiling/):
+  - Created **CUDAProfiler** class with torch.profiler integration:
+    - Chrome trace export for visualization
+    - TensorBoard trace handler support
+    - Configurable schedule (wait, warmup, active steps)
+    - Memory profiling with stack traces and FLOPS
+  - Added `profile_model_forward()` utility for inference profiling
+  - Added `profile_training_step()` utility for full training step analysis
+  - Created `get_gpu_memory_stats()` for real-time memory monitoring
+  - **GPU Benchmark Suite** (benchmark.py):
+    - `GPUBenchmark` class for standardized performance testing
+    - Inference benchmarks across batch sizes
+    - Training benchmarks with optimizer step timing
+    - P50/P95/P99 latency percentile metrics
+    - Throughput (samples/sec, batches/sec) calculation
+    - Baseline comparison for regression detection
+    - JSON export for CI integration
+
+- **Mixed Precision Training** (python/src/utils/mixed_precision.py):
+  - Created **MixedPrecisionTrainer** wrapper class:
+    - Automatic GradScaler management for FP16
+    - Support for FP16-mixed, BF16-mixed, and FP32 modes
+    - Gradient clipping with proper unscaling
+    - State dict save/load for checkpointing
+  - Added `get_optimal_precision()` for hardware-aware configuration:
+    - Ampere+ GPUs: BF16-mixed (SM 8.0+)
+    - Volta/Turing GPUs: FP16-mixed (SM 7.0+)
+    - Older GPUs: FP32
+  - Created `estimate_memory_savings()` for planning memory reduction
+  - Added `configure_model_for_mixed_precision()` for layer-specific dtype handling
+
+- **Prefetching DataLoader** (python/src/data/prefetch_dataloader.py):
+  - Created **CUDAPrefetcher** using CUDA streams for async GPU transfer
+  - Created **BackgroundPrefetcher** with threading for CPU-bound loading
+  - Extended **PrefetchDataLoader** from PyTorch DataLoader:
+    - Automatic pinned memory for GPU training
+    - Configurable prefetch_factor and persistent_workers
+    - Device-aware iterator with CUDA prefetching
+  - Added `create_optimized_dataloader()` factory with best practices
+  - Created `benchmark_dataloader()` for throughput measurement
+
+- **Environment Configuration**:
+  - Updated **.env.example** with comprehensive configuration:
+    - Database (PostgreSQL) and cache (Redis) settings
+    - GPU configuration (CUDA_VISIBLE_DEVICES, architectures)
+    - Model storage (local, S3, GCS) with credentials
+    - Monitoring (Prometheus, Grafana) settings
+    - Tracing (OpenTelemetry, Jaeger) configuration
+    - Mixed precision training settings
+    - Distributed training (DDP) configuration
+
 - **Developer Experience (Quick Wins)**:
   - Created comprehensive **Makefile** with colorized output and emojis for common development tasks (`make test`, `make build`, `make lint`, `make fmt`, `make clean`, `make dev`, `make run-tauri`).
   - Added **.env.example** documenting all environment variables (WANDB, MLflow, CUDA, data paths, cloud storage, training configs).
@@ -28,10 +133,40 @@ All notable changes to the NGLab project will be documented in this file.
   - Added uptime tracking and system info (CPU count, OS, architecture).
   - Created `HealthDashboard.tsx` React widget with auto-refresh, status indicators, and styled UI.
   - Registered health commands in Tauri invoke handler.
+- **Prophet Changepoint Detection (Phase 2)**:
+  - Implemented automatic changepoint detection using PELT-inspired algorithm (`get_or_detect_changepoints()`).
+  - Added CUSUM-based scoring for identifying significant structural changes (`compute_changepoint_score()`).
+  - Implemented piecewise linear trend with changepoint matrix A(t) and rate adjustment deltas.
+  - Added `solve_ridge_with_priors()` for different regularization on trend vs seasonal parameters.
+- **Vectorized Environment for Parallel RL Training (Phase 2)**:
+  - Created `VectorizedTradingEnv` class following Gymnasium VectorEnv interface.
+  - Implemented `SubprocVecEnv` for true multi-process parallelism (bypasses GIL).
+  - Added async step execution with `step_async()` and `step_wait()` methods.
+  - Created `make_vec_env()` factory function for easy environment creation.
 - **Logging & Visualization (P3 Phase 3)**:
   - Implemented **Logit Lens** for `NSTransformer` models in `visualize_utils.py`, allowing visualization of internal prediction evolution.
   - Modernized `visualize_utils.py` and `loss_landscape_workflow.py` to support sequential trading data and the `TradingEnv`.
   - Achieved full **Mypy strict mode** compliance across all visualization utilities.
+- **Risk Management System (Phase 3)**:
+  - Created `rust/src/simulation/risk.rs` with comprehensive risk monitoring.
+  - Implemented `RiskManager` with position sizing limits, daily loss limits, and max drawdown.
+  - Added historical VaR (Value at Risk) calculation using percentile method.
+  - Implemented Sharpe and Sortino ratio calculations.
+  - Automatic position reduction with `position_multiplier` on limit breaches.
+  - 8 unit tests covering all risk scenarios.
+- **Model Checkpoint Cloud Storage (Phase 3)**:
+  - Created `python/src/utils/io/cloud_storage.py` with S3 and GCS backends.
+  - Implemented `CloudCheckpointManager` for unified cloud model storage.
+  - Added zstd compression for efficient checkpoint transfer.
+  - Fallback to local storage on cloud failure.
+  - Added optional `cloud` dependency group to `pyproject.toml`.
+- **GPU Profiling & Optimization (Phase 3)**:
+  - Created `python/src/utils/profiling/gpu_optimization.py` with optimization utilities.
+  - Implemented `MemoryPool` for GPU memory pre-allocation.
+  - Added `TransferProfiler` for Python↔Rust transfer profiling.
+  - Added `GPUMemoryOptimizer` with bottleneck detection and memory estimation.
+  - Added `optimize_for_inference()` with torch.compile support.
+  - Added `get_gpu_optimization_recommendations()` for hardware-aware tips.
 ### Recent Updates (2026-01)
 
 - **Phase 4: Optimization & Scale**:

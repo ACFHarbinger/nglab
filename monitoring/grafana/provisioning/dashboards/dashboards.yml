@@ -1,0 +1,15 @@
+# Grafana Dashboard Provisioning
+
+apiVersion: 1
+
+providers:
+  - name: 'NGLab Dashboards'
+    orgId: 1
+    folder: 'NGLab'
+    folderUid: 'nglab'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

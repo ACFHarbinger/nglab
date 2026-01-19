@@ -18,7 +18,7 @@ from python.src.pipeline.core.lightning.semi_supervised import SemiSupervisedMod
 from python.src.pipeline.core.lightning.supervised_learning import SLLightningModule
 from python.src.pipeline.core.lightning.unsupervised_learning import UnsupervisedModule
 from python.src.pipeline.core.lightning.vae_module import VAELightningModule
-from python.src.utils.logging.profiling import profile
+from python.src.utils.profiling.profiling import profile
 from python.src.policies.neural import NeuralPolicy
 from pytorch_lightning.loggers import TensorBoardLogger
 

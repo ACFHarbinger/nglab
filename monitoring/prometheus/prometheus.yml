@@ -1,0 +1,78 @@
+# NGLab Prometheus Configuration
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    environment: production
+    service: nglab
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Rule files
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # NGLab API servers
+  - job_name: 'nglab-api'
+    static_configs:
+      - targets: ['nglab-api:8000']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  # NGLab GPU API servers
+  - job_name: 'nglab-api-gpu'
+    static_configs:
+      - targets: ['nglab-api-gpu:8000']
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  # PostgreSQL exporter (if deployed)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # Redis exporter (if deployed)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+  # Node exporter for host metrics
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # NVIDIA GPU metrics (if deployed with dcgm-exporter)
+  - job_name: 'gpu'
+    static_configs:
+      - targets: ['dcgm-exporter:9400']
+
+  # Kubernetes service discovery (for K8s deployments)
+  # - job_name: 'kubernetes-pods'
+  #   kubernetes_sd_configs:
+  #     - role: pod
+  #   relabel_configs:
+  #     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+  #       action: keep
+  #       regex: true
+  #     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+  #       action: replace
+  #       target_label: __metrics_path__
+  #       regex: (.+)
+  #     - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+  #       action: replace
+  #       regex: ([^:]+)(?::\d+)?;(\d+)
+  #       replacement: $1:$2
+  #       target_label: __address__

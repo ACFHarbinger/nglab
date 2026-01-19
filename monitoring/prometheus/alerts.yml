@@ -1,0 +1,164 @@
+# NGLab Alert Rules
+
+groups:
+  - name: nglab-api
+    rules:
+      # API availability
+      - alert: NGLabAPIDown
+        expr: up{job="nglab-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "NGLab API is down"
+          description: "NGLab API has been down for more than 1 minute."
+
+      # High latency
+      - alert: NGLabHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="nglab-api"}[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "NGLab API high latency"
+          description: "95th percentile latency is above 1 second for 5 minutes."
+
+      # High error rate
+      - alert: NGLabHighErrorRate
+        expr: rate(http_requests_total{job="nglab-api",status=~"5.."}[5m]) / rate(http_requests_total{job="nglab-api"}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "NGLab API high error rate"
+          description: "Error rate is above 5% for 5 minutes."
+
+      # Critical error rate
+      - alert: NGLabCriticalErrorRate
+        expr: rate(http_requests_total{job="nglab-api",status=~"5.."}[5m]) / rate(http_requests_total{job="nglab-api"}[5m]) > 0.20
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "NGLab API critical error rate"
+          description: "Error rate is above 20% for 2 minutes."
+
+  - name: nglab-model
+    rules:
+      # Model inference latency
+      - alert: NGLabModelSlowInference
+        expr: histogram_quantile(0.95, rate(model_inference_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Model inference is slow"
+          description: "95th percentile inference latency is above 500ms."
+
+      # Model loading failures
+      - alert: NGLabModelLoadFailure
+        expr: increase(model_load_failures_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Model loading failed"
+          description: "One or more model load failures detected."
+
+  - name: nglab-gpu
+    rules:
+      # GPU memory usage
+      - alert: NGLabGPUHighMemory
+        expr: nvidia_gpu_memory_used_bytes / nvidia_gpu_memory_total_bytes > 0.90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPU memory usage high"
+          description: "GPU memory usage is above 90%."
+
+      # GPU temperature
+      - alert: NGLabGPUHighTemperature
+        expr: nvidia_gpu_temperature_celsius > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "GPU temperature high"
+          description: "GPU temperature is above 80°C."
+
+      # GPU utilization
+      - alert: NGLabGPULowUtilization
+        expr: nvidia_gpu_utilization < 10
+        for: 30m
+        labels:
+          severity: info
+        annotations:
+          summary: "GPU underutilized"
+          description: "GPU utilization is below 10% for 30 minutes."
+
+  - name: nglab-database
+    rules:
+      # Database connection issues
+      - alert: NGLabDatabaseDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "Cannot connect to PostgreSQL database."
+
+      # High database connections
+      - alert: NGLabDatabaseHighConnections
+        expr: pg_stat_activity_count / pg_settings_max_connections > 0.80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "Database connection usage is above 80%."
+
+  - name: nglab-redis
+    rules:
+      # Redis down
+      - alert: NGLabRedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Cannot connect to Redis cache."
+
+      # High Redis memory
+      - alert: NGLabRedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is above 90%."
+
+  - name: nglab-trading
+    rules:
+      # Portfolio drawdown alert
+      - alert: NGLabHighDrawdown
+        expr: nglab_portfolio_drawdown > 0.10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High portfolio drawdown"
+          description: "Portfolio drawdown exceeds 10%."
+
+      # Critical drawdown
+      - alert: NGLabCriticalDrawdown
+        expr: nglab_portfolio_drawdown > 0.20
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical portfolio drawdown"
+          description: "Portfolio drawdown exceeds 20%."
