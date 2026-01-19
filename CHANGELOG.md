@@ -9,6 +9,13 @@ All notable changes to the NGLab project will be documented in this file.
   - Implemented **Logit Lens** for `NSTransformer` models in `visualize_utils.py`, allowing visualization of internal prediction evolution.
   - Modernized `visualize_utils.py` and `loss_landscape_workflow.py` to support sequential trading data and the `TradingEnv`.
   - Achieved full **Mypy strict mode** compliance across all visualization utilities.
+### Recent Updates (2026-01)
+
+- **Phase 4: Optimization & Scale**:
+  - Implemented Active Learning with uncertainty estimation (Quantile Regression, MC Dropout).
+  - Integrated FinBERT sentiment analysis for financial news and social media.
+  - Added intelligent sample selection (Entropy, BALD, Uncertainty samplers).
+  - Created news crawler for RSS feeds (Yahoo Finance, MarketWatch, CNBC).
 - **Modular CLI Framework (P3 Phase 4)**:
   - Refactored the monolithic `command_parser.py` into a modular architecture.
   - Created a centralized registry (`registry.py`) and specialized parsers for `train`, `inference`, `webcrawler`, and `hp_optim`.

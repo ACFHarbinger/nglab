@@ -1946,7 +1946,17 @@ docs/adr/
 
 ### Phase 4: Optimization & Scale (Months 7-12)
 
-**Performance:**
+**✅ Active Learning** (Completed)
+- ✅ Uncertainty estimation (Quantile Regression, MC Dropout)
+- ✅ Sample selection strategies (Entropy, BALD, Random)
+- ✅ CLI integration
+
+**✅ Sentiment Analysis** (Completed)
+- ✅ FinBERT integration for financial text
+- ✅ News crawler (RSS feeds: Yahoo Finance, MarketWatch, CNBC)
+- ✅ CLI integration
+
+**Performance** (Planned):
 - SIMD optimizations
 - Profile-guided optimization
 - Memory pool allocations

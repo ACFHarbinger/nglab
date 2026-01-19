@@ -45,6 +45,8 @@ dependencies = [
     "configspace>=1.2.2",
     "loguru>=0.7.3",
     "distributed>=2026.1.1",
+    "transformers>=4.57.6",
+    "feedparser>=6.0.12",
 ]
 
 [build-system]

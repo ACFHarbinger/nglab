@@ -7,6 +7,8 @@ from python.src.commands.train_parser import add_train_args
 from python.src.commands.inference_parser import add_inference_args
 from python.src.commands.crawler_parser import add_crawler_args
 from python.src.commands.hpo_parser import add_hpo_args
+from python.src.commands.active_learning_parser import add_active_learning_args
+from python.src.commands.sentiment_parser import add_sentiment_args
 
 
 def get_parser() -> ConfigsParser:
@@ -33,5 +35,13 @@ def get_parser() -> ConfigsParser:
     # HPO (Hyperparameter Optimization)
     hpo_parser = subparsers.add_parser("hp_optim", aliases=["hpo"], help="Hyperparameter optimization")
     add_hpo_args(hpo_parser)
+
+    # Active Learning
+    al_parser = subparsers.add_parser("active-learning", aliases=["al"], help="Select informative samples")
+    add_active_learning_args(al_parser)
+
+    # Sentiment Analysis
+    sentiment_parser = subparsers.add_parser("sentiment", help="Analyze market sentiment")
+    add_sentiment_args(sentiment_parser)
 
     return parser

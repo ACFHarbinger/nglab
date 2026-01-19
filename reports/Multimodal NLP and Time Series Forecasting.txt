@@ -1,0 +1,242 @@
+﻿The Semantic Horizon: Synergizing Natural Language and Time Series for Next-Generation Forecasting
+1. Introduction: The Convergence of Modalities in Temporal Intelligence
+The trajectory of artificial intelligence in the mid-2020s is defined not merely by the scaling of parameters but by the collapse of modal silos. For decades, the disciplines of Natural Language Processing (NLP) and Time Series Forecasting (TSF) operated as distinct magisteria. TSF was the domain of quantitative rigor, governed by the stochastic calculus of econometrics and the signal processing logic of Recurrent Neural Networks (RNNs). It viewed the world through a keyhole of numerical sequences—prices, temperatures, loads—blind to the rich, unstructured tapestry of human context that generated them. Conversely, NLP evolved to master the semantic nuances of language but remained largely incapable of quantifying the temporal ripple effects of the events it comprehended. A language model could summarize a central bank's policy shift but could not mathematically project its impact on the yield curve over a twelve-month horizon.
+The state of the art in 2025 and 2026 represents a fundamental paradigm shift: the emergence of Multimodal Temporal Intelligence. This report investigates the theoretical underpinnings, architectural breakthroughs, and practical applications of forecasting systems that fuse historical numerical data with unstructured textual streams. The integration of these modalities is not a trivial addition of features; it necessitates a reimagining of how temporal dynamics are represented in latent space. We are moving from "forecasting by autocorrelation"—predicting the future based solely on past values—to "forecasting by information synthesis," where the model reasons about the causal forces described in news, reports, and social sentiment.1
+The economic and scientific implications of this convergence are profound. In financial markets, the "Efficient Market Hypothesis" is being challenged by models that can arbitrage the latency between a news event's publication and its assimilation into price. In healthcare, patient outcomes are predicted not just by vital sign telemetry but by the synthesis of those trends with clinical notes that capture subtle, qualitative signs of deterioration. In energy grids, load forecasting is enhanced by digesting weather reports and maintenance schedules that possess no direct numerical equivalent. This report provides an exhaustive analysis of this frontier, dissecting the architectures (such as MM-iTransformer, Time-LLM, and TS-RAG), datasets (FNSPID, TimeTextCorpus), and methodologies that are defining the new standard in predictive analytics.3
+1.1 The "Text Alpha" Hypothesis and Causal Reasoning
+The driving force behind this research is the "Text Alpha" hypothesis: the postulate that unstructured text contains predictive signals ("alpha") that are orthogonal to, and often precede, the signals present in numerical time series. Traditional quantitative models assume that all relevant information is instantaneously priced in or reflected in the historical trajectory of the variable. However, recent empirical evidence suggests that the interpretation of complex, high-entropy events—such as geopolitical shifts or regulatory changes—requires semantic reasoning capabilities that simple market mechanisms or autoregressive models delay in processing.
+Advanced multimodal models exploit this interpretative latency. By ingesting vast corpora of financial news—such as the 15.7 million articles in the FNSPID dataset—models can detect subtle shifts in narrative tone, supply chain sentiment, or corporate governance risk before they manifest as volatility in the price series.4 This capability marks a transition from correlative forecasting to causal forecasting. While standard Deep Learning (DL) models like PatchTST are excellent at capturing recurring seasonal patterns, they fail when a pattern breaks due to an exogenous shock. Multimodal models leverage the "World Model" inherent in Large Language Models (LLMs). When an LLM processes the phrase "The Federal Reserve is hiking interest rates," it activates a pre-trained probabilistic pathway linking "hikes" to "lower equity valuations," allowing the forecasting head to adjust its trajectory even if the immediate numerical history shows an uptrend.7
+1.2 The Taxonomy of Foundation Models in Time Series
+To understand the current landscape, one must distinguish between the varying approaches to building "Time Series Foundation Models" (TSFMs). The field has bifurcated into two primary schools of thought, each addressing the modality gap differently:
+1. Pure TSFMs: Architectures like Chronos or Moirai are trained from scratch on vast archives of time series data to learn universal temporal patterns (periodicity, trend, seasonality). These models are powerful univariate predictors but often lack the semantic bridge to the textual world.
+2. Multimodal Adapters & Reprogramming: This approach, which forms the core of this investigation, involves taking a pre-trained LLM (like Llama 3, GPT-4, or Qwen) and "reprogramming" it to process time series. The hypothesis here is that the reasoning capabilities of the LLM are transferrable to temporal sequences if the data is presented correctly. This includes frameworks like Time-LLM, which patches time series into token-like embeddings, and MM-iTransformer, which uses cross-attention to fuse modality-specific encoders.9
+A third, emergent category is the Zero-Shot Generator, exemplified by the Zero-to-Forecast framework. This paradigm challenges the necessity of historical data altogether, exploring whether an LLM can generate a forecast curve solely from a rich textual description of a scenario—a capability critical for "cold start" problems in new product launches or unprecedented events.12
+________________
+2. Theoretical Frameworks: Bridging the Cross-Modality Gap
+The central engineering challenge in multimodal forecasting is the "Cross-Modality Gap." Text is discrete, semantic, and sparse; time series are continuous, often noisy, and non-semantic. Bridging this gap requires sophisticated alignment strategies that go beyond simple concatenation of feature vectors.
+2.1 Alignment and Fusion Paradigms
+The integration of text and time series generally follows one of three architectural paradigms, each with distinct theoretical justifications and performance trade-offs.
+2.1.1 Unidirectional Retrieval & Alignment
+In this paradigm, the time series serves as a query to retrieve relevant textual context, or vice versa. The goal is to align the representations of both modalities in a shared latent space, often using contrastive learning objectives similar to CLIP (Contrastive Language-Image Pre-training) in computer vision.
+* Mechanism: The model minimizes the distance between the embedding of a time series segment and the embedding of its corresponding news report while maximizing the distance to unrelated reports. This forces the model to learn the semantic equivalent of numerical patterns.
+* Utility: This is crucial for "Etiological Reasoning"—the ability of a model to explain why a series moved. For example, matching a sudden spike in electricity prices (Time Series) to a "Heatwave warning" (Text) allows the model to generalize this causal link to future heatwave predictions.2
+2.1.2 Deep Fusion via Cross-Attention
+This approach, dominant in 2025 SOTA models like MM-iTransformer, employs the Transformer's attention mechanism to dynamically weigh the importance of textual tokens against time series patches.
+* Architecture: Both text and time series are encoded into sequence representations. A Transformer block then performs cross-attention where:
+   * Queries ($Q$): Derived from the Time Series embeddings (seeking context).
+   * Keys ($K$) and Values ($V$): Derived from the Text embeddings (providing context).
+* Mathematical Intuition: The attention score $A = \text{Softmax}(\frac{QK^T}{\sqrt{d_k}})$ effectively calculates a "relevance probability" for every word in the news against every time step in the series. This allows the model to ignore irrelevant noise (e.g., "CEO eats lunch") and focus heavily on high-signal phrases (e.g., "supply chain disruption").3
+2.1.3 LLM Reprogramming (Prompt-as-Prefix)
+The most radical theoretical advancement is the concept that an LLM does not need to be retrained to understand time series; it merely needs to be "reprogrammed." Frameworks like Time-LLM treat time series forecasting as a translation task.
+* Input Transformation: Continuous time series patches are projected via a linear layer into the LLM's high-dimensional input embedding space ($d_{model}$). Effectively, a sequence of numbers is converted into a sequence of "foreign language words."
+* Prompting: A textual prompt (e.g., "Predict the next 12 steps of this voltage data given the following weather report...") provides the task instruction.
+* Preservation of Knowledge: By freezing the massive backbone of the LLM and training only lightweight adapter layers, the system preserves the LLM's emergent reasoning and world knowledge, applying it to the numerical "language" it is now processing.10
+2.2 The Role of Stationarity and Inductive Bias
+A critical theoretical hurdle in this domain is non-stationarity. Time series data often drifts—the statistical properties (mean, variance) change over time. LLMs, trained on static text corpora, can struggle with this fluidity.
+* RevIN (Reversible Instance Normalization): To counter this, models like iTransformer and Time-LLM employ normalization techniques that center and scale the input series to remove non-stationary information (like the absolute price level) before processing, and then denormalize the output. This allows the LLM to focus on the relative shape and dynamics of the series rather than its absolute magnitude.
+* Inductive Bias: Textual data provides a "causal inductive bias." Even if the numerical data looks non-stationary and chaotic (e.g., a sudden crash), the accompanying text ("Market crash due to pandemic") provides a stable causal explanation that the model can anchor to. This stabilizes the learning process in volatile regimes.13
+________________
+3. Architectural Deep Dive: State-of-the-Art Models (2025-2026)
+This section provides a rigorous technical analysis of the leading architectures defining the field in the current period. These models represent the apex of the theoretical frameworks discussed above.
+3.1 MM-iTransformer: Inverted Attention for Economic Series
+The MM-iTransformer (Multimodal Inverted Transformer) represents a sophisticated evolution of the generic iTransformer, specifically optimized for economic data where the interplay between multivariate price series and textual news is paramount.
+3.1.1 Architectural Innovation: The Inverted Dimension
+The standard Transformer treats time steps as tokens. The iTransformer inverted this, treating the entire time series of a single variable (e.g., the whole 96-step history of "Open Price") as a single token. This allows the attention mechanism to model the correlation between variables (variate-to-variate correlation) rather than just time steps. MM-iTransformer extends this by treating Text as an additional, special "variate."
+3.1.2 Mechanism of Action
+1. Textual Encoding: News articles are processed via a domain-specific language model, such as FinBERT, which is pre-trained on financial corpora. The `` token or a pooled average of the last hidden state serves as the semantic embedding of the news.
+2. Dimension Alignment: A critical engineering hurdle is that text embeddings (e.g., 768 dimensions for BERT) do not match the lookback window length of the time series (e.g., 96 time steps). MM-iTransformer utilizes a trainable linear projection layer to map the textual embedding dimension $d_{text}$ to the time series lookback length $L$.
+3. Fusion Mechanism: The aligned text embedding is concatenated with the time series embeddings along the variate dimension. The model then applies the inverted attention mechanism. The attention matrix explicitly calculates the weight or "influence" of the Text Variate on the Price Variate.
+3.1.3 Performance and Interpretability
+Experiments on Gold Price and Forex datasets demonstrated that this architecture reduces Mean Squared Error (MSE) by up to 26.79% compared to unimodal baselines. Crucially, the model offers interpretability: attention heatmaps reveal physically high attention weights (e.g., 0.45) connecting "Inflation News" tokens to "Gold Price" tokens during periods of monetary policy uncertainty, validating that the model is effectively using the text to correct its trajectory rather than acting as a placebo.3
+3.2 Time-LLM: Reprogramming Large Language Models
+Time-LLM is a landmark framework that demonstrates how general-purpose LLMs (like Llama-7B or GPT-2) can be repurposed for time series without massive retraining. It essentially treats forecasting as a "language task" that an off-the-shelf LLM can solve given the right dictionary.10
+3.2.1 Reprogramming via Patching and Projection
+LLMs operate on discrete tokens. Time-LLM bridges the modality gap using a patching technique:
+1. Patching: The input time series $X \in \mathbb{R}^{T \times C}$ is sliced into overlapping segments (patches) of length $P$.
+2. Projection: These patches are projected via a linear layer into the embedding dimension of the LLM ($d_{model}$). This transforms a patch of numerical values into a dense vector in the same latent space as word embeddings.
+3. Prompt-as-Prefix (PaP): The system constructs a composite input that guides the LLM's reasoning. The prompt includes:
+   * Domain Context: "You are an expert financial forecaster."
+   * Data: "Here is the historical trend..." (followed by the projected patches).
+   * Textual Facts: Incorporates statistical descriptions (mean, variance) and external knowledge (e.g., "The market is volatile due to upcoming elections").
+   * Task Instruction: "Predict the next 12 steps."
+3.2.2 The "Frozen" Backbone Advantage
+By keeping the LLM backbone frozen, Time-LLM minimizes the risk of "catastrophic forgetting"—where the model forgets language to learn numbers. The frozen weights retain the model's world knowledge. If the prompt includes "This is retail data and Christmas is approaching," the LLM's internal pathways—which associate "Christmas" with "increased consumption"—modulate the processing of the numerical patches. This results in SOTA performance in few-shot and zero-shot scenarios, where the model outperforms specialized forecasters like N-BEATS despite having seen virtually no training data for the specific target series.11
+3.3 TS-RAG: Retrieval-Augmented Generation for Time Series
+Presented at NeurIPS 2025, TS-RAG brings the RAG paradigm—ubiquitous in textual QA—to time series. It addresses the "Context Window Problem": standard TSFMs have a fixed lookback (e.g., 512 steps), making them blind to patterns that occurred years ago.5
+3.3.1 Infinite Memory Mechanism
+1. Retriever: Given a current input sequence $X_{input}$, the retriever searches a massive historical database (Knowledge Base) for the top-$k$ sequences $X_{retrieved}$ that are semantically or numerically similar.
+2. Adaptive Retrieval Mixer (ARM): This learnable module dynamically weighs the retrieved contexts. It decides how much to trust the retrieved history versus the immediate input.
+3. Outcome: This allows the model to "remember" events far beyond its immediate context window. For example, in forecasting the 2023 banking crisis, the model could retrieve patterns from the 2008 financial crisis, effectively giving it infinite long-term memory. It is particularly effective for cyclical industries (commodities, agriculture) where patterns repeat over decadal scales.
+3.4 Zero-to-Forecast: The Generative Frontier
+Zero-to-Forecast pushes the boundary of "zero-shot" to its logical extreme: forecasting without any historical numerical data, relying solely on textual descriptions. This is the "Day 0" problem solution.12
+3.4.1 Cross-Modal Ensemble Architecture
+* Analogy Retrieval: The LLM analyzes the text description (e.g., "A high-end foldable smartphone launching in Q4") and retrieves "analogous" time series from a database (e.g., sales curves of previous flagship phones).
+* Reasoning & Adaptation: The LLM adjusts the retrieved curves based on textual nuance (e.g., "The market is more saturated now, so reduce growth rate by 10%").
+* Domain-Aware Smoothing: The raw output is refined using monotonic constraints (e.g., cumulative sales must always increase) and domain-specific smoothing kernels.
+* Performance: On the NL2TS-675 benchmark, this method achieved a Mean Absolute Error (MAE) of 16.06, significantly outperforming random baselines and even some supervised models that struggled with cold-start data sparsity.
+3.5 LBS: Integrating Bayesian State Space Models
+LBS addresses the critical issue of uncertainty. LLMs can hallucinate; standard TSFMs are often deterministic. LBS fuses a State Space Model (SSM) backbone with an LLM to provide probabilistic forecasts.7
+* Posterior Estimation: The SSM models the latent dynamics of the system (the "true" state). The LLM conditions the posterior estimate of this state.
+* Text-Conditioned Inference: When the LLM reads a news update (e.g., "Impending regulatory crackdown"), it shifts the probability distribution of the latent state, increasing the variance (uncertainty) or shifting the mean (trend). This model excels in clinical settings (TimeTextCorpus), where textual notes about a patient's condition can drastically alter the probability of a future vital sign crash.
+________________
+4. The Data Ecosystem: Benchmarks and Resources
+The efficacy of multimodal forecasting is inextricably linked to the quality and scale of the datasets used for training and evaluation. The period of 2024-2025 has seen the release of several critical benchmarks that standardize this field, moving beyond ad-hoc scrapings to curated, aligned corpora.
+4.1 FNSPID: The Financial News and Stock Price Integration Dataset
+FNSPID stands as the current gold standard for financial multimodal research. Its release addressed the chronic lack of large-scale, aligned datasets that hindered previous generations of research.4
+4.1.1 Dataset Composition and Engineering
+* Scale: The dataset covers 4,775 S&P 500 companies over a 25-year period (1999–2023), comprising 29.7 million stock price records and 15.7 million time-aligned news articles.
+* Sources: It aggregates data from diverse, high-volume sources including NASDAQ, Bloomberg, Reuters, and Benzinga, capturing a wide spectrum of market sentiment from formal reporting to rapid-fire updates.
+* Alignment Engineering: The defining feature of FNSPID is its rigorous temporal alignment. News articles are timestamped and mapped to specific trading windows. Crucially, it handles the "overnight" problem—news released after market close is logically mapped to the next trading day's Open, ensuring that the model does not learn from information that was theoretically unavailable to the market at the time of the previous Close.
+* Formats: Recognizing the "Big Data" nature of modern financial ML, the dataset is provided in Parquet format for efficient columnar storage and rapid querying, alongside standard CSVs for interoperability.
+4.1.2 Implications for Research
+FNSPID enables the training of models that require massive longitudinal data to learn the "language of markets." It supports tasks beyond simple price forecasting, such as volatility prediction, event-driven risk assessment, and sentiment-lag analysis. The dataset allows researchers to empirically test the "Text Alpha" hypothesis across different market regimes (e.g., the dot-com bubble, the 2008 crisis, the COVID-19 crash), providing a robust testbed for model generalization.
+4.2 TimeTextCorpus (TTC)
+While FNSPID dominates finance, the TimeTextCorpus, introduced with the LBS model, serves as a critical benchmark for domains governed by physical and biological laws rather than market sentiment.7
+* Domains: The corpus spans Climate (weather sensor data + forecast reports) and Clinical (vital signs + doctor's notes/EHR).
+* Utility: This dataset tests a model's ability to learn diverse causal mechanisms. Unlike finance, where news influences the system (sentiment drives price), in climate, the text often describes the system (forecasts describe physics). TTC challenges models to distinguish between these causal directions.
+4.3 NL2TS-675 and MMMU
+* NL2TS-675: Specifically designed for the Zero-to-Forecast task, this benchmark contains 675 pairs of. It is the primary yardstick for evaluating a model's generative capability in the absence of numerical history.12
+* MMMU (Massive Multi-discipline Multimodal Understanding): While broader than just time series, MMMU tests a model's ability to read charts, diagrams, and tables—essential for interpreting financial reports or scientific papers. It covers 30 subjects across 6 disciplines. The 2025 leaderboard shows models like GPT-5.1 and Gemini 2.5 Pro achieving high accuracy (>80%), indicating that general-purpose multimodal reasoning is maturing to a point where it can support specialized forecasting tasks.18
+4.4 Synthetic Data and Automated Curation
+A growing trend in 2025 is the use of Synthetic Data Generation to overcome data scarcity for rare events ("black swans").
+* DCATS (Data-Centric AutoML for Time Series): This framework employs LLM agents to automatically curate and expand training datasets. The agent reasons about the metadata of a time series and generates "auxiliary" synthetic series or retrieves semantically related series from a pool. This effectively acts as "reasoning-based data augmentation," significantly improving the robustness of models trained on small datasets.20
+Table 1: Essential Datasets for Multimodal Time Series Research
+
+
+Dataset
+	Domain
+	Scale
+	Content
+	Key Feature
+	FNSPID 4
+	Finance
+	29.7M Prices, 15.7M News
+	S&P 500 Tickers + News
+	Strict time-alignment of news to trading sessions; massive scale.
+	TimeTextCorpus 7
+	Climate, Health
+	Variable
+	Sensor data + Clinical notes
+	Diverse domains beyond finance; good for testing causality.
+	NL2TS-675 12
+	General
+	675 Pairs
+	Text Description + Time Series
+	Benchmarking generative forecasting from text alone.
+	MMMU 18
+	Multi-discipline
+	11.5K Questions
+	Charts, Diagrams, Text
+	Tests high-level reasoning and chart understanding (Visual-Text).
+	SEED-Bench 21
+	General
+	19K+ Questions
+	Video/Image + Text
+	Comprehensive multimodal evaluation including temporal understanding.
+	________________
+5. Methodological Deep Dive: Prompt Engineering and Tokenization
+The "How" of multimodal forecasting is just as critical as the "What." The engineering nuances of how text and numbers are prepared, tokenized, and presented to the model define the success of the implementation.
+5.1 Prompt Engineering for Temporal Data
+Prompting in time series is fundamentally different from standard NLP prompting. You cannot simply paste a raw CSV file into a prompt due to token limits and the known inability of standard LLMs to perform precise arithmetic on long sequences of tokens.
+5.1.1 Statistical Prompting
+Effective prompts describe the behavior and statistics of the series rather than listing the raw numbers.
+* Concept: Instead of inputting [102, 105, 108...], the prompt inputs: "The time series has a strong weekly seasonality with peaks on Fridays. The trend has been upward for 3 months but variance is increasing. The mean is 105 and standard deviation is 12."
+* Mechanism: This forces the LLM to reason about the structural components (Trend, Seasonality, Residuals) rather than getting lost in the arithmetic noise. It aligns the numerical data with the LLM's semantic understanding of concepts like "growth," "volatility," and "cycle".14
+5.1.2 Chain-of-Thought (CoT) in Finance
+Research demonstrates that asking an LLM to "Think step-by-step" drastically improves financial forecasting accuracy.
+* Example Prompt: "Analyze the following news regarding Apple (AAPL). Step 1: Identify the sentiment (Positive/Negative). Step 2: Identify the specific business factors mentioned (e.g., Supply Chain, Regulatory). Step 3: Retrieve general knowledge about how these factors affect tech stocks. Step 4: Based on the historical price trend provided, predict the movement for the next week."
+* Result: This structured reasoning trace reduces hallucinations and aligns the forecast with economic logic. Snippets indicate that models using CoT significantly outperform zero-shot baselines in explaining why a forecast was made.23
+5.2 Tokenization Strategies
+The transformation of continuous data into discrete tokens is a pivotal design choice.
+5.2.1 Patching vs. Vector Quantization (VQ)
+* Patching (Used by Time-LLM, PatchTST): The series is sliced into vector segments. These vectors are projected into the embedding space. This method preserves precise numerical information and is preferred for regression tasks where accuracy is paramount.
+* Vector Quantization (Used by some TSFMs): The continuous values are discretized into a finite "codebook" of tokens (e.g., token 45 represents the value range 0.5-0.6). This makes the time series look exactly like text (a sequence of integers). It allows for the seamless application of GPT-style transformers (which expect discrete inputs) but can suffer from "quantization error"—the loss of precision when rounding values to the nearest bin.
+5.3 Fine-Tuning Strategies: PEFT and Adapters
+Training a 70B parameter model for time series is computationally expensive. The industry standard has shifted toward Parameter-Efficient Fine-Tuning (PEFT).
+* LoRA (Low-Rank Adaptation): Instead of updating all weights, researchers inject small, trainable low-rank matrices into the attention layers of the frozen LLM.
+* Adapters: Lightweight MLP layers are inserted between the transformer blocks. In Time-LLM, only these adapters and the input projection layers are trained. This allows a massive model to be adapted to a niche time series task with a fraction of the compute and data, preserving the backbone's generalization capabilities.1
+________________
+6. Domain Specificity: Finance, Healthcare, and Energy
+The application of these models reveals distinct challenges and opportunities across different sectors.
+6.1 Financial Forecasting: The Killer App
+Finance is the primary driver of this innovation due to the high value of "alpha."
+* Dynamics: Markets are reflexive; they are driven by narratives about value as much as value itself. Models like FinCast (a foundation model for finance) leverage this by training on billions of financial data points.
+* Noise Filtering: A key challenge is the signal-to-noise ratio. Not all news matters. SOTA models use Adaptive Retrieval and attention mechanisms to filter noise. For example, "CEO resigns" is a high-signal event; "CEO attends gala" is noise. The attention heads in MM-iTransformer automatically learn to assign near-zero weights to the latter, effectively performing automated fundamental analysis.3
+6.2 Energy and Weather: Physical-Textual Fusion
+* Multimodality: Forecasting electricity load or renewable generation requires fusing (1) Historical Load (Numerical), (2) Weather Forecasts (Numerical/Text), and (3) Grid Status Reports (Text).
+* Impact: Textual cues like "Heatwave warning issued" or "Power plant maintenance scheduled" provide critical look-ahead information. A purely autoregressive model might see a mild load trend and fail to predict the spike caused by the heatwave. A multimodal model reads the "warning" and effectively shifts its prior probability for high load, preventing grid failures.2
+6.3 Clinical Forecasting: The Unstructured Patient
+* Data: Electronic Health Records (EHR) are inherently multimodal, containing time series (heart rate, BP, O2 saturation) and text (doctor's notes, nursing logs).
+* Application: Predicting patient deterioration (e.g., sepsis shock). Textual notes often contain "soft" signs of decline (e.g., "patient appears lethargic," "skin clammy") hours before the vital signs crash. LBS models excel here by quantifying the uncertainty associated with ambiguous clinical notes, providing doctors with a risk score that integrates both the hard data and the qualitative observations.7
+________________
+7. Critical Analysis and Future Directions
+7.1 The "Black Box" vs. Explainability
+While performance metrics (MSE/MAE) are improving, the opacity of these models is a concern, especially in regulated finance. However, multimodal models offer a unique advantage: Textual Explainability. Unlike an LSTM which outputs a number, a Time-LLM can output a number and a justification: "I predicted a drop because of the negative earnings report and the historical correlation of this sector with interest rate hikes." This "Reasoning Trace" is a game-changer for adoption, converting the "Black Box" into a "Glass Box".7
+7.2 The Computational Cost and Distillation
+There is a massive trade-off. Running a 70B parameter LLM for every time step forecast is computationally prohibitive for high-frequency trading (HFT) or edge deployment (IoT).
+* Future Trend: Distillation. The industry is moving toward using the massive Multimodal LLM to teach a smaller, faster "Student" model (like a lightweight MLP or specialized Transformer). The "Teacher" provides the semantic reasoning and synthetic data during training; the "Student" approximates this logic during inference, allowing for real-time performance on constrained hardware.25
+7.3 Agentic Forecasting
+The field is moving from "Predictors" to "Agents." An AI agent doesn't just predict the stock price; it plans a trading strategy, monitors news in real-time, browses the web for verification, and executes trades. The integration of "Tool Use" (e.g., browsing, code execution) into forecasting pipelines is the next frontier, as hinted by benchmarks like MMMU-Pro and agentic frameworks.1
+7.4 Conclusion
+The integration of Natural Language Processing and Time Series Forecasting has graduated from experimental curiosity to state-of-the-art practice. Architectures like MM-iTransformer and Time-LLM have successfully bridged the cross-modality gap, proving that text is not just auxiliary metadata but a fundamental driver of temporal dynamics. By fusing the semantic reasoning of LLMs with the precise pattern recognition of modern time series transformers, we are entering an era of Semantic Forecasting—where models understand not just what the data is doing, but why. As datasets like FNSPID grow and architectures like TS-RAG mature, the ability to forecast complex, event-driven systems will become increasingly robust, unlocking trillions in value across finance, energy, and healthcare.
+________________
+Table 2: Comparative Analysis of SOTA Multimodal Forecasting Architectures
+
+
+Architecture
+	Core Mechanism
+	Key Modalities
+	Primary Use Case
+	Strengths
+	MM-iTransformer 3
+	Inverted Attention + Concatenation
+	Time Series + Text (Embeddings)
+	Economic/Financial Forecasting
+	Excellent at capturing variate-to-text correlations; high accuracy (MSE reduction).
+	Time-LLM 11
+	Reprogramming (Patching + Prompts)
+	Time Series patches + Text Prompts
+	General TSF (Zero/Few-shot)
+	Retains LLM world knowledge; strictly frozen backbone; strong generalization.
+	Zero-to-Forecast 12
+	Cross-Modal Ensemble + Retrieval
+	Text Description $\rightarrow$ Time Series
+	Cold-start / New Product Forecasting
+	Requires NO historical numerical data; handles "Day 0" scenarios.
+	TS-RAG 5
+	Retrieval Augmented Generation
+	Time Series + Historical Context Database
+	Long-term Pattern Matching
+	Infinite context window; captures recurring historical cycles effectively.
+	LBS 7
+	Bayesian SSM + LLM Conditioning
+	Time Series + Text + Latent States
+	Clinical/Climate (Uncertainty)
+	Provides uncertainty quantification; probabilistic interpretations.
+	Works cited
+1. A Survey of Large Language Models: Evolution, Architectures, Adaptation, Benchmarking, Applications, Challenges, and Societal Implications - MDPI, accessed January 19, 2026, https://www.mdpi.com/2079-9292/14/18/3580
+2. Tracking Advances in Multimodal AI for Time Series Analysis, accessed January 19, 2026, https://nationalsecurity.virginia.edu/sites/default/files/files/2025-11/00012_20250506%29_nsdpi_tracking_advances_in_multimodal_ai_for_time_series_analysis.pdf
+3. MM-iTransformer: A Multimodal Approach to Economic Time Series Forecasting with Textual Data - MDPI, accessed January 19, 2026, https://www.mdpi.com/2076-3417/15/3/1241
+4. FNSPID: A Comprehensive Financial News Dataset in Time Series - IDEAS/RePEc, accessed January 19, 2026, https://ideas.repec.org/p/arx/papers/2402.06698.html
+5. [NeurIPS 2025] Official website for code and models of Time Series RAG (TS-RAG) - GitHub, accessed January 19, 2026, https://github.com/UConn-DSIS/TS-RAG
+6. Financial News and Stock Price Integration Dataset - Emergent Mind, accessed January 19, 2026, https://www.emergentmind.com/topics/financial-news-and-stock-price-integration-dataset-fnspid
+7. LLM-Integrated Bayesian State Space Models for Multimodal Time-Series Forecasting, accessed January 19, 2026, https://arxiv.org/html/2510.20952v1
+8. Augmenting LLMs for General Time Series Understanding and Prediction - arXiv, accessed January 19, 2026, https://arxiv.org/html/2510.01111v1
+9. Towards Cross-Modality Modeling for Time Series Analytics: A Survey in the LLM Era - IJCAI, accessed January 19, 2026, https://www.ijcai.org/proceedings/2025/1173.pdf
+10. KimMeen/Time-LLM: [ICLR 2024] Official implementation of ... - GitHub, accessed January 19, 2026, https://github.com/KimMeen/Time-LLM
+11. ICLR Poster Time-LLM: Time Series Forecasting by Reprogramming Large Language Models - ICLR 2026, accessed January 19, 2026, https://iclr.cc/virtual/2024/poster/18518
+12. Zero-to-Forecast: Natural Language to Time Series Prediction via Cross-Modal Ensembles, accessed January 19, 2026, https://neurips.cc/virtual/2025/130445
+13. lucidrains/iTransformer: Unofficial implementation of iTransformer - SOTA Time Series Forecasting using Attention networks, out of Tsinghua / Ant group - GitHub, accessed January 19, 2026, https://github.com/lucidrains/iTransformer
+14. LLM-Powered Time-Series Analysis | Towards Data Science, accessed January 19, 2026, https://towardsdatascience.com/llm-powered-time-series-analysis/
+15. NeurIPS Poster TS-RAG: Retrieval-Augmented Generation based Time Series Foundation Models are Stronger Zero-Shot Forecaster, accessed January 19, 2026, https://neurips.cc/virtual/2025/poster/118173
+16. Zdong104/FNSPID_Financial_News_Dataset: FNSPID: A ... - GitHub, accessed January 19, 2026, https://github.com/Zdong104/FNSPID_Financial_News_Dataset
+17. TIMIT_corpus - Kaggle, accessed January 19, 2026, https://www.kaggle.com/datasets/dodger23/timit-corpus
+18. MMMU Benchmark, accessed January 19, 2026, https://mmmu-benchmark.github.io/
+19. MMMU Leaderboard - LLM Stats, accessed January 19, 2026, https://llm-stats.com/benchmarks/mmmu
+20. Empowering Time Series Forecasting with LLM-Agents - arXiv, accessed January 19, 2026, https://arxiv.org/html/2508.04231v1
+21. Top Multimodal Benchmark Datasets - Roboflow Blog, accessed January 19, 2026, https://blog.roboflow.com/multimodal-benchmark-datasets/
+22. SST-LLM: time series forecasting based on large language models - SPIE Digital Library, accessed January 19, 2026, https://www.spiedigitallibrary.org/conference-proceedings-of-spie/13681/136810Q/SST-LLM--time-series-forecasting-based-on-large-language/10.1117/12.3073528.full
+23. Temporal Data Meets LLM - Explainable Financial Time Series Forecasting - arXiv, accessed January 19, 2026, https://arxiv.org/html/2306.11025
+24. FinCast: A Foundation Model for Financial Time-Series Forecasting - arXiv, accessed January 19, 2026, https://arxiv.org/html/2508.19609v1
+25. [NeurIPS 2025] Official implementation of "SEMPO: Lightweight Foundation Models for Time Series Forecasting" - GitHub, accessed January 19, 2026, https://github.com/mala-lab/SEMPO
+26. Top 10 LLM Research Papers of 2025 - Analytics Vidhya, accessed January 19, 2026, https://www.analyticsvidhya.com/blog/2025/06/top-llm-research-papers-of-2025/
