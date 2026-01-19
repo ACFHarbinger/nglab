@@ -285,6 +285,11 @@ All notable changes to the NGLab project will be documented in this file.
   - **FastAPI Scaling**: Implemented `BatchInferenceHandler` and Redis caching layer in `inference.py` to support high-throughput async prediction serving. Added production Gunicorn config.
   - **Automated Pipeline**: Created `FeaturePipeline` combining `GPUFeatureEngineer`, `RobustScaler`, and `VarianceThreshold` for streamlined, automated feature engineering.
 
+- **Online Learning (Phase 5 Foundation)**:
+  - **Drift Detection**: Implemented `PageHinkley` and `MovingAverageDrift` detectors in `python/src/online/drift.py` for real-time concept drift monitoring.
+  - **Online Normalization**: Created `OnlineNormalizer` (PyTorch module) using Welford's algorithm and momentum for adapting to shifting data distributions.
+  - **Unit Tests**: Added comprehensive test suite `test_online_learning.py` verifying drift detection and normalization logic.
+
 
 ## [Unreleased] - 2026-01-18
 
