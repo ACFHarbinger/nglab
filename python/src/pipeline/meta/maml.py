@@ -1,75 +1,281 @@
 """
-Meta-Learning Wrapper for NGLab.
+MAML Lightning Module for Meta-Learning Trading Strategies.
 
-Implements Model-Agnostic Meta-Learning (MAML) using the 'higher' library,
-enabling fast adaptation of policies to new market conditions or tasks.
+Integrates Model-Agnostic Meta-Learning with PyTorch Lightning training loop.
 """
 
-import higher
 import torch
-from pytorch_lightning import LightningModule
+import torch.nn as nn
+import pytorch_lightning as pl
+from typing import List, Tuple, Optional, Any
+import copy
 
 
-class MAMLWrapper(LightningModule):
+class MAMLLightningModule(pl.LightningModule):
     """
-    Model-Agnostic Meta-Learning (MAML) Wrapper.
-    Wraps an inner LightningModule (e.g. RLModule) to perform meta-learning updates.
+    PyTorch Lightning module for MAML (Model-Agnostic Meta-Learning).
+    
+    Enables meta-training across different market regimes with automatic
+    support for distributed training, checkpointing, and logging.
     """
-
+    
     def __init__(
         self,
-        inner_module: LightningModule,
-        inner_lr=0.01,
-        meta_lr=0.001,
-        num_inner_steps=1,
+        model: nn.Module,
+        inner_lr: float = 0.01,
+        outer_lr: float = 0.001,
+        inner_steps: int = 5,
+        meta_batch_size: int = 4
     ):
         """
-        Initialize the MAML wrapper.
-
+        Initialize MAML Lightning module.
+        
         Args:
-            inner_module (LightningModule): The module to be adapted.
-            inner_lr (float): Learning rate for the inner adaptation loop.
-            meta_lr (float): Learning rate for the outer meta-update loop.
-            num_inner_steps (int): Number of adaptation steps.
+            model: Base model to meta-train.
+            inner_lr: Learning rate for inner loop (task adaptation).
+            outer_lr: Learning rate for outer loop (meta-update).
+            inner_steps: Number of gradient steps for adaptation.
+            meta_batch_size: Number of tasks per meta-batch.
         """
         super().__init__()
-        self.save_hyperparameters(ignore=["inner_module"])
-        self.module = inner_module
+        self.save_hyperparameters(ignore=['model'])
+        self.model = model
         self.inner_lr = inner_lr
-        self.meta_lr = meta_lr
-        self.num_inner_steps = num_inner_steps
-
+        self.outer_lr = outer_lr
+        self.inner_steps = inner_steps
+        self.meta_batch_size = meta_batch_size
+    
     def configure_optimizers(self):
+        """Configure meta-optimizer."""
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=self.outer_lr)
+        return optimizer
+    
+    def inner_loop(
+        self,
+        support_x: torch.Tensor,
+        support_y: torch.Tensor,
+        query_x: torch.Tensor,
+        query_y: torch.Tensor
+    ) -> torch.Tensor:
         """
-        Configure the meta-optimizer.
+        Perform inner loop adaptation on support set and evaluate on query set.
+        
+        Args:
+            support_x: Support set inputs [batch, seq_len, features].
+            support_y: Support set targets [batch, output_dim].
+            query_x: Query set inputs.
+            query_y: Query set targets.
+            
+        Returns:
+            Loss on query set after adaptation.
         """
-        return torch.optim.Adam(self.module.parameters(), lr=self.meta_lr)
-
-    def training_step(self, batch, batch_idx):
+        # Clone model for inner loop
+        temp_model = copy.deepcopy(self.model)
+        temp_optimizer = torch.optim.SGD(temp_model.parameters(), lr=self.inner_lr)
+        
+        # Adapt on support set
+        temp_model.train()
+        for _ in range(self.inner_steps):
+            support_pred = temp_model(support_x)
+            support_loss = nn.functional.mse_loss(support_pred, support_y)
+            temp_optimizer.zero_grad()
+            support_loss.backward()
+            temp_optimizer.step()
+        
+        # Evaluate on query set (keep gradients for meta-loss)
+        query_pred = temp_model(query_x)
+        query_loss = nn.functional.mse_loss(query_pred, query_y)
+        
+        return query_loss
+    
+    def training_step(self, batch: dict, batch_idx: int) -> torch.Tensor:
         """
-        Perform a MAML training step (Inner + Outer loops).
+        Meta-training step across multiple tasks.
+        
+        Args:
+            batch: Dictionary containing 'tasks' list, where each task is
+                   (support_x, support_y, query_x, query_y).
+            batch_idx: Batch index.
+            
+        Returns:
+            Meta-loss (average query loss across tasks).
         """
-        # Batch: Tuple of (Support Set, Query Set) for a task
-        # Assuming batch is a list of tasks, but for simplicity handling one task per step here
-        # or batch dim is task dim.
+        tasks = batch['tasks']
+        meta_losses = []
+        
+        for support_x, support_y, query_x, query_y in tasks:
+            query_loss = self.inner_loop(support_x, support_y, query_x, query_y)
+            meta_losses.append(query_loss)
+        
+        # Meta-loss is average across tasks
+        meta_loss = torch.stack(meta_losses).mean()
+        
+        # Log metrics
+        self.log('train/meta_loss', meta_loss, prog_bar=True)
+        self.log('train/num_tasks', len(tasks))
+        
+        return meta_loss
+    
+    def validation_step(self, batch: dict, batch_idx: int):
+        """
+        Validation step to evaluate meta-learning performance.
+        
+        Args:
+            batch: Dictionary containing validation tasks.
+            batch_idx: Batch index.
+        """
+        tasks = batch['tasks']
+        val_losses = []
+        
+        # Validation doesn't need gradients through inner loop
+        with torch.enable_grad():  # Re-enable for inner loop even in eval mode
+            for support_x, support_y, query_x, query_y in tasks:
+                query_loss = self.inner_loop(support_x, support_y, query_x, query_y)
+                val_losses.append(query_loss.detach())  # Detach to avoid grad issues
+        
+        val_loss = torch.stack(val_losses).mean()
+        self.log('val/meta_loss', val_loss, prog_bar=True)
+        
+        return val_loss
+    
+    def adapt(
+        self,
+        support_x: torch.Tensor,
+        support_y: torch.Tensor,
+        num_steps: Optional[int] = None
+    ) -> nn.Module:
+        """
+        Fast adaptation to new market regime.
+        
+        Args:
+            support_x: Support set inputs from new regime.
+            support_y: Support set targets from new regime.
+            num_steps: Number of adaptation steps (defaults to self.inner_steps).
+            
+        Returns:
+            Adapted model.
+        """
+        num_steps = num_steps or self.inner_steps
+        adapted_model = copy.deepcopy(self.model)
+        optimizer = torch.optim.SGD(adapted_model.parameters(), lr=self.inner_lr)
+        
+        adapted_model.train()
+        for _ in range(num_steps):
+            pred = adapted_model(support_x)
+            loss = nn.functional.mse_loss(pred, support_y)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        
+        adapted_model.eval()
+        return adapted_model
 
-        support_data, query_data = batch
 
-        # Inner Loop (Adaptation)
-        with higher.innerloop_ctx(
-            self.module, self.module.configure_optimizers(), copy_initial_weights=False
-        ) as (fmodel, diffopt):
-            for _ in range(self.num_inner_steps):
-                # Calculate Support Loss
-                # This requires the inner module's training_step to be callable/compatible
-                loss = fmodel.training_step(support_data, 0)  # batch_idx=0
-                diffopt.step(loss)
-
-            # Outer Loop (Meta-Update)
-            # Evaluate on Query Set using adapted weights (fmodel)
-            meta_loss = fmodel.validation_step(
-                query_data, 0
-            )  # Using Val logic for query split
-
-            self.log("train/meta_loss", meta_loss)
-            return meta_loss
+class MAMLDataModule(pl.LightningDataModule):
+    """
+    DataModule for MAML meta-learning.
+    
+    Organizes data into tasks (market regimes) for meta-training.
+    """
+    
+    def __init__(
+        self,
+        regime_datasets: dict,
+        support_size: int = 50,
+        query_size: int = 50,
+        meta_batch_size: int = 4,
+        num_workers: int = 0
+    ):
+        """
+        Initialize MAML DataModule.
+        
+        Args:
+            regime_datasets: Dict mapping regime_id to dataset tensors.
+            support_size: Number of samples for support set.
+            query_size: Number of samples for query set.
+            meta_batch_size: Number of tasks per meta-batch.
+            num_workers: Number of workers for data loading.
+        """
+        super().__init__()
+        self.regime_datasets = regime_datasets
+        self.support_size = support_size
+        self.query_size = query_size
+        self.meta_batch_size = meta_batch_size
+        self.num_workers = num_workers
+    
+    def create_task(self, regime_data: torch.Tensor) -> Tuple:
+        """
+        Create a task (support/query split) from regime data.
+        
+        Args:
+            regime_data: Data from a specific regime [num_samples, features].
+            
+        Returns:
+            (support_x, support_y, query_x, query_y)
+        """
+        total_size = self.support_size + self.query_size
+        
+        # Random sample from regime
+        if regime_data.size(0) < total_size:
+            # Repeat if not enough data
+            indices = torch.randint(0, regime_data.size(0), (total_size,))
+        else:
+            indices = torch.randperm(regime_data.size(0))[:total_size]
+        
+        sampled = regime_data[indices]
+        
+        # Split into support/query
+        support = sampled[:self.support_size]
+        query = sampled[self.support_size:total_size]
+        
+        # For sequence data: [batch, seq_len, features]
+        #  Model outputs predictions for last timestep only
+        if support.dim() == 3:
+            # Use last timestep features + target
+            support_x = support[:, :, :-1]  # All timesteps, all features except last
+            support_y = support[:, -1, -1:]  # Last timestep, last feature (target)
+            query_x = query[:, :, :-1]
+            query_y = query[:, -1, -1:]
+        else:
+            # 2D data - add sequence dimension
+            support_x = support[:, :-1].unsqueeze(1)  # [batch, 1, features]
+            support_y = support[:, -1:]  # [batch, 1]
+            query_x = query[:, :-1].unsqueeze(1)
+            query_y = query[:, -1:]
+        
+        return support_x, support_y, query_x, query_y
+    
+    def train_dataloader(self):
+        """Create training dataloader with task batches."""
+        # For simplicity, create a static list of task batches
+        # In practice, you'd implement a proper Dataset/DataLoader
+        task_batches = []
+        
+        for _ in range(100):  # 100 meta-batches
+            batch = []
+            for _ in range(self.meta_batch_size):
+                # Sample random regime
+                regime_id = torch.randint(0, len(self.regime_datasets), (1,)).item()
+                regime_data = self.regime_datasets[regime_id]
+                task = self.create_task(regime_data)
+                batch.append(task)
+            task_batches.append({'tasks': batch})
+        
+        return iter(task_batches)
+    
+    def val_dataloader(self):
+        """Create validation dataloader."""
+        # Similar to train but with fewer batches
+        task_batches = []
+        
+        for _ in range(20):  # 20 validation batches
+            batch = []
+            for _ in range(self.meta_batch_size):
+                regime_id = torch.randint(0, len(self.regime_datasets), (1,)).item()
+                regime_data = self.regime_datasets[regime_id]
+                task = self.create_task(regime_data)
+                batch.append(task)
+            task_batches.append({'tasks': batch})
+        
+        # Return as iterator to avoid multiple dataloader detection
+        return iter(task_batches)

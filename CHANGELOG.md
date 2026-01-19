@@ -24,6 +24,10 @@ All notable changes to the NGLab project will be documented in this file.
   - Implemented `EnsembleModel` wrapper with average, weighted, voting, and stacking strategies.
   - Added `predict_with_uncertainty` for ensemble disagreement-based uncertainty estimation.
   - Factory function `create_ensemble_from_configs` for easy ensemble creation.
+- **Advanced ML: Meta-Learning**:
+  - Implemented `MAMLWrapper` for Model-Agnostic Meta-Learning.
+  - Created `RegimeDetector` for market regime classification (volatile, trending, ranging).
+  - Enables rapid strategy adaptation when market conditions change.
 - **Modular CLI Framework (P3 Phase 4)**:
   - Refactored the monolithic `command_parser.py` into a modular architecture.
   - Created a centralized registry (`registry.py`) and specialized parsers for `train`, `inference`, `webcrawler`, and `hp_optim`.

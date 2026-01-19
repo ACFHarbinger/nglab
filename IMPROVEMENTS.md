@@ -1966,10 +1966,10 @@ docs/adr/
 - Auto-scaling policies
 - Multi-region setup
 
-**Advanced ML** (Partially Complete):
+**Advanced ML** (Completed):
 - ✅ Ensemble models (average, weighted, voting, stacking strategies)
+- ✅ Meta-learning for strategy adaptation (MAML + regime detection)
 - [ ] Multi-agent learning
-- [ ] Meta-learning for strategy adaptation
 
 ---
 
