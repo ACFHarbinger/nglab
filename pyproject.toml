@@ -60,9 +60,15 @@ bindings = "pyo3"
 manifest-path = "rust/Cargo.toml"
 
 [tool.basedpyright]
-typeCheckingMode = "basic"
+typeCheckingMode = "standard"
 include = ["python", "environment", "nglab"]
 reportUnusedImport = "warning"
+reportMissingTypeStubs = "warning"
+
+[tool.mutmut]
+paths_to_mutate = "python/src/"
+runner = "python -m pytest"
+tests_dir = "python/tests/"
 
 # Create an override for __init__.py files
 ignore = ["**/__init__.py"]
@@ -70,6 +76,7 @@ ignore = ["**/__init__.py"]
 [dependency-groups]
 dev = [
     "black>=25.12.0",
+    "hypothesis>=6.150.2",
     "mypy>=1.19.1",
     "pip-audit>=2.10.0",
     "pre-commit>=4.5.1",

@@ -10,6 +10,7 @@ import numpy as np
 from numpy.typing import NDArray
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import multiprocessing as mp
+import gymnasium as gym
 
 try:
     import nglab
@@ -66,7 +67,6 @@ class VectorizedTradingEnv:
                 lookback=lookback,
                 max_steps=max_steps,
                 enable_logging=False,  # Disable logging for vectorized envs
-                seed=env_seed,
             )
             self.envs.append(env)
         
@@ -75,11 +75,33 @@ class VectorizedTradingEnv:
         self.observation_shape = (num_envs,) + self.single_observation_shape
         self.action_space_n = 3  # 0: Hold, 1: Buy, 2: Sell
         
+        # Define Gym spaces for compatibility
+        single_action_space = gym.spaces.Discrete(self.action_space_n)
+        single_observation_space = gym.spaces.Box(
+            low=-np.inf, high=np.inf, shape=self.single_observation_shape, dtype=np.float64
+        )
+        
+        action_space = gym.spaces.MultiDiscrete([self.action_space_n] * num_envs)
+        observation_space = gym.spaces.Box(
+            low=-np.inf, high=np.inf, shape=self.observation_shape, dtype=np.float64
+        )
+        
+        # super().__init__(num_envs=num_envs, observation_space=observation_space, action_space=action_space)
+        # Expose SINGLE spaces so TorchRL GymWrapper (with batch_size set) expands them correctly
+        self.action_space = single_action_space
+        self.observation_space = single_observation_space
+        self.single_action_space = single_action_space
+        self.single_observation_space = single_observation_space
+        
         # Executor for parallel step execution
         if use_multiprocessing:
             self._executor = ProcessPoolExecutor(max_workers=num_envs)
         else:
             self._executor = ThreadPoolExecutor(max_workers=num_envs)
+    
+    @property
+    def unwrapped(self):
+        return self
     
     @property
     def num_actions(self) -> int:
@@ -128,6 +150,23 @@ class VectorizedTradingEnv:
             Each array has shape (num_envs,) except observations which is
             (num_envs, lookback, num_features).
         """
+        # Handle scalar actions (e.g. from single-env wrapping)
+        # print(f"DEBUG: actions type={type(actions)} len={len(actions) if hasattr(actions, '__len__') else 'N/A'} val={actions}")
+        if hasattr(actions, "ndim") and actions.ndim == 0:
+            actions = [int(actions)]
+        elif isinstance(actions, (int, float)):
+            actions = [int(actions)]
+            
+        # If it's a numpy array of shape (N,), len() works. 
+        # CAUTION: If it's shape (1, N) or (N, 1)?
+        
+        if hasattr(actions, "shape"):
+            actions = actions.flatten()
+        elif isinstance(actions, list) and len(actions) == 1 and hasattr(actions[0], "__iter__"):
+             # Handle list of list/array
+             import numpy as np
+             actions = np.array(actions).flatten()
+             
         assert len(actions) == self.num_envs, f"Expected {self.num_envs} actions, got {len(actions)}"
         
         # Execute steps in parallel
@@ -324,7 +363,6 @@ def _worker(
         lookback=lookback,
         max_steps=max_steps,
         enable_logging=False,
-        seed=seed,
     )
     
     while True:
@@ -382,3 +420,11 @@ def make_vec_env(
             max_steps=max_steps,
             seed=seed,
         )
+
+
+def get_batch_env(num_envs: int, device: str = "cpu", **kwargs):
+    """
+    Factory to create a TorchRL-compatible batched environment.
+    """
+    from .env_wrapper import TradingEnvWrapper
+    return TradingEnvWrapper(num_envs=num_envs, device=device, **kwargs)

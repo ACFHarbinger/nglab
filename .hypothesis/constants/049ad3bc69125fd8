@@ -1,0 +1,4 @@
+# file: /home/pkhunter/Repositories/nglab/python/src/utils/functions/gpu_features.py
+# hypothesis_version: 6.150.2
+
+[1e-10, 1.0, 2.0, 100]

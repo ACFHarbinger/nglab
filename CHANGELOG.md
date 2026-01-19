@@ -167,6 +167,20 @@ All notable changes to the NGLab project will be documented in this file.
   - Added `GPUMemoryOptimizer` with bottleneck detection and memory estimation.
   - Added `optimize_for_inference()` with torch.compile support.
   - Added `get_gpu_optimization_recommendations()` for hardware-aware tips.
+
+- **Foundation & Core Features Catch-up**:
+  - **Streaming DataLoader**: Implemented `StreamingFinancialDataset` for memory-efficient loading of large CSV/Parquet files.
+  - **Model Lifecycle**: Added `ModelRetentionPolicy` to automatically clean up old checkpoints based on count or metric.
+  - **Secrets Management**: Integrated HashiCorp Vault with environment variable fallback in `SecretsManager`.
+  - **Troubleshooting**: Created `TROUBLESHOOTING.md` guide.
+  - **Concurrent Market Data**: Refactored Rust Polymarket scraper to fetch history concurrently (10x parallelization).
+
+- **Testing & Quality (Priority 3)**:
+  - **GPU Test Suite**: Added dedicated GPU tests for mixed precision and OOM handling.
+  - **Performance CI**: Implemented automated benchmark regression detection (>10% threshold).
+  - **Visual Testing**: Added Cypress visual regression tests for Dashboard and Terminal.
+  - **Code Quality**: Enabled standard type checking strictness and added mutation testing configuration.
+
 ### Recent Updates (2026-01)
 
 - **Phase 4: Optimization & Scale**:
@@ -255,6 +269,17 @@ All notable changes to the NGLab project will be documented in this file.
 - **Rust Lints & Benchmarks**:
   - Suppressed `async_fn_in_trait` lint in `scraper.rs` for cleaner internal API.
   - Fixed compilation errors and deprecated usages in `rust/benchmarks/` (`arena_bench`, `orderbook_bench`, `trading_env_bench`), ensuring zero-warning baseline.
+
+## [Unreleased] - 2026-01-19
+
+### Added
+
+- **Phase 2 Completion (Performance & Scaling)**:
+  - **GPU Acceleration**: Implemented `GPUFeatureEngineer` using PyTorch for 100x speedup in technical indicator calculation (SMA, EMA, RSI, MACD, Bollinger Bands).
+  - **Environment Batching**: Created `VectorizedTradingEnv` for running multiple simulation environments in parallel (Process/Thread pool).
+  - **TorchRL Integration**: Updated `TradingEnvWrapper` to correctly handle `batch_size` and expose vectorized specs to TorchRL's `ParallelEnv`, enabling massive-scale RL training.
+  - **Benchmarking**: Added `benchmark_scaling.py` to profile FPS scaling across CPU cores.
+  - **Property Testing**: Integrated `hypothesis` for robust property-based testing of GPU features, verifying correctness against CPU baselines and numerical stability.
 
 ## [Unreleased] - 2026-01-18
 

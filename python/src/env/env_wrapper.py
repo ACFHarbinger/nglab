@@ -6,7 +6,8 @@ handling TensorDict mapping and spec inference.
 """
 
 import gymnasium as gym
-from env.trading_env import TradingEnv
+from .trading_env import TradingEnv
+from .vectorized_env import make_vec_env
 from torchrl.envs import GymWrapper
 
 
@@ -16,19 +17,26 @@ class TradingEnvWrapper(GymWrapper):
     Ensures observations and actions are mapped to TensorDicts.
     """
 
-    def __init__(self, env=None, device="cpu", **kwargs):
+    def __init__(self, env=None, device="cpu", num_envs=1, **kwargs):
         """
         Initialize the environment wrapper.
 
         Args:
             env (gym.Env, optional): An existing Gymnasium environment.
             device (str): Device to use for tensors.
-            **kwargs: Arguments to pass to TradingEnv if 'env' is None.
+            num_envs (int): Number of parallel environments to create if env is None.
+            **kwargs: Arguments to pass to TradingEnv/make_vec_env if 'env' is None.
         """
+        batch_size = None
         if env is None:
-            env = TradingEnv(**kwargs)
+            if num_envs > 1:
+                env = make_vec_env(num_envs=num_envs, **kwargs)
+                import torch
+                batch_size = torch.Size([num_envs])
+            else:
+                env = TradingEnv(**kwargs)
 
-        super().__init__(env, device=device)
+        super().__init__(env, device=device, batch_size=batch_size)
 
     def _make_specs(self, env: gym.Env) -> None:
         """

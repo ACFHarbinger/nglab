@@ -223,8 +223,8 @@ impl TradingEnv {
         &mut self,
         py: Python<'py>,
         seed: Option<u64>,
-        options: Option<PyObject>,
-    ) -> PyResult<(Bound<'py, PyArray2<f64>>, PyObject)> {
+        options: Option<Py<PyAny>>,
+    ) -> PyResult<(Bound<'py, PyArray2<f64>>, Py<PyAny>)> {
         if let Some(s) = seed {
             info!("Resetting environment with seed: {}", s);
             self.set_seed(s);
@@ -244,7 +244,7 @@ impl TradingEnv {
         &mut self,
         py: Python<'py>,
         action: i32,
-    ) -> PyResult<(Bound<'py, PyArray2<f64>>, f64, bool, bool, PyObject)> {
+    ) -> PyResult<(Bound<'py, PyArray2<f64>>, f64, bool, bool, Py<PyAny>)> {
         let action_type = ActionType::from(action);
         let lookback = self.lookback;
         let num_features = self.num_features;
@@ -296,7 +296,7 @@ impl TradingEnv {
     }
 
     /** Get current observation as numpy array */
-    pub fn get_observation<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    pub fn get_observation<'py>(&mut self, py: Python<'py>) -> PyResult<Bound<'py, PyArray2<f64>>> {
         let obs_data = self.generate_observation_data();
 
         // Reshape to (lookback, features)

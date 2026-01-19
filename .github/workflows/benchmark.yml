@@ -17,10 +17,30 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y pkg-config libssl-dev python3-dev
 
-      - name: Run benchmarks
+      - name: Run GPU Benchmarks
         run: |
-          cd rust
-          cargo bench -- --save-baseline current
+          python python/src/utils/profiling/benchmark.py --output benchmark_result.json
+
+      - name: Download Baseline Benchmark
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-baseline
+          path: .
+        continue-on-error: true
+
+      - name: Check for Performance Regression
+        run: |
+          if [ -f "benchmark_baseline.json" ]; then
+            python python/src/utils/profiling/compare_benchmarks.py benchmark_result.json benchmark_baseline.json --threshold 0.10
+          else
+            echo "No baseline found. Skipping regression check."
+          fi
+
+      - name: Upload New Benchmark Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-baseline
+          path: benchmark_result.json
 
       - name: Compare with main
         if: github.event_name == 'pull_request'
