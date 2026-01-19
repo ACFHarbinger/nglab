@@ -1,575 +1,563 @@
-# NGLab Improvement Plan
+# NGLab Improvement Plan - Phase 7+
 
-This document outlines a comprehensive improvement plan for NGLab, organized by priority and category. Each section includes actionable items with estimated complexity and impact.
+This document outlines the next phase of improvements for NGLab, building upon the completed Phases 1-6. Each section includes actionable items with complexity and impact ratings.
 
 ---
 
 ## Executive Summary
 
-NGLab is a mature, production-grade multimodal deep reinforcement learning trading bot with ~48,000 lines of code across Rust, Python, and TypeScript. While the codebase demonstrates excellent architecture and professional practices, there are opportunities for enhancement in the following key areas:
+NGLab has successfully completed 6 phases of development, resulting in a production-grade multimodal deep reinforcement learning trading bot with ~48,000 lines of code. The codebase demonstrates excellent architecture across Rust, Python, and TypeScript layers with comprehensive ML capabilities, deployment infrastructure, and monitoring.
 
-1.  **Complete Incomplete Implementations** - Finish partial features
-2.  **Performance Optimization** - GPU utilization, parallel processing
-3.  **Testing & Quality** - Visual regression, GPU tests, benchmarks
-4.  **Production Readiness** - Deployment, scaling, cloud integration
-5.  **Developer Experience** - Documentation, tooling, debugging
+**Current State:**
+- All Priority 1-6 items from the previous plan are complete
+- Production deployment infrastructure is ready (K8s, Helm, Docker)
+- Comprehensive monitoring stack deployed (Prometheus, Grafana, Jaeger)
+- ML pipeline mature with 10+ model architectures
+- Risk management and multi-asset support complete
+
+**Next Phase Focus Areas:**
+1. **Robustness & Reliability** - Error handling, defensive coding
+2. **Security & Compliance** - Security policies, audit trails
+3. **Observability Deepening** - Structured logging, debugging tools
+4. **Testing Maturation** - E2E testing, fuzzing, chaos engineering
+5. **Advanced ML Features** - Model interpretability, AutoML
+6. **Operational Excellence** - Runbooks, incident response
 
 ---
 
-## Priority 1: Critical Improvements (High Impact, Required for Production)
+## Priority 1: Robustness & Reliability (Critical)
 
-### 1.1 Complete Incomplete Implementations
+### 1.1 Rust Error Handling Hardening
 
-#### Prophet Time Series Model
-**File**: `rust/src/moon/prophet.rs`
-**Status**: Partial implementation (missing changepoints)
-**Impact**: High - Prophet is essential for time series forecasting
-
-```
-Tasks:
-☑ Implement changepoint detection algorithm (PELT-inspired)
-☑ Add trend extrapolation with changepoints (piecewise linear trend)
-☑ Support multiple seasonality patterns (Fourier terms)
-☑ Add holiday/event effects handling (design matrix)
-☑ Write comprehensive unit tests (prophet.rs tests)
-```
-**Complexity**: Medium | **Impact**: High | **Status**: ✅ COMPLETE
-
-#### RNG Seeding for Reproducibility
-**File**: `rust/src/simulation/gym.rs`
-**Status**: Uses unseeded randomness
-**Impact**: Critical - Reproducibility is essential for ML research
+**File**: Multiple files in `rust/src/`
+**Status**: 34 `.unwrap()` calls identified across production code
+**Impact**: Critical - Panics in production are unacceptable
 
 ```
 Tasks:
-☑ Add seed parameter to TradingEnv constructor
-☑ Implement deterministic initialization with seed (StdRng)
-☑ Propagate seed through all random operations
-☑ Add reset(seed=None) method for re-seeding
-☑ Document seeding behavior in PyO3 bindings
-☑ Add reproducibility tests
+□ Replace unwrap() calls in time series models (arima.rs, prophet.rs, es.rs)
+  - Add proper Result<T, ArenaError> return types
+  - Create specific error variants for numerical failures
+□ Replace unwrap() calls in multi_asset.rs (11 instances)
+  - Add validation for asset existence
+  - Handle missing price data gracefully
+□ Replace unwrap() calls in orderbook.rs (5 instances)
+  - Add order validation errors
+  - Handle edge cases in matching engine
+□ Add #[deny(clippy::unwrap_used)] to lib.rs
+□ Create error recovery strategies for each module
+□ Write integration tests for error paths
 ```
-**Complexity**: Low | **Impact**: Critical | **Status**: ✅ COMPLETE
+**Complexity**: Medium | **Impact**: Critical
 
-#### Health Check Integration
-**File**: `rust/src/health.rs`
-**Status**: Placeholder for Tauri integration
-**Impact**: Medium - Required for production monitoring
+### 1.2 Input Validation Layer
 
-```
-Tasks:
-☑ Integrate ArenaState availability check
-☑ Add OrderBook health metrics
-☑ Implement WebSocket connection health (placeholder)
-☑ Add Polymarket API connectivity check
-☑ Expose /health endpoint in Tauri commands (health.rs)
-☑ Add health dashboard widget in frontend (HealthDashboard.tsx)
-```
-**Complexity**: Low | **Impact**: Medium | **Status**: ✅ COMPLETE
-
-#### DataLoader for Non-RL Tasks
-**File**: `python/src/main.py`
-**Status**: Stub implementation
-**Impact**: High - Blocks supervised/unsupervised training
+**Status**: Partial validation at API boundaries
+**Impact**: High - Prevents garbage-in-garbage-out
 
 ```
 Tasks:
-☑ Implement generic TimeSeriesDataLoader
-☑ Add support for CSV, Parquet, HDF5 formats
-☑ Create FinancialDataset with preprocessing
-☑ Add train/val/test split utilities
-☑ Support streaming for large datasets (StreamingFinancialDataset)
-☑ Integrate with Hydra config system
+□ Create validation module in rust/src/validation/
+  - Price validation (positive, reasonable bounds)
+  - Quantity validation (non-negative, position limits)
+  - Asset validation (known assets, valid symbols)
+□ Add validation decorators for Python API endpoints
+□ Implement request schema validation (Pydantic v2 strict mode)
+□ Add TypeScript runtime type checking (zod integration)
+□ Create validation error response format
+□ Document validation rules in API docs
 ```
-**Status**: ✅ COMPLETE
+**Complexity**: Medium | **Impact**: High
+
+### 1.3 Graceful Degradation
+
+**Status**: Basic error handling exists
+**Impact**: Medium - Maintain service during partial failures
+
+```
+Tasks:
+□ Implement circuit breaker for Polymarket API
+□ Add fallback data sources when primary fails
+□ Create degraded mode for model serving (return cached predictions)
+□ Implement request queuing during overload
+□ Add health check degradation levels (healthy, degraded, unhealthy)
+□ Create alert escalation for degraded state
+```
+**Complexity**: Medium | **Impact**: Medium
+
+---
+
+## Priority 2: Security & Compliance (Critical)
+
+### 2.1 Security Documentation
+
+**Status**: No SECURITY.md at project root
+**Impact**: Critical - Required for responsible disclosure
+
+```
+Tasks:
+□ Create SECURITY.md with:
+  - Supported versions table
+  - Vulnerability reporting process
+  - Security contact email
+  - PGP key for encrypted reports
+  - Expected response timeline
+□ Create .github/SECURITY.md (GitHub recognized location)
+□ Add security policy link to README
+□ Set up security@nglab email alias
+□ Configure GitHub Security Advisories
+□ Create internal security response playbook
+```
+**Complexity**: Low | **Impact**: Critical
+
+### 2.2 Audit Trail System
+
+**Status**: Basic logging exists
+**Impact**: High - Required for compliance and debugging
+
+```
+Tasks:
+□ Implement audit log table in PostgreSQL
+  - User actions (trades, config changes)
+  - System events (model updates, deployments)
+  - Immutable append-only design
+□ Add audit middleware to FastAPI
+□ Create audit log viewer in frontend
+□ Implement log retention policy (7 years for financial)
+□ Add audit log integrity verification (hash chain)
+□ Create compliance reports generator
+```
+**Complexity**: High | **Impact**: High
+
+### 2.3 Secrets Management Enforcement
+
+**Status**: Vault integration ready but not enforced
+**Impact**: High - Prevent credential exposure
+
+```
+Tasks:
+□ Remove hardcoded credentials from archive_old_data.py
+□ Enforce environment variable usage for all secrets
+□ Add pre-commit hook to detect secrets (detect-secrets)
+□ Configure Vault auto-unsealing in production
+□ Implement secret rotation for database credentials
+□ Add API key expiration and rotation
+□ Create secrets audit report
+```
+**Complexity**: Medium | **Impact**: High
+
+### 2.4 Dependency Security
+
+**Status**: pip-audit in CI but not regular
+**Impact**: Medium - Reduce supply chain risk
+
+```
+Tasks:
+□ Add daily dependency vulnerability scan (Dependabot)
+□ Configure renovate for automated updates
+□ Add SBOM generation (Software Bill of Materials)
+□ Implement dependency pinning with hash verification
+□ Create allowed/blocked dependency list
+□ Add license compliance checking
+□ Set up security alerts channel
+```
+**Complexity**: Low | **Impact**: Medium
+
+---
+
+## Priority 3: Observability Deepening (High Impact)
+
+### 3.1 Structured Logging in Simulation Engine
+
+**File**: `rust/src/` (currently only 25 log statements)
+**Status**: Minimal logging in core simulation
+**Impact**: High - Critical for production debugging
+
+```
+Tasks:
+□ Add tracing crate for structured logging
+□ Implement log levels:
+  - ERROR: Order failures, risk limit breaches
+  - WARN: Unusual market conditions, slow execution
+  - INFO: Trade execution, position changes
+  - DEBUG: Order book updates, price movements
+□ Add correlation ID propagation from Python
+□ Create JSON log format for aggregation
+□ Add log sampling for high-frequency events
+□ Implement log context (asset, position, step)
+□ Create log analysis dashboards in Grafana
+```
+**Complexity**: Medium | **Impact**: High
+
+### 3.2 Performance Profiling Dashboard
+
+**Status**: Profiling tools exist but no real-time view
+**Impact**: Medium - Faster performance debugging
+
+```
+Tasks:
+□ Create real-time latency dashboard
+  - P50, P95, P99 for order execution
+  - Model inference time distribution
+  - Data pipeline throughput
+□ Add flame graph generation endpoint
+□ Implement continuous profiling (py-spy integration)
+□ Create performance regression alerts
+□ Add GPU utilization timeline
+□ Build bottleneck identification tool
+```
+**Complexity**: Medium | **Impact**: Medium
+
+### 3.3 Business Metrics Observability
+
+**Status**: Technical metrics complete
+**Impact**: High - Understand trading performance
+
+```
+Tasks:
+□ Add trading metrics to Prometheus:
+  - Profit/Loss per asset
+  - Win rate, Sharpe ratio (rolling)
+  - Position turnover
+  - Slippage analysis
+□ Create PnL attribution dashboard
+□ Implement trade cost analysis
+□ Add model prediction accuracy tracking
+□ Create portfolio risk metrics (VaR trend)
+□ Build strategy comparison views
+```
 **Complexity**: Medium | **Impact**: High
 
 ---
 
-### 1.2 Production Deployment Infrastructure
+## Priority 4: Testing Maturation (High Impact)
 
-#### Deployment Guide & Scripts
-**Status**: ✅ COMPLETE
-**Impact**: Critical - Required for live deployment
+### 4.1 End-to-End Testing Suite
 
-```
-Tasks:
-☑ Create docker-compose.prod.yml with:
-  - FastAPI inference service (scaled, with replicas)
-  - Prometheus + Grafana monitoring stack
-  - PostgreSQL for data persistence
-  - Redis for caching
-  - Jaeger for distributed tracing
-  - Nginx load balancer
-☑ Write Kubernetes deployment manifests (deploy/k8s/base/)
-☑ Create Helm charts for cloud deployment (deploy/helm/nglab/)
-☑ Document environment variable configuration (.env.example)
-☑ Add secrets management with HashiCorp Vault integration (python/src/utils/security/secrets_manager.py)
-☑ Create CI/CD pipeline (GitHub Actions - .github/workflows/deploy.yml)
-☑ Add deployment troubleshooting guide (TROUBLESHOOTING.md)
-```
-**Complexity**: High | **Impact**: Critical | **Status**: ✅ COMPLETE
-
-#### Model Checkpoint Cloud Storage
-**Status**: File-based model_weights/ directory
-**Impact**: High - Required for distributed training & backups
+**Status**: Unit and integration tests exist
+**Impact**: High - Catch integration issues
 
 ```
 Tasks:
-☑ Add S3 backend for model storage (S3Backend class with boto3)
-  - aws_credentials configuration
-  - Automatic upload on checkpoint
-  - Version tagging with MLflow
-☑ Add GCS backend support (GCSBackend class)
-☑ Install model registry integration (CloudCheckpointManager)
-☑ Add checkpoint compression (zstd via zstandard)
-☑ Create model lifecycle management (ModelRetentionPolicy)
-☑ Add fallback to local storage on cloud failure
+□ Create E2E test framework (pytest + testcontainers)
+□ Implement full pipeline tests:
+  - Data ingestion → Feature engineering → Training
+  - Model deployment → Inference serving → Trade execution
+□ Add multi-service integration tests
+□ Create synthetic market scenario tests
+□ Implement regression test for trading strategies
+□ Add performance baseline tests
+□ Create chaos engineering tests (network failures)
 ```
-**Complexity**: Medium | **Impact**: High | **Status**: ✅ COMPLETE
+**Complexity**: High | **Impact**: High
+
+### 4.2 Fuzzing for Financial Edge Cases
+
+**Status**: No fuzzing infrastructure
+**Impact**: Medium - Find edge cases in critical code
+
+```
+Tasks:
+□ Set up cargo-fuzz for Rust code
+□ Create fuzz targets for:
+  - OrderBook matching engine
+  - Price parsing and validation
+  - Time series model inputs
+□ Add hypothesis strategies for Python
+□ Implement property-based tests for financial calculations
+□ Create corpus of edge case inputs
+□ Add fuzzing to CI (nightly runs)
+```
+**Complexity**: Medium | **Impact**: Medium
+
+### 4.3 Visual Regression Completeness
+
+**Status**: Cypress integration started
+**Impact**: Low - Catch UI regressions
+
+```
+Tasks:
+□ Add baseline screenshots for all 12 tabs
+□ Create visual tests for:
+  - Chart rendering at different timeframes
+  - Order book at various depths
+  - Risk dashboard states
+  - Error state displays
+□ Implement screenshot diff workflow
+□ Add visual approval process
+□ Create mobile/tablet responsive tests
+```
+**Complexity**: Low | **Impact**: Low
+
+### 4.4 Load and Stress Testing
+
+**Status**: Benchmarks exist but no load tests
+**Impact**: Medium - Validate production capacity
+
+```
+Tasks:
+□ Create locust load test suite
+□ Implement test scenarios:
+  - Normal trading load (100 req/s)
+  - Peak load (1000 req/s)
+  - Sustained high load (1 hour)
+□ Add WebSocket connection stress tests
+□ Test database connection pool limits
+□ Create memory leak detection tests
+□ Implement gradual load increase tests
+□ Document capacity limits and scaling triggers
+```
+**Complexity**: Medium | **Impact**: Medium
 
 ---
 
-## Priority 2: Performance Optimization (High Impact)
+## Priority 5: Advanced ML Features (Medium Impact)
 
-### 2.1 GPU Utilization Optimization
+### 5.1 Model Interpretability
 
-#### GPU Profiling & Bottleneck Analysis
-**Status**: ✅ COMPLETE
-**Impact**: High - Could significantly improve training speed
-
-```
-Tasks:
-☑ Add CUDA profiling with torch.profiler (utils/profiling/cuda_profiler.py)
-  - CUDAProfiler class with Chrome trace export
-  - profile_model_forward() and profile_training_step() functions
-  - GPUMemoryStats dataclass for memory tracking
-☑ Profile Python↔Rust data transfer overhead (TransferProfiler class)
-☑ Identify memory transfer bottlenecks (GPUMemoryOptimizer.get_memory_bottlenecks)
-☑ Implement GPU memory pre-allocation (MemoryPool class)
-☑ Add mixed precision training (FP16/BF16) (utils/mixed_precision.py)
-  - MixedPrecisionTrainer with GradScaler
-  - Auto-detection of optimal precision
-  - Memory savings estimation
-☑ Create GPU benchmark suite (utils/profiling/benchmark.py)
-  - GPUBenchmark class with inference/training benchmarks
-  - BenchmarkResult with P50/P95/P99 latencies
-  - Baseline comparison functionality
-☑ Optimization utilities (utils/profiling/gpu_optimization.py)
-  - enable_memory_efficient_attention()
-  - optimize_for_inference()
-  - get_gpu_optimization_recommendations()
-```
-**Complexity**: Medium | **Impact**: High | **Status**: ✅ COMPLETE
-
-#### Async Data Loading Pipeline
-**Status**: ✅ COMPLETE
-**Impact**: Medium - Reduces GPU idle time
+**Status**: SHAP wrapper exists
+**Impact**: High - Required for trading decisions
 
 ```
 Tasks:
-☑ Implement prefetching DataLoader workers (data/prefetch_dataloader.py)
-  - CUDAPrefetcher with CUDA streams
-  - BackgroundPrefetcher with threading
-  - PrefetchDataLoader extending DataLoader
-☑ Add pinned memory for faster GPU transfers
-☑ Create non-blocking batch preparation
-☑ Optimize feature engineering on GPU (cuDF)
-☑ Add data pipeline profiling tools (benchmark_dataloader())
+□ Implement LIME explanations for predictions
+□ Add attention visualization for transformer models
+□ Create feature importance dashboard
+□ Implement counterfactual explanations
+□ Add model decision audit trail
+□ Create "why this trade" explanation API
+□ Build interpretability reports for compliance
 ```
-**Complexity**: Medium | **Impact**: Medium | **Status**: ✅ COMPLETE
+**Complexity**: High | **Impact**: High
 
-### 2.2 Parallel Environment Execution
+### 5.2 AutoML Integration
 
-#### Vectorized Environment Support
-**File**: `rust/src/simulation/gym.rs`
-**Status**: Single environment instance
-**Impact**: High - Enables distributed training
+**Status**: Optuna HPO exists
+**Impact**: Medium - Reduce manual tuning
 
 ```
 Tasks:
-☑ Create VectorizedTradingEnv class
-  - Batch step execution (ThreadPoolExecutor/ProcessPoolExecutor)
-  - Parallel reset functionality
-  - Shared memory for observations
-☑ Add SubprocVecEnv wrapper (multiprocessing pipes)
-☑ Implement async step for non-blocking execution (step_async/step_wait)
-☑ Add environment batching in TorchRL wrapper
-☑ Support configurable num_envs parameter
-☑ Benchmark scaling efficiency
+□ Integrate AutoGluon for automated model selection
+□ Add neural architecture search (NAS) for deep models
+□ Implement automated feature engineering (featuretools)
+□ Create model selection pipeline
+□ Add ensemble auto-construction
+□ Implement AutoML experiment tracking
+□ Create human-in-the-loop approval workflow
 ```
-**Complexity**: High | **Impact**: High | **Status**: ✅ COMPLETE
+**Complexity**: High | **Impact**: Medium
 
-#### Concurrent Market Data Fetching
-**File**: `rust/src/web/polymarket.rs`
-**Status**: Sequential scraping
-**Impact**: Medium - Faster data collection
+### 5.3 Incremental Learning Completion
 
-```
-Tasks:
-☑ Implement concurrent HTTP client pool (futures::stream)
-☑ Add rate limiting (buffered streams)
-☑ Create batch market fetching API (polymarket.rs)
-☑ Add request deduplication
-☑ Implement connection pooling (reqwest default)
-☑ Add retry with exponential backoff (reqwest middleware)
-☑ Monitor rate limit headers
-```
-**Complexity**: Medium | **Impact**: Medium | **Status**: ✅ COMPLETE
-
----
-
-## Priority 3: Testing & Quality Assurance
-
-### 3.1 Testing Infrastructure
-
-#### GPU Test Suite
-**Status**: ✅ COMPLETE
-**Impact**: Medium - Ensures GPU code correctness
-
-```
-Tasks:
-☑ Create pytest fixtures for GPU testing
-  - Automatic GPU detection/skip
-  - Memory cleanup between tests
-☑ Add GPU-specific model tests
-☑ Test mixed precision training
-☑ Add multi-GPU DDP tests
-☑ Create CUDA OOM handling tests
-☑ Add GPU memory leak detection
-```
-**Complexity**: Medium | **Impact**: Medium | **Status**: ✅ COMPLETE
-
-#### Performance Regression Testing
-**Status**: ✅ COMPLETE
-**Impact**: Medium - Prevents performance degradation
-
-```
-Tasks:
-☑ Integrate criterion benchmarks into CI
-☑ Create baseline performance file
-☑ Add automatic regression detection (>10% slowdown)
-☑ Generate benchmark trend reports
-☑ Add alerts for performance regressions
-☑ Create benchmark comparison tool
-```
-**Complexity**: Low | **Impact**: Medium | **Status**: ✅ COMPLETE
-
-#### Visual Regression Testing
-**Status**: ✅ COMPLETE
-**Impact**: Low - Catches UI bugs
-
-```
-Tasks:
-☑ Integrate Cypress Visual Testing
-☑ Create baseline screenshots for:
-  - Dashboard overview
-  - Terminal trading interface
-  - Charts and order book
-  - All 12 tabs
-☑ Add visual diff CI step
-☑ Create visual review workflow
-```
-**Complexity**: Low | **Impact**: Low | **Status**: ✅ COMPLETE
-
-### 3.2 Code Quality
-
-#### Type Coverage Improvement
-**Status**: ✅ MOSTLY COMPLETE
-**Impact**: Medium - Improves reliability
-
-```
-Tasks:
-☑ Increase Python test coverage to 80%
-☑ Add missing edge case tests
-☑ Improve mock coverage for external APIs
-☑ Add property-based testing (hypothesis)
-☑ Create mutation testing setup (mutmut)
-```
-**Complexity**: Medium | **Impact**: Medium | **Status**: ✅ COMPLETE
-
----
-
-## Priority 4: Feature Enhancements
-
-### 4.1 Machine Learning Capabilities
-
-#### Automated Feature Engineering
-**Status**: ✅ BASICS COMPLETE (Pipeline with GPU acceleration & Scaling)
-**Impact**: High - Improves model performance
-
-```
-Tasks:
-☑ Implement automated feature selection
-  ☑ Mutual information scoring
-  ☑ Recursive feature elimination (RFECV)
-  ☑ SHAP-based importance (Wrapper implemented)
-  ☑ Basic Variance Threshold (Implemented)
-☑ Add feature scaling automation (RobustScaler/StandardScaler)
-☑ Create time-based feature generators
-  ☑ Rolling statistics (SMA, Bollinger)
-  ☑ Lag features (Log Returns)
-  ☑ Technical indicators (RSI, MACD)
-□ Implement feature store abstraction
-□ Add feature versioning with DVC
-```
-**Complexity**: High | **Impact**: High | **Status**: ✅ MOSTLY COMPLETE
-
-#### Online Learning Support
-**Status**: ✅ FOUNDATION COMPLETE (Drift Detection & Normalization)
+**Status**: Foundation exists (drift detection, replay buffer)
 **Impact**: High - Required for live trading adaptation
 
 ```
 Tasks:
 □ Implement incremental model updates
-☑ Add concept drift detection
-  ☑ Page-Hinkley test
-  ☑ Moving Average Comparison
-☑ Create online normalization layers (Welford's Algorithm)
-☑ Implement experience replay buffer updates (OnlineTrainer)
-☑ Add model rollback on performance degradation
-□ Create A/B testing framework for models
+  - Online gradient descent for neural networks
+  - Incremental tree updates (LightGBM)
+□ Create model version control with rollback
+□ Implement A/B testing framework
+  - Traffic splitting
+  - Statistical significance testing
+  - Automatic winner selection
+□ Add shadow mode for new models
+□ Create model performance comparison dashboard
+□ Implement automatic retraining triggers
 ```
-**Complexity**: High | **Impact**: High | **Status**: ✅ MOSTLY COMPLETE
+**Complexity**: High | **Impact**: High
 
-#### Multi-Asset Portfolio Optimization
-**Status**: ✅ COMPLETE
-**Impact**: Medium - Diversification benefits
+### 5.4 Multi-Modal Data Integration
 
-```
-Tasks:
-☑ Extend TradingEnv for multi-asset (`rust/src/simulation/multi_asset.rs`)
-☑ Implement portfolio rebalancing actions (Single Asset Actions)
-☑ Implement correlation-aware position sizing (Risk Parity)
-☑ Create Markowitz optimization layer
-☑ Support hierarchical risk parity
-☑ Add portfolio constraint handling
-```
-**Complexity**: High | **Impact**: Medium | **Status**: ✅ COMPLETE
-
-### 4.2 Trading Features
-
-#### Advanced Order Types
-**File**: `rust/src/simulation/orderbook.rs`
-**Status**: ✅ COMPLETE
-**Impact**: Medium - More realistic simulation
+**Status**: News tab exists but limited integration
+**Impact**: Medium - Richer signal for predictions
 
 ```
 Tasks:
-☑ Implement Stop-Loss orders
-☑ Add Take-Profit orders
-☑ Implement OCO (One-Cancels-Other) logic
-☑ Add Iceberg orders (Auto-refill and queue priority)
-☑ Add Trailing Stop orders (Dynamic trigger tracking)
-☑ Support TWAP/VWAP execution (Rust engine slicing)
-☑ Add order modification API (Time-priority preservation)
+□ Implement sentiment analysis pipeline
+  - News article embedding (FinBERT)
+  - Social media sentiment (Twitter/X API)
+□ Add alternative data sources
+  - Satellite imagery (if applicable)
+  - Web traffic data
+□ Create multi-modal feature fusion
+□ Implement attention over data sources
+□ Add data source quality scoring
+□ Create data freshness monitoring
 ```
-**Complexity**: Medium | **Impact**: Medium | **Status**: ✅ COMPLETE
-
-#### Risk Management System
-**Status**: ✅ COMPLETE
-**Impact**: High - Critical for live trading
-
-```
-Tasks:
-☑ Implement position sizing limits (max_position_fraction)
-☑ Add daily loss limits (daily_loss_limit, should_halt_trading)
-☑ Create drawdown monitoring (current_drawdown, max_drawdown)
-☑ Implement VaR (Value at Risk) calculation (historical simulation)
-☑ Add portfolio margin tracking (RiskConfig, RiskStatus)
-☑ Create risk dashboard widget in frontend
-☑ Implement automatic position reduction on limits (position_multiplier)
-☑ Add Sharpe/Sortino ratio calculations
-```
-**Complexity**: Medium | **Impact**: High | **Status**: ✅ COMPLETE
+**Complexity**: High | **Impact**: Medium
 
 ---
 
-## Priority 5: Developer Experience
+## Priority 6: Operational Excellence (Medium Impact)
 
-### 5.1 Documentation
+### 6.1 Runbook Documentation
 
-#### API Documentation
-**Status**: ✅ MOSTLY COMPLETE
-**Impact**: Medium - Improves developer adoption
-
-```
-Tasks:
-☑ Generate Sphinx docs for Python API (python/docs/_build/html)
-☑ Add interactive examples (Jupyter - site/tutorials/01_getting_started.ipynb)
-☑ Create API reference with TypeDoc (typescript/docs/)
-☑ Document all Tauri commands (Rust docs generated)
-☑ Add architecture diagrams (docs/adr/)
-```
-**Complexity**: Medium | **Impact**: Medium | **Status**: ✅ COMPLETE
-
-#### Troubleshooting Guide
-**Status**: No FAQ or troubleshooting docs
-**Impact**: Low - Reduces support burden
+**Status**: TROUBLESHOOTING.md exists
+**Impact**: Medium - Reduce incident resolution time
 
 ```
 Tasks:
-☑ Create common issues FAQ (TROUBLESHOOTING.md)
-☑ Document error codes and solutions
-☑ Add debugging guides for each layer
-☑ Create log analysis guide
-☑ Add performance troubleshooting section
-☑ Document known limitations
+□ Create runbooks for:
+  - Service restart procedures
+  - Database failover
+  - Model rollback
+  - Data pipeline recovery
+  - Alert investigation guides
+□ Add decision trees for common issues
+□ Create escalation procedures
+□ Implement runbook versioning
+□ Add runbook links to alerts
+□ Create on-call rotation guide
 ```
-**Complexity**: Low | **Impact**: Low | **Status**: ✅ COMPLETE
+**Complexity**: Low | **Impact**: Medium
 
-### 5.2 Development Tooling
+### 6.2 Incident Response Framework
 
-#### Local Development Environment
-**Status**: Manual setup required
-**Impact**: Medium - Faster onboarding
-
-```
-Tasks:
-☑ Create devcontainer.json for VS Code
-☑ Add docker-compose.dev.yml (Included in production stack)
-☑ Create Makefile with common tasks (Justfile implemented)
-☑ Add pre-commit hooks
-  - Rust formatting (rustfmt)
-  - Python formatting (ruff)
-  - TypeScript linting (eslint)
-☑ Create development database seeding (just seed-data)
-☑ Add mock data generators (seed_data.py)
-```
-**Complexity**: Low | **Impact**: Medium | **Status**: ✅ COMPLETE
-
-#### Debug Infrastructure
-**Status**: ✅ COMPLETE
-**Impact**: Medium - Faster debugging
+**Status**: AlertManager configured
+**Impact**: Medium - Structured incident handling
 
 ```
 Tasks:
-☑ Add source maps for production builds
-☑ Create debug logging toggle (runtime)
-☑ Implement request tracing (correlation IDs)
-☑ Add performance timing decorators
-☑ Create debug dashboard in frontend
-☑ Add memory profiling integration
+□ Create incident severity definitions (SEV1-4)
+□ Implement incident tracking system
+□ Add post-mortem template
+□ Create blameless review process
+□ Implement incident metrics (MTTR, MTTD)
+□ Add incident communication templates
+□ Create incident timeline tool
 ```
-**Complexity**: Medium | **Impact**: Medium | **Status**: ✅ COMPLETE
+**Complexity**: Medium | **Impact**: Medium
+
+### 6.3 Capacity Planning
+
+**Status**: HPA configured but no planning
+**Impact**: Medium - Proactive scaling
+
+```
+Tasks:
+□ Create capacity model based on metrics
+□ Implement usage forecasting
+□ Add cost estimation per workload
+□ Create scaling decision framework
+□ Implement resource reservation for peak
+□ Add capacity alerts (70%, 85%, 95%)
+□ Create monthly capacity report
+```
+**Complexity**: Medium | **Impact**: Medium
+
+### 6.4 Disaster Recovery
+
+**Status**: Backups configured
+**Impact**: High - Business continuity
+
+```
+Tasks:
+□ Create DR documentation
+  - RTO/RPO definitions
+  - Recovery procedures
+  - Data backup verification
+□ Implement multi-region deployment option
+□ Add backup restoration testing (monthly)
+□ Create DR drill schedule
+□ Implement database point-in-time recovery
+□ Add model checkpoint recovery procedure
+□ Create communication plan for outages
+```
+**Complexity**: High | **Impact**: High
 
 ---
 
-## Priority 6: Infrastructure & Scalability ✅ COMPLETE
+## Priority 7: Developer Experience (Lower Priority)
 
-All Phase 6 infrastructure and scalability objectives have been achieved.
+### 7.1 Contribution Guidelines
 
-### 6.1 Horizontal Scaling
-**Status**: ✅ COMPLETE
-**Impact**: High - Improved throughput and production-grade model serving
-
-```
-Tasks:
-☑ Implement Ray Serve for model serving
-☑ Setup trace propagation (Python/Rust)
-☑ Implementation of read replicas config
-☑ Setup connection pooling (PgBouncer)
-☑ Create canary deployment templates
-```
-**Complexity**: High | **Impact**: High | **Status**: ✅ COMPLETE
-
-#### Database Optimization
-**Status**: ✅ COMPLETE
-**Impact**: Medium - Required for scale
+**Status**: No issue/PR templates
+**Impact**: Low - Easier contributions
 
 ```
 Tasks:
-☑ Add read replicas support
-☑ Implement connection pooling (pgbouncer)
-☑ Create index optimization
-☑ Add query caching layer
-☑ Implement data archival strategy
-☑ Add database monitoring (pg_stat)
-☑ Create backup automation
+□ Create .github/ISSUE_TEMPLATE/
+  - bug_report.md
+  - feature_request.md
+  - question.md
+□ Create .github/PULL_REQUEST_TEMPLATE.md
+□ Add CONTRIBUTING.md with:
+  - Development setup
+  - Code style guide
+  - Review process
+  - Release process
+□ Create CODE_OF_CONDUCT.md
+□ Add CODEOWNERS file
+□ Create first-contributor guide
 ```
-**Complexity**: Medium | **Impact**: Medium | **Status**: ✅ COMPLETE
+**Complexity**: Low | **Impact**: Low
 
-### 6.2 Observability Enhancements
+### 7.2 Developer Tooling Improvements
 
-#### Distributed Tracing
-**Status**: ✅ COMPLETE
-**Impact**: Medium - Improves debugging at scale
-
-```
-Tasks:
-☑ Complete Jaeger integration
-☑ Add trace propagation through all layers
-☑ Create custom spans for ML operations
-☑ Add trace sampling configuration
-☑ Implement trace-based alerting
-☑ Create trace analysis dashboards
-```
-**Complexity**: Medium | **Impact**: Medium | **Status**: ✅ COMPLETE
-
-#### Advanced Alerting
-**Status**: ✅ COMPLETE
-**Impact**: Medium - Proactive issue detection
+**Status**: Good tooling exists
+**Impact**: Low - Faster development
 
 ```
 Tasks:
-☑ Create AlertManager rules (monitoring/prometheus/alerts.yml)
-  - Model inference latency (NGLabModelSlowInference)
-  - API availability and error rates (NGLabAPIDown, NGLabHighErrorRate)
-  - GPU metrics (memory, temperature, utilization)
-  - Database and Redis health
-  - Portfolio drawdown alerts (NGLabHighDrawdown, NGLabCriticalDrawdown)
-☑ Add PagerDuty/Slack integration (monitoring/alertmanager/alertmanager.yml - templates ready)
-☑ Create alert escalation policies (severity-based routing: critical, warning, info)
-☑ Implement anomaly detection alerts
-☑ Add alert correlation
+□ Add VSCode workspace settings
+□ Create recommended extensions list
+□ Add debug launch configurations
+□ Create test coverage visualization
+□ Implement hot reload for Python development
+□ Add profiling shortcuts
+□ Create snippet library for common patterns
 ```
-**Complexity**: Medium | **Impact**: Medium | **Status**: ✅ COMPLETE
+**Complexity**: Low | **Impact**: Low
+
+### 7.3 Documentation Improvements
+
+**Status**: Good documentation exists
+**Impact**: Low - Better onboarding
+
+```
+Tasks:
+□ Create quick-start tutorial (5 min)
+□ Add video walkthrough
+□ Create architecture decision records (ADR)
+□ Improve API reference with examples
+□ Add cookbook for common tasks
+□ Create deployment checklist
+□ Add performance tuning guide
+```
+**Complexity**: Low | **Impact**: Low
 
 ---
 
 ## Implementation Roadmap
 
-### Phase 1: Foundation (Weeks 1-2) ✅ COMPLETE
-- [x] RNG Seeding for Reproducibility
-- [x] Complete DataLoader for Non-RL Tasks
-- [x] GPU Test Suite Setup
-- [x] Local Development Environment (Makefile, pre-commit, .env.example)
+### Phase 7: Robustness & Security (Weeks 1-3)
+- [ ] Rust error handling hardening (1.1)
+- [ ] SECURITY.md creation (2.1)
+- [ ] Secrets management enforcement (2.3)
+- [ ] Contribution guidelines (7.1)
 
-### Phase 2: Core Features (Weeks 3-4) ✅ COMPLETE
-- [x] Prophet Time Series Completion (changepoint detection, PELT algorithm)
-- [x] Health Check Integration (Tauri commands + HealthDashboard.tsx)
-- [x] Performance Regression Testing CI (benchmark.yml)
-- [x] Vectorized Environment Support (VectorizedTradingEnv, SubprocVecEnv)
+### Phase 8: Observability & Testing (Weeks 4-6)
+- [ ] Structured logging in simulation engine (3.1)
+- [ ] Business metrics observability (3.3)
+- [ ] E2E testing suite (4.1)
+- [ ] Fuzzing infrastructure (4.2)
 
-### Phase 3: Production Prep (Weeks 5-6) ✅ COMPLETE
-- [x] Deployment Guide & Scripts (docker-compose.prod.yml, Dockerfile.prod, Dockerfile.gpu)
-- [x] Model Checkpoint Cloud Storage (python/src/storage/ - S3, GCS, Local backends)
-- [x] GPU Profiling & Optimization (python/src/utils/profiling/, mixed_precision.py)
-- [x] Risk Management System (rust/src/simulation/risk.rs)
-- [x] Kubernetes manifests (deploy/k8s/base/)
-- [x] Helm charts (deploy/helm/nglab/)
-- [x] CI/CD Pipeline (.github/workflows/deploy.yml)
-- [x] Monitoring stack (monitoring/prometheus/, alertmanager/, grafana/)
-- [x] Prefetching DataLoader (python/src/data/prefetch_dataloader.py)
+### Phase 9: ML Advancement (Weeks 7-9)
+- [ ] Model interpretability (5.1)
+- [ ] Incremental learning completion (5.3)
+- [ ] A/B testing framework
 
-### Priority 3: Testing & Quality
-  - [x] GPU Test Suite (pytest fixtures, OOM tests)
-  - [x] Performance Regression CI (benchmark comparison)
-  - [x] Visual Regression Testing (Cypress)
-  - [x] Code Quality (strict type checking, mutation testing)
+### Phase 10: Operational Excellence (Weeks 10-12)
+- [ ] Runbook documentation (6.1)
+- [ ] Incident response framework (6.2)
+- [ ] Disaster recovery (6.4)
 
-### Phase 4: Scale & Polish (Weeks 7-8) ✅ COMPLETE
-- [x] FastAPI Service Scaling
-- [x] Automated Feature Engineering (Pipeline + GPU)
-- [x] API Documentation (Sphinx complete)
-- [x] Visual Regression Testing (Cypress)
-- [x] Advanced Order Types (Iceberg, Trailing Stop)
-
-### Phase 5: Advanced Features (Weeks 9-12) ✅ COMPLETE
-- [x] Automated Feature Selection (SHAP, Mutual Info, RFE)
-- [x] Online Learning Support (Incremental updates, replay buffer)
-- [x] Multi-Asset Portfolio Optimization (Markowitz, HRP)
-- [x] Distributed Tracing Complete (OpenTelemetry + Jaeger)
+### Phase 11: Advanced Features (Weeks 13-16)
+- [ ] AutoML integration (5.2)
+- [ ] Multi-modal data integration (5.4)
+- [ ] Capacity planning (6.3)
 
 ---
 
@@ -577,16 +565,16 @@ Tasks:
 
 These improvements can be implemented quickly with high value:
 
-1. **Add pytest markers for GPU tests** - Skip GPU tests when not available
-2. **Create Makefile** - Common commands: `make test`, `make build`, `make lint`
-3. **Add pre-commit config** - Automated formatting on commit
-4. **Document environment variables** - Create `.env.example` with all configs
-5. **Add type stubs** - Generate .pyi files for Rust bindings
-6. **Create benchmark baseline** - Save current benchmark results to file
-7. **Add GitHub issue templates** - Bug report, feature request, question
-8. **Create SECURITY.md** - Security policy and vulnerability reporting
-9. **Add CODE_OF_CONDUCT.md** - Community guidelines
-10. **Enable Dependabot** - Automated dependency updates
+1. **Create SECURITY.md** - Essential for responsible disclosure
+2. **Add .github/ISSUE_TEMPLATE/** - Better issue quality
+3. **Remove hardcoded password in archive_old_data.py** - Security fix
+4. **Add #[deny(clippy::unwrap_used)]** - Catch future unwrap additions
+5. **Create CONTRIBUTING.md** - Faster contributor onboarding
+6. **Add detect-secrets pre-commit hook** - Prevent credential leaks
+7. **Create CODE_OF_CONDUCT.md** - Community standards
+8. **Add Dependabot configuration** - Automated security updates
+9. **Create .github/CODEOWNERS** - Clear ownership
+10. **Add VSCode workspace settings** - Consistent development
 
 ---
 
@@ -596,15 +584,15 @@ Track these metrics to measure improvement progress:
 
 | Metric | Current | Target |
 |--------|---------|--------|
-| Test Coverage (Python) | 60% | 80% |
-| Test Coverage (Rust) | ~75% | 70% |
-| CI Pipeline Time | <10 min | <10 min |
-| Documentation Coverage | ~85% | 90% |
-| GPU Training Speedup | 1x | 3x |
-| Parallel Env Scaling | 1 env | 8+ envs |
-| Model Inference Latency | <10ms | <5ms |
-| Deployment Time | Manual | <5 min |
-| Risk Integration | Partial | Full |
+| Rust unwrap() calls | 34 | 0 |
+| Security scan findings | Unknown | 0 critical |
+| E2E test coverage | 0% | 80% paths |
+| Log density (Rust) | 25 | 200+ |
+| MTTR (incidents) | N/A | <30 min |
+| Audit trail coverage | 0% | 100% trades |
+| Model interpretability | Partial | Full SHAP/LIME |
+| DR drill frequency | Never | Quarterly |
+| Documentation pages | Good | +20 pages |
 
 ---
 
@@ -614,23 +602,30 @@ Track these metrics to measure improvement progress:
 
 | Improvement | Primary Files |
 |-------------|---------------|
-| RNG Seeding | [gym.rs](rust/src/simulation/gym.rs) |
-| Prophet Completion | [prophet.rs](rust/src/moon/prophet.rs) |
-| Health Checks | [health.rs](rust/src/health.rs), [lib.rs](typescript/src-tauri/src/lib.rs) |
-| DataLoader | [main.py](python/src/main.py), [dataloaders.py](python/src/data/dataloaders.py) |
-| Vectorized Env | [gym.rs](rust/src/simulation/gym.rs), [env_wrapper.py](python/src/env/env_wrapper.py) |
-| GPU Profiling | [cuda_profiler.py](python/src/utils/profiling/cuda_profiler.py), [benchmark.py](python/src/utils/profiling/benchmark.py) |
-| Mixed Precision | [mixed_precision.py](python/src/utils/mixed_precision.py) |
-| Prefetch DataLoader | [prefetch_dataloader.py](python/src/data/prefetch_dataloader.py) |
-| Feature Engineering | [functions/](python/src/utils/functions/) |
-| Risk Management | [orderbook.rs](rust/src/simulation/orderbook.rs), New: `risk.rs` |
-| Model Storage | [storage/](python/src/storage/) - S3, GCS, Local backends |
-| K8s Deployment | [deploy/k8s/](deploy/k8s/) - Kustomize base + overlays |
-| Helm Charts | [deploy/helm/nglab/](deploy/helm/nglab/) |
-| Monitoring | [monitoring/](monitoring/) - Prometheus, Grafana, AlertManager |
-| CI/CD | [.github/workflows/deploy.yml](.github/workflows/deploy.yml) |
+| Error Handling | [arima.rs](rust/src/moon/arima.rs), [prophet.rs](rust/src/moon/prophet.rs), [multi_asset.rs](rust/src/simulation/multi_asset.rs) |
+| Security Policy | SECURITY.md (new), .github/SECURITY.md (new) |
+| Audit Trail | python/src/utils/audit.py (new), monitoring/grafana/audit.json (new) |
+| Structured Logging | rust/src/lib.rs, rust/Cargo.toml (add tracing) |
+| E2E Tests | python/tests/e2e/ (new directory) |
+| Fuzzing | rust/fuzz/ (new directory), python/tests/fuzz/ (new) |
+| Interpretability | python/src/models/interpretability/ (new) |
+| A/B Testing | python/src/pipeline/ab_testing.py (new) |
+| Runbooks | docs/runbooks/ (new directory) |
+| DR | docs/disaster-recovery/ (new directory) |
+
+### Completed Phases Reference
+
+| Phase | Status | Key Deliverables |
+|-------|--------|------------------|
+| P1 | ✅ Complete | RNG seeding, DataLoader, GPU tests |
+| P2 | ✅ Complete | Prophet completion, vectorized envs |
+| P3 | ✅ Complete | Production deployment, GPU optimization |
+| P4 | ✅ Complete | Multi-asset, advanced orders, risk management |
+| P5 | ✅ Complete | Feature engineering, online learning, portfolio optimization |
+| P6 | ✅ Complete | Horizontal scaling, database optimization, alerting |
 
 ---
 
-*Last Updated: 2026-01-19 (Debug Infrastructure Completion)*
+*Last Updated: 2026-01-19*
 *Author: Claude Code*
+*Version: 2.0 (Phase 7+ Planning)*

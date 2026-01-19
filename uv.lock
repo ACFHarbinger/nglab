@@ -1068,6 +1068,18 @@ wheels = [
 ]
 
 [[package]]
+name = "google"
+version = "3.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "beautifulsoup4" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/89/97/b49c69893cddea912c7a660a4b6102c6b02cd268f8c7162dd70b7c16f753/google-3.0.0.tar.gz", hash = "sha256:143530122ee5130509ad5e989f0512f7cb218b2d4eddbafbad40fd10e8d8ccbe", size = 44978, upload-time = "2020-07-11T14:50:45.678Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ac/35/17c9141c4ae21e9a29a43acdfd848e3e468a810517f862cad07977bf8fe9/google-3.0.0-py2.py3-none-any.whl", hash = "sha256:889cf695f84e4ae2c55fbc0cfdaf4c1e729417fa52ab1db0485202ba173e4935", size = 45258, upload-time = "2020-07-11T14:49:58.287Z" },
+]
+
+[[package]]
 name = "google-api-core"
 version = "2.29.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1081,6 +1093,12 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/0d/10/05572d33273292bac49c2d1785925f7bc3ff2fe50e3044cf1062c1dde32e/google_api_core-2.29.0.tar.gz", hash = "sha256:84181be0f8e6b04006df75ddfe728f24489f0af57c96a529ff7cf45bc28797f7", size = 177828, upload-time = "2026-01-08T22:21:39.269Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/77/b6/85c4d21067220b9a78cfb81f516f9725ea6befc1544ec9bd2c1acd97c324/google_api_core-2.29.0-py3-none-any.whl", hash = "sha256:d30bc60980daa36e314b5d5a3e5958b0200cb44ca8fa1be2b614e932b75a3ea9", size = 173906, upload-time = "2026-01-08T22:21:36.093Z" },
+]
+
+[package.optional-dependencies]
+grpc = [
+    { name = "grpcio" },
+    { name = "grpcio-status" },
 ]
 
 [[package]]
@@ -1127,6 +1145,23 @@ wheels = [
 ]
 
 [[package]]
+name = "google-cloud-storage-control"
+version = "1.9.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "google-api-core", extra = ["grpc"] },
+    { name = "google-auth" },
+    { name = "grpc-google-iam-v1" },
+    { name = "grpcio" },
+    { name = "proto-plus" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/39/ab/b293434e83aba0cd86e3ed5470e13101db3269f46e179c45e161bf0fe61b/google_cloud_storage_control-1.9.0.tar.gz", hash = "sha256:15645f8199f4140c94c7076c1b3bb87ee5e0162778aa1d483b6a84566c802c84", size = 114708, upload-time = "2026-01-15T13:04:46.584Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/bb/d0/99fcf3ea30ae13b2ceb944cc64b437cea5fa95153a66ae2193c1ebc96591/google_cloud_storage_control-1.9.0-py3-none-any.whl", hash = "sha256:052502a93726089a46d053972e37c9e9c3512a3ce28e6c37db54fc849cf4e86e", size = 87754, upload-time = "2026-01-15T13:03:34.307Z" },
+]
+
+[[package]]
 name = "google-crc32c"
 version = "1.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1168,6 +1203,11 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/e5/7b/adfd75544c415c487b33061fe7ae526165241c1ea133f9a9125a56b39fd8/googleapis_common_protos-1.72.0.tar.gz", hash = "sha256:e55a601c1b32b52d7a3e65f43563e2aa61bcd737998ee672ac9b951cd49319f5", size = 147433, upload-time = "2025-11-06T18:29:24.087Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c4/ab/09169d5a4612a5f92490806649ac8d41e3ec9129c636754575b3553f4ea4/googleapis_common_protos-1.72.0-py3-none-any.whl", hash = "sha256:4299c5a82d5ae1a9702ada957347726b167f9f8d1fc352477702a1e851ff4038", size = 297515, upload-time = "2025-11-06T18:29:13.14Z" },
+]
+
+[package.optional-dependencies]
+grpc = [
+    { name = "grpcio" },
 ]
 
 [[package]]
@@ -1231,6 +1271,20 @@ wheels = [
 ]
 
 [[package]]
+name = "grpc-google-iam-v1"
+version = "0.14.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "googleapis-common-protos", extra = ["grpc"] },
+    { name = "grpcio" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/76/1e/1011451679a983f2f5c6771a1682542ecb027776762ad031fd0d7129164b/grpc_google_iam_v1-0.14.3.tar.gz", hash = "sha256:879ac4ef33136c5491a6300e27575a9ec760f6cdf9a2518798c1b8977a5dc389", size = 23745, upload-time = "2025-10-15T21:14:53.318Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4a/bd/330a1bbdb1afe0b96311249e699b6dc9cfc17916394fd4503ac5aca2514b/grpc_google_iam_v1-0.14.3-py3-none-any.whl", hash = "sha256:7a7f697e017a067206a3dfef44e4c634a34d3dee135fe7d7a4613fe3e59217e6", size = 32690, upload-time = "2025-10-15T21:14:51.72Z" },
+]
+
+[[package]]
 name = "grpcio"
 version = "1.76.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1259,6 +1313,20 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/3f/c8/dce8ff21c86abe025efe304d9e31fdb0deaaa3b502b6a78141080f206da0/grpcio-1.76.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:615ba64c208aaceb5ec83bfdce7728b80bfeb8be97562944836a7a0a9647d882", size = 7594014, upload-time = "2025-10-21T16:21:41.882Z" },
     { url = "https://files.pythonhosted.org/packages/e0/42/ad28191ebf983a5d0ecef90bab66baa5a6b18f2bfdef9d0a63b1973d9f75/grpcio-1.76.0-cp312-cp312-win32.whl", hash = "sha256:45d59a649a82df5718fd9527ce775fd66d1af35e6d31abdcdc906a49c6822958", size = 3984750, upload-time = "2025-10-21T16:21:44.006Z" },
     { url = "https://files.pythonhosted.org/packages/9e/00/7bd478cbb851c04a48baccaa49b75abaa8e4122f7d86da797500cccdd771/grpcio-1.76.0-cp312-cp312-win_amd64.whl", hash = "sha256:c088e7a90b6017307f423efbb9d1ba97a22aa2170876223f9709e9d1de0b5347", size = 4704003, upload-time = "2025-10-21T16:21:46.244Z" },
+]
+
+[[package]]
+name = "grpcio-status"
+version = "1.62.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "googleapis-common-protos" },
+    { name = "grpcio" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7c/d7/013ef01c5a1c2fd0932c27c904934162f69f41ca0f28396d3ffe4d386123/grpcio-status-1.62.3.tar.gz", hash = "sha256:289bdd7b2459794a12cf95dc0cb727bd4a1742c37bd823f760236c937e53a485", size = 13063, upload-time = "2024-08-06T00:37:08.003Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/90/40/972271de05f9315c0d69f9f7ebbcadd83bc85322f538637d11bb8c67803d/grpcio_status-1.62.3-py3-none-any.whl", hash = "sha256:f9049b762ba8de6b1086789d8315846e094edac2c50beaf462338b301a8fd4b8", size = 14448, upload-time = "2024-08-06T00:30:15.702Z" },
 ]
 
 [[package]]
@@ -2169,12 +2237,15 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "asyncpg" },
-    { name = "asyncpg-stubs" },
+    { name = "boto3" },
     { name = "configspace" },
     { name = "deap" },
     { name = "distributed" },
     { name = "feedparser" },
     { name = "flask" },
+    { name = "google" },
+    { name = "google-cloud-storage" },
+    { name = "google-cloud-storage-control" },
     { name = "gymnasium" },
     { name = "hydra-core" },
     { name = "ipykernel" },
@@ -2228,12 +2299,14 @@ cloud = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "asyncpg-stubs" },
     { name = "black" },
     { name = "hypothesis" },
     { name = "mypy" },
     { name = "pandas-stubs" },
     { name = "pip-audit" },
     { name = "pre-commit" },
+    { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "ruff" },
@@ -2245,14 +2318,17 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "asyncpg", specifier = ">=0.31.0" },
-    { name = "asyncpg-stubs", specifier = ">=0.31.1" },
+    { name = "boto3", specifier = ">=1.42.30" },
     { name = "boto3", marker = "extra == 'cloud'", specifier = ">=1.34.0" },
     { name = "configspace", specifier = ">=1.2.2" },
     { name = "deap", specifier = ">=1.4.3" },
     { name = "distributed", specifier = ">=2026.1.1" },
     { name = "feedparser", specifier = ">=6.0.12" },
     { name = "flask", specifier = ">=3.0.0" },
+    { name = "google", specifier = ">=3.0.0" },
+    { name = "google-cloud-storage", specifier = ">=3.8.0" },
     { name = "google-cloud-storage", marker = "extra == 'cloud'", specifier = ">=2.14.0" },
+    { name = "google-cloud-storage-control", specifier = ">=1.9.0" },
     { name = "gymnasium", specifier = ">=1.2.3" },
     { name = "hydra-core", specifier = ">=1.3.2" },
     { name = "ipykernel", specifier = "==6.25" },
@@ -2301,12 +2377,14 @@ provides-extras = ["cloud"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "asyncpg-stubs", specifier = ">=0.31.1" },
     { name = "black", specifier = ">=25.12.0" },
     { name = "hypothesis", specifier = ">=6.150.2" },
     { name = "mypy", specifier = ">=1.19.1" },
     { name = "pandas-stubs", specifier = ">=2.3.3.260113" },
     { name = "pip-audit", specifier = ">=2.10.0" },
     { name = "pre-commit", specifier = ">=4.5.1" },
+    { name = "pyright", specifier = ">=1.1.408" },
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "ruff", specifier = ">=0.14.13" },
@@ -3248,6 +3326,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f2/a5/181488fc2b9d093e3972d2a472855aae8a03f000592dbfce716a512b3359/pyparsing-3.2.5.tar.gz", hash = "sha256:2df8d5b7b2802ef88e8d016a2eb9c7aeaa923529cd251ed0fe4608275d4105b6", size = 1099274, upload-time = "2025-09-21T04:11:06.277Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/10/5e/1aa9a93198c6b64513c9d7752de7422c06402de6600a8767da1524f9570b/pyparsing-3.2.5-py3-none-any.whl", hash = "sha256:e38a4f02064cf41fe6593d328d0512495ad1f3d8a91c4f73fc401b3079a59a5e", size = 113890, upload-time = "2025-09-21T04:11:04.117Z" },
+]
+
+[[package]]
+name = "pyright"
+version = "1.1.408"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "nodeenv" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/74/b2/5db700e52554b8f025faa9c3c624c59f1f6c8841ba81ab97641b54322f16/pyright-1.1.408.tar.gz", hash = "sha256:f28f2321f96852fa50b5829ea492f6adb0e6954568d1caa3f3af3a5f555eb684", size = 4400578, upload-time = "2026-01-08T08:07:38.795Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/82/a2c93e32800940d9573fb28c346772a14778b84ba7524e691b324620ab89/pyright-1.1.408-py3-none-any.whl", hash = "sha256:090b32865f4fdb1e0e6cd82bf5618480d48eecd2eb2e70f960982a3d9a4c17c1", size = 6399144, upload-time = "2026-01-08T08:07:37.082Z" },
 ]
 
 [[package]]

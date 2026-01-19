@@ -4,10 +4,12 @@ Google Cloud Storage backend for models.
 
 import json
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from python.src.storage.base import ModelMetadata, ModelStorage, StorageConfig
 
+if TYPE_CHECKING:
+    from google.cloud import storage
 
 class GCSStorage(ModelStorage):
     """Google Cloud Storage backend."""
@@ -19,18 +21,18 @@ class GCSStorage(ModelStorage):
         self._prefix = config.gcs_prefix.rstrip("/") + "/"
 
     @property
-    def client(self):
+    def client(self) -> "storage.Client":  # Use string forward reference for the type
         """Lazy initialization of GCS client."""
         if self._client is None:
             try:
+                # Keep your existing deferred import for runtime
                 from google.cloud import storage
-
+                
                 if self.config.gcs_credentials_path:
                     self._client = storage.Client.from_service_account_json(
                         self.config.gcs_credentials_path
                     )
                 else:
-                    # Use default credentials (GOOGLE_APPLICATION_CREDENTIALS, etc.)
                     self._client = storage.Client()
             except ImportError:
                 raise ImportError(
