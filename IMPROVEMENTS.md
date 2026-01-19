@@ -799,7 +799,8 @@ jobs:
 
 ---
 
-## Medium Priority Improvements (P2)
+### Medium Priority Improvements (P2) (Completed)
+**Status:** ✅ All phases implemented (2026-01-19).
 
 > **Timeline:** 2-3 months
 > **Impact:** Enhances developer experience and code maintainability
@@ -1858,6 +1859,15 @@ docs/adr/
 ```
 
 ---
+
+### 27. Architecture Decision Records (ADRs) (Completed)
+**Status:** ✅ Structure and initial ADRs created in `docs/adr/`.
+
+### 28. Distributed Tracing (Completed)
+**Status:** ✅ OpenTelemetry/Jaeger integrated into Rust engine.
+
+### 29. Interactive Tutorials (Completed)
+**Status:** ✅ "Getting Started" notebook created in `docs/tutorials/`.
 
 ## Implementation Roadmap
 

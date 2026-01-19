@@ -26,7 +26,11 @@ All notable changes to the NGLab project will be documented in this file.
 - **Observability & Versioning (P2 Phase 2)**:
   - Implemented Rust Prometheus metrics exporter for real-time performance tracking.
   - Created high-density **Grafana dashboard** for simulation metrics.
-  - Integrated **MLflow** for robust model versioning and experiment tracking in the Python pipeline.
+  - Integrated **MLflow** for robust model versioning and experiment tracking.
+- **Documentation & Tracing (P2 Phase 3)**:
+  - Established **Architecture Decision Records (ADR)** process in `docs/adr/`.
+  - Integrated **OpenTelemetry** and **Jaeger** for distributed tracing in the Rust backend.
+  - Created **"Getting Started"** interactive Jupyter notebook tutorial.
 - **Health Checks**:
   - Implemented Flask-based health monitoring API in `python/src/api/health.py` (CPU, Memory, GPU).
   - Added `rust/src/health.rs` with serializable health status structures for Tauri integration.
