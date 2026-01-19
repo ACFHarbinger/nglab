@@ -16,6 +16,13 @@ class ClassicalModel(nn.Module, ABC):
     """
 
     def __init__(self, output_type="prediction"):
+        """
+        Initialize the Classical Model base.
+
+        Args:
+            output_type (str, optional): The type of output expected from the model.
+                Defaults to "prediction".
+        """
         super().__init__()
         self.output_type = output_type
         self.model = None  # To be initialized by subclasses

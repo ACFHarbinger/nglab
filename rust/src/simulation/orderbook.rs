@@ -1,10 +1,19 @@
 /*!
- * Order Book implementation with price-priority, time-priority matching
+ * Order Book implementation with price-priority, time-priority matching.
  *
- * This module implements a Central Limit Order Book (CLOB) that supports:
- * - Price-priority, time-priority (FIFO within price level)
- * - Limit and market orders
- * - Queue position tracking for realistic HFT simulation
+ * This module implements a Central Limit Order Book (CLOB) that serves as the matching engine
+ * for the simulation. It ensures fair execution based on standard market microstructure rules.
+ *
+ * # Matching Rules
+ *
+ * 1. **Price Priority**: Better prices execute first (Higher Bids, Lower Asks).
+ * 2. **Time Priority**: At the same price, earlier orders execute first (FIFO).
+ *
+ * # Features
+ *
+ * - **Limit Orders**: Orders to buy/sell at a specific price or better.
+ * - **Market Orders**: Orders to buy/sell immediately at the best available price.
+ * - **Snapshotting**: Ability to capture the full state of the book (L2 Data) for observation.
  */
 
 use indexmap::IndexMap;

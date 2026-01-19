@@ -2,9 +2,44 @@
  * nglab - High-Performance RL Arena for Financial Trading
  *
  * This crate provides a Rust-based simulation engine for reinforcement learning
- * in financial markets, with Python bindings via PyO3.
+ * in financial markets, exposing a Gymnasium-compatible interface to Python via PyO3.
  *
- * Core components include the `Arena`, `OrderBook`, and various market simulators.
+ * # Core Components
+ *
+ * - **Arena**: The central simulation controller that manages the environment lifecycle,
+ *   time-stepping, and agent interactions.
+ * - **OrderBook**: A high-performance Central Limit Order Book (CLOB) implementation
+ *   supporting price-time priority, limit/market orders, and realistic fill simulation.
+ * - **TradingEnv**: An OpenAI Gym-compatible environment wrapper that handles observation
+ *   normalization, reward calculation, and action space mapping.
+ *
+ * # Architecture
+ *
+ * The system is designed as a hybrid Rust/Python application:
+ * - **Rust Layer**: Handles the computationally intensive simulation loop, order matching,
+ *   and state management. It aims for zero-allocation in the hot path.
+ * - **Python Layer**: Consumes the Rust primitives via PyO3, providing a familiar API for
+ *   ML researchers using PyTorch, TensorFlow, or JAX.
+ *
+ * # Example Usage
+ *
+ * While primarily designed to be used from Python, the core components can be used natively in Rust:
+ *
+ * ```rust,no_run
+ * use nglab::simulation::TradingEnv;
+ *
+ * // Initialize environment with starting capital and transaction costs
+ * let mut env = TradingEnv::new(10_000.0, 0.001, 10, 100, false);
+ *
+ * // Reset environment
+ * let initial_obs = env.reset_rs();
+ *
+ * // Step through simulation
+ * let action = 1; // e.g., Buy
+ * let (obs, reward, terminated, truncated, info) = env.step_rs(action);
+ *
+ * println!("Reward: {}, Portfolio: {}", reward, info.portfolio_value);
+ * ```
  */
 
 #[cfg(feature = "python")]

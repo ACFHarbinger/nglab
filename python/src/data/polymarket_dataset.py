@@ -1,4 +1,9 @@
 
+"""
+Polymarket Dataset Module.
+Handles loading and processing of multivariate time-series data from Polymarket events.
+"""
+
 import os
 import torch
 import pandas as pd

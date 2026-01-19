@@ -5,6 +5,15 @@ from ..base import ClassicalModel
 
 
 class LinearRegressionModel(ClassicalModel):
+    """
+    Linear Regression wrapper.
+    """
     def __init__(self, **kwargs):
+        """
+        Initialize the Linear Regression model.
+
+        Args:
+            **kwargs: Additional arguments passed to the underlying sklearn model.
+        """
         super().__init__()
         self.model = LinearRegression(**kwargs)

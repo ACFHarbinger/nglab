@@ -1,3 +1,9 @@
+"""
+Probabilistic Deep Learning Models.
+
+This module exports various probabilistic models including GANs, Flows, RBMs,
+and Diffusion models tailored for time-series generation and analysis.
+"""
 from .probabilistic.gan import TimeGANGenerator, TimeGANDiscriminator
 from .probabilistic.flow import NormalizingFlow
 from .probabilistic.boltzmann import BoltzmannMachine

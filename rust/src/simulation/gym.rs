@@ -96,7 +96,23 @@ impl ObservationBuffer {
 /**
  * Trading environment with Gymnasium interface.
  *
- * Wraps market simulation logic into a standard RL format.
+ * Wraps market simulation logic into a standard RL format suitable for training agents.
+ * It manages the interaction between the agent (action) and the market (order book),
+ * computing rewards and updating state variables.
+ *
+ * # Features
+ *
+ * - **Zero-Copy Observations**: Leverages `numpy` crate for efficient data transfer to Python.
+ * - **Configurable Rewards**: Supports various reward schemes (PnL, Sharpe Ratio, etc.).
+ * - **Market Simulation**: Integrated with `OrderBook` for realistic execution.
+ *
+ * # Fields
+ *
+ * * `orderbook` - The central limit order book managing market liquidity.
+ * * `position` - Current net position (positive for long, negative for short).
+ * * `cash` - Available cash balance for trading.
+ * * `portfolio_value` - Total account equity (Cash + Mark-to-Market Position).
+ * * `step_count` - Current time step in the episode.
  */
 #[cfg_attr(feature = "python", pyclass)]
 pub struct TradingEnv {

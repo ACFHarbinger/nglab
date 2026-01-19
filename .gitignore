@@ -421,6 +421,9 @@ results/
 /target
 /build
 
+# Added by sphinx
+/docs/_build
+
 # Added by simulator
 /**/*.rrd
 

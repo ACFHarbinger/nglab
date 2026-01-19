@@ -1,3 +1,8 @@
+"""
+Learning Vector Quantization (LVQ) Module.
+
+This module implements the LVQ algorithm, a prototype-based classification model.
+"""
 import torch
 from torch import nn
 
@@ -13,6 +18,16 @@ class LVQ(nn.Module):
         prototypes_per_class=1,
         output_type="prediction",
     ):
+        """
+        Initialize the LVQ model.
+
+        Args:
+            input_dim (int): Dimensionality of the input features.
+            num_classes (int): Number of target classes.
+            prototypes_per_class (int, optional): Number of prototypes representing each class. Defaults to 1.
+            output_type (str, optional): Format of the output. 
+                'prediction' returns class indices, 'logits' returns negative distances. Defaults to "prediction".
+        """
         super().__init__()
         self.output_type = output_type
         self.input_dim = input_dim

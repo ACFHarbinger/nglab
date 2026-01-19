@@ -76,6 +76,12 @@ class ProgressCallback:
     """Callback to stream training progress as JSON."""
 
     def __init__(self, total_epochs: int):
+        """
+        Initialize the progress callback.
+
+        Args:
+            total_epochs (int): Total number of epochs for progress calculation.
+        """
         self.total_epochs = total_epochs
 
     def on_epoch_end(

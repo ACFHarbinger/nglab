@@ -1,8 +1,20 @@
-import numpy as np
+"""
+Apriori Algorithm for Association Rule Learning.
+"""
 import pandas as pd
 
 class AprioriAlgorithm:
+    """
+    Apriori algorithm implementation for finding frequent itemsets and association rules.
+    """
     def __init__(self, min_support=0.5, min_confidence=0.7):
+        """
+        Initialize the Apriori algorithm.
+
+        Args:
+            min_support (float, optional): Minimum support threshold. Defaults to 0.5.
+            min_confidence (float, optional): Minimum confidence threshold. Defaults to 0.7.
+        """
         self.min_support = min_support
         self.min_confidence = min_confidence
         self.frequent_itemsets = {}
@@ -10,7 +22,13 @@ class AprioriAlgorithm:
 
     def fit(self, transactions):
         """
-        transactions: List of lists or sparse DataFrame
+        Execute the Apriori algorithm on the dataset.
+
+        Args:
+            transactions: List of lists (itemsets) or a pandas DataFrame (one-hot/count).
+
+        Returns:
+            self: The fitted model.
         """
         if isinstance(transactions, pd.DataFrame):
             # Assume it's a one-hot encoded DataFrame

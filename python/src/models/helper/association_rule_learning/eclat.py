@@ -10,7 +10,7 @@ class EclatAlgorithm:
     def fit(self, X):
         # Expect X to be (n_samples, n_items) binary matrix (0/1)
         if hasattr(X, "numpy"):
-             X = X.numpy()
+            X = X.numpy()
              
         n_transactions, n_items = X.shape
         min_support_count = self.min_support * n_transactions
@@ -18,10 +18,10 @@ class EclatAlgorithm:
         # 1. Transform to Vertical Format: Item -> Set of Transaction IDs (TIDs)
         tid_sets = {}
         for item in range(n_items):
-             tids = set(np.where(X[:, item] > 0)[0])
-             if len(tids) >= min_support_count:
-                 tid_sets[frozenset([item])] = tids
-                 self.frequent_itemsets[frozenset([item])] = len(tids)
+            tids = set(np.where(X[:, item] > 0)[0])
+            if len(tids) >= min_support_count:
+                tid_sets[frozenset([item])] = tids
+                self.frequent_itemsets[frozenset([item])] = len(tids)
 
         # 2. Depth-First Search for frequent itemsets
         # Sort items by support count ascending (heuristic for Eclat)
