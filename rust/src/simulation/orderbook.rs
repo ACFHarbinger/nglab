@@ -57,10 +57,12 @@ pub struct Order {
     pub timestamp: u64,
 
     // Advanced fields
-    pub trigger_price: Option<f64>,    // For Stop/TakeProfit
-    pub iceberg_total: Option<f64>,    // Total quantity for Iceberg (if larger than quantity)
-    pub visible_quantity: Option<f64>, // Current visible slice
-    pub parent_id: Option<u64>,        // For OCO (points to linked order)
+    pub trigger_price: Option<f64>,          // For Stop/TakeProfit
+    pub iceberg_total: Option<f64>,          // Total quantity for Iceberg (if larger than quantity)
+    pub visible_quantity: Option<f64>,       // Current visible slice
+    pub parent_id: Option<u64>,              // For OCO (points to linked order)
+    pub trailing_delta: Option<f64>,         // Delta for trailing stop
+    pub current_trailing_price: Option<f64>, // Current trigger point for trailing
 }
 
 impl Order {
@@ -84,6 +86,8 @@ impl Order {
             iceberg_total: None,
             visible_quantity: None,
             parent_id: None,
+            trailing_delta: None,
+            current_trailing_price: None,
         }
     }
 
@@ -98,6 +102,7 @@ impl Order {
         iceberg_total: Option<f64>,
         visible_quantity: Option<f64>,
         parent_id: Option<u64>,
+        trailing_delta: Option<f64>,
     ) -> Self {
         Order {
             id,
@@ -111,6 +116,8 @@ impl Order {
             iceberg_total,
             visible_quantity,
             parent_id,
+            trailing_delta,
+            current_trailing_price: None, // Initialized on first check or submission
         }
     }
 
@@ -325,6 +332,7 @@ impl OrderBook {
             iceberg_total,
             iceberg_total.map(|t| t.min(quantity)), // Visible is min(total, slice)
             parent_id,
+            None, // trailing_delta (not passed yet in this API)
         );
 
         // Handle stop orders
@@ -354,22 +362,55 @@ impl OrderBook {
         // For NGLab simulation scale, Vec is fine.
         let mut i = 0;
         while i < self.stop_orders.len() {
-            let order = &self.stop_orders[i];
+            let mut order = self.stop_orders.remove(i);
+
+            // 1. Update Trailing Stop Price
+            if let Some(delta) = order.trailing_delta {
+                let current_tp = order.current_trailing_price.unwrap_or(match order.side {
+                    Side::Bid => current_price + delta, // Initial trailing buy (above market)
+                    Side::Ask => current_price - delta, // Initial trailing sell (below market)
+                });
+
+                let new_tp = match order.side {
+                    Side::Bid => {
+                        // Trailing Buy: Follows the price DOWN. Trigger price only decreases.
+                        if current_price + delta < current_tp {
+                            current_price + delta
+                        } else {
+                            current_tp
+                        }
+                    }
+                    Side::Ask => {
+                        // Trailing Sell (Stop Loss): Follows the price UP. Trigger price only increases.
+                        if current_price - delta > current_tp {
+                            current_price - delta
+                        } else {
+                            current_tp
+                        }
+                    }
+                };
+                order.current_trailing_price = Some(new_tp);
+                order.trigger_price = Some(new_tp);
+            }
+
+            // 2. Check Triggers
             let should_trigger = match (order.side, order.trigger_price) {
-                (Side::Bid, Some(tp)) => current_price >= tp, // Stop Buy (e.g. Breakout)
-                (Side::Ask, Some(tp)) => current_price <= tp, // Stop Loss Sell
+                (Side::Bid, Some(tp)) => current_price >= tp, // Trigger Buy
+                (Side::Ask, Some(tp)) => current_price <= tp, // Trigger Sell
                 _ => false,
             };
 
             if should_trigger {
-                let mut triggered = self.stop_orders.remove(i);
                 // Convert to market/limit and activate
-                triggered.order_type = match triggered.order_type {
+                order.order_type = match order.order_type {
                     OrderType::StopLimit => OrderType::Limit,
                     _ => OrderType::Market,
                 };
-                activated_orders.push(triggered);
+                activated_orders.push(order);
+                // Already removed from stop_orders
             } else {
+                // Not triggered, put it back
+                self.stop_orders.insert(i, order);
                 i += 1;
             }
         }
@@ -575,6 +616,14 @@ impl OrderBook {
 
                                 if maker_order.is_filled() {
                                     level.orders.pop_front();
+                                    // Handle Iceberg refill
+                                    if maker_order.iceberg_total.is_some() {
+                                        maker_order.refresh_iceberg();
+                                        if maker_order.quantity > 0.0 {
+                                            // Add back to end of queue (priority lost)
+                                            level.add_order(maker_order);
+                                        }
+                                    }
                                 } else {
                                     // Update the front order
                                     if let Some(front) = level.orders.front_mut() {
@@ -636,6 +685,14 @@ impl OrderBook {
 
                                 if maker_order.is_filled() {
                                     level.orders.pop_front();
+                                    // Handle Iceberg refill
+                                    if maker_order.iceberg_total.is_some() {
+                                        maker_order.refresh_iceberg();
+                                        if maker_order.quantity > 0.0 {
+                                            // Add back to end of queue (priority lost)
+                                            level.add_order(maker_order);
+                                        }
+                                    }
                                 } else {
                                     if let Some(front) = level.orders.front_mut() {
                                         front.filled = maker_order.filled;
@@ -763,5 +820,98 @@ mod tests {
         let imbalance = book.imbalance();
         // (100 - 50) / (100 + 50) = 50/150 ≈ 0.333
         assert!((imbalance - 0.333).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_iceberg_execution() {
+        let mut book = OrderBook::new();
+
+        // 1. Submit Iceberg Ask: Total 100, Visible 10, Price 101.0
+        book.submit_advanced_order(
+            101.0,
+            10.0, // Initial slice
+            Side::Ask,
+            OrderType::Limit,
+            None,
+            Some(100.0), // Total
+            None,
+        );
+
+        // Best ask should be 101.0
+        assert_eq!(book.best_ask(), Some(101.0));
+
+        // Check depth - only 10 should be visible
+        let depth = book.ask_depth(1);
+        assert_eq!(depth[0].1, 10.0);
+
+        // 2. Buy 10 (fully fills current slice)
+        let (_, trades) = book.submit_market_order(10.0, Side::Bid);
+        assert_eq!(trades.len(), 1);
+        assert_eq!(trades[0].quantity, 10.0);
+
+        // Best ask should STILL be 101.0 (refilled)
+        assert_eq!(book.best_ask(), Some(101.0));
+        let depth = book.ask_depth(1);
+        assert_eq!(depth[0].1, 10.0);
+
+        // 3. Buy 5 (partial fill)
+        let (_, trades) = book.submit_market_order(5.0, Side::Bid);
+        assert_eq!(trades.len(), 1);
+        assert_eq!(trades[0].quantity, 5.0);
+
+        let depth = book.ask_depth(1);
+        assert_eq!(depth[0].1, 5.0); // 10 - 5 remaining in current slice
+    }
+
+    #[test]
+    fn test_trailing_stop_trigger() {
+        let mut book = OrderBook::new();
+
+        // 1. Submit Trailing Stop Sell: Current Price 100, Delta 5
+        // Expect trigger price = 95
+        book.last_price = 100.0;
+
+        let stop = Order::new_advanced(
+            1,
+            0.0,
+            10.0,
+            Side::Ask,
+            OrderType::StopLoss,
+            0,
+            None,      // trigger_price
+            None,      // iceberg_total
+            None,      // visible_quantity
+            None,      // parent_id
+            Some(5.0), // trailing_delta
+        );
+        assert_eq!(stop.trailing_delta, Some(5.0));
+        book.stop_orders.push(stop);
+
+        // Trigger should be initialized on first check_triggers
+        book.check_triggers(100.0);
+        assert!(
+            !book.stop_orders.is_empty(),
+            "Order should not have triggered at 100.0"
+        );
+        assert_eq!(book.stop_orders[0].trigger_price, Some(95.0));
+
+        // 2. Price goes UP to 110. Trigger should trail to 105
+        book.check_triggers(110.0);
+        assert_eq!(book.stop_orders[0].trigger_price, Some(105.0));
+
+        // 3. Price goes DOWN to 108. Trigger should NOT move (stays 105)
+        book.check_triggers(108.0);
+        assert_eq!(book.stop_orders[0].trigger_price, Some(105.0));
+
+        // 4. Price hits 105. Should trigger.
+        // Add a bid so the triggered market sell can match
+        book.submit_limit_order(100.0, 20.0, Side::Bid);
+
+        let trades = book.check_triggers(104.0);
+        assert!(
+            !trades.is_empty(),
+            "Order should have matched and created trades"
+        );
+        assert_eq!(book.stop_orders.len(), 0);
     }
 }

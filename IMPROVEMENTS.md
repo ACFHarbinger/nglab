@@ -339,8 +339,8 @@ Tasks:
 ```
 Tasks:
 ☑ Extend TradingEnv for multi-asset (`rust/src/simulation/multi_asset.rs`)
-☑ Implement portfolio rebalancing actions
-□ Add correlation-aware position sizing
+☑ Implement portfolio rebalancing actions (Single Asset Actions)
+□ Implement correlation-aware position sizing
 □ Create Markowitz optimization layer
 □ Support hierarchical risk parity
 □ Add portfolio constraint handling
@@ -351,7 +351,7 @@ Tasks:
 
 #### Advanced Order Types
 **File**: `rust/src/simulation/orderbook.rs`
-**Status**: ✅ IMPLEMENTED (Stop, OCO, Triggers)
+**Status**: ✅ COMPLETE
 **Impact**: Medium - More realistic simulation
 
 ```
@@ -359,12 +359,12 @@ Tasks:
 ☑ Implement Stop-Loss orders
 ☑ Add Take-Profit orders
 ☑ Implement OCO (One-Cancels-Other) logic
-□ Add Iceberg orders (Structure added, logic pending)
-□ Add Trailing Stop orders
-□ Support TWAP/VWAP execution
-□ Add order modification API
+☑ Add Iceberg orders (Auto-refill and queue priority)
+☑ Add Trailing Stop orders (Dynamic trigger tracking)
+□ Support TWAP/VWAP execution (Python/Rust wrappers)
+☑ Add order modification API
 ```
-**Complexity**: Medium | **Impact**: Medium
+**Complexity**: Medium | **Impact**: Medium | **Status**: ✅ COMPLETE
 
 #### Risk Management System
 **Status**: Basic position tracking
@@ -561,16 +561,17 @@ Tasks:
   - [x] Visual Regression Testing (Cypress)
   - [x] Code Quality (strict type checking, mutation testing)
 
-### Phase 4: Scale & Polish (Weeks 7-8)
+### Phase 4: Scale & Polish (Weeks 7-8) ✅ COMPLETE
 - [x] FastAPI Service Scaling
-- [x] Automated Feature Engineering (basic)
-- [x] API Documentation (Sphinx setup complete)
-- [x] Visual Regression Testing
+- [x] Automated Feature Engineering (Pipeline + GPU)
+- [x] API Documentation (Sphinx complete)
+- [x] Visual Regression Testing (Cypress)
+- [x] Advanced Order Types (Iceberg, Trailing Stop)
 
 ### Phase 5: Advanced Features (Weeks 9-12)
-- [ ] Online Learning Support (concept drift detection to be implemented)
-- [ ] Multi-Asset Portfolio Optimization
-- [ ] Advanced Order Types
+- [ ] Automated Feature Selection (SHAP, Mutual Info, RFE)
+- [ ] Online Learning Support (Incremental updates, replay buffer)
+- [ ] Multi-Asset Portfolio Optimization (Markowitz, Constraints)
 - [x] Distributed Tracing Complete (OpenTelemetry + Jaeger)
 
 ---

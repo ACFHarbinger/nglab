@@ -6,6 +6,23 @@ All notable changes to the NGLab project will be documented in this file.
 
 ### Added
 
+- **Advanced Trading Features (Phase 4)**:
+  - **Multi-Asset Environment**: Implemented `MultiAssetEnv` in Rust (`rust/src/simulation/multi_asset.rs`) supporting simultaneous simulation of multiple assets.
+    - Native `reset_native` and `step_native` API for Rust-side simulations.
+    - Python bindings with zero-copy observation transfers.
+    - Comprehensive feature generation: prices, log returns, volatility (rolling std dev), order book imbalance, and normalized positions.
+  - **Iceberg Orders**: Implemented logic in `OrderBook` to handle hidden quantities.
+    - Automatic visible slice refill from total iceberg quantity.
+    - Time-priority reset (moved to back of queue) upon each refill for realistic simulation.
+  - **Trailing Stop Orders**: Added support for dynamic trigger prices.
+    - Flexible `trailing_delta` configuration for both Bid and Ask sides.
+    - Real-time trigger price adjustment tracking market movements.
+  - **Improved Execution Matching**: 
+    - Replaced simple tape-price matching with actual Order Book matching in `MultiAssetEnv`.
+    - Added synthetic liquidity seeding around tape prices for realistic slippage.
+    - Integrated stochastic slippage (0-0.1%) using environment RNG.
+  - **Unit Testing**: Added comprehensive tests for Iceberg refills, Trailing Stop dynamics, and multi-asset environment loops.
+
 - **Production Deployment Infrastructure (Phase 3)**:
   - Created **docker-compose.prod.yml** with full production stack:
     - Scaled API service with health checks and resource limits

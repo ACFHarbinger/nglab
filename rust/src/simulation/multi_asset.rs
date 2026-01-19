@@ -1,3 +1,4 @@
+#[cfg(feature = "python")]
 use crate::errors::ArenaError;
 use crate::simulation::gym::ActionType;
 use crate::simulation::orderbook::{OrderBook, Side};
@@ -8,6 +9,7 @@ use pyo3::prelude::*;
 #[cfg(feature = "python")]
 use pyo3::types::PyDict;
 use rand::rngs::StdRng;
+use rand::Rng;
 use rand::SeedableRng;
 use std::collections::HashMap;
 
@@ -94,8 +96,80 @@ impl MultiAssetEnv {
         value
     }
 
-    // Step function for Rust usage (if needed)
-    // ...
+    pub fn reset_native(&mut self, seed: Option<u64>) -> (Vec<f64>, HashMap<String, f64>) {
+        if let Some(s) = seed {
+            self.rng = StdRng::seed_from_u64(s);
+        }
+
+        self.current_step = self.lookback;
+        self.total_steps = 0;
+        self.cash = self.initial_capital;
+        for pos in self.positions.values_mut() {
+            *pos = 0.0;
+        }
+        for ob in self.orderbooks.values_mut() {
+            ob.clear();
+        }
+
+        let obs_data = self.generate_observation_data();
+        let mut info = HashMap::new();
+        info.insert("portfolio_value".to_string(), self.portfolio_value());
+        info.insert("cash".to_string(), self.cash);
+
+        (obs_data, info)
+    }
+
+    pub fn step_native(
+        &mut self,
+        actions: Vec<i32>,
+    ) -> (Vec<f64>, f64, bool, bool, HashMap<String, f64>) {
+        let prev_val = self.portfolio_value();
+
+        // Execute actions per asset
+        for (i, &action_idx) in actions.iter().enumerate() {
+            if i >= self.assets.len() {
+                break;
+            }
+            let action = ActionType::from(action_idx);
+            let asset_name = self.assets[i].clone();
+
+            // Seed orderbook from tape price if empty
+            if let Some(price_vec) = self.prices.get(&asset_name) {
+                if let Some(&price) = price_vec.get(self.current_step) {
+                    self.seed_orderbook(&asset_name, price);
+
+                    // Trigger advanced orders if any
+                    if let Some(ob) = self.orderbooks.get_mut(&asset_name) {
+                        ob.check_triggers(price);
+                    }
+                }
+            }
+
+            self.execute_asset_action(i, action);
+        }
+
+        self.current_step += 1;
+        self.total_steps += 1;
+
+        let new_val = self.portfolio_value();
+        let returns = if prev_val > 0.0 {
+            (new_val - prev_val) / prev_val
+        } else {
+            0.0
+        };
+        let reward = returns * 100.0;
+
+        let terminated = new_val <= 0.0;
+        let truncated = self.total_steps as usize >= self.max_steps;
+
+        let obs_data = self.generate_observation_data();
+
+        let mut info = HashMap::new();
+        info.insert("portfolio_value".to_string(), new_val);
+        info.insert("cash".to_string(), self.cash);
+
+        (obs_data, reward, terminated, truncated, info)
+    }
 }
 
 // Python bindings
@@ -133,28 +207,16 @@ impl MultiAssetEnv {
         py: Python<'py>,
         seed: Option<u64>,
     ) -> PyResult<(Bound<'py, PyArray2<f64>>, Py<PyAny>)> {
-        if let Some(s) = seed {
-            self.rng = StdRng::seed_from_u64(s);
-        }
-
-        self.current_step = self.lookback;
-        self.total_steps = 0;
-        self.cash = self.initial_capital;
-        for pos in self.positions.values_mut() {
-            *pos = 0.0;
-        }
-        for ob in self.orderbooks.values_mut() {
-            ob.clear();
-        }
-
-        // Generate observation
-        let obs_data = self.generate_observation_data();
+        let (obs_data, info_map) = self.reset_native(seed);
         let total_features = self.assets.len() * self.features_per_asset;
 
         let obs_array = ndarray::Array2::from_shape_vec((self.lookback, total_features), obs_data)
             .map_err(|e| ArenaError::DataLoading(format!("Invalid shape: {}", e)))?;
 
         let info = PyDict::new(py);
+        for (k, v) in info_map {
+            info.set_item(k, v)?;
+        }
         Ok((obs_array.to_pyarray(py), info.into()))
     }
 
@@ -164,43 +226,16 @@ impl MultiAssetEnv {
         py: Python<'py>,
         actions: Vec<i32>,
     ) -> PyResult<(Bound<'py, PyArray2<f64>>, f64, bool, bool, Py<PyAny>)> {
-        let prev_val = self.portfolio_value();
-
-        // Execute actions per asset
-        for (i, &action_idx) in actions.iter().enumerate() {
-            if i >= self.assets.len() {
-                break;
-            }
-            let action = ActionType::from(action_idx);
-
-            self.execute_asset_action(i, action);
-        }
-
-        self.current_step += 1;
-        self.total_steps += 1;
-
-        let new_val = self.portfolio_value();
-        let returns = if prev_val > 0.0 {
-            (new_val - prev_val) / prev_val
-        } else {
-            0.0
-        };
-        let reward = returns * 100.0; // Simple reward
-
-        let terminated = new_val <= 0.0; // Bankruptcy
-                                         // Truncated if max steps reached
-                                         // We assume equal length price series for simplified truncated check
-        let truncated = self.total_steps as usize >= self.max_steps;
-
-        let obs_data = self.generate_observation_data();
+        let (obs_data, reward, terminated, truncated, info_map) = self.step_native(actions);
         let total_features = self.assets.len() * self.features_per_asset;
 
         let obs_array = ndarray::Array2::from_shape_vec((self.lookback, total_features), obs_data)
             .map_err(|e| ArenaError::DataLoading(format!("Invalid shape: {}", e)))?;
 
         let info = PyDict::new(py);
-        info.set_item("portfolio_value", new_val)?;
-        info.set_item("cash", self.cash)?;
+        for (k, v) in info_map {
+            info.set_item(k, v)?;
+        }
 
         Ok((
             obs_array.to_pyarray(py),
@@ -213,44 +248,74 @@ impl MultiAssetEnv {
 }
 
 impl MultiAssetEnv {
-    fn execute_asset_action(&mut self, asset: &str, action: ActionType) {
-        // Simplified execution: 10% of current CASH per trade? Or 10% of Capital?
-        // Let's us fixed share of initial capital for simplicity per asset trade
-        let trade_size = self.initial_capital * 0.05;
+    fn seed_orderbook(&mut self, asset: &str, price: f64) {
+        if let Some(ob) = self.orderbooks.get_mut(asset) {
+            if ob.best_bid().is_none() {
+                // Add synthetic liquidity around the tape price (0.1% spread)
+                let spread = price * 0.001;
+                ob.submit_limit_order(price - spread / 2.0, 1000.0, Side::Bid);
+                ob.submit_limit_order(price + spread / 2.0, 1000.0, Side::Ask);
+            }
+        }
+    }
 
-        let price = match self
-            .prices
-            .get(asset)
-            .and_then(|v| v.get(self.current_step))
-        {
-            Some(&p) => p,
-            None => return,
-        };
+    fn execute_asset_action(&mut self, asset_idx: usize, action: ActionType) {
+        let asset = &self.assets[asset_idx];
+        let trade_size_usd = self.initial_capital * 0.05;
 
         match action {
             ActionType::Hold => {}
             ActionType::Buy => {
-                let cost_with_fee = trade_size * (1.0 + self.transaction_cost);
-                if self.cash >= cost_with_fee {
-                    let shares = trade_size / price;
-                    self.cash -= cost_with_fee;
-                    *self.positions.get_mut(asset).unwrap() += shares;
-                    // Update orderbook (assumed)
-                    if let Some(ob) = self.orderbooks.get_mut(asset) {
-                        ob.submit_market_order(shares, Side::Bid);
+                if let Some(ob) = self.orderbooks.get_mut(asset) {
+                    // Estimate shares from tape price
+                    let price = self
+                        .prices
+                        .get(asset)
+                        .and_then(|v| v.get(self.current_step))
+                        .cloned()
+                        .unwrap_or(1.0);
+
+                    // Add some stochastic slippage (0-0.1%)
+                    let slippage = self.rng.random_range(0.0..0.001);
+                    let effective_price = price * (1.0 + slippage);
+
+                    let target_shares = trade_size_usd / effective_price;
+
+                    let (_, trades) = ob.submit_market_order(target_shares, Side::Bid);
+                    for trade in trades {
+                        let cost = trade.price * trade.quantity;
+                        let fee = cost * self.transaction_cost;
+                        if self.cash >= cost + fee {
+                            self.cash -= cost + fee;
+                            *self.positions.get_mut(asset).unwrap() += trade.quantity;
+                        }
                     }
                 }
             }
             ActionType::Sell => {
                 let pos = *self.positions.get(asset).unwrap();
                 if pos > 0.0 {
-                    let sell_shares = (trade_size / price).min(pos);
-                    let proceeds = sell_shares * price;
-                    let fee = proceeds * self.transaction_cost;
-                    self.cash += proceeds - fee;
-                    *self.positions.get_mut(asset).unwrap() -= sell_shares;
                     if let Some(ob) = self.orderbooks.get_mut(asset) {
-                        ob.submit_market_order(sell_shares, Side::Ask);
+                        let price = self
+                            .prices
+                            .get(asset)
+                            .and_then(|v| v.get(self.current_step))
+                            .cloned()
+                            .unwrap_or(1.0);
+
+                        // Add some stochastic slippage (0-0.1%)
+                        let slippage = self.rng.random_range(0.0..0.001);
+                        let effective_price = price * (1.0 - slippage); // Lower price for seller
+
+                        let target_shares = (trade_size_usd / effective_price).min(pos);
+
+                        let (_, trades) = ob.submit_market_order(target_shares, Side::Ask);
+                        for trade in trades {
+                            let proceeds = trade.price * trade.quantity;
+                            let fee = proceeds * self.transaction_cost;
+                            self.cash += proceeds - fee;
+                            *self.positions.get_mut(asset).unwrap() -= trade.quantity;
+                        }
                     }
                 }
             }
@@ -258,14 +323,8 @@ impl MultiAssetEnv {
     }
 
     fn generate_observation_data(&self) -> Vec<f64> {
-        // Simple concatenation of features for all assets
-        // (lookback, assets * features)
         let total_features = self.assets.len() * self.features_per_asset;
         let mut data = vec![0.0; self.lookback * total_features];
-
-        // This is inefficient (row-major filling logic needed).
-        // Gym usually expects (Time, Features).
-        // Features = [Asset1_Price, Asset1_Ret... Asset2_Price...]
 
         for t in 0..self.lookback {
             let step_idx = self
@@ -278,17 +337,81 @@ impl MultiAssetEnv {
                 let asset_offset = i * self.features_per_asset;
                 let idx = row_start + asset_offset;
 
-                let price = self
-                    .prices
-                    .get(asset)
-                    .and_then(|v| v.get(step_idx))
-                    .unwrap_or(&0.0);
-                // ... calc returns ...
+                let price_series = self.prices.get(asset).unwrap();
+                let price = *price_series.get(step_idx).unwrap_or(&0.0);
 
-                data[idx] = *price; // Placeholder logic
-                                    // ... fill other features
+                // 1. Price (raw for now, normalize in Python)
+                data[idx] = price;
+
+                // 2. Log Return
+                if step_idx > 0 {
+                    let prev_price = *price_series.get(step_idx - 1).unwrap_or(&price);
+                    data[idx + 1] = (price / prev_price.max(1e-6)).ln();
+                } else {
+                    data[idx + 1] = 0.0;
+                }
+
+                // 3. Volatility (Simple 20-period standard deviation approx)
+                if step_idx >= 20 {
+                    let slice = &price_series[step_idx - 20..=step_idx];
+                    let mean = slice.iter().sum::<f64>() / 21.0;
+                    let variance = slice.iter().map(|&p| (p - mean).powi(2)).sum::<f64>() / 21.0;
+                    data[idx + 2] = variance.sqrt();
+                } else {
+                    data[idx + 2] = 0.0;
+                }
+
+                // 4. Orderbook Imbalance
+                if let Some(ob) = self.orderbooks.get(asset) {
+                    data[idx + 3] = ob.imbalance();
+                }
+
+                // 5. Normalized Position
+                // (Current shares * current price) / portfolio value
+                let p_val = self.portfolio_value();
+                if p_val > 0.0 {
+                    let pos_shares = *self.positions.get(asset).unwrap();
+                    data[idx + 4] = (pos_shares * price) / p_val;
+                }
+
+                // 6. Padding/Reserved
+                data[idx + 5] = 0.0;
             }
         }
         data
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_multi_asset_env_native_loop() {
+        let assets = vec!["BTC".to_string(), "ETH".to_string()];
+        let mut env = MultiAssetEnv::new(assets, 10000.0, 0.001, 10, 100, Some(42));
+
+        let btc_prices = vec![100.0; 200];
+        let eth_prices = vec![2000.0; 200];
+
+        env.load_prices("BTC".to_string(), btc_prices);
+        env.load_prices("ETH".to_string(), eth_prices);
+
+        // Reset
+        let (obs, info) = env.reset_native(None);
+        assert_eq!(obs.len(), 10 * 2 * 6); // lookback * assets * features
+        assert_eq!(*info.get("portfolio_value").unwrap(), 10000.0);
+
+        // Step: Buy BTC, Buy ETH
+        let (_obs, reward, terminated, truncated, info) = env.step_native(vec![1, 1]); // Buy, Buy
+
+        assert!(!terminated);
+        assert!(!truncated);
+        assert!(reward != 0.0 || *info.get("portfolio_value").unwrap() == 10000.0);
+        assert!(*info.get("cash").unwrap() < 10000.0);
+        assert!(env.positions.get("BTC").unwrap() > &0.0);
+        assert!(env.positions.get("ETH").unwrap() > &0.0);
+
+        // Check features
     }
 }

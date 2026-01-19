@@ -59,7 +59,19 @@ pub fn step(&mut self, action: i32) -> StepResult
 - Memory-efficient rolling window
 - No heap allocations in hot path
 
-#### 2. OrderBook (Central Limit Order Book)
+#### 2. MultiAssetEnv (Portfolio Simulation)
+**File:** `rust/src/simulation/multi_asset.rs`
+
+Extension of the trading environment for multi-asset portfolio management.
+
+**Features:**
+- **Concurrent Simulation**: Simulates multiple order books and price series simultaneously.
+- **Portfolio Management**: Tracks cash, asset positions, and total portfolio value across all assets.
+- **Advanced Observations**: Generates flattened feature vectors per asset (price, returns, volatility, imbalance, position).
+- **Execution Engine**: Matches actions against individual `OrderBook` instances with synthetic liquidity and stochastic slippage.
+- **Native & Python API**: Unified core logic with specialized entry points for Rust and Python.
+
+#### 3. OrderBook (Central Limit Order Book)
 **File:** `rust/src/simulation/orderbook.rs`
 
 A production-grade CLOB implementation with price-time priority matching.
@@ -78,9 +90,12 @@ PriceLevel
 ```
 
 **Features:**
-- **Order Types**: Limit, Market, Stop-Loss (future)
 - **Matching Algorithm**: Price-time priority FIFO
 - **Queue Position Tracking**: For HFT simulation accuracy
+- **Advanced Orders**: 
+  - **Iceberg**: Only part of the order is visible; refills from hidden quantity and resets priority on refill.
+  - **Trailing Stop**: Trigger price adjusts dynamically as market moves favorably.
+  - **Stop-Loss/Take-Profit**: Standard price-triggered conversion to market/limit orders.
 - **Serialization**: Full state persistence with Serde
 - **Performance**: O(log n) insertion, O(1) best bid/ask
 
@@ -656,6 +671,6 @@ Cloud Infrastructure
 
 ---
 
-**Last Updated:** 2026-01-15
-**Version:** 0.1.0
+**Last Updated:** 2026-01-19
+**Version:** 0.2.0
 **Maintainer:** NGLab Team
