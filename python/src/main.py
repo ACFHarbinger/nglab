@@ -12,13 +12,13 @@ from omegaconf import DictConfig, OmegaConf
 # Imports from our modules
 from python.src.models.time_series import TimeSeriesBackbone
 from python.src.env.env_wrapper import TradingEnvWrapper
-from python.src.pipeline.lightning.reinforcement_learning import RLLightningModule
-from python.src.pipeline.lightning.self_supervised import SelfSupervisedModule
-from python.src.pipeline.lightning.semi_supervised import SemiSupervisedModule
-from python.src.pipeline.lightning.supervised_learning import SLLightningModule
-from python.src.pipeline.lightning.unsupervised_learning import UnsupervisedModule
-from python.src.pipeline.lightning.vae_module import VAELightningModule
-from python.src.utils.profiling import profile
+from python.src.pipeline.core.lightning.reinforcement_learning import RLLightningModule
+from python.src.pipeline.core.lightning.self_supervised import SelfSupervisedModule
+from python.src.pipeline.core.lightning.semi_supervised import SemiSupervisedModule
+from python.src.pipeline.core.lightning.supervised_learning import SLLightningModule
+from python.src.pipeline.core.lightning.unsupervised_learning import UnsupervisedModule
+from python.src.pipeline.core.lightning.vae_module import VAELightningModule
+from python.src.utils.logging.profiling import profile
 from python.src.policies.neural import NeuralPolicy
 from pytorch_lightning.loggers import TensorBoardLogger
 

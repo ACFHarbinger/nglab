@@ -27,6 +27,10 @@ All notable changes to the NGLab project will be documented in this file.
   - Implemented Rust Prometheus metrics exporter for real-time performance tracking.
   - Created high-density **Grafana dashboard** for simulation metrics.
   - Integrated **MLflow** for robust model versioning and experiment tracking.
+- **Enhanced Training Logging**:
+  - Rebuilt `log_utils.py` with **WandB** integration, automated **Matplotlib** plotting, and JSON resilience.
+  - Standardized training metrics logging in `train.py`, including loss, gradient norms, and representative predictions.
+  - Achieved full **Mypy strict mode** compliance across the logging and training pipeline.
 - **Documentation & Tracing (P2 Phase 3)**:
   - Established **Architecture Decision Records (ADR)** process in `docs/adr/`.
   - Integrated **OpenTelemetry** and **Jaeger** for distributed tracing in the Rust backend.

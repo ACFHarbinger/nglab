@@ -4,32 +4,35 @@ Functional utilities for model loading and tensor manipulation.
 
 import json
 import os
+from typing import Any, Dict, Optional, Tuple, Type, Union, cast
 
 import torch
 
 
-def torch_load_cpu(load_path):
+def torch_load_cpu(load_path: str) -> Any:
     """Load torch tensors on CPU."""
     return torch.load(
         load_path, map_location=lambda storage, loc: storage
     )  # Load on CPU
 
 
-def move_to(var, device):
+def move_to(var: Any, device: Union[torch.device, str]) -> Any:
     """
     Recursively move tensors in a dictionary to a device.
     """
     if isinstance(var, dict):
         return {k: move_to(v, device) for k, v in var.items()}
-    return var.to(device)
+    elif isinstance(var, torch.Tensor):
+        return var.to(device)
+    return var
 
 
-def load_args(filename):
+def load_args(filename: str) -> Dict[str, Any]:
     """
     Load arguments from a JSON file with backwards compatibility.
     """
     with open(filename) as f:
-        args = json.load(f)
+        args = cast(Dict[str, Any], json.load(f))
 
     # Backwards compatibility
     if "data_distribution" not in args:
@@ -41,7 +44,7 @@ def load_args(filename):
     return args
 
 
-def _load_model_file(load_path, model):
+def _load_model_file(load_path: str, model: torch.nn.Module) -> Tuple[torch.nn.Module, Optional[Dict[str, Any]]]:
     """
     Loads model parameters from a file.
 
@@ -63,7 +66,11 @@ def _load_model_file(load_path, model):
         load_optimizer_state_dict = load_data.get("optimizer", None)
         load_model_state_dict = load_data.get("model", load_data)
     else:
-        load_model_state_dict = load_data.state_dict()
+        # If it's a model instance, get its state dict
+        if hasattr(load_data, "state_dict"):
+            load_model_state_dict = load_data.state_dict()
+        else:
+            load_model_state_dict = load_data
 
     state_dict = model.state_dict()
     state_dict.update(load_model_state_dict)
@@ -71,7 +78,7 @@ def _load_model_file(load_path, model):
     return model, load_optimizer_state_dict
 
 
-def load_model(path, epoch=None):
+def load_model(path: str, epoch: Optional[int] = None) -> Tuple[torch.nn.Module, Dict[str, Any]]:
     """
     Load a model and its configuration from a directory or specific file.
 
@@ -82,7 +89,7 @@ def load_model(path, epoch=None):
     Returns:
         tuple: (model, args)
     """
-    from models import LSTM, NSTransformer
+    from models import LSTM, NSTransformer  # type: ignore[import-untyped]
 
     if os.path.isfile(path):
         model_filename = path
@@ -103,6 +110,9 @@ def load_model(path, epoch=None):
         args.get("model", "attention"), None
     )
     assert model_class is not None, f"Unknown model: {model_class}"
+    
+    # Cast is needed because model_class is Union[Type[LSTM], Type[NSTransformer]]
+    # but they share the same constructor signature
     model = model_class(
         args["n_seq"],
         args["hidden_dim"],
