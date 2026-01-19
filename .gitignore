@@ -422,7 +422,7 @@ results/
 /build
 
 # Added by documentation generation
-/docs/_build
+python/docs/_build
 rust/docs/nglab
 rust/docs/search.index
 rust/docs/static.files
