@@ -351,7 +351,7 @@ impl Settings {
 
 ---
 
-### 4. Health Checks & Monitoring Endpoints ###  (Completed)
+### 4. Health Checks & Monitoring Endpoints (Completed)
 
 **Current State:** Completed Python API and Rust Tauri health checks.
 
@@ -428,11 +428,10 @@ def ready():
 > **Timeline:** 4-8 weeks
 > **Impact:** Significantly improves reliability and maintainability
 
-### 5. Comprehensive API Documentation
+### 5. Comprehensive API Documentation (Completed)
+**Status:** ✅ Implemented with rustdoc, Sphinx, and TypeDoc (see Changelog 2026-01-19).
 
-**Current State:** Architecture documented, but API endpoints/interfaces not systematically covered
-
-#### 5.1 Rust Crate Documentation
+**Current State:** Fully documented Rust, Python, and TypeScript APIs.
 
 **Action Items:**
 - Add module-level documentation to all public modules
@@ -528,9 +527,10 @@ npx typedoc --out docs/typescript src/
 
 ---
 
-### 6. Containerization & Deployment
+### 6. Containerization & Deployment (Completed)
+**Status:** ✅ Implemented Docker and Docker Compose setup (see Changelog 2026-01-19).
 
-**Current State:** No Docker support, manual deployment only
+**Current State:** Production-ready multi-stage Docker build available.
 
 #### 6.1 Multi-Stage Docker Build
 
@@ -640,9 +640,10 @@ volumes:
 
 ---
 
-### 7. Performance Profiling & Optimization
+### 7. Performance Profiling & Optimization (Completed)
+**Status:** ✅ Implemented continuous benchmarking and Python profiling (see Changelog 2026-01-19).
 
-**Current State:** Benchmarks exist but not used for optimization
+**Current State:** Benchmarks monitored in CI; profiling integrated into training pipeline.
 
 #### 7.1 Continuous Benchmarking
 

@@ -18,11 +18,13 @@ from pipeline.lightning.semi_supervised import SemiSupervisedModule
 from pipeline.lightning.supervised_learning import SLLightningModule
 from pipeline.lightning.unsupervised_learning import UnsupervisedModule
 from pipeline.lightning.vae_module import VAELightningModule
+from utils.profiling import profile
 from policies.neural import NeuralPolicy
 from pytorch_lightning.loggers import TensorBoardLogger
 
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
+@profile(output_dir="./profiles")
 def main(cfg: DictConfig):
     """
     Main training function triggered by Hydra.
