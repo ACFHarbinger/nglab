@@ -34,7 +34,7 @@ describe("DashboardOverview", () => {
     });
 
     it("should render favorites widget if favorites exist", () => {
-        const favorites = [{ id: "1", symbol: "BTC", title: "Bitcoin", addedAt: 123, marketData: {} as any }];
+        const favorites = [{ id: "1", symbol: "BTC", name: "Bitcoin", title: "Bitcoin", addedAt: 123, marketData: {} as any }];
         render(<DashboardOverview onNavigateToTerminal={vi.fn()} favorites={favorites} />);
         expect(screen.getByTestId("favorite-markets")).toBeInTheDocument();
     });

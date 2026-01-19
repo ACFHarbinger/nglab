@@ -51,6 +51,12 @@ export interface ArenaUpdate {
   price: number;
   /** Total account value in USDC */
   portfolio_value: number;
+  /** Current real-time risk score (0-100) */
+  risk_score: number;
+  /** Current peak-to-trough drawdown */
+  current_drawdown: number;
+  /** Value at Risk (VaR) */
+  current_var: number;
   /** Current orderbook state */
   orderbook: OrderBook;
 }

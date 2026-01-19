@@ -11,7 +11,8 @@ import {
     Globe,
     ExternalLink,
     RefreshCw,
-    Lock
+    Lock,
+    Bug
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -41,6 +42,7 @@ export function AccountTab({ isStreaming = false, startStream, stopStream }: Pro
     const [isVaultUnlocked, setIsVaultUnlocked] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [debugMode, setDebugMode] = useState(false);
 
     // Form states for Polymarket
     const [apiKey, setApiKey] = useState("");
@@ -118,6 +120,16 @@ export function AccountTab({ isStreaming = false, startStream, stopStream }: Pro
             }
         } catch (err) {
             setError("Failed to delete integration");
+        }
+    };
+
+    const toggleDebugMode = async () => {
+        const nextMode = !debugMode;
+        setDebugMode(nextMode);
+        try {
+            await invoke("set_debug_mode", { enabled: nextMode });
+        } catch (err) {
+            console.error("Failed to set debug mode", err);
         }
     };
 
@@ -339,6 +351,39 @@ export function AccountTab({ isStreaming = false, startStream, stopStream }: Pro
                                     Save Integration
                                 </button>
                             </form>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Developer Settings */}
+                <div className="space-y-6">
+                    <h3 className="text-sm font-semibold uppercase tracking-widest text-slate-500">Developer Settings</h3>
+                    <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-2xl space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                                    <Bug className="w-5 h-5 text-amber-500" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-white">Debug Mode</h4>
+                                    <p className="text-slate-500 text-xs mt-0.5">Enable enhanced observability & logging</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={toggleDebugMode}
+                                className={clsx(
+                                    "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                                    debugMode ? "bg-indigo-600" : "bg-slate-700"
+                                )}
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className={clsx(
+                                        "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                                        debugMode ? "translate-x-5" : "translate-x-0"
+                                    )}
+                                />
+                            </button>
                         </div>
                     </div>
                 </div>

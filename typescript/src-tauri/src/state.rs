@@ -17,6 +17,8 @@ pub struct ArenaState {
     pub running: Mutex<bool>,
     /** Atomic flag used to control the background WebSocket price streaming. */
     pub ws_running: Arc<AtomicBool>,
+    /** Global debug mode toggle. */
+    pub debug_mode: Arc<AtomicBool>,
 }
 
 /**
@@ -30,6 +32,12 @@ pub struct ArenaUpdate {
     pub price: f64,
     /** Total account portfolio value including cash and assets. */
     pub portfolio_value: f64,
+    /** Current real-time risk score (0-100). */
+    pub risk_score: u8,
+    /** Current peak-to-trough drawdown. */
+    pub current_drawdown: f64,
+    /** Value at Risk (VaR). */
+    pub current_var: f64,
     /** Complete snapshot of the order book for visualization. */
     pub orderbook: OrderBook,
 }

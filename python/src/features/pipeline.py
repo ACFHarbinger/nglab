@@ -34,12 +34,16 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         scaler_type: str = "robust",
         gpu_device: Optional[str] = None,
         selection_threshold: float = 0.0,
+        selection_method: str = "variance",  # "variance", "mi", "rfecv"
+        selection_params: Optional[Dict[str, Any]] = None,
     ):
         self.lookback = lookback
         self.feature_set = feature_set
         self.scaler_type = scaler_type
         self.gpu_device = gpu_device
         self.selection_threshold = selection_threshold
+        self.selection_method = selection_method
+        self.selection_params = selection_params or {}
 
         # Components
         self.gpu_engineer = None
@@ -71,15 +75,44 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         self.scaler.fit(features_clean)
 
         # 3. Fit Selector
-        from sklearn.feature_selection import VarianceThreshold
-
-        self.selector = VarianceThreshold(threshold=self.selection_threshold)
-        self.selector.fit(features_clean)
+        if self.selection_method == "variance":
+            from sklearn.feature_selection import VarianceThreshold
+            self.selector = VarianceThreshold(threshold=self.selection_threshold)
+            self.selector.fit(features_clean)
+        elif self.selection_method == "mi":
+            from python.src.utils.feature_selection import TimeSeriesFeatureSelector
+            mi_scores = TimeSeriesFeatureSelector.compute_mutual_info(
+                features_clean, y if y is not None else features_clean.iloc[:, 0]
+            )
+            top_features = mi_scores.head(self.selection_params.get("n_features", 10)).index.tolist()
+            
+            # Create a simple PassThrough selector that just picks columns
+            from sklearn.feature_selection import SelectFromModel
+            from sklearn.ensemble import RandomForestRegressor
+            # We use SelectFromModel with a dummy if needed, but easier to just use a custom one
+            # For simplicity, we can use SelectKBest with MI
+            from sklearn.feature_selection import SelectKBest, mutual_info_regression
+            self.selector = SelectKBest(mutual_info_regression, k=self.selection_params.get("n_features", 10))
+            self.selector.fit(features_clean, y if y is not None else features_clean.iloc[:, 0])
+        elif self.selection_method == "rfecv":
+            from python.src.utils.feature_selection import TimeSeriesFeatureSelector
+            from sklearn.ensemble import RandomForestRegressor
+            estimator = self.selection_params.get("estimator", RandomForestRegressor(n_estimators=10, n_jobs=-1))
+            self.selector, _ = TimeSeriesFeatureSelector.run_rfecv(
+                estimator, features_clean, y if y is not None else features_clean.iloc[:, 0],
+                step=self.selection_params.get("step", 1),
+                cv=self.selection_params.get("cv", 3)
+            )
+        else:
+            raise ValueError(f"Unknown selection method: {self.selection_method}")
 
         # Update feature names
         selected_mask = self.selector.get_support()
-        self.feature_names = features.columns[selected_mask].tolist()
-
+        if isinstance(features, pd.DataFrame):
+            self.feature_names = [features.columns[i] for i, selected in enumerate(selected_mask) if selected]
+        else:
+            self.feature_names = [f"feat_{i}" for i, selected in enumerate(selected_mask) if selected]
+            
         return self
 
     def transform(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
@@ -90,7 +123,10 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
 
         # Handle recent NaNs (fill with 0 or forward fill)
         # For production inference, we usually have a buffer history.
-        features_filled = features.fillna(method="ffill").fillna(0.0)
+        if hasattr(features, "ffill"):
+            features_filled = features.ffill().fillna(0.0)
+        else:
+            features_filled = pd.DataFrame(features).ffill().fillna(0.0)
 
         if self.scaler:
             scaled = self.scaler.transform(features_filled)
@@ -114,7 +150,8 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
                 df = pd.DataFrame({"close": X})
             else:
                 # Minimal expected columns
-                df = pd.DataFrame(X, columns=["close", "volume"][: X.shape[1]])
+                cols = ["close", "volume", "high", "low", "open"]
+                df = pd.DataFrame(X, columns=cols[:X.shape[1]])
         else:
             df = X.copy()
 

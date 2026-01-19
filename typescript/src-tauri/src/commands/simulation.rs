@@ -42,11 +42,15 @@ pub fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
 
                 let orderbook = env.orderbook().clone();
                 let price = orderbook.mid_price().unwrap_or(0.0);
+                let risk_status = env.risk_status();
 
                 ArenaUpdate {
                     step: step_info.total_steps,
                     price,
                     portfolio_value: step_info.portfolio_value,
+                    risk_score: risk_status.risk_score,
+                    current_drawdown: risk_status.current_drawdown,
+                    current_var: risk_status.current_var,
                     orderbook,
                 }
             };

@@ -10,6 +10,7 @@
 #[cfg(feature = "python")]
 use crate::errors::ArenaError;
 use crate::simulation::orderbook::{OrderBook, Side};
+use crate::simulation::risk::{RiskManager, RiskStatus};
 #[cfg(feature = "python")]
 use numpy::{PyArray2, ToPyArray};
 #[cfg(feature = "python")]
@@ -26,14 +27,14 @@ use tracing::{debug, instrument};
 /**
  * Action space types for the agent.
  */
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ActionType {
     /** Hold current position */
-    Hold,
+    Hold = 0,
     /** Buy (long) */
-    Buy,
+    Buy = 1,
     /** Sell (short) */
-    Sell,
+    Sell = 2,
 }
 
 impl From<i32> for ActionType {
@@ -142,7 +143,7 @@ type ReturnsHistory = SmallVec<[f64; 64]>;
  * # Fields
  *
  * * `orderbook` - The central limit order book managing market liquidity.
- * * `position` - Current net position (positive for long, negative for short).
+ * * `position` - Current net position (positive for long, negative = short).
  * * `cash` - Available cash balance for trading.
  * * `portfolio_value` - Total account equity (Cash + Mark-to-Market Position).
  * * `step_count` - Current time step in the episode.
@@ -181,6 +182,8 @@ pub struct TradingEnv {
     obs_buffer: ObservationBuffer,
     /** Random number generator for reproducibility */
     rng: StdRng,
+    /** Risk manager for monitoring and enforcing risk limits */
+    risk_manager: RiskManager,
 }
 
 // =========================================================================
@@ -259,6 +262,9 @@ impl TradingEnv {
         let returns = (portfolio_value - self.prev_portfolio_value) / self.prev_portfolio_value;
         self.returns.push(returns);
         self.prev_portfolio_value = portfolio_value;
+
+        // Update risk manager
+        self.risk_manager.update(portfolio_value);
 
         let reward = self.calculate_reward(returns, trade_cost);
         let terminated =
@@ -358,6 +364,7 @@ impl TradingEnv {
             logger: crate::utils::visualizer::RerunLogger::new(enable_logging),
             obs_buffer: ObservationBuffer::new(num_features, lookback),
             rng,
+            risk_manager: RiskManager::with_defaults(initial_capital),
         }
     }
 
@@ -394,6 +401,8 @@ impl TradingEnv {
         self.returns.clear();
         self.prev_portfolio_value = self.initial_capital;
         self.orderbook.clear();
+        self.risk_manager.reset(self.initial_capital);
+        self.total_steps = 0;
 
         self.generate_observation_data()
     }
@@ -424,6 +433,10 @@ impl TradingEnv {
         &self.orderbook
     }
 
+    pub fn risk_status(&self) -> RiskStatus {
+        self.risk_manager.status().clone()
+    }
+
     /** Pure Rust step function (no Python dependency) */
     #[instrument(skip(self), fields(step = self.total_steps))]
     pub fn step_rs(&mut self, action: i32) -> (Vec<f64>, f64, bool, bool, StepInfo) {
@@ -441,6 +454,9 @@ impl TradingEnv {
         let returns = (portfolio_value - self.prev_portfolio_value) / self.prev_portfolio_value;
         self.returns.push(returns);
         self.prev_portfolio_value = portfolio_value;
+
+        // Update risk manager
+        self.risk_manager.update(portfolio_value);
 
         // Risk-adjusted reward (Sharpe-like)
         let reward = self.calculate_reward(returns, trade_cost);

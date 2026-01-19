@@ -8,12 +8,18 @@ import { TrendingMarketsWidget } from "./TrendingMarketsWidget";
 import { GlobalActivityWidget } from "./GlobalActivityWidget";
 import { FavoriteMarketsWidget } from "./FavoriteMarketsWidget";
 import { FavoriteMarket } from "../../hooks/useFavorites";
+import { RiskDashboardWidget } from "./RiskDashboardWidget";
 
 interface DashboardOverviewProps {
   onNavigateToTerminal: (marketId: string) => void;
   livePrices?: Record<string, number>;
   favorites?: FavoriteMarket[];
   onNavigateToFavorites?: () => void;
+  riskMetrics?: {
+    riskScore: number;
+    drawdown: number;
+    varValue: number;
+  };
 }
 
 export function DashboardOverview({
@@ -21,12 +27,20 @@ export function DashboardOverview({
   livePrices,
   favorites = [],
   onNavigateToFavorites,
+  riskMetrics,
 }: DashboardOverviewProps) {
   return (
     <div className="flex h-full w-full bg-slate-950 overflow-hidden">
-      {/* Left Column: User Profile (Fixed width) */}
-      <div className="w-80 border-r border-slate-800 p-4 overflow-y-auto custom-scrollbar hidden xl:block">
+      {/* Left Column: User Profile & Risk (Fixed width) */}
+      <div className="w-80 border-r border-slate-800 p-4 overflow-y-auto custom-scrollbar hidden xl:block space-y-6">
         <UserProfileWidget />
+        {riskMetrics && (
+          <RiskDashboardWidget
+            riskScore={riskMetrics.riskScore}
+            drawdown={riskMetrics.drawdown}
+            varValue={riskMetrics.varValue}
+          />
+        )}
       </div>
 
       {/* Center Column: Main Content (Flexible) */}

@@ -1,72 +1,42 @@
 # NGLab Troubleshooting Guide
 
-This guide covers common issues, error codes, and debugging steps for the NGLab trading system.
+This guide covers common issues and resolutions for the NGLab development environment.
 
-## 🚨 Critical Issues
+## 1. Rust Simulation Engine
 
-### 1. "ArenaState Locked" / Deadlock
-**Symptoms**: Simulation freezes, no new logs, UI spinner stuck.
-**Possible Causes**:
-- Recursive lock acquisition in Rust `Arena`
-- Long-running operation inside a mutex guard
-**Solution**:
-- Check logs for "Wait lock..." messages.
-- Restart backend: `pkill nglab-backend`
-- Run with deadlock detector (if compiled with parking_lot feature).
+### Simulation Panic: "assertion failed: left == right"
+- **Cause**: Usually related to floating-point precision in order book tests or mismatched trade side logic in `MultiAssetEnv`.
+- **Solution**: Ensure usage of `.round()` or `f64::EPSILON` for comparisons. Verify that `Trade` side references are correctly interpreted as either Maker or Taker side (standard is Taker).
 
-### 2. "CUDA OOM" / Out of Memory
-**Symptoms**: Training crash with `RuntimeError: CUDA out of memory`.
-**Solution**:
-- Reduce `batch_size` in config.
-- Enable mixed precision: `use_amp: true`.
-- Use `MemoryPool` pre-allocation.
-- Check for memory leaks with `GPUMemoryOptimizer.snapshot()`.
+### PyO3: "undefined symbol: _Py_NoneStruct"
+- **Cause**: Occurs when running standalone Rust binaries that depend on Python features without linking to the Python interpreter.
+- **Solution**: Ensure you are using `maturin develop` to build the Python bindings, or run `cargo test --no-default-features` if the `python` feature is causing issues.
 
-### 3. "Polymarket API 429" / Rate Limit
-**Symptoms**: "Status 429 Too Many Requests" in logs.
-**Solution**:
-- Check `polymarket.rs` rate limiter settings.
-- Ensure you are not running multiple instances with same IP.
-- NGLab automatically backs off, but frequent hits suggest active scraping needs throttling.
+## 2. Python Environment
 
----
+### ModuleNotFoundError: 'nglab'
+- **Cause**: The Rust package hasn't been compiled into the Python environment.
+- **Solution**: Run `just build-python` or `cd python && maturin develop`.
 
-## 🔍 Debugging Layers
+### Protocol Error in MultiAssetEnv Observation
+- **Cause**: The number of assets or features per asset doesn't match the expected `ndarray` shape in the Python wrapper.
+- **Solution**: Verify `features_per_asset` in `rust/src/simulation/multi_asset.rs` matches the shape defined in the Python `step` wrapper.
 
-### Rust Backend
-**Logs**: `logs/nglab-backend.log`
-**Level**: Set `RUST_LOG=debug` in `.env`.
-**Common Errors**:
-- `PyO3 Error`: Python integration issue. Check `python/src` path.
-- `reqwest::Error`: Network/API connectivity.
+## 3. Frontend / Tauri
 
-### Python Environment
-**Logs**: `logs/nglab-python.log`
-**Level**: Set `LOG_LEVEL=DEBUG` in `.env`.
-**Common Errors**:
-- `ModuleNotFoundError`: Missing dependency. Run `pip install -e .`.
-- `AttributeError`: Version mismatch. Check `pyproject.toml`.
+### Webview fails to load
+- **Cause**: Permissions or system dependencies (especially on Linux).
+- **Solution**: Run `sudo apt install libwebkit2gtk-4.0-dev build-essential curl wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev`.
 
-### Frontend (Tauri)
-**Debug Console**: Right-click app -> Inspect Element -> Console.
-**Common Errors**:
-- `IPC Error`: Backend command failed or timed out.
-- `WebSocket Close`: Connection lost to backend event stream.
+### "arena-update" events not firing
+- **Cause**: The Rust backend loop is not started or the Mutex is deadlocked.
+- **Solution**: Check `src-tauri/src/main.rs` for Tokio task logs. Ensure `ArenaState` is correctly unlocked in and outside the loop.
 
----
+## 4. General DX
 
-## 🛠️ Common Operations caused by Deployments
+### "Just" command not found
+- **Solution**: Install it via `cargo install just` or `sudo apt install just`.
 
-### Database Migration Failures
-Run manual migration:
-```bash
-cd deploy/db
-./migrate.sh --force
-```
-
-### Resetting State
-To completely wipe simulation state:
-```bash
-rm -rf data/checkpoints/*
-rm -rf data/db/*.sqlite
-```
+### Database Locked (SQLite)
+- **Cause**: Multiple instances of the scraper or backend accessing `markets.db`.
+- **Solution**: Use `just reset-credentials` to clear local databases if they become corrupted.

@@ -31,6 +31,7 @@ pub fn run() {
         env: Mutex::new(env),
         running: Mutex::new(false),
         ws_running: Arc::new(AtomicBool::new(false)),
+        debug_mode: Arc::new(AtomicBool::new(false)),
     };
 
     tauri::Builder::default()
@@ -79,7 +80,8 @@ pub fn run() {
             commands::integrations::get_public_polymarket_markets,
             commands::integrations::search_public_polymarket_markets,
             commands::health::health_check,
-            commands::health::get_system_info
+            commands::health::get_system_info,
+            commands::health::set_debug_mode
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

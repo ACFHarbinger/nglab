@@ -22,6 +22,18 @@ All notable changes to the NGLab project will be documented in this file.
     - Added synthetic liquidity seeding around tape prices for realistic slippage.
     - Integrated stochastic slippage (0-0.1%) using environment RNG.
   - **Unit Testing**: Added comprehensive tests for Iceberg refills, Trailing Stop dynamics, and multi-asset environment loops.
+- **Advanced ML & Portfolio Features (Phase 5)**:
+  - **Automated Feature Selection**: Implemented `TimeSeriesFeatureSelector` in Python with Support for Mutual Information (MI) scoring and Recursive Feature Elimination (RFECV).
+  - **Order Modification**: Implemented `modify_order` API in `OrderBook` with time-priority preservation for quantity reductions and automatic re-submission for price changes.
+  - **Algorithmic Execution (TWAP)**: Added `AlgoOrder` tracking and slicing logic in `MultiAssetEnv` for automated trade execution over time.
+  - **Online Learning Infrastructure**: Created `OnlineTrainer` with support for incremental `partial_fit` updates and experience replay for real-time model adaptation.
+  - **Portfolio Optimization Layer**: Added `PortfolioOptimizer` with support for Markowitz Mean-Variance and Hierarchical Risk Parity (HRP) algorithms.
+  - **Pipeline Integration**: Seamlessly integrated advanced selection methods into the `FeaturePipeline` for automated dimensionality reduction.
+- **Developer Experience & Tooling (Phase 5)**:
+  - **Troubleshooting Guide**: Created `TROUBLESHOOTING.md` covering common simulation, environment, and frontend issues.
+  - **VS Code Integration**: Added `.devcontainer/devcontainer.json` for standardized development environments.
+  - **Mock Data Generation**: Implemented `script/seed_data.py` for generating high-fidelity GBM-based market data.
+  - **Justfile Enhancements**: Added `seed-data` and consolidated `docs` recipes to the project `justfile`.
 
 - **Production Deployment Infrastructure (Phase 3)**:
   - Created **docker-compose.prod.yml** with full production stack:

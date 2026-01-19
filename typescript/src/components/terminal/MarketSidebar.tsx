@@ -168,7 +168,7 @@ export function MarketSidebar({
               if (livePrices[market.id] !== undefined) {
                 currentPrice = livePrices[market.id];
                 isLive = true;
-              } else if (market.marketData?.outcomes?.length > 0) {
+              } else if (market.marketData?.outcomes && market.marketData.outcomes.length > 0) {
                 const yesId = market.marketData.outcomes[0].id;
                 if (livePrices[yesId] !== undefined) {
                   currentPrice = livePrices[yesId];
@@ -287,7 +287,7 @@ export function MarketSidebar({
                 {/* Show outcomes preview for multi-outcome markets */}
                 {outcomeCount > 2 && market.marketData?.outcomes && (
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {market.marketData.outcomes.slice(0, 4).map((outcome, idx) => (
+                    {market.marketData.outcomes.slice(0, 4).map((outcome) => (
                       <span
                         key={outcome.id}
                         className="text-[9px] px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded"

@@ -288,6 +288,17 @@ impl OrderBook {
     pub fn total_ask_volume_py(&self) -> f64 {
         self.total_ask_volume()
     }
+
+    #[pyo3(name = "modify_order")]
+    pub fn modify_order_py(
+        &mut self,
+        order_id: u64,
+        new_price: f64,
+        new_quantity: f64,
+        timestamp: u64,
+    ) -> Option<u64> {
+        self.modify_order(order_id, new_price, new_quantity, timestamp)
+    }
 }
 
 // =========================================================================
@@ -723,35 +734,106 @@ impl OrderBook {
 
     /** Cancel an order by ID */
     pub fn cancel_order(&mut self, order_id: u64) -> bool {
-        // Search in bids
+        // 1. Search in bids
         for level in self.bids.values_mut() {
             if let Some(pos) = level.orders.iter().position(|o| o.id == order_id) {
                 let order = level.orders.remove(pos).unwrap();
                 level.total_quantity -= order.remaining();
-                // Clean up empty levels
-                self.bids.retain(|_, level| !level.is_empty());
+                self.bids.retain(|_, l| !l.is_empty());
                 return true;
             }
         }
 
-        // Search in asks
+        // 2. Search in asks
         for level in self.asks.values_mut() {
             if let Some(pos) = level.orders.iter().position(|o| o.id == order_id) {
                 let order = level.orders.remove(pos).unwrap();
                 level.total_quantity -= order.remaining();
-                // Clean up empty levels
-                self.asks.retain(|_, level| !level.is_empty());
+                self.asks.retain(|_, l| !l.is_empty());
                 return true;
             }
         }
 
+        // 3. Search in stop_orders
+        if let Some(pos) = self.stop_orders.iter().position(|o| o.id == order_id) {
+            self.stop_orders.remove(pos);
+            return true;
+        }
+
         false
+    }
+
+    /**
+     * Modify an existing order.
+     *
+     * If the price is unchanged and quantity is decreased, time priority is maintained.
+     * Otherwise, the order is cancelled and re-submitted at the back of the queue.
+     */
+    pub fn modify_order(
+        &mut self,
+        order_id: u64,
+        new_price: f64,
+        new_quantity: f64,
+        timestamp: u64,
+    ) -> Option<u64> {
+        // Try to update in-place (Bids)
+        for level in self.bids.values_mut() {
+            if let Some(pos) = level.orders.iter().position(|o| o.id == order_id) {
+                if level.price == new_price && new_quantity <= level.orders[pos].quantity {
+                    let diff = level.orders[pos].quantity - new_quantity;
+                    level.total_quantity -= diff;
+                    level.orders[pos].quantity = new_quantity;
+                    return Some(order_id);
+                }
+                let side = level.orders[pos].side;
+                self.cancel_order(order_id);
+                // Note: submit_limit_order does not take timestamp directly.
+                // It uses self.timestamp. We'll update self.timestamp before calling.
+                self.timestamp = timestamp;
+                let (new_order_id, _) = self.submit_limit_order(new_price, new_quantity, side);
+                return Some(new_order_id);
+            }
+        }
+
+        // Try to update in-place (Asks)
+        for level in self.asks.values_mut() {
+            if let Some(pos) = level.orders.iter().position(|o| o.id == order_id) {
+                if level.price == new_price && new_quantity <= level.orders[pos].quantity {
+                    let diff = level.orders[pos].quantity - new_quantity;
+                    level.total_quantity -= diff;
+                    level.orders[pos].quantity = new_quantity;
+                    return Some(order_id);
+                }
+                let side = level.orders[pos].side;
+                self.cancel_order(order_id);
+                // Note: submit_limit_order does not take timestamp directly.
+                // It uses self.timestamp. We'll update self.timestamp before calling.
+                self.timestamp = timestamp;
+                let (new_order_id, _) = self.submit_limit_order(new_price, new_quantity, side);
+                return Some(new_order_id);
+            }
+        }
+
+        // Stop orders: just cancel and re-submit as limit for now if modified
+        // (Simplification: real exchange might preserve stop type)
+        if let Some(pos) = self.stop_orders.iter().position(|o| o.id == order_id) {
+            let side = self.stop_orders[pos].side;
+            self.stop_orders.remove(pos);
+            // Note: submit_limit_order does not take timestamp directly.
+            // It uses self.timestamp. We'll update self.timestamp before calling.
+            self.timestamp = timestamp;
+            let (new_order_id, _) = self.submit_limit_order(new_price, new_quantity, side);
+            return Some(new_order_id);
+        }
+
+        None
     }
 
     /** Clear the entire order book */
     pub fn clear(&mut self) {
         self.bids.clear();
         self.asks.clear();
+        self.stop_orders.clear();
     }
 }
 
@@ -913,5 +995,48 @@ mod tests {
             "Order should have matched and created trades"
         );
         assert_eq!(book.stop_orders.len(), 0);
+    }
+
+    #[test]
+    fn test_modify_order() {
+        let mut book = OrderBook::default();
+        book.set_timestamp(100);
+
+        // 1. Submit two orders at same price
+        let (id1, _) = book.submit_limit_order(100.0, 10.0, Side::Bid);
+        let (id2, _) = book.submit_limit_order(100.0, 5.0, Side::Bid);
+
+        // 2. Modify id1: decrease quantity (maintains priority)
+        let nid1 = book.modify_order(id1, 100.0, 8.0, 101).unwrap();
+        assert_eq!(nid1, id1);
+
+        // Match against 9 units
+        let (_, trades) = book.submit_market_order(9.0, Side::Ask);
+        // Should match 8 from id1 and 1 from id2
+        assert_eq!(trades.len(), 2);
+        assert_eq!(trades[0].maker_order_id, id1);
+        assert_eq!(trades[0].quantity, 8.0);
+        assert_eq!(trades[1].maker_order_id, id2);
+        assert_eq!(trades[1].quantity, 1.0);
+
+        book.clear();
+
+        // 3. Reset priority: increase quantity
+        let (id3, _) = book.submit_limit_order(100.0, 10.0, Side::Bid);
+        let (id4, _) = book.submit_limit_order(100.0, 5.0, Side::Bid);
+
+        // id3 increases qty -> should move to back of queue
+        let nid3 = book.modify_order(id3, 100.0, 12.0, 102).unwrap();
+        assert_ne!(nid3, id3); // Gets new ID due to re-submission
+
+        let (_, trades2) = book.submit_market_order(6.0, Side::Ask);
+        // Should match 5 from id4 (now at front) and 1 from new id3
+        assert_eq!(trades2[0].maker_order_id, id4);
+        assert_eq!(trades2[1].maker_order_id, nid3);
+
+        // 4. Reset priority: change price
+        let (id5, _) = book.submit_limit_order(100.0, 10.0, Side::Bid);
+        book.modify_order(id5, 101.0, 10.0, 103).unwrap();
+        assert_eq!(book.best_bid(), Some(101.0));
     }
 }

@@ -364,6 +364,11 @@ function App() {
             livePrices={livePrices}
             favorites={favorites}
             onNavigateToFavorites={() => setActiveTab("favorites")}
+            riskMetrics={arenaData ? {
+              riskScore: arenaData.risk_score,
+              drawdown: arenaData.current_drawdown,
+              varValue: arenaData.current_var
+            } : undefined}
           />
         ) : activeTab === "simulation" ? (
           <div className="grid grid-cols-12 gap-6 h-full p-4">

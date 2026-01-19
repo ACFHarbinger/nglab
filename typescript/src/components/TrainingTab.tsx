@@ -2,7 +2,7 @@
  * @module components/TrainingTab
  * @description Comprehensive deep learning training interface with support for multiple architectures.
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Play,
   Square,
@@ -1073,13 +1073,21 @@ export default function TrainingTab() {
         {/* Quick Stats */}
         {isTraining && (
           <div className="border-t border-slate-800 p-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <div className="bg-slate-900/50 rounded-lg p-3 text-center">
                 <div className="text-lg font-mono font-bold text-indigo-400">
                   {currentEpoch}/{config.epochs}
                 </div>
                 <div className="text-[10px] text-slate-500 uppercase">
                   Epoch
+                </div>
+              </div>
+              <div className="bg-slate-900/50 rounded-lg p-3 text-center">
+                <div className="text-lg font-mono font-bold text-blue-400">
+                  {trainLoss !== null ? trainLoss.toFixed(4) : "--"}
+                </div>
+                <div className="text-[10px] text-slate-500 uppercase">
+                  Train Loss
                 </div>
               </div>
               <div className="bg-slate-900/50 rounded-lg p-3 text-center">
