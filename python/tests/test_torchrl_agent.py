@@ -2,7 +2,7 @@ import unittest
 
 from tensordict import TensorDict
 
-from python.src.agents.env_wrapper import TradingEnvWrapper
+from python.src.env.env_wrapper import TradingEnvWrapper
 from python.src.env.trading_env import TradingEnv
 
 

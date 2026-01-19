@@ -7,16 +7,16 @@ across Reinforcement Learning, Supervised Learning, and Unsupervised Learning ta
 
 import hydra
 import pytorch_lightning as pl
-from agents.env_wrapper import TradingEnvWrapper
+from env.env_wrapper import TradingEnvWrapper
 from models.time_series import TimeSeriesBackbone
 from omegaconf import DictConfig, OmegaConf
 
 # Imports from our modules
-from pipeline.lightning.rl_module import RLLightningModule
+from pipeline.lightning.reinforcement_learning import RLLightningModule
 from pipeline.lightning.self_supervised import SelfSupervisedModule
 from pipeline.lightning.semi_supervised import SemiSupervisedModule
-from pipeline.lightning.sl_module import SLLightningModule
-from pipeline.lightning.unsupervised import UnsupervisedModule
+from pipeline.lightning.supervised_learning import SLLightningModule
+from pipeline.lightning.unsupervised_learning import UnsupervisedModule
 from pipeline.lightning.vae_module import VAELightningModule
 from policies.neural import NeuralPolicy
 from pytorch_lightning.loggers import TensorBoardLogger

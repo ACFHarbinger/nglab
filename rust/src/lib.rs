@@ -10,6 +10,7 @@
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 
+pub mod config;
 pub mod errors;
 pub mod logging;
 pub mod models;

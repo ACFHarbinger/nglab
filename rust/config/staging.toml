@@ -1,0 +1,27 @@
+[environment]
+name = "staging"
+log_level = "info"
+debug = true
+
+[rust]
+arena_tick_rate_ms = 100
+max_order_book_depth = 5000
+enable_metrics = true
+
+[python]
+model_checkpoint_dir = "./model_weights_staging"
+wandb_mode = "online"
+device = "cpu"
+
+[tauri]
+window_width = 1280
+window_height = 720
+enable_devtools = true
+
+[database]
+url = "${DATABASE_URL}"
+pool_size = 10
+
+[api]
+polymarket_api_key = "${POLYMARKET_API_KEY}"
+rate_limit_per_minute = 120

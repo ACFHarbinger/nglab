@@ -4,6 +4,22 @@ All notable changes to the NGLab project will be documented in this file.
 
 ## [Unreleased] - 2026-01-19
 
+### Added
+- **Configuration Management**:
+  - Added `config` crate for environment-based settings loading.
+  - Created `config/development.toml`, `staging.toml`, and `production.toml` for tiered deployment configuration.
+  - Implemented `Settings` struct in `rust/src/config.rs` for type-safe configuration access.
+- **Production Logging**:
+  - Implemented structured JSON logging using `tracing` and `tracing-appender` in `rust/src/logging.rs`.
+  - Added daily log rotation to `logs/nglab.log`.
+  - Added `ArenaError` with `thiserror` for comprehensive, strongly-typed error handling across the Rust backend.
+  - Implemented `From<ArenaError> for PyErr` for seamless error propagation to Python.
+
+### Changed
+- **Gymnasium API**:
+  - Refactored `TradingEnv` to return `PyResult` instead of panicking on errors.
+  - Added `#[instrument]` tracing spans to `step` and `reset` methods for performance observability.
+
 ### Fixed
 - **Rust Lints & Benchmarks**:
   - Suppressed `async_fn_in_trait` lint in `scraper.rs` for cleaner internal API.
