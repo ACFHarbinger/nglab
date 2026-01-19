@@ -155,9 +155,59 @@ impl Default for OrderBook {
     }
 }
 
-#[cfg_attr(feature = "python", pymethods)]
+// =========================================================================
+// Python Bindings Implementation
+// =========================================================================
+
+#[cfg(feature = "python")]
+#[pymethods]
 impl OrderBook {
-    #[cfg_attr(feature = "python", new)]
+    #[new]
+    pub fn new_py() -> Self {
+        Self::new()
+    }
+
+    #[pyo3(name = "best_bid")]
+    pub fn best_bid_py(&self) -> Option<f64> {
+        self.best_bid()
+    }
+
+    #[pyo3(name = "best_ask")]
+    pub fn best_ask_py(&self) -> Option<f64> {
+        self.best_ask()
+    }
+
+    #[pyo3(name = "mid_price")]
+    pub fn mid_price_py(&self) -> Option<f64> {
+        self.mid_price()
+    }
+
+    #[pyo3(name = "spread")]
+    pub fn spread_py(&self) -> Option<f64> {
+        self.spread()
+    }
+
+    #[pyo3(name = "imbalance")]
+    pub fn imbalance_py(&self) -> f64 {
+        self.imbalance()
+    }
+
+    #[pyo3(name = "total_bid_volume")]
+    pub fn total_bid_volume_py(&self) -> f64 {
+        self.total_bid_volume()
+    }
+
+    #[pyo3(name = "total_ask_volume")]
+    pub fn total_ask_volume_py(&self) -> f64 {
+        self.total_ask_volume()
+    }
+}
+
+// =========================================================================
+// Pure Rust Implementation
+// =========================================================================
+
+impl OrderBook {
     pub fn new() -> Self {
         OrderBook {
             bids: IndexMap::new(),

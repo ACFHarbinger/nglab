@@ -31,12 +31,32 @@ pub struct Arena {
     step_count: u64,
 }
 
-#[cfg_attr(feature = "python", pymethods)]
+// =========================================================================
+// Python Bindings Implementation
+// =========================================================================
+
+#[cfg(feature = "python")]
+#[pymethods]
+impl Arena {
+    #[new]
+    pub fn new_py() -> Self {
+        Self::new()
+    }
+
+    #[pyo3(name = "step_count")]
+    pub fn step_count_py(&self) -> u64 {
+        self.step_count()
+    }
+}
+
+// =========================================================================
+// Pure Rust Implementation
+// =========================================================================
+
 impl Arena {
     /**
      * Create a new instance of the Arena with default state.
      */
-    #[cfg_attr(feature = "python", new)]
     pub fn new() -> Self {
         Arena { step_count: 0 }
     }

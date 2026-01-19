@@ -28,8 +28,8 @@ def test_trading_env_creation():
 
     # Create environment with basic parameters
     env = nglab.TradingEnv(
-        initial_cash=10000.0,
-        lookback_window=50,
+        initial_capital=10000.0,
+        lookback=50,
         transaction_cost=0.001,
     )
     assert env is not None
@@ -42,7 +42,7 @@ def test_trading_env_reset():
     except ImportError:
         pytest.skip("nglab module not built")
 
-    env = nglab.TradingEnv(initial_cash=10000.0, lookback_window=50)
+    env = nglab.TradingEnv(initial_capital=10000.0, lookback=50)
 
     # Reset should return observation and info dict
     obs, info = env.reset(seed=42)
@@ -63,7 +63,7 @@ def test_trading_env_step():
     except ImportError:
         pytest.skip("nglab module not built")
 
-    env = nglab.TradingEnv(initial_cash=10000.0, lookback_window=50)
+    env = nglab.TradingEnv(initial_capital=10000.0, lookback=50)
     env.reset(seed=42)
 
     # Test different actions (assuming discrete action space)
@@ -92,7 +92,7 @@ def test_trading_env_episode():
     except ImportError:
         pytest.skip("nglab module not built")
 
-    env = nglab.TradingEnv(initial_cash=10000.0, lookback_window=50)
+    env = nglab.TradingEnv(initial_capital=10000.0, lookback=50)
     obs, info = env.reset(seed=123)
 
     total_reward = 0.0
@@ -121,7 +121,7 @@ def test_zero_copy_numpy_transfer():
     except ImportError:
         pytest.skip("nglab module not built")
 
-    env = nglab.TradingEnv(initial_cash=10000.0, lookback_window=50)
+    env = nglab.TradingEnv(initial_capital=10000.0, lookback=50)
     obs, _ = env.reset(seed=42)
 
     # Check that observation is a proper numpy array
@@ -141,7 +141,7 @@ def test_multiple_environments():
         pytest.skip("nglab module not built")
 
     envs = [
-        nglab.TradingEnv(initial_cash=10000.0, lookback_window=50) for _ in range(3)
+        nglab.TradingEnv(initial_capital=10000.0, lookback=50) for _ in range(3)
     ]
 
     # Reset all environments
@@ -166,7 +166,7 @@ def test_action_space_bounds():
     except ImportError:
         pytest.skip("nglab module not built")
 
-    env = nglab.TradingEnv(initial_cash=10000.0, lookback_window=50)
+    env = nglab.TradingEnv(initial_capital=10000.0, lookback=50)
     env.reset(seed=42)
 
     # Test with invalid action (if discrete, actions outside [0, 1, 2] should error)
@@ -187,8 +187,8 @@ def test_reproducibility_with_seed():
         pytest.skip("nglab module not built")
 
     # Create two environments with same seed
-    env1 = nglab.TradingEnv(initial_cash=10000.0, lookback_window=50)
-    env2 = nglab.TradingEnv(initial_cash=10000.0, lookback_window=50)
+    env1 = nglab.TradingEnv(initial_capital=10000.0, lookback=50)
+    env2 = nglab.TradingEnv(initial_capital=10000.0, lookback=50)
 
     obs1, _ = env1.reset(seed=42)
     obs2, _ = env2.reset(seed=42)
@@ -243,7 +243,7 @@ def test_long_episode_stability():
     except ImportError:
         pytest.skip("nglab module not built")
 
-    env = nglab.TradingEnv(initial_cash=10000.0, lookback_window=50)
+    env = nglab.TradingEnv(initial_capital=10000.0, lookback=50)
     obs, _ = env.reset(seed=42)
 
     steps = 0

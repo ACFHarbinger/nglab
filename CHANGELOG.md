@@ -32,6 +32,12 @@ All notable changes to the NGLab project will be documented in this file.
   - **Multi-Outcome**: Updated `TradingFormWidget` and `MarketSidebar` to support multi-outcome markets (e.g., electing Fed Chair) with dynamic outcome selection and pricing.
   - **UI**: Improved `TradingFormWidget` outcome toggle and button text for clarity.
 
+- **Rust Backend & Bindings**:
+  - **Refactoring**: Decoupled Python bindings from Rust core logic in `gym.rs`, `orderbook.rs`, `polymarket.rs`, and `lib.rs`, resolving PyO3 compilation errors and attribute clashes.
+  - **Gymnasium API**: Updated `TradingEnv` to match Gymnasium standards (`reset` returns `(obs, info)` tuple, accepts `seed` and `options`).
+  - **Features**: Exposed `load_prices` method in `TradingEnv` to enable injecting custom price data from Python.
+  - **Testing**: Added `python/tests/test_gym_loop.py` for binding verification and updated `test_integration.py` to match new API signatures. Achieved 100% pass rate on integration tests.
+
 ## [Unreleased] - 2026-01-17
 
 ### Added

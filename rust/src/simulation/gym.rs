@@ -125,11 +125,15 @@ pub struct TradingEnv {
     logger: crate::utils::visualizer::RerunLogger,
 }
 
-#[cfg_attr(feature = "python", pymethods)]
+// =========================================================================
+// Python Bindings Implementation
+// =========================================================================
+
+#[cfg(feature = "python")]
+#[pymethods]
 impl TradingEnv {
-    #[cfg(feature = "python")]
-    #[cfg_attr(feature = "python", new)]
-    #[cfg_attr(feature = "python", pyo3(signature = (initial_capital=10000.0, transaction_cost=0.001, lookback=30, max_steps=1000, enable_logging=true)))]
+    #[new]
+    #[pyo3(signature = (initial_capital=10000.0, transaction_cost=0.001, lookback=30, max_steps=1000, enable_logging=true))]
     pub fn new_py(
         initial_capital: f64,
         transaction_cost: f64,
@@ -146,6 +150,109 @@ impl TradingEnv {
         )
     }
 
+    /** Load historical price data */
+    #[pyo3(name = "load_prices")]
+    pub fn load_prices_py(&mut self, prices: Vec<f64>) {
+        self.load_prices(prices);
+    }
+
+    /** Reset the environment */
+    #[pyo3(signature = (seed=None, options=None))]
+    pub fn reset<'py>(
+        &mut self,
+        py: Python<'py>,
+        seed: Option<u64>,
+        options: Option<PyObject>,
+    ) -> (Bound<'py, PyArray2<f64>>, PyObject) {
+        if let Some(s) = seed {
+            // TODO: Seed RNG
+        }
+        self.reset_rs();
+
+        let obs = self.get_observation(py);
+        let info = PyDict::new(py).into();
+        (obs, info)
+    }
+
+    /** Take a step in the environment */
+    pub fn step<'py>(
+        &mut self,
+        py: Python<'py>,
+        action: i32,
+    ) -> (Bound<'py, PyArray2<f64>>, f64, bool, bool, PyObject) {
+        let action_type = ActionType::from(action);
+        let lookback = self.lookback;
+        let num_features = self.num_features;
+
+        // Run simulation logic without GIL
+        // Using Python::detach (allow_threads is deprecated) if possible, but simplest fix is allow_threads if it works
+        // or just run synchronously since execution is fast.
+        // For now, let's just run it directly to avoid thread issues/deprecation warinings if allow_threads is deprecated.
+        // Actually, let's keep it simple.
+
+        let trade_cost = self.execute_action(action_type);
+        self.current_step += 1;
+        self.total_steps += 1;
+
+        let portfolio_value = self.portfolio_value();
+        let returns = (portfolio_value - self.prev_portfolio_value) / self.prev_portfolio_value;
+        self.returns.push(returns);
+        self.prev_portfolio_value = portfolio_value;
+
+        let reward = self.calculate_reward(returns, trade_cost);
+        let terminated =
+            portfolio_value <= 0.0 || self.current_step >= self.prices.len().saturating_sub(1);
+        let truncated = self.current_step.saturating_sub(self.lookback) >= self.max_steps;
+
+        let obs_data = self.generate_observation_data();
+
+        let step_info = StepInfo {
+            portfolio_value,
+            position: self.position,
+            cash: self.cash,
+            sharpe_ratio: self.calculate_sharpe(30),
+            total_steps: self.total_steps,
+        };
+
+        self.logger
+            .log_step(self.total_steps, &self.orderbook, portfolio_value);
+
+        // Build info dict
+        let dict = PyDict::new(py);
+        dict.set_item("portfolio_value", step_info.portfolio_value)
+            .unwrap();
+        dict.set_item("position", step_info.position).unwrap();
+        dict.set_item("cash", step_info.cash).unwrap();
+        dict.set_item("sharpe_ratio", step_info.sharpe_ratio)
+            .unwrap();
+        dict.set_item("total_steps", step_info.total_steps).unwrap();
+        let info = dict.into();
+
+        // Create numpy array
+        let obs_array = ndarray::Array2::from_shape_vec((lookback, num_features), obs_data)
+            .expect("Invalid shape");
+        let obs = obs_array.to_pyarray(py);
+
+        (obs, reward, terminated, truncated, info)
+    }
+
+    /** Get current observation as numpy array */
+    pub fn get_observation<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
+        let obs_data = self.generate_observation_data();
+
+        // Reshape to (lookback, features)
+        let array = ndarray::Array2::from_shape_vec((self.lookback, self.num_features), obs_data)
+            .expect("Invalid shape");
+
+        array.to_pyarray(py)
+    }
+}
+
+// =========================================================================
+// Pure Rust Implementation
+// =========================================================================
+
+impl TradingEnv {
     pub fn new(
         initial_capital: f64,
         transaction_cost: f64,
@@ -156,7 +263,7 @@ impl TradingEnv {
         TradingEnv {
             orderbook: OrderBook::new(),
             prices: Vec::new(),
-            current_step: 0,
+            current_step: 0, // Will be set to lookback on reset
             position: 0.0,
             cash: initial_capital,
             initial_capital,
@@ -190,13 +297,6 @@ impl TradingEnv {
         3
     }
 
-    #[cfg(feature = "python")]
-    /** Reset the environment */
-    pub fn reset<'py>(&mut self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
-        self.reset_rs();
-        self.get_observation(py)
-    }
-
     /**
      * Pure Rust reset implementation (independent of Python bindings).
      *
@@ -211,89 +311,6 @@ impl TradingEnv {
         self.orderbook.clear();
 
         self.generate_observation_data()
-    }
-
-    #[cfg(feature = "python")]
-    /** Take a step in the environment */
-    pub fn step<'py>(
-        &mut self,
-        py: Python<'py>,
-        action: i32,
-    ) -> (Bound<'py, PyArray2<f64>>, f64, bool, bool, PyObject) {
-        let action_type = ActionType::from(action);
-        let lookback = self.lookback;
-        let num_features = self.num_features;
-
-        // Run simulation logic without GIL
-        let (reward, terminated, truncated, obs_data, step_info) = py.allow_threads(move || {
-            // Execute action
-            let trade_cost = self.execute_action(action_type);
-
-            // Advance time
-            self.current_step += 1;
-            self.total_steps += 1;
-
-            // Calculate reward
-            let portfolio_value = self.portfolio_value();
-            let returns = (portfolio_value - self.prev_portfolio_value) / self.prev_portfolio_value;
-            self.returns.push(returns);
-            self.prev_portfolio_value = portfolio_value;
-
-            // Risk-adjusted reward (Sharpe-like)
-            let reward = self.calculate_reward(returns, trade_cost);
-
-            // Check termination
-            let terminated = portfolio_value <= 0.0 || self.current_step >= self.prices.len() - 1;
-            let truncated = self.current_step.saturating_sub(self.lookback) >= self.max_steps;
-
-            // Generate observation data
-            let obs_data = self.generate_observation_data();
-
-            // Collect info data
-            let step_info = StepInfo {
-                portfolio_value,
-                position: self.position,
-                cash: self.cash,
-                sharpe_ratio: self.calculate_sharpe(30),
-                total_steps: self.total_steps,
-            };
-
-            // Log simulation state (thread-safe)
-            self.logger
-                .log_step(self.total_steps, &self.orderbook, portfolio_value);
-
-            (reward, terminated, truncated, obs_data, step_info)
-        });
-
-        // Build info dict (needs GIL)
-        let dict = PyDict::new_bound(py);
-        dict.set_item("portfolio_value", step_info.portfolio_value)
-            .unwrap();
-        dict.set_item("position", step_info.position).unwrap();
-        dict.set_item("cash", step_info.cash).unwrap();
-        dict.set_item("sharpe_ratio", step_info.sharpe_ratio)
-            .unwrap();
-        dict.set_item("total_steps", step_info.total_steps).unwrap();
-        let info = dict.into();
-
-        // Create numpy array (needs GIL)
-        let obs_array = ndarray::Array2::from_shape_vec((lookback, num_features), obs_data)
-            .expect("Invalid shape");
-        let obs = obs_array.to_pyarray_bound(py);
-
-        (obs, reward, terminated, truncated, info)
-    }
-
-    #[cfg(feature = "python")]
-    /** Get current observation as numpy array */
-    pub fn get_observation<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
-        let obs_data = self.generate_observation_data();
-
-        // Reshape to (lookback, features)
-        let array = ndarray::Array2::from_shape_vec((self.lookback, self.num_features), obs_data)
-            .expect("Invalid shape");
-
-        array.to_pyarray_bound(py)
     }
 
     /** Get current portfolio value */
@@ -316,9 +333,7 @@ impl TradingEnv {
     pub fn get_total_steps(&self) -> u64 {
         self.total_steps
     }
-}
 
-impl TradingEnv {
     /** Get reference to orderbook */
     pub fn orderbook(&self) -> &OrderBook {
         &self.orderbook
@@ -397,9 +412,7 @@ impl TradingEnv {
         }
         obs
     }
-}
 
-impl TradingEnv {
     /** Get current price */
     fn current_price(&self) -> Option<f64> {
         self.prices.get(self.current_step).copied()
@@ -500,21 +513,6 @@ impl TradingEnv {
         } else {
             0.0
         }
-    }
-
-    #[cfg(feature = "python")]
-    /** Build info dictionary for Python */
-    #[allow(dead_code)]
-    fn build_info(&self, py: Python<'_>) -> PyObject {
-        let dict = PyDict::new_bound(py);
-        dict.set_item("portfolio_value", self.portfolio_value())
-            .unwrap();
-        dict.set_item("position", self.position).unwrap();
-        dict.set_item("cash", self.cash).unwrap();
-        dict.set_item("sharpe_ratio", self.calculate_sharpe(30))
-            .unwrap();
-        dict.set_item("total_steps", self.total_steps).unwrap();
-        dict.into()
     }
 }
 
