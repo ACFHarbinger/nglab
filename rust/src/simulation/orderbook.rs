@@ -132,20 +132,20 @@ impl Order {
     /// Reload visible quantity for iceberg orders from the hidden stash
     pub fn refresh_iceberg(&mut self) {
         if let (Some(total), Some(visible_max)) = (self.iceberg_total, self.visible_quantity) {
-            let current_filled_total = self.filled; // This is filled of the *current* slice?
-                                                    // Usually iceberg structure tracks total quantity separately.
-                                                    // Simplified: 'quantity' is the current visible order size.
-                                                    // We need to track total remaining.
-                                                    // Let's assume 'quantity' is current visible size. 'iceberg_total' is total remaining?
+            // Deduct the currently filled amount from the total remaining
+            let remaining_total = (total - self.filled).max(0.0);
 
-            // Standard Iceberg:
-            // Displayed Amount = min(Total Remaining, Visible Amount)
-            // This implementation is a bit complex for single struct.
-            // Simplified: 'quantity' is always the current visible slice.
-            // When filled, we spawn a new order or update this one?
-            // Let's keep it simple: Icebergs are processed as standard orders,
-            // but we might re-insert them.
-            // Better strategy: Iceberg logic handled in OrderBook.
+            if remaining_total <= 0.0000001 {
+                // Fully exhausted
+                self.iceberg_total = Some(0.0);
+                self.quantity = 0.0;
+                self.filled = 0.0;
+            } else {
+                // Reload next slice
+                self.iceberg_total = Some(remaining_total);
+                self.quantity = remaining_total.min(visible_max);
+                self.filled = 0.0;
+            }
         }
     }
 }

@@ -46,7 +46,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install uv
 
 # Copy dependency files
-COPY python/pyproject.toml python/uv.lock ./
+COPY pyproject.toml uv.lock ./
 
 # Install production dependencies only
 RUN uv pip install --system --no-cache -r pyproject.toml
@@ -117,11 +117,11 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 
 # Default command: run API server with Gunicorn
 CMD ["gunicorn", "src.api.inference:app", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "4", \
-     "--worker-class", "uvicorn.workers.UvicornWorker", \
-     "--timeout", "120", \
-     "--keep-alive", "5", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-", \
-     "--capture-output"]
+    "--bind", "0.0.0.0:8000", \
+    "--workers", "4", \
+    "--worker-class", "uvicorn.workers.UvicornWorker", \
+    "--timeout", "120", \
+    "--keep-alive", "5", \
+    "--access-logfile", "-", \
+    "--error-logfile", "-", \
+    "--capture-output"]

@@ -64,7 +64,7 @@ RUN pip3 install --no-cache-dir \
     --index-url https://download.pytorch.org/whl/cu121
 
 # Install remaining dependencies
-COPY python/pyproject.toml ./
+COPY pyproject.toml ./
 RUN pip3 install --no-cache-dir -e ".[gpu]" || pip3 install --no-cache-dir -r pyproject.toml
 
 # Copy Rust library
@@ -107,10 +107,10 @@ EXPOSE 8000
 ENTRYPOINT ["/usr/bin/tini", "--"]
 
 CMD ["gunicorn", "src.api.inference:app", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "2", \
-     "--worker-class", "uvicorn.workers.UvicornWorker", \
-     "--timeout", "300", \
-     "--keep-alive", "5", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-"]
+    "--bind", "0.0.0.0:8000", \
+    "--workers", "2", \
+    "--worker-class", "uvicorn.workers.UvicornWorker", \
+    "--timeout", "300", \
+    "--keep-alive", "5", \
+    "--access-logfile", "-", \
+    "--error-logfile", "-"]
