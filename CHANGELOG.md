@@ -14,6 +14,15 @@ All notable changes to the NGLab project will be documented in this file.
 - **DevOps & Containerization**:
   - Created a multi-stage **Dockerfile** for minimized production images (Rust + Python).
   - Added **docker-compose.yml** for orchestrated deployment including core API and monitoring (Prometheus/Grafana).
+- **Performance Profiling & Optimization**:
+  - Implemented continuous benchmarking via GitHub Actions (`cargo bench`).
+  - Added a `@profile` decorator in `python/src/utils/profiling.py` for detailed Python function analysis.
+  - Integrated profiling into the main training entry point.
+- **Type Safety & Persistence (P2 Phase 1)**:
+  - Created Python type stubs (`nglab/_nglab.pyi`) for the Rust module.
+  - Enabled **strict Mypy checks** in `pyproject.toml` for the Python codebase.
+  - Defined initial PostgreSQL schema for trades, portfolio snapshots, and model checkpoints.
+  - Implemented SQLAlchemy 2.0+ models in `python/src/db/models.py`.
 - **Health Checks**:
   - Implemented Flask-based health monitoring API in `python/src/api/health.py` (CPU, Memory, GPU).
   - Added `rust/src/health.rs` with serializable health status structures for Tauri integration.

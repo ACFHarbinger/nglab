@@ -806,7 +806,8 @@ jobs:
 
 ### 9. Type Safety Improvements
 
-#### 9.1 Python Type Stubs for Rust Bindings
+#### 9.1 Python Type Stubs for Rust Bindings (Completed)
+**Status:** ✅ Implemented in `nglab/_nglab.pyi` (2026-01-19).
 
 **Generate stubs for the `nglab` Rust module:**
 
@@ -884,7 +885,8 @@ class PolymarketArena:
     def get_no_price(self) -> float: ...
 ```
 
-#### 9.2 Mypy Strict Mode
+#### 9.2 Mypy Strict Mode (Completed)
+**Status:** ✅ Enabled in `pyproject.toml` (2026-01-19).
 
 **Update:** [python/pyproject.toml](python/pyproject.toml)
 ```toml
@@ -916,7 +918,8 @@ ignore_missing_imports = true
 
 **Current State:** In-memory only, no persistence
 
-#### 10.1 PostgreSQL Schema
+#### 10.1 PostgreSQL Schema (Completed)
+**Status:** ✅ Initial schema in `migrations/001_initial_schema.sql`.
 
 **Create:** [migrations/001_initial_schema.sql](migrations/001_initial_schema.sql)
 ```sql
@@ -989,7 +992,8 @@ CREATE INDEX idx_market_data_symbol_timestamp ON market_data(symbol, timestamp D
 -- SELECT create_hypertable('market_data', 'timestamp');
 ```
 
-#### 10.2 SQLAlchemy Models
+#### 10.2 SQLAlchemy Models (Completed)
+**Status:** ✅ Implemented in `python/src/db/models.py`.
 
 **Create:** [python/src/db/models.py](python/src/db/models.py)
 ```python

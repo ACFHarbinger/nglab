@@ -5,16 +5,22 @@ from functools import wraps
 from pathlib import Path
 import logging
 
+from typing import Any, Callable, TypeVar, cast
+import logging
+
+
 logger = logging.getLogger(__name__)
 
-def profile(output_dir: str = "./profiles"):
+F = TypeVar("F", bound=Callable[..., Any])
+
+def profile(output_dir: str = "./profiles") -> Callable[[F], F]:
     """
     Decorator to profile function execution using cProfile.
     Writes results to a .prof file in the specified directory.
     """
-    def decorator(func):
+    def decorator(func: F) -> F:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             out_path = Path(output_dir)
             out_path.mkdir(parents=True, exist_ok=True)
             
@@ -34,5 +40,5 @@ def profile(output_dir: str = "./profiles"):
             logger.info(f"Performance profile for {func.__name__}:\n{s.getvalue()}")
             
             return result
-        return wrapper
+        return cast(F, wrapper)
     return decorator
