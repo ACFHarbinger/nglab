@@ -19,7 +19,7 @@ jobs:
 
       - name: Run GPU Benchmarks
         run: |
-          python python/src/utils/profiling/benchmark.py --output benchmark_result.json
+          uv run python python/src/utils/profiling/benchmark.py --output benchmark_result.json
 
       - name: Download Baseline Benchmark
         uses: actions/download-artifact@v4
@@ -31,7 +31,7 @@ jobs:
       - name: Check for Performance Regression
         run: |
           if [ -f "benchmark_baseline.json" ]; then
-            python python/src/utils/profiling/compare_benchmarks.py benchmark_result.json benchmark_baseline.json --threshold 0.10
+            uv run python python/src/utils/profiling/compare_benchmarks.py benchmark_result.json benchmark_baseline.json --threshold 0.10
           else
             echo "No baseline found. Skipping regression check."
           fi

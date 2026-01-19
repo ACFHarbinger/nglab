@@ -171,10 +171,9 @@ impl MultiAssetEnv {
             if i >= self.assets.len() {
                 break;
             }
-            let asset = &self.assets[i];
             let action = ActionType::from(action_idx);
 
-            self.execute_asset_action(asset, action);
+            self.execute_asset_action(i, action);
         }
 
         self.current_step += 1;
