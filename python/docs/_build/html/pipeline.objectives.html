@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>pipeline.objectives package &#8212; NGLab 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pipeline.reinforce package" href="pipeline.reinforce.html" />
+    <link rel="prev" title="pipeline.meta package" href="pipeline.meta.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="pipeline-objectives-package">
+<h1>pipeline.objectives package<a class="headerlink" href="#pipeline-objectives-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-pipeline.objectives.variants">
+<span id="pipeline-objectives-variants-module"></span><h2>pipeline.objectives.variants module<a class="headerlink" href="#module-pipeline.objectives.variants" title="Link to this heading">¶</a></h2>
+<p>PPO Variant Objectives for NGLab.</p>
+<p>Implements specialized RL losses including DR-GRPO, GSPO, and SAPO,
+designed to improve stability and performance in financial trading tasks.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pipeline.objectives.variants.DRGRPOLoss">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pipeline.objectives.variants.</span></span><span class="sig-name descname"><span class="pre">DRGRPOLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/objectives/variants.html#DRGRPOLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.objectives.variants.DRGRPOLoss" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ClipPPOLoss</span></code></p>
+<p>DR-GRPO: Group Relative Policy Optimization (Done Right).
+Features:
+1. Unnormalized centered advantages: A = R - Mean(R_group)
+2. No sequence length normalization in ratio (if applicable, though standard PPO ratio is per-step).</p>
+<p>In this implementation, we assume the ‘advantage’ key in the input TensorDict
+has already been computed via a group-based normalization if handled in the collector/buffer,
+OR we compute it here if ‘reward’ acts as the signal.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.objectives.variants.DRGRPOLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensordict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorDict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TensorDict</span></span></span><a class="reference internal" href="_modules/pipeline/objectives/variants.html#DRGRPOLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.objectives.variants.DRGRPOLoss.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for DR-GRPO.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pipeline.objectives.variants.GSPOLoss">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pipeline.objectives.variants.</span></span><span class="sig-name descname"><span class="pre">GSPOLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/objectives/variants.html#GSPOLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.objectives.variants.GSPOLoss" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ClipPPOLoss</span></code></p>
+<p>GSPO: Group Sequence Policy Optimization.
+Key variation: Ratio is scaled by sequence length.
+ratio = exp( (log_new - log_old) / seq_len )</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.objectives.variants.GSPOLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensordict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorDictBase</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TensorDictBase</span></span></span><a class="headerlink" href="#pipeline.objectives.variants.GSPOLoss.forward" title="Link to this definition">¶</a></dt>
+<dd><p>It is designed to read an input TensorDict and return another tensordict with loss keys named “loss*”.</p>
+<p>Splitting the loss in its component can then be used by the trainer to log the various loss values throughout
+training. Other scalars present in the output tensordict will be logged too.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tensordict</strong> – an input tensordict with the values required to compute the loss.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new tensordict with no batch dimension containing various loss scalars which will be named “loss*”. It
+is essential that the losses are returned with this name as they will be read by the trainer before
+backpropagation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pipeline.objectives.variants.SAPOLoss">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pipeline.objectives.variants.</span></span><span class="sig-name descname"><span class="pre">SAPOLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/objectives/variants.html#SAPOLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.objectives.variants.SAPOLoss" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ClipPPOLoss</span></code></p>
+<p>SAPO: Self-Adaptive Policy Optimization.
+Replaces clipping with a soft gating function.
+f(r) = (4/tau) * sigmoid(tau * (r - 1))</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.objectives.variants.SAPOLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensordict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorDict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TensorDict</span></span></span><a class="reference internal" href="_modules/pipeline/objectives/variants.html#SAPOLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.objectives.variants.SAPOLoss.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for SAPO using soft gating.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pipeline.objectives">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pipeline.objectives" title="Link to this heading">¶</a></h2>
+<p>RL Objectives and Loss Modules for NGLab.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="pipeline.objectives.DRGRPOLoss">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pipeline.objectives.</span></span><span class="sig-name descname"><span class="pre">DRGRPOLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/objectives/variants.html#DRGRPOLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.objectives.DRGRPOLoss" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ClipPPOLoss</span></code></p>
+<p>DR-GRPO: Group Relative Policy Optimization (Done Right).
+Features:
+1. Unnormalized centered advantages: A = R - Mean(R_group)
+2. No sequence length normalization in ratio (if applicable, though standard PPO ratio is per-step).</p>
+<p>In this implementation, we assume the ‘advantage’ key in the input TensorDict
+has already been computed via a group-based normalization if handled in the collector/buffer,
+OR we compute it here if ‘reward’ acts as the signal.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.objectives.DRGRPOLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensordict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorDict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TensorDict</span></span></span><a class="reference internal" href="_modules/pipeline/objectives/variants.html#DRGRPOLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.objectives.DRGRPOLoss.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for DR-GRPO.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pipeline.objectives.GSPOLoss">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pipeline.objectives.</span></span><span class="sig-name descname"><span class="pre">GSPOLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/objectives/variants.html#GSPOLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.objectives.GSPOLoss" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ClipPPOLoss</span></code></p>
+<p>GSPO: Group Sequence Policy Optimization.
+Key variation: Ratio is scaled by sequence length.
+ratio = exp( (log_new - log_old) / seq_len )</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.objectives.GSPOLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensordict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorDictBase</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TensorDictBase</span></span></span><a class="headerlink" href="#pipeline.objectives.GSPOLoss.forward" title="Link to this definition">¶</a></dt>
+<dd><p>It is designed to read an input TensorDict and return another tensordict with loss keys named “loss*”.</p>
+<p>Splitting the loss in its component can then be used by the trainer to log the various loss values throughout
+training. Other scalars present in the output tensordict will be logged too.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tensordict</strong> – an input tensordict with the values required to compute the loss.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new tensordict with no batch dimension containing various loss scalars which will be named “loss*”. It
+is essential that the losses are returned with this name as they will be read by the trainer before
+backpropagation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pipeline.objectives.SAPOLoss">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">pipeline.objectives.</span></span><span class="sig-name descname"><span class="pre">SAPOLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipeline/objectives/variants.html#SAPOLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.objectives.SAPOLoss" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ClipPPOLoss</span></code></p>
+<p>SAPO: Self-Adaptive Policy Optimization.
+Replaces clipping with a soft gating function.
+f(r) = (4/tau) * sigmoid(tau * (r - 1))</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pipeline.objectives.SAPOLoss.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensordict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TensorDict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">TensorDict</span></span></span><a class="reference internal" href="_modules/pipeline/objectives/variants.html#SAPOLoss.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pipeline.objectives.SAPOLoss.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for SAPO using soft gating.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">NGLab</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="api.html">api package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html">data package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="env.html">env package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="infer.html">infer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html">main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">models package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="pipeline.html">pipeline package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="policies.html">policies package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+  <li><a href="pipeline.html">pipeline package</a><ul>
+      <li>Previous: <a href="pipeline.meta.html" title="previous chapter">pipeline.meta package</a></li>
+      <li>Next: <a href="pipeline.reinforce.html" title="next chapter">pipeline.reinforce package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, NGLab Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/pipeline.objectives.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

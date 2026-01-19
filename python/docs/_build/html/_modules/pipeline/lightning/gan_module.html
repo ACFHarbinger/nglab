@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pipeline.lightning.gan_module &#8212; NGLab 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pipeline.lightning.gan_module</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Generative Adversarial Network (GAN) Module for Time Series Prediction.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">nn</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModule</span>
+
+
+<div class="viewcode-block" id="GANLightningModule">
+<a class="viewcode-back" href="../../../pipeline.lightning.html#pipeline.lightning.gan_module.GANLightningModule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GANLightningModule</span><span class="p">(</span><span class="n">BaseModule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Lightning Module for Time Series GAN (e.g., TimeGAN style or conditional forecasting GAN).</span>
+
+<span class="sd">    Structure:</span>
+<span class="sd">    - Generator: Takes history (X) -&gt; Predicts future (Y_hat).</span>
+<span class="sd">    - Discriminator: Takes full sequence (X + Y) -&gt; Predicts Real/Fake.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">discriminator</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">cfg</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the GAN module.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            generator (nn.Module): The generator network.</span>
+<span class="sd">            discriminator (nn.Module): The discriminator network.</span>
+<span class="sd">            cfg (Dict[str, Any]): Configuration dictionary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_hyperparameters</span><span class="p">(</span><span class="n">ignore</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;generator&quot;</span><span class="p">,</span> <span class="s2">&quot;discriminator&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generator</span> <span class="o">=</span> <span class="n">generator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">discriminator</span> <span class="o">=</span> <span class="n">discriminator</span>
+
+        <span class="c1"># Loss function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adversarial_loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BCEWithLogitsLoss</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1_loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">L1Loss</span><span class="p">()</span>  <span class="c1"># Optional auxiliary loss for reconstruction</span>
+
+        <span class="c1"># Hyperparameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_adv</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;lambda_adv&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_l1</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;lambda_l1&quot;</span><span class="p">,</span> <span class="mf">100.0</span>
+        <span class="p">)</span>  <span class="c1"># Reconstruction weight often high in cGAN (Pix2Pix style)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr_g</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;lr_g&quot;</span><span class="p">,</span> <span class="mf">2e-4</span><span class="p">)</span>  <span class="c1"># TTUR: D often higher or balanced</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr_d</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;lr_d&quot;</span><span class="p">,</span> <span class="mf">2e-4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b1</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;beta1&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">b2</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;beta2&quot;</span><span class="p">,</span> <span class="mf">0.999</span><span class="p">)</span>
+
+        <span class="c1"># Buffer for input/target concatenation if needed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">automatic_optimization</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># We handle G and D steps manually</span>
+
+<div class="viewcode-block" id="GANLightningModule.forward">
+<a class="viewcode-back" href="../../../pipeline.lightning.html#pipeline.lightning.gan_module.GANLightningModule.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass (Generator prediction).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GANLightningModule.configure_optimizers">
+<a class="viewcode-back" href="../../../pipeline.lightning.html#pipeline.lightning.gan_module.GANLightningModule.configure_optimizers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Configure optimizers for Generator and Discriminator.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">opt_g</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lr_g</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">b2</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">opt_d</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">discriminator</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lr_d</span><span class="p">,</span> <span class="n">betas</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">b2</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">opt_g</span><span class="p">,</span> <span class="n">opt_d</span><span class="p">],</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="GANLightningModule.training_step">
+<a class="viewcode-back" href="../../../pipeline.lightning.html#pipeline.lightning.gan_module.GANLightningModule.training_step">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        GAN Training Step.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Batch: dictionary with &#39;observation&#39; (history) and &#39;target&#39; (future)</span>
+        <span class="c1"># Or implicitly handled if batch is a tuple.</span>
+        <span class="c1"># Assuming standard NGLab dict format:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;observation&quot;</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Tuple assumption</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
+
+        <span class="c1"># Optimizers</span>
+        <span class="n">opt_g</span><span class="p">,</span> <span class="n">opt_d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizers</span><span class="p">()</span>
+
+        <span class="c1"># --- Train Generator ---</span>
+        <span class="c1"># Generate fake future</span>
+        <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># Create full fake sequence: Concat history + prediction</span>
+        <span class="c1"># Shape: (Batch, Seq_Len_X + Seq_Len_Y, Features)</span>
+        <span class="c1"># Only if D expects full sequence.</span>
+        <span class="c1"># If D expects just Y, modify logic.</span>
+        <span class="c1"># Assuming D takes full joint distribution P(X, Y).</span>
+
+        <span class="c1"># Check dimensions</span>
+        <span class="c1"># x: (B, Lx, F), y: (B, Ly, F), y_hat: (B, Ly, F)</span>
+        <span class="c1"># full_fake = torch.cat([x, y_hat], dim=1)</span>
+
+        <span class="c1"># NOTE: If Feature dims don&#39;t match, we assume they do for TS prediction tasks.</span>
+        <span class="n">full_fake</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y_hat</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Adversarial ground truth</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">fake</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># 1. Generator Update</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toggle_optimizer</span><span class="p">(</span><span class="n">opt_g</span><span class="p">)</span>
+
+        <span class="c1"># Discriminator pass on fake</span>
+        <span class="c1"># D output: (Batch, 1) or (Batch, Seq, 1)? Assuming pooled (Batch, 1)</span>
+        <span class="n">d_pred_fake</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discriminator</span><span class="p">(</span><span class="n">full_fake</span><span class="p">)</span>
+
+        <span class="c1"># Losses</span>
+        <span class="n">g_loss_adv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adversarial_loss</span><span class="p">(</span><span class="n">d_pred_fake</span><span class="p">,</span> <span class="n">valid</span><span class="p">)</span>
+        <span class="n">g_loss_l1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l1_loss</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>  <span class="c1"># Prompting G to match target</span>
+
+        <span class="n">g_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_adv</span> <span class="o">*</span> <span class="n">g_loss_adv</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_l1</span> <span class="o">*</span> <span class="n">g_loss_l1</span>
+
+        <span class="n">opt_g</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manual_backward</span><span class="p">(</span><span class="n">g_loss</span><span class="p">)</span>
+        <span class="n">opt_g</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">untoggle_optimizer</span><span class="p">(</span><span class="n">opt_g</span><span class="p">)</span>
+
+        <span class="c1"># --- Train Discriminator ---</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toggle_optimizer</span><span class="p">(</span><span class="n">opt_d</span><span class="p">)</span>
+
+        <span class="n">full_real</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Detach y_hat to stop gradient to G</span>
+        <span class="n">full_fake_detached</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y_hat</span><span class="o">.</span><span class="n">detach</span><span class="p">()],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">d_pred_real</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discriminator</span><span class="p">(</span><span class="n">full_real</span><span class="p">)</span>
+        <span class="n">d_pred_fake</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">discriminator</span><span class="p">(</span><span class="n">full_fake_detached</span><span class="p">)</span>
+
+        <span class="n">d_loss_real</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adversarial_loss</span><span class="p">(</span><span class="n">d_pred_real</span><span class="p">,</span> <span class="n">valid</span><span class="p">)</span>
+        <span class="n">d_loss_fake</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adversarial_loss</span><span class="p">(</span><span class="n">d_pred_fake</span><span class="p">,</span> <span class="n">fake</span><span class="p">)</span>
+        <span class="n">d_loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">d_loss_real</span> <span class="o">+</span> <span class="n">d_loss_fake</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="n">opt_d</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">manual_backward</span><span class="p">(</span><span class="n">d_loss</span><span class="p">)</span>
+        <span class="n">opt_d</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">untoggle_optimizer</span><span class="p">(</span><span class="n">opt_d</span><span class="p">)</span>
+
+        <span class="c1"># Logging</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;train/g_loss&quot;</span><span class="p">,</span> <span class="n">g_loss</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;train/d_loss&quot;</span><span class="p">,</span> <span class="n">d_loss</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;train/g_adv&quot;</span><span class="p">,</span> <span class="n">g_loss_adv</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;train/g_l1&quot;</span><span class="p">,</span> <span class="n">g_loss_l1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GANLightningModule.validation_step">
+<a class="viewcode-back" href="../../../pipeline.lightning.html#pipeline.lightning.gan_module.GANLightningModule.validation_step">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Validation step (Check G performance).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;observation&quot;</span><span class="p">)</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
+
+        <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">val_l1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l1_loss</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s2">&quot;val/l1_loss&quot;</span><span class="p">,</span> <span class="n">val_l1</span><span class="p">,</span> <span class="n">prog_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">val_l1</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">NGLab</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">src</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, NGLab Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

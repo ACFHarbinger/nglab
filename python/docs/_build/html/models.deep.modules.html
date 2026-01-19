@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>models.deep.modules package &#8212; NGLab 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="models.deep.probabilistic package" href="models.deep.probabilistic.html" />
+    <link rel="prev" title="models.deep.memory package" href="models.deep.memory.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="models-deep-modules-package">
+<h1>models.deep.modules package<a class="headerlink" href="#models-deep-modules-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-models.deep.modules.activation_function">
+<span id="models-deep-modules-activation-function-module"></span><h2>models.deep.modules.activation_function module<a class="headerlink" href="#module-models.deep.modules.activation_function" title="Link to this heading">¶</a></h2>
+<p>Activation functions wrapper for neural networks.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.activation_function.ActivationFunction">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.activation_function.</span></span><span class="sig-name descname"><span class="pre">ActivationFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">af_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'relu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fparam</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">urange</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/activation_function.html#ActivationFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.activation_function.ActivationFunction" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Wrapper for various activation functions in PyTorch.</p>
+<p>Provides a unified interface to instantiate different activation functions
+by name, with support for parameters like threshold, negative slope, etc.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.activation_function.ActivationFunction.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/activation_function.html#ActivationFunction.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.activation_function.ActivationFunction.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Applies the activation function to the input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> – Input tensor.</p></li>
+<li><p><strong>mask</strong> – Optional mask (not used by default activations but kept for interface).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.activation_function.ActivationFunction.init_parameters">
+<span class="sig-name descname"><span class="pre">init_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/activation_function.html#ActivationFunction.init_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.activation_function.ActivationFunction.init_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Initializes the parameters of the activation function using uniform distribution.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.attention">
+<span id="models-deep-modules-attention-module"></span><h2>models.deep.modules.attention module<a class="headerlink" href="#module-models.deep.modules.attention" title="Link to this heading">¶</a></h2>
+<p>Attention mechanisms for Time Series Models.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.attention.AttentionLayer">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.attention.</span></span><span class="sig-name descname"><span class="pre">AttentionLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attention</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_heads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/attention.html#AttentionLayer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.attention.AttentionLayer" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Attention Layer wrapping inner attention mechanisms.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.attention.AttentionLayer.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attn_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/attention.html#AttentionLayer.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.attention.AttentionLayer.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.attention.DSAttention">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.attention.</span></span><span class="sig-name descname"><span class="pre">DSAttention</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_attention</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/attention.html#DSAttention"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.attention.DSAttention" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>De-stationary Attention mechanism.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.attention.DSAttention.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attn_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/attention.html#DSAttention.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.attention.DSAttention.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.attention.FullAttention">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.attention.</span></span><span class="sig-name descname"><span class="pre">FullAttention</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_attention</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/attention.html#FullAttention"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.attention.FullAttention" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Standard Full Attention.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.attention.FullAttention.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attn_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/attention.html#FullAttention.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.attention.FullAttention.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.attention.ProbAttention">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.attention.</span></span><span class="sig-name descname"><span class="pre">ProbAttention</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_attention</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/attention.html#ProbAttention"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.attention.ProbAttention" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Informer-style Probabilistic Attention.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.attention.ProbAttention.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attn_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/attention.html#ProbAttention.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.attention.ProbAttention.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.connections">
+<span id="models-deep-modules-connections-module"></span><h2>models.deep.modules.connections module<a class="headerlink" href="#module-models.deep.modules.connections" title="Link to this heading">¶</a></h2>
+<p>Connection factory for various neural network architectures.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.connections.Connections">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.connections.</span></span><span class="sig-name descname"><span class="pre">Connections</span></span><a class="reference internal" href="_modules/models/deep/modules/connections.html#Connections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.connections.Connections" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Factory for creating connection modules.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.deep.modules.connections.get_connection_module">
+<span class="sig-prename descclassname"><span class="pre">models.deep.modules.connections.</span></span><span class="sig-name descname"><span class="pre">get_connection_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'skip'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/connections.html#get_connection_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.connections.get_connection_module" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a connection module for the given type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>module</strong> – The sub-module to wrap.</p></li>
+<li><p><strong>embed_dim</strong> – Embedding dimension.</p></li>
+<li><p><strong>connection_type</strong> – Type of connection (‘skip’, ‘static_hyper’, ‘dynamic_hyper’).</p></li>
+<li><p><strong>**kwargs</strong> – Additional arguments for the connection module.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The connection module.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.distance_graph_convolution">
+<span id="models-deep-modules-distance-graph-convolution-module"></span><h2>models.deep.modules.distance_graph_convolution module<a class="headerlink" href="#module-models.deep.modules.distance_graph_convolution" title="Link to this heading">¶</a></h2>
+<p>Graph Convolutional layer with distance-aware edge weighting.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.distance_graph_convolution.DistanceAwareGraphConvolution">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.distance_graph_convolution.</span></span><span class="sig-name descname"><span class="pre">DistanceAwareGraphConvolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_influence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'inverse'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sum'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/distance_graph_convolution.html#DistanceAwareGraphConvolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.distance_graph_convolution.DistanceAwareGraphConvolution" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Graph Convolution that incorporates distance information into the message passing.</p>
+<p>Supports different aggregation methods (sum, mean, max) and handles
+edge features related to physical distance.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.distance_graph_convolution.DistanceAwareGraphConvolution.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/distance_graph_convolution.html#DistanceAwareGraphConvolution.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.distance_graph_convolution.DistanceAwareGraphConvolution.forward" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> – Input node features (B x V x H_1)</p></li>
+<li><p><strong>adj</strong> – Graph adjacency matrix (V x V) - shared across all batches</p></li>
+<li><p><strong>dist_matrix</strong> – Distance matrix (V x V) - shared across all batches</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated node features (B x V x H_2)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.distance_graph_convolution.DistanceAwareGraphConvolution.get_distance_weights">
+<span class="sig-name descname"><span class="pre">get_distance_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dist_matrix</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/distance_graph_convolution.html#DistanceAwareGraphConvolution.get_distance_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.distance_graph_convolution.DistanceAwareGraphConvolution.get_distance_weights" title="Link to this definition">¶</a></dt>
+<dd><p>Compute edge weights based on distances</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dist_matrix</strong> – Distance matrix (V x V)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Edge weights with same shape as dist_matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.distance_graph_convolution.DistanceAwareGraphConvolution.init_parameters">
+<span class="sig-name descname"><span class="pre">init_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/distance_graph_convolution.html#DistanceAwareGraphConvolution.init_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.distance_graph_convolution.DistanceAwareGraphConvolution.init_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Initializes the parameters of the layer using uniform distribution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.distance_graph_convolution.DistanceAwareGraphConvolution.single_graph_forward">
+<span class="sig-name descname"><span class="pre">single_graph_forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/distance_graph_convolution.html#DistanceAwareGraphConvolution.single_graph_forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.distance_graph_convolution.DistanceAwareGraphConvolution.single_graph_forward" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> – Input node features (N x H_1)</p></li>
+<li><p><strong>adj</strong> – Graph adjacency matrix (N x N)</p></li>
+<li><p><strong>dist_matrix</strong> – Distance matrix (N x N)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated node features (N x H_2)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.efficient_graph_convolution">
+<span id="models-deep-modules-efficient-graph-convolution-module"></span><h2>models.deep.modules.efficient_graph_convolution module<a class="headerlink" href="#module-models.deep.modules.efficient_graph_convolution" title="Link to this heading">¶</a></h2>
+<p>Optimized Graph Convolution implementation with multiple aggregators.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.efficient_graph_convolution.EfficientGraphConvolution">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.efficient_graph_convolution.</span></span><span class="sig-name descname"><span class="pre">EfficientGraphConvolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggrs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">('symnorm',)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bases</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cached</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_self_loops</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmoid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/efficient_graph_convolution.html#EfficientGraphConvolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.efficient_graph_convolution.EfficientGraphConvolution" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MessagePassing</span></code></p>
+<p>Efficient Graph Convolution (EGC) with multiple aggregators.</p>
+<p>This layer computes node updates using a linear combination of different
+neighborhood aggregations (mean, max, sum, var, std, symnorm) and self-features.
+Supports multi-head weights and basis functions for efficiency.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.efficient_graph_convolution.EfficientGraphConvolution.aggregate">
+<span class="sig-name descname"><span class="pre">aggregate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symnorm_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/models/deep/modules/efficient_graph_convolution.html#EfficientGraphConvolution.aggregate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.efficient_graph_convolution.EfficientGraphConvolution.aggregate" title="Link to this definition">¶</a></dt>
+<dd><p>Aggregates messages from neighbors using multiple aggregators.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.efficient_graph_convolution.EfficientGraphConvolution.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SparseTensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/models/deep/modules/efficient_graph_convolution.html#EfficientGraphConvolution.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.efficient_graph_convolution.EfficientGraphConvolution.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for Efficient Graph Convolution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – Node features tensor of shape (batch_size, num_nodes, in_channels).</p></li>
+<li><p><strong>edge_index</strong> – Graph adjacency information.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated node features tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.efficient_graph_convolution.EfficientGraphConvolution.message">
+<span class="sig-name descname"><span class="pre">message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_j</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/models/deep/modules/efficient_graph_convolution.html#EfficientGraphConvolution.message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.efficient_graph_convolution.EfficientGraphConvolution.message" title="Link to this definition">¶</a></dt>
+<dd><p>Passes messages along edges.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.efficient_graph_convolution.EfficientGraphConvolution.message_and_aggregate">
+<span class="sig-name descname"><span class="pre">message_and_aggregate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adj_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SparseTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/models/deep/modules/efficient_graph_convolution.html#EfficientGraphConvolution.message_and_aggregate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.efficient_graph_convolution.EfficientGraphConvolution.message_and_aggregate" title="Link to this definition">¶</a></dt>
+<dd><p>Performs message passing and aggregation in a single step for sparse tensors.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.efficient_graph_convolution.EfficientGraphConvolution.reset_parameters">
+<span class="sig-name descname"><span class="pre">reset_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/efficient_graph_convolution.html#EfficientGraphConvolution.reset_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.efficient_graph_convolution.EfficientGraphConvolution.reset_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Resets the parameters of the layer using Glorot initialization.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.embed">
+<span id="models-deep-modules-embed-module"></span><h2>models.deep.modules.embed module<a class="headerlink" href="#module-models.deep.modules.embed" title="Link to this heading">¶</a></h2>
+<p>Data Embedding layers for Time Series Models.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.embed.DataEmbedding">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.embed.</span></span><span class="sig-name descname"><span class="pre">DataEmbedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fixed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#DataEmbedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.DataEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Standard Data Embedding combining value, position, and temporal embeddings.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.embed.DataEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_mark</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#DataEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.DataEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.embed.DataEmbedding_inverted">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.embed.</span></span><span class="sig-name descname"><span class="pre">DataEmbedding_inverted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fixed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#DataEmbedding_inverted"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.DataEmbedding_inverted" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Inverted Data Embedding for specific architectures.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.embed.DataEmbedding_inverted.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_mark</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#DataEmbedding_inverted.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.DataEmbedding_inverted.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.embed.DataEmbedding_wo_pos">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.embed.</span></span><span class="sig-name descname"><span class="pre">DataEmbedding_wo_pos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fixed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#DataEmbedding_wo_pos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.DataEmbedding_wo_pos" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Data Embedding without Positional Embedding.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.embed.DataEmbedding_wo_pos.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_mark</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#DataEmbedding_wo_pos.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.DataEmbedding_wo_pos.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.embed.FixedEmbedding">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.embed.</span></span><span class="sig-name descname"><span class="pre">FixedEmbedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#FixedEmbedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.FixedEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Fixed Sinusoidal Embedding.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.embed.FixedEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#FixedEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.FixedEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.embed.PatchEmbedding">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.embed.</span></span><span class="sig-name descname"><span class="pre">PatchEmbedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patch_len</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#PatchEmbedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.PatchEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Patch Embedding for PatchTST-style models.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.embed.PatchEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#PatchEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.PatchEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.embed.PositionalEmbedding">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.embed.</span></span><span class="sig-name descname"><span class="pre">PositionalEmbedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#PositionalEmbedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.PositionalEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Standard Positional Embedding.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.embed.PositionalEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#PositionalEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.PositionalEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.embed.TemporalEmbedding">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.embed.</span></span><span class="sig-name descname"><span class="pre">TemporalEmbedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fixed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#TemporalEmbedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.TemporalEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Embedding for Temporal Features (Hour, Day, Month, etc).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.embed.TemporalEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#TemporalEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.TemporalEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.embed.TimeFeatureEmbedding">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.embed.</span></span><span class="sig-name descname"><span class="pre">TimeFeatureEmbedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'timeF'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#TimeFeatureEmbedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.TimeFeatureEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Embedding for continuous time features.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.embed.TimeFeatureEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#TimeFeatureEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.TimeFeatureEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.embed.TokenEmbedding">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.embed.</span></span><span class="sig-name descname"><span class="pre">TokenEmbedding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#TokenEmbedding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.TokenEmbedding" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Token Embedding using 1D Convolution.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.embed.TokenEmbedding.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/embed.html#TokenEmbedding.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.embed.TokenEmbedding.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.feed_forward">
+<span id="models-deep-modules-feed-forward-module"></span><h2>models.deep.modules.feed_forward module<a class="headerlink" href="#module-models.deep.modules.feed_forward" title="Link to this heading">¶</a></h2>
+<p>Standard Feed-Forward Network (FFN) implementation.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.feed_forward.FeedForward">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.feed_forward.</span></span><span class="sig-name descname"><span class="pre">FeedForward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/feed_forward.html#FeedForward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.feed_forward.FeedForward" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Standard Feed-Forward Neural Network (MLP) block.</p>
+<p>Consists of two linear transformations with an activation function in between.
+Often used in Transformer architectures.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.feed_forward.FeedForward.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/feed_forward.html#FeedForward.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.feed_forward.FeedForward.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Applies the feed-forward network to the input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> – Input tensor.</p></li>
+<li><p><strong>mask</strong> – Optional mask (not used in this basic implementation).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.feed_forward.FeedForward.init_parameters">
+<span class="sig-name descname"><span class="pre">init_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/feed_forward.html#FeedForward.init_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.feed_forward.FeedForward.init_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Initializes the parameters using uniform distribution.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.gated_graph_convolution">
+<span id="models-deep-modules-gated-graph-convolution-module"></span><h2>models.deep.modules.gated_graph_convolution module<a class="headerlink" href="#module-models.deep.modules.gated_graph_convolution" title="Link to this heading">¶</a></h2>
+<p>Gated Graph Convolution (GatedGCN) with explicit edge updates.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.gated_graph_convolution.GatedGraphConvolution">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.gated_graph_convolution.</span></span><span class="sig-name descname"><span class="pre">GatedGraphConvolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hidden_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sum'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'batch'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'relu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learn_affine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gated</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/gated_graph_convolution.html#GatedGraphConvolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.gated_graph_convolution.GatedGraphConvolution" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="simple">
+<dt>Implements the Gated Graph ConvNet layer:</dt><dd><p>h_i = ReLU ( U*h_i + Aggr.( sigma_ij, V*h_j) ),
+sigma_ij = sigmoid( A*h_i + B*h_j + C*e_ij ),
+e_ij = ReLU ( A*h_i + B*h_j + C*e_ij ),
+where Aggr. is an aggregation function: sum/mean/max.</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<ul class="simple">
+<li><ol class="upperalpha simple" start="24">
+<li><p>Bresson and T. Laurent. An experimental study of neural networks for variable graphs. In International Conference on Learning Representations, 2018.</p></li>
+</ol>
+</li>
+<li><ol class="upperalpha simple" start="22">
+<li><ol class="upperalpha simple" start="16">
+<li><p>Dwivedi, C. K. Joshi, T. Laurent, Y. Bengio, and X. Bresson. Benchmarking graph neural networks. arXiv preprint arXiv:2003.00982, 2020.</p></li>
+</ol>
+</li>
+</ol>
+</li>
+</ul>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.gated_graph_convolution.GatedGraphConvolution.aggregate">
+<span class="sig-name descname"><span class="pre">aggregate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Vh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/gated_graph_convolution.html#GatedGraphConvolution.aggregate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.gated_graph_convolution.GatedGraphConvolution.aggregate" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Vh</strong> – Neighborhood features (B x V x V x H)</p></li>
+<li><p><strong>gates</strong> – Edge gates (B x V x V x H)</p></li>
+<li><p><strong>mask</strong> – Graph adjacency matrices (B x V x V)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Aggregated neighborhood features (B x V x H)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.gated_graph_convolution.GatedGraphConvolution.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/gated_graph_convolution.html#GatedGraphConvolution.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.gated_graph_convolution.GatedGraphConvolution.forward" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> – Input node features (B x V x H)</p></li>
+<li><p><strong>e</strong> – Input edge features (B x V x V x H)</p></li>
+<li><p><strong>mask</strong> – Graph adjacency matrices (B x V x V)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated node and edge features</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.gated_graph_convolution.GatedGraphConvolution.reset_parameters">
+<span class="sig-name descname"><span class="pre">reset_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/gated_graph_convolution.html#GatedGraphConvolution.reset_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.gated_graph_convolution.GatedGraphConvolution.reset_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Initializes the parameters of the layer using uniform distribution.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.graph_convolution">
+<span id="models-deep-modules-graph-convolution-module"></span><h2>models.deep.modules.graph_convolution module<a class="headerlink" href="#module-models.deep.modules.graph_convolution" title="Link to this heading">¶</a></h2>
+<p>Standard Graph Convolutional Network (GCN) layer.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.graph_convolution.GraphConvolution">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.graph_convolution.</span></span><span class="sig-name descname"><span class="pre">GraphConvolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggregation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sum'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/graph_convolution.html#GraphConvolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.graph_convolution.GraphConvolution" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Standard Graph Convolution layer.</p>
+<p>Performs message passing by aggregating features from neighbors:
+h_i’ = W * h_i + Agg({h_j})</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.graph_convolution.GraphConvolution.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/graph_convolution.html#GraphConvolution.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.graph_convolution.GraphConvolution.forward" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> – Input node features (B x V x H_1)</p></li>
+<li><p><strong>mask</strong> – Graph adjacency matrix (V x V) - shared across all batches</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated node features (B x V x H_2)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.graph_convolution.GraphConvolution.init_parameters">
+<span class="sig-name descname"><span class="pre">init_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/graph_convolution.html#GraphConvolution.init_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.graph_convolution.GraphConvolution.init_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Initializes the parameters of the layer using uniform distribution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.graph_convolution.GraphConvolution.single_graph_forward">
+<span class="sig-name descname"><span class="pre">single_graph_forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/graph_convolution.html#GraphConvolution.single_graph_forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.graph_convolution.GraphConvolution.single_graph_forward" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h</strong> – Input node features (N x H_1)</p></li>
+<li><p><strong>adj</strong> – Graph adjacency matrix (N x N)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated node features (N x H_2)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.hyper_connection">
+<span id="models-deep-modules-hyper-connection-module"></span><h2>models.deep.modules.hyper_connection module<a class="headerlink" href="#module-models.deep.modules.hyper_connection" title="Link to this heading">¶</a></h2>
+<p>Static and Dynamic Hyper-Network connections.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.hyper_connection.DynamicHyperConnection">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.hyper_connection.</span></span><span class="sig-name descname"><span class="pre">DynamicHyperConnection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/hyper_connection.html#DynamicHyperConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.hyper_connection.DynamicHyperConnection" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Dynamic Hyper-Connection Network (DyHCN).</p>
+<p>Dynamically generates connection weights based on input context using a predictor network.
+Uses ‘streams’ (n) concepts to mix information.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.hyper_connection.DynamicHyperConnection.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/hyper_connection.html#DynamicHyperConnection.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.hyper_connection.DynamicHyperConnection.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Applies the dynamic hyper-connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>H</strong> – Input tensor of shape (Batch, Seq, Dim, n).</p></li>
+<li><p><strong>*args</strong> – Additional arguments for the sub-module.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments for the sub-module.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.hyper_connection.StaticHyperConnection">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.hyper_connection.</span></span><span class="sig-name descname"><span class="pre">StaticHyperConnection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hyper_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expansion_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/hyper_connection.html#StaticHyperConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.hyper_connection.StaticHyperConnection" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Hyper-connection with static width/depth expansion.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.hyper_connection.StaticHyperConnection.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">H</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/hyper_connection.html#StaticHyperConnection.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.hyper_connection.StaticHyperConnection.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for static hyper connection.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.mamba_block">
+<span id="models-deep-modules-mamba-block-module"></span><h2>models.deep.modules.mamba_block module<a class="headerlink" href="#module-models.deep.modules.mamba_block" title="Link to this heading">¶</a></h2>
+<p>Mamba Block implementation for state-space model layers.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.mamba_block.MambaBlock">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.mamba_block.</span></span><span class="sig-name descname"><span class="pre">MambaBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_conv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/mamba_block.html#MambaBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.mamba_block.MambaBlock" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>A single Mamba block that implements the Selection Mechanism and SSM.
+Ref: Section 4.3.1 of the provided text.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.mamba_block.MambaBlock.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/mamba_block.html#MambaBlock.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.mamba_block.MambaBlock.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.mamba_block.MambaBlock.parallel_scan_dummy">
+<span class="sig-name descname"><span class="pre">parallel_scan_dummy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">B</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/mamba_block.html#MambaBlock.parallel_scan_dummy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.mamba_block.MambaBlock.parallel_scan_dummy" title="Link to this definition">¶</a></dt>
+<dd><p>A simplified sequential implementation of the SSM equation:
+h_t = A_t * h_{t-1} + B_t * x_t
+y_t = C_t * h_t</p>
+<p>Note: Production Mamba uses a hardware-aware parallel scan here.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.multi_head_attention">
+<span id="models-deep-modules-multi-head-attention-module"></span><h2>models.deep.modules.multi_head_attention module<a class="headerlink" href="#module-models.deep.modules.multi_head_attention" title="Link to this heading">¶</a></h2>
+<p>Multi-Head Attention mechanism for transformer architectures.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.multi_head_attention.MultiHeadAttention">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.multi_head_attention.</span></span><span class="sig-name descname"><span class="pre">MultiHeadAttention</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_heads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embed_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/multi_head_attention.html#MultiHeadAttention"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.multi_head_attention.MultiHeadAttention" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Multi-Head Attention mechanism.</p>
+<p>Allows the model to jointly attend to information from different representation subspaces
+at different positions. Implements scaled dot-product attention.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.multi_head_attention.MultiHeadAttention.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/multi_head_attention.html#MultiHeadAttention.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.multi_head_attention.MultiHeadAttention.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the multi-head attention.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q</strong> – Queries tensor of shape (batch_size, n_query, input_dim).</p></li>
+<li><p><strong>h</strong> – Key/Value keys tensor of shape (batch_size, graph_size, input_dim).
+If None, defaults to q (self-attention).</p></li>
+<li><p><strong>mask</strong> – Attention mask of shape (batch_size, n_query, graph_size).
+Should contain 1 (or &gt; -inf) if attention is not possible, usually used as additive mask.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Context vectors (aggregated values) of shape (batch_size, n_query, embed_dim).
+attn: Attention weights (batch_size, n_heads, n_query, graph_size).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>context</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.multi_head_attention.MultiHeadAttention.init_parameters">
+<span class="sig-name descname"><span class="pre">init_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/multi_head_attention.html#MultiHeadAttention.init_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.multi_head_attention.MultiHeadAttention.init_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Initializes the parameters of the attention layers using Xavier uniform initialization.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.normalization">
+<span id="models-deep-modules-normalization-module"></span><h2>models.deep.modules.normalization module<a class="headerlink" href="#module-models.deep.modules.normalization" title="Link to this heading">¶</a></h2>
+<p>Normalization layer wrapper supporting various types (Batch, Layer, Instance).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.normalization.Normalization">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.normalization.</span></span><span class="sig-name descname"><span class="pre">Normalization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">embed_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'batch'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learn_affine</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">track_stats</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mbval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/normalization.html#Normalization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.normalization.Normalization" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Wrapper for various Normalization layers (Batch, Layer, Instance).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.normalization.Normalization.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/normalization.html#Normalization.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.normalization.Normalization.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Applies the normalization to the input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> – Input tensor.</p></li>
+<li><p><strong>mask</strong> – Optional mask (currently not used by normalization layers).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Normalized tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.normalization.Normalization.init_parameters">
+<span class="sig-name descname"><span class="pre">init_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/normalization.html#Normalization.init_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.normalization.Normalization.init_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Initializes the affine parameters if applicable.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.normalized_activation_function">
+<span id="models-deep-modules-normalized-activation-function-module"></span><h2>models.deep.modules.normalized_activation_function module<a class="headerlink" href="#module-models.deep.modules.normalized_activation_function" title="Link to this heading">¶</a></h2>
+<p>Normalized activation functions (Softmax, etc.) with adaptive options.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.normalized_activation_function.NormalizedActivationFunction">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.normalized_activation_function.</span></span><span class="sig-name descname"><span class="pre">NormalizedActivationFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">naf_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'softmax'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cutoffs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dval</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bias</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/normalized_activation_function.html#NormalizedActivationFunction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.normalized_activation_function.NormalizedActivationFunction" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Wrapper for normalized activation functions (Softmax, LogSoftmax, etc.).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.normalized_activation_function.NormalizedActivationFunction.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/normalized_activation_function.html#NormalizedActivationFunction.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.normalized_activation_function.NormalizedActivationFunction.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Applies the normalized activation function to the input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> – Input tensor.</p></li>
+<li><p><strong>mask</strong> – Optional mask (not used by all activations).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output tensor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.normalized_activation_function.NormalizedActivationFunction.init_parameters">
+<span class="sig-name descname"><span class="pre">init_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/normalized_activation_function.html#NormalizedActivationFunction.init_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.normalized_activation_function.NormalizedActivationFunction.init_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Initializes the parameters if applicable.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.skip_connection">
+<span id="models-deep-modules-skip-connection-module"></span><h2>models.deep.modules.skip_connection module<a class="headerlink" href="#module-models.deep.modules.skip_connection" title="Link to this heading">¶</a></h2>
+<p>Residual skip connection implementation.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.skip_connection.SkipConnection">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.skip_connection.</span></span><span class="sig-name descname"><span class="pre">SkipConnection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Module</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/skip_connection.html#SkipConnection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.skip_connection.SkipConnection" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Implements a residual connection: output = input + module(input).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.skip_connection.SkipConnection.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/skip_connection.html#SkipConnection.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.skip_connection.SkipConnection.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Applies the residual skip connection: input + module(input).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> – Input tensor.</p></li>
+<li><p><strong>*args</strong> – Additional arguments for the module.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments for the module.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Result of the addition.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.transform">
+<span id="models-deep-modules-transform-module"></span><h2>models.deep.modules.transform module<a class="headerlink" href="#module-models.deep.modules.transform" title="Link to this heading">¶</a></h2>
+<p>Transformation layers for model dimensions.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.transform.Transpose">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.transform.</span></span><span class="sig-name descname"><span class="pre">Transpose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-1,</span> <span class="pre">1)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/transform.html#Transpose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.transform.Transpose" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Transpose layer for neural networks.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.transform.Transpose.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/transform.html#Transpose.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.transform.Transpose.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules.xlstm_block">
+<span id="models-deep-modules-xlstm-block-module"></span><h2>models.deep.modules.xlstm_block module<a class="headerlink" href="#module-models.deep.modules.xlstm_block" title="Link to this heading">¶</a></h2>
+<p>xLSTM Block implementation (sLSTM variant).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.xlstm_block.mLSTMCell">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.xlstm_block.</span></span><span class="sig-name descname"><span class="pre">mLSTMCell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/xlstm_block.html#mLSTMCell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.xlstm_block.mLSTMCell" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Matrix LSTM (mLSTM) Cell.
+Uses a matrix memory C_t (d x d) updated via outer product of keys and values.
+Equivalent to linear attention with a recurrence.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.xlstm_block.mLSTMCell.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/xlstm_block.html#mLSTMCell.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.xlstm_block.mLSTMCell.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward step.
+State: (C, n, m)</p>
+<blockquote>
+<div><p>C: (B, H, D_head, D_head) - Matrix state
+n: (B, H, D_head) - Normalizer state
+m: (B, H, 1) - Max state for stabilization</p>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.xlstm_block.sLSTMCell">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.xlstm_block.</span></span><span class="sig-name descname"><span class="pre">sLSTMCell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_dim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/xlstm_block.html#sLSTMCell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.xlstm_block.sLSTMCell" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Scalar LSTM (sLSTM) Cell with exponential gating and normalization.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.xlstm_block.sLSTMCell.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/xlstm_block.html#sLSTMCell.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.xlstm_block.sLSTMCell.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for a single time step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – Input tensor (Batch, Input_Dim)</p></li>
+<li><p><strong>state</strong> – Tuple of (c, n, m, h)
+c: Cell state (Batch, Hidden_Dim)
+n: Normalizer state (Batch, Hidden_Dim)
+m: Stabilizer state (Batch, Hidden_Dim) - log scale
+h: Hidden state (Batch, Hidden_Dim)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.deep.modules.xlstm_block.xLSTMBlock">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.deep.modules.xlstm_block.</span></span><span class="sig-name descname"><span class="pre">xLSTMBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'slstm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_heads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/xlstm_block.html#xLSTMBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.xlstm_block.xLSTMBlock" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>xLSTM Block layer (wrapping sLSTMCell or mLSTMCell).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.deep.modules.xlstm_block.xLSTMBlock.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/deep/modules/xlstm_block.html#xLSTMBlock.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.deep.modules.xlstm_block.xLSTMBlock.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Process sequence.
+x: (Batch, Seq, Feat) if batch_first</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.deep.modules">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-models.deep.modules" title="Link to this heading">¶</a></h2>
+<p>Neural network modules and layers for time series models.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">NGLab</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="api.html">api package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html">data package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="env.html">env package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="infer.html">infer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html">main module</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="models.html">models package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pipeline.html">pipeline package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="policies.html">policies package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+  <li><a href="models.html">models package</a><ul>
+  <li><a href="models.deep.html">models.deep package</a><ul>
+      <li>Previous: <a href="models.deep.memory.html" title="previous chapter">models.deep.memory package</a></li>
+      <li>Next: <a href="models.deep.probabilistic.html" title="next chapter">models.deep.probabilistic package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, NGLab Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/models.deep.modules.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

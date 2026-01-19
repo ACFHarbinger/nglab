@@ -1,13 +1,22 @@
 use config::{Config, ConfigError, Environment, File};
 use serde::Deserialize;
 
+/**
+ * Global application settings loaded from configuration files and environment variables.
+ */
 #[derive(Debug, Deserialize)]
 pub struct Settings {
+    /** Environment-specific settings (name, log level) */
     pub environment: EnvironmentConfig,
+    /** Rust simulation engine settings */
     pub rust: RustConfig,
+    /** Python ML training and runtime settings */
     pub python: PythonConfig,
+    /** UI-specific settings for the Tauri frontend */
     pub tauri: TauriConfig,
+    /** Persistence layer settings */
     pub database: DatabaseConfig,
+    /** External API integrations (Polymarket, etc.) */
     pub api: ApiConfig,
 }
 

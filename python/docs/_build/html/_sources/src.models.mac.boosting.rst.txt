@@ -1,0 +1,45 @@
+src.models.mac.boosting package
+===============================
+
+Submodules
+----------
+
+src.models.mac.boosting.adaboost module
+---------------------------------------
+
+.. automodule:: src.models.mac.boosting.adaboost
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.boosting.gradient\_boosting module
+-------------------------------------------------
+
+.. automodule:: src.models.mac.boosting.gradient_boosting
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.boosting.lightgbm module
+---------------------------------------
+
+.. automodule:: src.models.mac.boosting.lightgbm
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.boosting.xgboost module
+--------------------------------------
+
+.. automodule:: src.models.mac.boosting.xgboost
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: src.models.mac.boosting
+   :members:
+   :show-inheritance:
+   :undoc-members:

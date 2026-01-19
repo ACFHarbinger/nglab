@@ -1,0 +1,21 @@
+src.pipeline.meta package
+=========================
+
+Submodules
+----------
+
+src.pipeline.meta.maml module
+-----------------------------
+
+.. automodule:: src.pipeline.meta.maml
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: src.pipeline.meta
+   :members:
+   :show-inheritance:
+   :undoc-members:

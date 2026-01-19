@@ -90,6 +90,9 @@ class ClassicalModel(nn.Module, ABC):
             if y is not None:
                 y = y.reshape(b * s, -1)
 
+        if self.model is None:
+            raise RuntimeError("Model has not been initialized. Ensure a subclass sets `self.model`.")
+
         if y is not None:
             if y.ndim == 2 and y.shape[1] == 1:
                 y = y.ravel()

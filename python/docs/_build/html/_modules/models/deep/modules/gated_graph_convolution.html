@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>models.deep.modules.gated_graph_convolution &#8212; NGLab 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for models.deep.modules.gated_graph_convolution</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Gated Graph Convolution (GatedGCN) with explicit edge updates.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">nn</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">ActivationFunction</span><span class="p">,</span> <span class="n">Normalization</span>
+
+
+<div class="viewcode-block" id="GatedGraphConvolution">
+<a class="viewcode-back" href="../../../../models.deep.modules.html#models.deep.modules.gated_graph_convolution.GatedGraphConvolution">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GatedGraphConvolution</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the Gated Graph ConvNet layer:</span>
+<span class="sd">        h_i = ReLU ( U*h_i + Aggr.( sigma_ij, V*h_j) ),</span>
+<span class="sd">        sigma_ij = sigmoid( A*h_i + B*h_j + C*e_ij ),</span>
+<span class="sd">        e_ij = ReLU ( A*h_i + B*h_j + C*e_ij ),</span>
+<span class="sd">        where Aggr. is an aggregation function: sum/mean/max.</span>
+
+<span class="sd">    References:</span>
+<span class="sd">        - X. Bresson and T. Laurent. An experimental study of neural networks for variable graphs. In International Conference on Learning Representations, 2018.</span>
+<span class="sd">        - V. P. Dwivedi, C. K. Joshi, T. Laurent, Y. Bengio, and X. Bresson. Benchmarking graph neural networks. arXiv preprint arXiv:2003.00982, 2020.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gated Graph Convolution Layer (GatedGCN).</span>
+
+<span class="sd">    Explicitly models edge features and uses a gating mechanism to control</span>
+<span class="sd">    information flow between neighbors. Updates both node and edge features.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">hidden_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">aggregation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sum&quot;</span><span class="p">,</span>
+        <span class="n">norm</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;batch&quot;</span><span class="p">,</span>
+        <span class="n">activation</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;relu&quot;</span><span class="p">,</span>
+        <span class="n">learn_affine</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">gated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            hidden_dim: Dimension of hidden features (input and output are assumed same size).</span>
+<span class="sd">            aggregation: Aggregation method (&#39;sum&#39;, &#39;mean&#39;, &#39;max&#39;).</span>
+<span class="sd">            norm: Normalization type (&#39;batch&#39;, &#39;layer&#39;, &#39;instance&#39;).</span>
+<span class="sd">            activation: Activation function name.</span>
+<span class="sd">            learn_affine: Whether normalization layers have learnable affine parameters.</span>
+<span class="sd">            gated: Whether to use the gating mechanism.</span>
+<span class="sd">            bias: Whether to use a bias term in linear layers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">GatedGraphConvolution</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_dim</span> <span class="o">=</span> <span class="n">hidden_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aggregation</span> <span class="o">=</span> <span class="n">aggregation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">learn_affine</span> <span class="o">=</span> <span class="n">learn_affine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gated</span> <span class="o">=</span> <span class="n">gated</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">gated</span><span class="p">,</span> <span class="s2">&quot;Use gating with GCN, pass the `--gated` flag&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">V</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">B</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="n">bias</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_h</span> <span class="o">=</span> <span class="n">Normalization</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">,</span> <span class="n">learn_affine</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_e</span> <span class="o">=</span> <span class="n">Normalization</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">,</span> <span class="n">learn_affine</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">=</span> <span class="n">ActivationFunction</span><span class="p">(</span><span class="n">activation</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GatedGraphConvolution.reset_parameters">
+<a class="viewcode-back" href="../../../../models.deep.modules.html#models.deep.modules.gated_graph_convolution.GatedGraphConvolution.reset_parameters">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the parameters of the layer using uniform distribution.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+            <span class="n">stdv</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">uniform_</span><span class="p">(</span><span class="o">-</span><span class="n">stdv</span><span class="p">,</span> <span class="n">stdv</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GatedGraphConvolution.forward">
+<a class="viewcode-back" href="../../../../models.deep.modules.html#models.deep.modules.gated_graph_convolution.GatedGraphConvolution.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            h: Input node features (B x V x H)</span>
+<span class="sd">            e: Input edge features (B x V x V x H)</span>
+<span class="sd">            mask: Graph adjacency matrices (B x V x V)</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Updated node and edge features</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_nodes</span><span class="p">,</span> <span class="n">hidden_dim</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">shape</span>
+        <span class="c1"># h_in = h</span>
+        <span class="c1"># e_in = e</span>
+
+        <span class="c1"># Linear transformations for node update</span>
+        <span class="n">Uh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">U</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>  <span class="c1"># B x V x H</span>
+        <span class="n">Vh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">V</span><span class="p">(</span><span class="n">h</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_nodes</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># B x V x V x H</span>
+
+        <span class="c1"># Linear transformations for edge update and gating</span>
+        <span class="n">Ah</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>  <span class="c1"># B x V x H</span>
+        <span class="n">Bh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">B</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>  <span class="c1"># B x V x H</span>
+        <span class="n">Ce</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>  <span class="c1"># B x V x V x H</span>
+
+        <span class="c1"># Update edge features and compute edge gates</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">Ah</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">Bh</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">Ce</span>  <span class="c1"># B x V x V x H</span>
+        <span class="n">gates</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>  <span class="c1"># B x V x V x H</span>
+
+        <span class="c1"># Update node features</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">Uh</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">Vh</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">gates</span><span class="p">)</span>  <span class="c1"># B x V x H</span>
+
+        <span class="c1"># Normalize node features</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_h</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_h</span> <span class="k">else</span> <span class="n">h</span>
+
+        <span class="c1"># Normalize edge features</span>
+        <span class="c1"># For edges, we need to flatten B, V, V. Normalization handles 3D/4D if mapped correctly.</span>
+        <span class="c1"># Normalization(hidden_dim) expects (N, H) or (B, N, H).</span>
+        <span class="c1"># For edge (B, V, V, H), we view as (B, V*V, H)</span>
+        <span class="n">B</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_e</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">))</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_e</span> <span class="k">else</span> <span class="n">e</span>
+
+        <span class="c1"># Apply non-linearity</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">h</span><span class="p">,</span> <span class="n">e</span></div>
+
+
+<div class="viewcode-block" id="GatedGraphConvolution.aggregate">
+<a class="viewcode-back" href="../../../../models.deep.modules.html#models.deep.modules.gated_graph_convolution.GatedGraphConvolution.aggregate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">aggregate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Vh</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">gates</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            Vh: Neighborhood features (B x V x V x H)</span>
+<span class="sd">            gates: Edge gates (B x V x V x H)</span>
+<span class="sd">            mask: Graph adjacency matrices (B x V x V)</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            Aggregated neighborhood features (B x V x H)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Perform feature-wise gating mechanism</span>
+        <span class="n">Vh</span> <span class="o">=</span> <span class="n">gates</span> <span class="o">*</span> <span class="n">Vh</span>  <span class="c1"># B x V x V x H</span>
+
+        <span class="c1"># Enforce graph structure through masking</span>
+        <span class="n">Vh</span><span class="p">[</span><span class="n">mask</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">expand_as</span><span class="p">(</span><span class="n">Vh</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregation</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Vh</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">mask</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span>
+                <span class="o">-</span><span class="mi">1</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">Vh</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregation</span> <span class="o">==</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">Vh</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Vh</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">NGLab</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">src</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, NGLab Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

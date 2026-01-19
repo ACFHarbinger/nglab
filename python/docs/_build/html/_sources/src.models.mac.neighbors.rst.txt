@@ -1,0 +1,29 @@
+src.models.mac.neighbors package
+================================
+
+Submodules
+----------
+
+src.models.mac.neighbors.knn module
+-----------------------------------
+
+.. automodule:: src.models.mac.neighbors.knn
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.neighbors.lwl module
+-----------------------------------
+
+.. automodule:: src.models.mac.neighbors.lwl
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: src.models.mac.neighbors
+   :members:
+   :show-inheritance:
+   :undoc-members:

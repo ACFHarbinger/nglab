@@ -1,5 +1,10 @@
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
+/**
+ * Initialize structured logging with file and console output.
+ *
+ * Sets up `tracing` with an `EnvFilter` and a daily rolling file appender.
+ */
 pub fn init_logging(log_level: &str) -> Result<(), Box<dyn std::error::Error>> {
     let file_appender = tracing_appender::rolling::daily("./logs", "nglab.log");
 

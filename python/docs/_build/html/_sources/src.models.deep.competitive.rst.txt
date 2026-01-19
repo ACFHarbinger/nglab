@@ -1,0 +1,29 @@
+src.models.deep.competitive package
+===================================
+
+Submodules
+----------
+
+src.models.deep.competitive.lvq module
+--------------------------------------
+
+.. automodule:: src.models.deep.competitive.lvq
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.deep.competitive.som module
+--------------------------------------
+
+.. automodule:: src.models.deep.competitive.som
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: src.models.deep.competitive
+   :members:
+   :show-inheritance:
+   :undoc-members:

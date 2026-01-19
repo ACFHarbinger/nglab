@@ -1,0 +1,272 @@
+﻿State of the Art in Natural Language Understanding: A 2025-2026 Comprehensive Research Report
+1. Introduction: The Post-Scaling Era and the Rise of System 2 Architectures
+The trajectory of Natural Language Understanding (NLU) has undergone a definitive phase transition as we traverse late 2025 and enter 2026. For the better part of a decade, the field was propelled by the empirical certainty of scaling laws—the observation that logarithmic increases in parameter counts and dataset sizes yielded predictable, linear reductions in perplexity. This "bigger is better" dogma culminated in the massive dense models of 2023 and 2024. However, the research landscape presented at NeurIPS 2025, ICML 2025, and ACL 2025, alongside the technical releases of frontier systems like GPT-5, Gemini 3, and DeepSeek-R1, evidences a departure from naive scaling. We have entered the Post-Scaling Era, characterized not by the cessation of scale, but by the recognition that scale alone is insufficient for the next frontier of intelligence: robust reasoning, infinite context utilization, and hardware-aligned efficiency.
+Current research identifies three critical saturation points that define the SOTA landscape:
+1. Benchmark Saturation: Traditional benchmarks like MMLU have been effectively "solved" by frontier models achieving $>90\%$ accuracy, indistinguishable from human experts. This has necessitated a pivot to "unsolvable" evaluations like Humanity's Last Exam and GPQA Diamond.
+2. The Context-Reasoning Gap: While context windows have expanded to millions of tokens (e.g., Gemini 3 Pro), empirical evidence explicitly demonstrates that context length alone hurts performance. Perfect retrieval does not imply perfect reasoning; in fact, the noise-to-signal ratio in massive contexts degrades "System 2" capabilities.
+3. Architectural Inefficiency: The standard Transformer block, while powerful, suffers from attention sinks and vocabulary bottlenecks. The emergence of Byte Latent Transformers (BLT) and Native Sparse Attention (NSA) signals a move toward architectures that are dynamic, tokenizer-free, and natively sparse.
+This report provides an exhaustive analysis of these developments. We will dissect the mathematical innovations in attention mechanisms, the structural shift toward "Unified Systems" (router-based architectures), and the rigorous taxonomization of hallucinations and agentic failures.
+________________
+2. Algorithmic Innovations: Breaking the Quadratic Barrier
+The fundamental bottleneck of the Transformer architecture remains the quadratic complexity of the self-attention mechanism, $O(N^2)$, with respect to sequence length $N$. While FlashAttention (v1/v2) optimized memory IO, 2025 research has moved beyond optimization to fundamental algorithmic redesigns that align mathematical sparsity with hardware reality.
+2.1. Native Sparse Attention (NSA) and Hardware Alignment
+One of the most significant contributions to efficient long-context modeling is the introduction of Native Sparse Attention (NSA).1 Historically, sparse attention mechanisms failed to achieve wall-clock speedups despite theoretical FLOP reductions—a phenomenon known as the "hardware lottery." Irregular memory access patterns in sparse matrices cause cache misses on GPUs, rendering them slower than dense operations on highly optimized tensor cores.
+NSA addresses this by introducing a "natively trainable" hierarchy that is designed ab initio for hardware alignment. The mechanism decomposes the attention operation into three parallel branches, ensuring that sparsity does not compromise global context awareness:
+1. Compressed Coarse-grained Attention: This branch aggregates information from token blocks, providing a high-level summary of the sequence.
+2. Selected Fine-grained Attention: This branch dynamically selects specific token blocks based on query-key relevance, preserving precision where needed.
+3. Sliding Window Attention: This captures local syntactic dependencies.
+2.1.1. The Flash Sparse Attention (FSA) Kernel
+The theoretical elegance of NSA is realized through the Flash Sparse Attention (FSA) kernel.4 Standard NSA implementations suffer from a loop order that is only efficient for large Grouped Query Attention (GQA) sizes. However, modern LLMs often use smaller GQA groups to save parameters.
+FSA reorganizes the computation to maximize warp occupancy on NVIDIA H100/B200 GPUs. The kernel latency reduction is significant. If we denote the latency of the vanilla NSA kernel as $L_{NSA}$ and the FSA kernel as $L_{FSA}$, empirical results demonstrate:
+
+
+$$L_{FSA} \approx \frac{L_{NSA}}{1.6}$$
+In specific configurations, this speedup reaches $3.5\times$. This allows for end-to-end training speedups of $1.25\times$, a massive efficiency gain when training on trillions of tokens.
+Critical Insight: The move to NSA signifies that model architecture can no longer be decoupled from hardware architecture. SOTA NLU is now a co-design problem.
+2.2. Gated Attention: Eliminating Attention Sinks
+While NSA targets efficiency, Gated Attention, awarded Best Paper at NeurIPS 2025, targets the numerical stability and expressivity of the attention mechanism.6
+Standard Softmax attention suffers from Attention Sinks. Models tend to dump probability mass on the first token (or specific punctuation) to satisfy the softmax constraint ($\sum \alpha_i = 1$) when the current token has no strong semantic relationship with the context. This "sink" behavior wastes capacity and distorts attention maps, degrading performance on long-context extrapolation.
+The researchers propose augmenting the Scaled Dot-Product Attention (SDPA) with a head-specific, data-dependent gate. The modified attention output $O$ for a specific head $h$ is defined as:
+
+
+$$O_h = \text{Gate}_h(Q_h) \odot \text{SDPA}(Q_h, K_h, V_h)$$
+where $\odot$ is element-wise multiplication and the gate is a sigmoid-activated linear projection of the query $Q$:
+
+
+$$\text{Gate}_h(Q_h) = \sigma(W_g Q_h + b_g)$$
+2.2.2. Mechanisms of Improvement
+This simple addition introduces two critical properties absent in standard Transformers:
+1. Non-Linearity: It injects a non-linear transformation directly after the linear aggregation of values, increasing the capacity of the head to model complex functions.
+2. Data-Dependent Sparsity: The gate allows the model to output a zero vector for a given head if the query determines that the head's information is irrelevant.
+Experimental Validation:
+On 15B parameter Mixture-of-Experts (MoE) models and 1.7B dense models trained on 3.5T tokens, Gated Attention reduced the "attention sink" effect (attention on the first token) from 83% to 4% in deep layers.8 This directly correlated with improved perplexity and significantly better stability during training, allowing for the use of larger learning rates without divergence.
+2.3. Multi-Head Latent Attention (MLA)
+The DeepSeek-R1 technical report 9 highlights another attention innovation: Multi-Head Latent Attention (MLA). MLA is designed to minimize the size of the Key-Value (KV) cache, which is the primary bottleneck for large-batch inference.
+Instead of storing full $d_{head}$-dimensional keys and values for every head, MLA projects the keys and values into a low-rank latent vector $c_{KV}$.
+
+
+
+
+$$c_{KV} = W_{DKV} h_t$$
+
+
+$$K = W_{UK} c_{KV}, \quad V = W_{UV} c_{KV}$$
+
+
+where $W_{DKV}$ compresses the input and $W_{UK}, W_{UV}$ up-project it to generate heads. By storing only the compressed latent vector $c_{KV}$ in the cache, DeepSeek-R1 achieves a massive reduction in memory bandwidth usage, enabling the model to serve larger context windows and higher batch sizes on consumer-grade hardware.
+________________
+3. Structural Paradigm Shifts: Beyond the Token
+The dominance of Byte-Pair Encoding (BPE) tokenization is being challenged. Tokenization introduces a heuristic layer between the data and the model, creating brittleness in multilingual tasks, sensitivity to noise (typos), and inefficiency in processing predictable sequences (e.g., code indentation).
+3.1. Byte Latent Transformer (BLT)
+The Byte Latent Transformer (BLT), introduced at ACL 2025 11, is a "tokenizer-free" architecture that operates directly on raw bytes but scales as efficiently as token-based models.
+3.1.1. Entropy-Based Dynamic Patching
+Previous byte-level models failed because the sequence length $N$ became too large ($N_{bytes} \approx 4 \times N_{tokens}$). BLT solves this via Dynamic Patching. Instead of grouping bytes into fixed-size chunks, BLT groups them based on the information density (entropy) of the stream.
+The model utilizes a lightweight local encoder to estimate the entropy of the next byte. Let $H(x_{t+1}|x_{0:t})$ be the entropy.
+* High Entropy (Complex Data): When the next byte is hard to predict (e.g., the start of a new word, a dense mathematical symbol), the model creates a patch boundary.
+* Low Entropy (Redundant Data): When the next byte is predictable (e.g., the middle of a word, whitespace, repetitive code), the model continues the patch.
+This results in a sequence of patches $P_1, P_2, \dots, P_M$ where $M \ll N_{bytes}$. These patches are then processed by a global latent Transformer.
+3.1.2. Performance and Scaling
+BLT matches the performance of Llama-3 class models while offering superior robustness. On noise-injection tasks (e.g., misspellings), BLT degrades significantly less than BPE models because it sees the byte-level composition of words. Critically, for a fixed inference FLOP budget, patches scale better than tokens, allowing the model to allocate compute where the data is "hard" and save compute where it is "easy."
+________________
+4. Frontier Model Landscapes: The Rise of "Unified Systems"
+The era of the single, monolithic "General Purpose" model is ending. 2025 releases demonstrate a convergence toward Unified Systems composed of specialized modules (routers, thinkers, fast-talkers) and Open-Weights Reasoning Models.
+4.1. GPT-5: The Router-Based Architecture
+OpenAI's GPT-5, released August 2025, is defined by its routing architecture.14 It is not a single model but a system containing:
+* GPT-5-Main: A high-throughput, low-latency model for standard tasks.
+* GPT-5-Thinking (o3/o3-Pro): A deep reasoning model that utilizes test-time compute.
+* The Router: A continuously trained classifier that predicts the complexity of a prompt.
+Mechanism:
+
+
+
+
+$$\text{Route}(x) = \begin{cases} \text{Thinking Model} & \text{if } P(\text{Complex}|x) > \tau \\ \text{Main Model} & \text{otherwise} \end{cases}$$
+
+
+The router considers explicit user intent (e.g., "think carefully") and implicit complexity signals. This architecture optimizes the cost/intelligence curve, allowing GPT-5 to answer factual queries cheaply while reserving massive compute for logic puzzles.
+Capabilities:
+* Context: Up to 400,000 tokens (Pro).
+* Multimodality: Native training on text, image, and audio prevents the "modality gap" seen in aligned models.
+* Agentic Routing: The router can also dispatch tasks to external tools (browsers, code interpreters) autonomously.
+4.2. Gemini 3 Pro: Scale and Modality
+Google's Gemini 3 Pro (November 2025) pushes the boundaries of context and modality.17
+* Context Window: 1 Million Tokens (Input), 64k (Output).
+* Deep Think Mode: Similar to OpenAI's o-series, Gemini 3 introduces a thinking_level parameter. Setting this to high triggers a hidden chain-of-thought process that improves performance on benchmarks like GPQA Diamond (91.9%).
+* Multimodal Native: It accepts video, audio, and PDF natively. The "Deep Think" mode extends to these modalities, allowing for "reasoning over video" rather than just frame captioning.
+4.3. DeepSeek-R1: The Open Reasoning Revolution
+DeepSeek-R1 represents a pivotal moment for open research.9 It is a 671B parameter MoE model (37B active) released with open weights.
+* Training Pipeline:
+   1. DeepSeek-R1-Zero: Trained purely via Reinforcement Learning (RL) on a base model without Supervised Fine-Tuning (SFT). The reward function was binary (correct/incorrect) for math/code problems.
+   2. Emergent Reasoning: The authors observed that the model naturally developed "self-reflection" and "verification" steps in its output to maximize the reward, effectively discovering Chain-of-Thought (CoT) prompting on its own.
+   3. DeepSeek-R1: The final model includes a "Cold Start" phase (small amount of high-quality CoT data) followed by RL to stabilize the output format and reduce language mixing.
+Key Insight: Reasoning is an emergent property of RL on scale, not just a function of SFT data quantity.
+4.4. Comparative Performance Table (Late 2025)
+Benchmark
+	Domain
+	GPT-5 (System)
+	Gemini 3 Pro
+	DeepSeek-R1
+	Claude Opus 4.5
+	GPQA Diamond
+	PhD Science
+	89.4%
+	91.9%
+	81.0%
+	80.9%
+	MMLU-Pro
+	General Knowledge
+	87.1%
+	90.5%
+	84.0%
+	87.9%
+	Humanity's Last Exam
+	Expert Reasoning
+	31.6%
+	37.5%
+	~14%
+	25.2%
+	SWE-bench Verified
+	Agentic Coding
+	74.9%
+	76.2%
+	57.6%
+	80.9%
+	Context Window
+	-
+	400k
+	1M+
+	128k
+	200k
+	Architecture
+	-
+	Router + MoE
+	Sparse MoE
+	MoE + MLA
+	Dense/MoE
+	Table 1: SOTA Model Landscape. Gemini 3 Pro dominates in pure knowledge/reasoning (GPQA/MMLU-Pro), while Claude Opus 4.5 retains an edge in agentic software engineering (SWE-bench).
+________________
+5. The Reasoning Frontier: System 2 and Pragmatics
+The focus of SOTA research has shifted from "Knowledge" (what the model knows) to "Reasoning" (how the model thinks) and "Pragmatics" (how the model understands intent).
+5.1. Inference-Time Compute & Chain of Thought
+The success of "thinking" models confirms the hypothesis that inference-time compute can substitute for parameter scale. By allowing the model to generate tokens that are not shown to the user (hidden CoT), the model effectively expands its working memory.
+* Verification Steps: DeepSeek-R1's logs show the model generating phrases like "Wait, let me double check that..." or "This approach leads to a contradiction." These are not scripted but learned behaviors that minimize the loss on the final answer token.
+* The Value-Action Gap: A critical finding from EMNLP 2025 21 is that models often suffer from a Value-Action Gap. In the paper Mind the Value-Action Gap, researchers found that while models can articulate high ethical standards and correct reasoning procedures in their CoT, their final actions often fail to align with these stated values. This suggests a disconnect between the "reasoning" head and the "actuation" head, posing alignment challenges for autonomous agents.
+5.2. Pragmatic Understanding: Beyond Literalism
+While models excel at logic, they struggle with Pragmatics—the social and linguistic context that defines meaning beyond the literal definitions of words.
+* AltPrag Benchmark: Introduced in 2025 22, this dataset tests models on implicature (what is suggested but not said), irony, and indirect speech acts. Results show that standard LLMs are often "literal-minded," failing to detect deception or politeness strategies unless explicitly prompted to analyze the speaker's intent.
+* LingGym: The LingGym paper 24 evaluates LLMs as "field linguists." Models are given Interlinear Glossed Text (IGT) from low-resource languages (e.g., indigenous languages) and must infer grammatical rules. This is a meta-learning task.
+   * Finding: Frontier models struggle significantly here. They rely heavily on memorized patterns from high-resource languages (English/Chinese). When faced with novel grammatical structures (e.g., ergative-absolutive alignment in unseen languages), their reasoning often collapses, proving that their "multilingualism" is largely memorization, not linguistic generalization.
+5.3. Agentic Reliability and Tool Use
+As models are deployed as agents, Tool-Use Hallucination has become a primary failure mode.
+* Taxonomy: Research categorizes these into No-Tool-Available (NTA) errors (hallucinating a tool when none exists) and Tool-Induced Myopia (using a tool for a trivial task).
+* The Reliability-Capability Trade-off: A disturbing finding 26 is that techniques used to reduce tool hallucinations (like DPO or abstention training) often degrade the model's general reasoning capability. There is currently "no free lunch"—making an agent safer makes it less smart. The Reliability Alignment (Relign) framework attempts to mitigate this by expanding the action space to include "indecisive" actions (e.g., "I need clarification"), but the utility drop remains an unsolved problem.
+________________
+6. Long-Context Utilization: The "Context Length Hurts" Paradox
+A major counter-narrative to the "1 Million Token" hype emerged in 2025 with the paper "Context Length Alone Hurts LLM Performance".28
+6.1. The Phenomenon
+Researchers found that simply increasing the context length degrades performance on reasoning tasks, even when retrieval is perfect.
+* Experimental Setup: The authors injected relevant evidence into contexts of varying lengths (up to 128k), filled with minimally distracting tokens (whitespace) or masked tokens.
+* Result: Accuracy dropped by 13.9% to 85% as context length increased. The models could find the needle in the haystack (retrieval) but could not reason about it effectively when the haystack was large. The massive attention matrix seems to dilute the distinctiveness of the relevant information during the aggregation phase.
+6.2. Mitigation: Recite-then-Reason
+The proposed solution is a prompting strategy called Recite-then-Reason.
+1. Recite: Force the model to output the relevant evidence verbatim from the context.
+2. Reason: Solve the problem using only the recited evidence.
+This effectively transforms a long-context task into a short-context task within the model's working memory. On the RULER benchmark, this simple strategy improved GPT-4o performance by up to 4%.
+6.3. Advanced Utilization: Scene Graphs
+For narrative long-context (e.g., books, movies), DiscoSG (Discourse-level Scene Graphs) 30 proposes parsing text into a structured graph of entities and relations.
+   * Iterative Refinement: The DiscoSG-Refiner uses a small model to draft a graph and a second model to iteratively refine it, handling cross-sentence coreference (e.g., realizing "he" in sentence 50 refers to "John" in sentence 1). This graph representation serves as a structured memory that is far more robust than raw token sequences for answering questions about long narratives.
+________________
+7. The Benchmarking Crisis and Hallucination Evaluation
+As models saturate MMLU, the community has pivoted to forensic evaluation of errors.
+7.1. HALOGEN and the Taxonomy of Hallucination
+The HALOGEN benchmark 32 provides the most rigorous analysis of hallucination to date. It classifies errors into three distinct types:
+   * Type A (Recall Failure): The model saw the correct fact during training but fails to retrieve it (e.g., getting a Senator's state wrong).
+   * Type B (Source Failure): The training data itself contained the error or conflicting information.
+   * Type C (Fabrication): The model invents information that was never in the training set (common in reasoning/math).
+Finding: Even SOTA models like GPT-4 and Claude 3.5 hallucinate 4% to 86% of the time depending on the specific domain (e.g., extremely high in citation generation). This suggests that "scaling" has not solved the grounding problem.
+7.2. Humanity's Last Exam (HLE)
+To distinguish between "superhuman" models, Humanity's Last Exam 34 was released.
+   * Design: Questions are designed to be "Google-proof," requiring synthesis of concepts that do not appear together in the training set.
+   * Scores: The gap is stark. While MMLU scores are >90%, HLE scores for Gemini 3 Pro are 37.52% and GPT-5 Pro are 31.64%. This benchmark proves that while models are excellent encyclopedias, they are still mediocre scientists.
+7.3. The Artificial Hivemind
+Evaluation diversity is also under scrutiny. The Artificial Hivemind paper 6 reveals that RLHF has caused Mode Collapse.
+   * Intra-model Repetition: Models tend to reuse the same sentence structures and refusal templates.
+   * Inter-model Homogeneity: Different models (Claude, GPT, Llama) converge on the same "safe" answers.
+This "hivemind" effect reduces the diversity of ideas generated by AI, posing risks for their use in creative or brainstorming applications.
+________________
+8. Conclusion: The Path Forward
+The state of Natural Language Understanding in 2026 is defined by a shift from Accumulation (more data, more parameters) to Refinement (better architectures, better data, better reasoning).
+      1. Hardware-Algorithm Co-Design: Architecture is no longer abstract. Innovations like Native Sparse Attention and Byte Latent Transformers are explicitly designed to maximize the utility of H100/B200 clusters, trading theoretical purity for wall-clock speed.
+      2. System 2 is Here: The "Thinking" model paradigm (DeepSeek-R1, o1) has proven that inference-time compute is a valid scaling dimension. The future is likely Unified Systems that dynamically route between fast/intuitive and slow/deliberate models.
+      3. The Reliability Wall: Despite these advances, the Reliability-Capability Trade-off remains the central unsolved problem. We can make models smarter (HLE scores) or safer (lower Hallucination rates), but currently, we struggle to do both simultaneously. Techniques like Reliability Alignment and Gated Attention are first steps, but the "Value-Action Gap" persists.
+      4. Beyond the Token: The success of BLT suggests that the tyranny of the tokenizer—and its associated biases—may be ending, paving the way for truly universal, multilingual, and robust NLU systems.
+The SOTA has moved beyond "Can AI write a poem?" to "Can AI reason through a PhD-level physics problem without hallucinating, while efficiently managing a 1-million-token context on a finite GPU budget?" The answer, as of 2026, is "Almost."
+9. References
+      * 6
+: 1000 Layer Networks for Self-Supervised RL. NeurIPS 2025.
+      * 6
+: Artificial Hivemind: The Open-Ended Homogeneity of Language Models. NeurIPS 2025.
+      * 6
+: Gated Attention for Large Language Models. NeurIPS 2025.
+      * 11
+: Byte Latent Transformer: Patches Scale Better Than Tokens. ACL 2025.
+      * 1
+: Native Sparse Attention and Flash Sparse Attention. arXiv 2025.
+      * 17
+: Gemini 3 Pro Technical Report. Google DeepMind 2025.
+      * 14
+: GPT-5 System Card. OpenAI 2025.
+      * 9
+: DeepSeek-R1 Technical Report. DeepSeek AI 2025.
+      * 28
+: Context Length Alone Hurts LLM Performance. EMNLP 2025.
+      * 34
+: Humanity's Last Exam. 2025.
+      * 32
+: HALOGEN: Fantastic LLM Hallucinations and Where to Find Them. ACL 2025.
+      * 24
+: LingGym: How Far Are LLMs from Thinking Like Field Linguists?. EMNLP 2025.
+      * 30
+: DiscoSG: Discourse-level Text Scene Graph Parsing. EMNLP 2025.
+      * 22
+: AltPrag: Pragmatic Understanding Benchmark. 2025.
+      * 26
+: Tool-Use Hallucinations and Reliability Alignment. 2025.
+Works cited
+         1. An Alternative Efficient Implementation of Native Sparse Attention Kernel - arXiv, accessed January 19, 2026, https://arxiv.org/html/2508.18224v1
+         2. Hardware-Aligned and Natively Trainable Sparse Attention - arXiv, accessed January 19, 2026, https://arxiv.org/pdf/2502.11089
+         3. [2502.11089] Native Sparse Attention: Hardware-Aligned and Natively Trainable Sparse Attention - arXiv, accessed January 19, 2026, https://arxiv.org/abs/2502.11089
+         4. FSA: An Alternative Efficient Implementation of Native Sparse Attention Kernel - arXiv, accessed January 19, 2026, https://arxiv.org/html/2508.18224v2
+         5. An Alternative Efficient Implementation of Native Sparse Attention Kernel - arXiv, accessed January 19, 2026, https://arxiv.org/abs/2508.18224
+         6. NeurIPS 2025 Awards, accessed January 19, 2026, https://neurips.cc/virtual/2025/awards_detail
+         7. Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free, accessed January 19, 2026, https://www.alphaxiv.org/overview/2505.06708v1
+         8. Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free - arXiv, accessed January 19, 2026, https://arxiv.org/pdf/2505.06708
+         9. DeepSeek-R1: Model Architecture - Towards AI, accessed January 19, 2026, https://pub.towardsai.net/deepseek-r1-model-architecture-853fefac7050
+         10. Analysing DeepSeek-R1's Architecture - HiddenLayer, accessed January 19, 2026, https://hiddenlayer.com/innovation-hub/analysing-deepseek-r1s-architecture/
+         11. Allen School researchers recognized at ACL 2025 for shaping the present and future of natural language processing, accessed January 19, 2026, https://news.cs.washington.edu/2025/09/25/allen-school-researchers-recognized-at-acl-2025-for-shaping-the-present-and-future-of-natural-language-processing/
+         12. Byte Latent Transformer: Patches Scale Better Than Tokens - arXiv, accessed January 19, 2026, https://arxiv.org/html/2412.09871v1
+         13. Byte Latent Transformer: Patches Scale Better Than Tokens - ACL Anthology, accessed January 19, 2026, https://aclanthology.org/2025.acl-long.453.pdf
+         14. Everything you should know about GPT-5 [September 2026] - Botpress, accessed January 19, 2026, https://botpress.com/blog/everything-you-should-know-about-gpt-5
+         15. GPT-5 System Card - OpenAI, accessed January 19, 2026, https://openai.com/index/gpt-5-system-card/
+         16. GPT-5: A Technical Breakdown - Encord, accessed January 19, 2026, https://encord.com/blog/gpt-5-a-technical-breakdown/
+         17. Google Gemini 3 Released: Features & Benchmarks 2025 - Max Productive AI, accessed January 19, 2026, https://max-productive.ai/blog/google-gemini-3-release/
+         18. Gemini 3 Pro: Complete Guide, Pricing, Context Window, Benchmarks, and API Access, accessed January 19, 2026, https://llm-stats.com/blog/research/gemini-3-pro-launch
+         19. Gemini 3 Pro Preview – Vertex AI - Google Cloud Console, accessed January 19, 2026, https://console.cloud.google.com/vertex-ai/publishers/google/model-garden/gemini-3-pro-preview
+         20. DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning - arXiv, accessed January 19, 2026, https://arxiv.org/pdf/2501.12948
+         21. Awards - EMNLP 2025, accessed January 19, 2026, https://2025.emnlp.org/program/awards/
+         22. Tracing the Emergence of Pragmatic Competence in Large Language Models - arXiv, accessed January 19, 2026, https://arxiv.org/html/2505.18497v3
+         23. [PDF] PUB: A Pragmatics Understanding Benchmark for Assessing LLMs' Pragmatics Capabilities | Semantic Scholar, accessed January 19, 2026, https://www.semanticscholar.org/paper/PUB%3A-A-Pragmatics-Understanding-Benchmark-for-LLMs%27-Sravanthi-Doshi/1d8b0deda0658301959ff01dd4a10a926454e761
+         24. LINGGYM: How Far Are LLMs from Thinking Like Field Linguists? - ACL Anthology, accessed January 19, 2026, https://aclanthology.org/2025.emnlp-main.69.pdf
+         25. [2511.00343] LingGym: How Far Are LLMs from Thinking Like Field Linguists? - arXiv, accessed January 19, 2026, https://arxiv.org/abs/2511.00343
+         26. Tool-Use Hallucinations in LLM Agents - Emergent Mind, accessed January 19, 2026, https://www.emergentmind.com/topics/tool-use-hallucinations
+         27. The Reasoning Trap: How Enhancing LLM Reasoning Amplifies Tool Hallucination - arXiv, accessed January 19, 2026, https://arxiv.org/html/2510.22977v1
+         28. Context Length Alone Hurts LLM Performance Despite Perfect Retrieval - arXiv, accessed January 19, 2026, https://arxiv.org/html/2510.05381v1
+         29. Context Length Alone Hurts LLM Performance Despite Perfect Retrieval - ACL Anthology, accessed January 19, 2026, https://aclanthology.org/2025.findings-emnlp.1264.pdf
+         30. DiscoSG: Towards Discourse-Level Text Scene Graph Parsing through Iterative Graph Refinement - ACL Anthology, accessed January 19, 2026, https://aclanthology.org/2025.emnlp-main.398/
+         31. [2506.15583] DiscoSG: Towards Discourse-Level Text Scene Graph Parsing through Iterative Graph Refinement - arXiv, accessed January 19, 2026, https://arxiv.org/abs/2506.15583
+         32. THE HALOGEN BENCHMARK: FANTASTIC LLM HALLUCINATIONS AND WHERE TO FIND THEM - OpenReview, accessed January 19, 2026, https://openreview.net/pdf?id=pQ9QDzckB7
+         33. HALOGEN : Fantastic LLM Hallucinations and Where to Find Them - ACL Anthology, accessed January 19, 2026, https://aclanthology.org/2025.acl-long.71.pdf
+         34. Humanity's Last Exam - Wikipedia, accessed January 19, 2026, https://en.wikipedia.org/wiki/Humanity%27s_Last_Exam
+         35. Humanity's Last Exam - The Ultimate Test of AI's Reasoning | Digital Bricks, accessed January 19, 2026, https://www.digitalbricks.ai/blog-posts/humanitys-last-exam---the-ultimate-test-of-ais-reasoning
+         36. Top 4 Papers of NeurIPS 2025 That You Must Read - Analytics Vidhya, accessed January 19, 2026, https://www.analyticsvidhya.com/blog/2025/11/top-papers-of-neurips-2025/
+         37. NeurIPS 2025 Best Paper Awards in the hands of our researchers, accessed January 19, 2026, https://eng.pw.edu.pl/News/NeurIPS-2025-Best-Paper-Awards-in-the-hands-of-our-researchers

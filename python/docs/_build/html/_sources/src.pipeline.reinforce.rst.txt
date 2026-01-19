@@ -1,0 +1,29 @@
+src.pipeline.reinforce package
+==============================
+
+Submodules
+----------
+
+src.pipeline.reinforce.critic\_network module
+---------------------------------------------
+
+.. automodule:: src.pipeline.reinforce.critic_network
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.pipeline.reinforce.reinforce\_baselines module
+--------------------------------------------------
+
+.. automodule:: src.pipeline.reinforce.reinforce_baselines
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: src.pipeline.reinforce
+   :members:
+   :show-inheritance:
+   :undoc-members:

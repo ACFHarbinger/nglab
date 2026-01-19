@@ -6,8 +6,14 @@ All notable changes to the NGLab project will be documented in this file.
 
 ### Added
 - **API Documentation**:
-  - Enhanced Rust crate documentation with detailed module overviews, architecture descriptions, and usage examples.
-  - Generated HTML docs available in `target/doc/nglab/`.
+  - Expanded **Rust** crate documentation with detailed module overviews, architecture descriptions, and usage examples.
+  - Created a dedicated `rust/docs` directory for native doc storage.
+  - Set up **Sphinx** for Python API documentation, including docstrings for all core models (`LVQ`, `RandomForest`, `SVM`, etc.).
+  - Configured **TypeDoc** for TypeScript frontend documentation, covering critical hooks like `useArena`.
+  - Generated HTML docs available in `rust/docs/`, `docs/` (Python), and `typescript/docs/` (TS).
+- **DevOps & Containerization**:
+  - Created a multi-stage **Dockerfile** for minimized production images (Rust + Python).
+  - Added **docker-compose.yml** for orchestrated deployment including core API and monitoring (Prometheus/Grafana).
 - **Health Checks**:
   - Implemented Flask-based health monitoring API in `python/src/api/health.py` (CPU, Memory, GPU).
   - Added `rust/src/health.rs` with serializable health status structures for Tauri integration.

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pipeline.objectives.variants &#8212; NGLab 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pipeline.objectives.variants</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">PPO Variant Objectives for NGLab.</span>
+
+<span class="sd">Implements specialized RL losses including DR-GRPO, GSPO, and SAPO,</span>
+<span class="sd">designed to improve stability and performance in financial trading tasks.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tensordict</span><span class="w"> </span><span class="kn">import</span> <span class="n">TensorDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchrl.objectives</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClipPPOLoss</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchrl.objectives.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">distance_loss</span>
+
+
+<div class="viewcode-block" id="DRGRPOLoss">
+<a class="viewcode-back" href="../../../pipeline.objectives.html#pipeline.objectives.variants.DRGRPOLoss">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DRGRPOLoss</span><span class="p">(</span><span class="n">ClipPPOLoss</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    DR-GRPO: Group Relative Policy Optimization (Done Right).</span>
+<span class="sd">    Features:</span>
+<span class="sd">    1. Unnormalized centered advantages: A = R - Mean(R_group)</span>
+<span class="sd">    2. No sequence length normalization in ratio (if applicable, though standard PPO ratio is per-step).</span>
+
+<span class="sd">    In this implementation, we assume the &#39;advantage&#39; key in the input TensorDict</span>
+<span class="sd">    has already been computed via a group-based normalization if handled in the collector/buffer,</span>
+<span class="sd">    OR we compute it here if &#39;reward&#39; acts as the signal.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize DR-GRPO loss.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># DR-GRPO specifically avoids certain normalizations if they were default</span>
+        <span class="c1"># But here we assume the Advantage Estimation (GAE or Group) happens outside.</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="DRGRPOLoss.forward">
+<a class="viewcode-back" href="../../../pipeline.objectives.html#pipeline.objectives.variants.DRGRPOLoss.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensordict</span><span class="p">:</span> <span class="n">TensorDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorDict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for DR-GRPO.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># We can override forward to ensure specific advantage usage if needed.</span>
+        <span class="c1"># For now, relying on standard PPO logic but assuming &#39;advantage&#39; input</span>
+        <span class="c1"># is Group-Relative: (R - Mean(R_group))</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">tensordict</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="GSPOLoss">
+<a class="viewcode-back" href="../../../pipeline.objectives.html#pipeline.objectives.variants.GSPOLoss">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GSPOLoss</span><span class="p">(</span><span class="n">ClipPPOLoss</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    GSPO: Group Sequence Policy Optimization.</span>
+<span class="sd">    Key variation: Ratio is scaled by sequence length.</span>
+<span class="sd">    ratio = exp( (log_new - log_old) / seq_len )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize GSPO loss.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_log_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensordict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute log ratio scaled by sequence length.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># We need to compute log_ratio = new_log_prob - old_log_prob</span>
+        <span class="c1"># And then scale by sequence length.</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Re-implementing forward for GSPO specifics is safer than inheriting partial logic</span>
+    <span class="c1"># Placeholder: GSPO effectively modifies the &#39;ratio&#39; variable.</span>
+    <span class="c1"># We will implement a simplified version masking the standard one.</span>
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="SAPOLoss">
+<a class="viewcode-back" href="../../../pipeline.objectives.html#pipeline.objectives.variants.SAPOLoss">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SAPOLoss</span><span class="p">(</span><span class="n">ClipPPOLoss</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    SAPO: Self-Adaptive Policy Optimization.</span>
+<span class="sd">    Replaces clipping with a soft gating function.</span>
+<span class="sd">    f(r) = (4/tau) * sigmoid(tau * (r - 1))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tau_pos</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">tau_neg</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize SAPO loss.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tau_pos (float): Temperature for positive advantages.</span>
+<span class="sd">            tau_neg (float): Temperature for negative advantages.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau_pos</span> <span class="o">=</span> <span class="n">tau_pos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau_neg</span> <span class="o">=</span> <span class="n">tau_neg</span>
+
+<div class="viewcode-block" id="SAPOLoss.forward">
+<a class="viewcode-back" href="../../../pipeline.objectives.html#pipeline.objectives.variants.SAPOLoss.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensordict</span><span class="p">:</span> <span class="n">TensorDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorDict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass for SAPO using soft gating.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate prob ratio</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_network</span><span class="o">.</span><span class="n">get_dist</span><span class="p">(</span><span class="n">tensordict</span><span class="p">)</span>
+        <span class="n">log_probs</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">tensordict</span><span class="p">[</span><span class="s2">&quot;action&quot;</span><span class="p">])</span>
+        <span class="n">old_log_probs</span> <span class="o">=</span> <span class="n">tensordict</span><span class="p">[</span><span class="s2">&quot;sample_log_prob&quot;</span><span class="p">]</span>
+
+        <span class="n">ratio</span> <span class="o">=</span> <span class="p">(</span><span class="n">log_probs</span> <span class="o">-</span> <span class="n">old_log_probs</span><span class="p">)</span><span class="o">.</span><span class="n">exp</span><span class="p">()</span>
+        <span class="n">advantage</span> <span class="o">=</span> <span class="n">tensordict</span><span class="p">[</span><span class="s2">&quot;advantage&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Adaptive Tau</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">advantage</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau_pos</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">advantage</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau_neg</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">advantage</span><span class="o">.</span><span class="n">device</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Soft Gating</span>
+        <span class="n">f_ratio</span> <span class="o">=</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">/</span> <span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">tau</span> <span class="o">*</span> <span class="p">(</span><span class="n">ratio</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">))</span>
+
+        <span class="c1"># Loss</span>
+        <span class="n">surrogate</span> <span class="o">=</span> <span class="n">f_ratio</span> <span class="o">*</span> <span class="n">advantage</span>
+        <span class="n">loss_objective</span> <span class="o">=</span> <span class="o">-</span><span class="n">surrogate</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+        <span class="c1"># Entropy and Critic Loss (Reuse or Re-compute)</span>
+        <span class="n">entropy</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">entropy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+        <span class="c1"># Value loss (Standard L2)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic_network</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic_network</span><span class="p">(</span><span class="n">tensordict</span><span class="p">)</span>
+            <span class="n">value_target</span> <span class="o">=</span> <span class="n">tensordict</span><span class="p">[</span><span class="s2">&quot;value_target&quot;</span><span class="p">]</span>
+            <span class="n">loss_critic</span> <span class="o">=</span> <span class="n">distance_loss</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">value_target</span><span class="p">,</span> <span class="n">loss_function</span><span class="o">=</span><span class="s2">&quot;l2&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">loss_critic</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">loss_objective</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">TensorDict</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;loss_objective&quot;</span><span class="p">:</span> <span class="n">loss_objective</span><span class="p">,</span>
+                <span class="s2">&quot;loss_critic&quot;</span><span class="p">:</span> <span class="n">loss_critic</span><span class="p">,</span>
+                <span class="s2">&quot;loss_entropy&quot;</span><span class="p">:</span> <span class="p">(</span>
+                    <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">entropy_bonus</span> <span class="o">*</span> <span class="n">entropy</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">entropy_bonus</span>
+                    <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+                <span class="p">),</span>
+            <span class="p">},</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="p">[],</span>
+        <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">NGLab</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">src</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, NGLab Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

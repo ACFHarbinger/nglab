@@ -11,6 +11,8 @@ class LVQ(nn.Module):
     Learning Vector Quantization (LVQ) implementation.
     A prototype-based supervised classification algorithm.
     """
+    prototype_labels: torch.Tensor
+    
     def __init__(
         self,
         input_dim,
@@ -79,8 +81,8 @@ class LVQ(nn.Module):
         # We max over prototypes of the same class
         class_logits = []
         for c in range(self.num_classes):
-            mask = (self.prototype_labels == c)
-            if mask.any():
+            mask = torch.eq(self.prototype_labels, c)
+            if torch.any(mask):
                 class_logits.append(torch.max(logits[:, mask], dim=1)[0])
             else:
                 class_logits.append(torch.full((x.shape[0],), -1e9, device=device))

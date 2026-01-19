@@ -104,7 +104,11 @@ impl PriceLevel {
         }
     }
 
-    /** Add an order to the price level */
+    /**
+     * Add a target order to this price level.
+     *
+     * Updates the total quantity at this level and appends the order to the queue.
+     */
     pub fn add_order(&mut self, order: Order) {
         self.total_quantity += order.remaining();
         self.orders.push_back(order);
@@ -141,6 +145,9 @@ pub struct Trade {
 
 /**
  * Central Limit Order Book (CLOB) simulator.
+ *
+ * Maintains a set of bid and ask price levels, each containing a FIFO queue
+ * of limit orders. Supports both limit and market orders with automatic matching.
  */
 #[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone, Serialize, Deserialize)]

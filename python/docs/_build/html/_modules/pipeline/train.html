@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pipeline.train &#8212; NGLab 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pipeline.train</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Training Utilities for NGLab.</span>
+
+<span class="sd">Provides high-level functions for rolling out models, training epochs,</span>
+<span class="sd">and handling gradient clipping.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cast</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">utils.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">move_to</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">utils.log_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">log_timeseries_values</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">utils.model_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_inner_model</span>
+
+
+<div class="viewcode-block" id="rollout">
+<a class="viewcode-back" href="../../pipeline.html#pipeline.train.rollout">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">opts</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform evaluation rollout on a dataset.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (nn.Module): The model to evaluate.</span>
+<span class="sd">        dataset (Dataset): The dataset to roll out on.</span>
+<span class="sd">        opts (Dict): Evaluation options.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: Concatenated results from the rollout.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Put in greedy evaluation mode!</span>
+    <span class="c1"># set_decode_type(model, &quot;greedy&quot;)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">eval_model_bat</span><span class="p">(</span><span class="n">bat</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate a single batch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">cost</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">move_to</span><span class="p">(</span><span class="n">bat</span><span class="p">,</span> <span class="n">opts</span><span class="p">[</span><span class="s2">&quot;device&quot;</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">cost</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">eval_model_bat</span><span class="p">(</span><span class="n">bat</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">bat</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+                    <span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;eval_batch_size&quot;</span><span class="p">],</span> <span class="n">pin_memory</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">),</span>
+                <span class="n">disable</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;no_progress_bar&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+        <span class="p">],</span>
+        <span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="clip_grad_norms">
+<a class="viewcode-back" href="../../pipeline.html#pipeline.train.clip_grad_norms">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">clip_grad_norms</span><span class="p">(</span><span class="n">param_groups</span><span class="p">,</span> <span class="n">max_norm</span><span class="o">=</span><span class="n">math</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clips the norms for all param groups to max_norm and returns gradient norms before clipping</span>
+<span class="sd">    :param optimizer:</span>
+<span class="sd">    :param max_norm:</span>
+<span class="sd">    :param gradient_norms_log:</span>
+<span class="sd">    :return: grad_norms, clipped_grad_norms: list with (clipped) gradient norms per group</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">grad_norms</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span>
+            <span class="n">group</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">],</span>
+            <span class="p">(</span>
+                <span class="n">max_norm</span> <span class="k">if</span> <span class="n">max_norm</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span>
+            <span class="p">),</span>  <span class="c1"># Inf so no clipping but still call to calc</span>
+            <span class="n">norm_type</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">param_groups</span>
+    <span class="p">]</span>
+    <span class="n">grad_norms_clipped</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">[</span><span class="nb">min</span><span class="p">(</span><span class="n">g_norm</span><span class="p">,</span> <span class="n">max_norm</span><span class="p">)</span> <span class="k">for</span> <span class="n">g_norm</span> <span class="ow">in</span> <span class="n">grad_norms</span><span class="p">]</span> <span class="k">if</span> <span class="n">max_norm</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">grad_norms</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">grad_norms</span><span class="p">,</span> <span class="n">grad_norms_clipped</span></div>
+
+
+
+<div class="viewcode-block" id="train_epoch">
+<a class="viewcode-back" href="../../pipeline.html#pipeline.train.train_epoch">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">train_epoch</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">baseline</span><span class="p">,</span> <span class="n">lr_scheduler</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">tb_logger</span><span class="p">,</span> <span class="n">opts</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Train the model for one epoch.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;Start train epoch </span><span class="si">{}</span><span class="s2">, lr=</span><span class="si">{}</span><span class="s2"> for run </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">epoch</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;lr&quot;</span><span class="p">],</span> <span class="n">opts</span><span class="p">[</span><span class="s2">&quot;run_name&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">is_cuda</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">opts</span><span class="p">[</span><span class="s2">&quot;no_tensorboard&quot;</span><span class="p">]:</span>
+        <span class="n">tb_logger</span><span class="o">.</span><span class="n">log_value</span><span class="p">(</span><span class="s2">&quot;learnrate_pg0&quot;</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;lr&quot;</span><span class="p">],</span> <span class="n">epoch</span><span class="p">)</span>
+
+    <span class="c1"># Put model in train mode and setup dataloader</span>
+    <span class="n">step</span> <span class="o">=</span> <span class="n">epoch</span> <span class="o">*</span> <span class="n">opts</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">]</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="n">training_dataloader</span> <span class="o">=</span> <span class="n">training_dataloader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
+        <span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;batch_size&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">batch_id</span><span class="p">,</span> <span class="n">batch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+        <span class="n">tqdm</span><span class="p">(</span><span class="n">training_dataloader</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;no_progress_bar&quot;</span><span class="p">])</span>
+    <span class="p">):</span>
+        <span class="n">train_batch</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">baseline</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">batch_id</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">tb_logger</span><span class="p">,</span> <span class="n">opts</span>
+        <span class="p">)</span>
+        <span class="n">step</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">epoch_duration</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;Finished epoch </span><span class="si">{}</span><span class="s2">, took </span><span class="si">{}</span><span class="s2"> s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">epoch</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H:%M:%S&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">(</span><span class="n">epoch_duration</span><span class="p">))</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_cuda</span><span class="p">:</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">opts</span><span class="p">[</span><span class="s2">&quot;checkpoint_epochs&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">epoch</span> <span class="o">%</span> <span class="n">opts</span><span class="p">[</span><span class="s2">&quot;checkpoint_epochs&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="p">)</span> <span class="ow">or</span> <span class="n">epoch</span> <span class="o">==</span> <span class="n">opts</span><span class="p">[</span><span class="s2">&quot;n_epochs&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Saving model and state...&quot;</span><span class="p">)</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">get_inner_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+                <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+                <span class="s2">&quot;rng_state&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">get_rng_state</span><span class="p">(),</span>
+                <span class="s2">&quot;cuda_rng_state&quot;</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">get_rng_state_all</span><span class="p">(),</span>
+                <span class="s2">&quot;baseline&quot;</span><span class="p">:</span> <span class="n">baseline</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+            <span class="p">},</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;save_dir&quot;</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;epoch-</span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2">.pt&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="c1"># lr_scheduler should be called at end of epoch</span>
+    <span class="n">lr_scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="train_batch">
+<a class="viewcode-back" href="../../pipeline.html#pipeline.train.train_batch">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">train_batch</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">baseline</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">batch_id</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">tb_logger</span><span class="p">,</span> <span class="n">opts</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Train the model on a single batch.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">batch</span> <span class="o">=</span> <span class="n">move_to</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">opts</span><span class="p">[</span><span class="s2">&quot;device&quot;</span><span class="p">])</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;Price&quot;</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;Labels&quot;</span><span class="p">])</span>
+
+    <span class="c1"># Compute output and loss</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="c1"># loss = baseline.loss(output, y)</span>
+    <span class="c1"># Use MAE (L1 Loss) as requested for Polymarket</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">l1_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># Perform backward pass and optimization step</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+
+    <span class="c1"># Clip gradient norms and get (clipped) gradient norms for logging</span>
+    <span class="n">grad_norms</span> <span class="o">=</span> <span class="n">clip_grad_norms</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">,</span> <span class="n">opts</span><span class="p">[</span><span class="s2">&quot;max_grad_norm&quot;</span><span class="p">])</span>
+    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+    <span class="c1"># Logging</span>
+    <span class="k">if</span> <span class="n">step</span> <span class="o">%</span> <span class="nb">int</span><span class="p">(</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;log_step&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">log_timeseries_values</span><span class="p">(</span>
+            <span class="n">loss</span><span class="p">,</span> <span class="n">grad_norms</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">batch_id</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">tb_logger</span><span class="p">,</span> <span class="n">opts</span>
+        <span class="p">)</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">NGLab</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">src</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, NGLab Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

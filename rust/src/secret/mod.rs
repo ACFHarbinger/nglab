@@ -1,7 +1,8 @@
 /*!
- * Secret Module - Authentication and credential management.
+ * Security, authentication, and encrypted storage.
  *
- * Provides secure password hashing with Argon2id and OS-native keyring storage.
+ * Handles API key management, vault integration, and secure communication
+ * with external trading platforms.
  */
 
 pub mod auth;

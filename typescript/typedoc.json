@@ -1,0 +1,24 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "entryPoints": [
+        "src/index.tsx",
+        "src/hooks/useArena.ts",
+        "src/hooks/usePolymarket.ts"
+    ],
+    "out": "docs",
+    "plugin": [],
+    "exclude": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/__tests__/*"
+    ],
+    "name": "NGLab Frontend API",
+    "includeVersion": true,
+    "categorizeByGroup": true,
+    "sort": [
+        "kind",
+        "instance-first",
+        "alphabetical"
+    ],
+    "skipErrorChecking": true
+}

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>models.mac.svm package &#8212; NGLab 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=01f34227"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="models.mac.trees package" href="models.mac.trees.html" />
+    <link rel="prev" title="models.mac.neighbors package" href="models.mac.neighbors.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="models-mac-svm-package">
+<h1>models.mac.svm package<a class="headerlink" href="#models-mac-svm-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-models.mac.svm.linear_svm">
+<span id="models-mac-svm-linear-svm-module"></span><h2>models.mac.svm.linear_svm module<a class="headerlink" href="#module-models.mac.svm.linear_svm" title="Link to this heading">¶</a></h2>
+<p>Linear SVM Model.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.linear_svm.LinearSVMModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.linear_svm.</span></span><span class="sig-name descname"><span class="pre">LinearSVMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'regression'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/linear_svm.html#LinearSVMModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.linear_svm.LinearSVMModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="models.mac.html#models.mac.base.ClassicalModel" title="models.mac.base.ClassicalModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicalModel</span></code></a></p>
+</dd></dl>
+
+</section>
+<section id="module-models.mac.svm.ls_svm">
+<span id="models-mac-svm-ls-svm-module"></span><h2>models.mac.svm.ls_svm module<a class="headerlink" href="#module-models.mac.svm.ls_svm" title="Link to this heading">¶</a></h2>
+<p>LS-SVM Model.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.ls_svm.LSSVMModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.ls_svm.</span></span><span class="sig-name descname"><span class="pre">LSSVMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rbf'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/ls_svm.html#LSSVMModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.ls_svm.LSSVMModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="models.mac.html#models.mac.base.ClassicalModel" title="models.mac.base.ClassicalModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicalModel</span></code></a></p>
+<p>Least-Squares SVM.
+Mathematically equivalent to Kernel Ridge Regression.</p>
+</dd></dl>
+
+</section>
+<section id="module-models.mac.svm.nu_svm">
+<span id="models-mac-svm-nu-svm-module"></span><h2>models.mac.svm.nu_svm module<a class="headerlink" href="#module-models.mac.svm.nu_svm" title="Link to this heading">¶</a></h2>
+<p>Nu SVM Model.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.nu_svm.NuSVMModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.nu_svm.</span></span><span class="sig-name descname"><span class="pre">NuSVMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'regression'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/nu_svm.html#NuSVMModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.nu_svm.NuSVMModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="models.mac.html#models.mac.base.ClassicalModel" title="models.mac.base.ClassicalModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicalModel</span></code></a></p>
+</dd></dl>
+
+</section>
+<section id="module-models.mac.svm.one_class_svm">
+<span id="models-mac-svm-one-class-svm-module"></span><h2>models.mac.svm.one_class_svm module<a class="headerlink" href="#module-models.mac.svm.one_class_svm" title="Link to this heading">¶</a></h2>
+<p>One-Class SVM Model.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.one_class_svm.OneClassSVMModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.one_class_svm.</span></span><span class="sig-name descname"><span class="pre">OneClassSVMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/one_class_svm.html#OneClassSVMModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.one_class_svm.OneClassSVMModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="models.mac.html#models.mac.base.ClassicalModel" title="models.mac.base.ClassicalModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicalModel</span></code></a></p>
+<p>One-Class SVM for Anomaly Detection.
+Output is usually -1 (outlier) or 1 (inlier).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.mac.svm.one_class_svm.OneClassSVMModel.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/one_class_svm.html#OneClassSVMModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.one_class_svm.OneClassSVMModel.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for inference.
+x: (Batch, Features) or (Batch, Seq, Features)</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.mac.svm.svm">
+<span id="models-mac-svm-svm-module"></span><h2>models.mac.svm.svm module<a class="headerlink" href="#module-models.mac.svm.svm" title="Link to this heading">¶</a></h2>
+<p>SVM Model.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.svm.SVMModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.svm.</span></span><span class="sig-name descname"><span class="pre">SVMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'regression'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rbf'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/svm.html#SVMModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.svm.SVMModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="models.mac.html#models.mac.base.ClassicalModel" title="models.mac.base.ClassicalModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicalModel</span></code></a></p>
+<p>Support Vector Machine wrapper for classification (SVC) or regression (SVR).</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.svm.SVRModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.svm.</span></span><span class="sig-name descname"><span class="pre">SVRModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/svm.html#SVRModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.svm.SVRModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.mac.svm.svm.SVMModel" title="models.mac.svm.svm.SVMModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SVMModel</span></code></a></p>
+<p>Support Vector Regression - Alias/Wrapper forcing regression task.</p>
+</dd></dl>
+
+</section>
+<section id="module-models.mac.svm.tw_svm">
+<span id="models-mac-svm-tw-svm-module"></span><h2>models.mac.svm.tw_svm module<a class="headerlink" href="#module-models.mac.svm.tw_svm" title="Link to this heading">¶</a></h2>
+<p>Twin SVM Model.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.tw_svm.TWSVMModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.tw_svm.</span></span><span class="sig-name descname"><span class="pre">TWSVMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/tw_svm.html#TWSVMModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.tw_svm.TWSVMModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="models.mac.html#models.mac.base.ClassicalModel" title="models.mac.base.ClassicalModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicalModel</span></code></a></p>
+<p>Twin Support Vector Machine (TWSVM).
+Simplified implementation for binary classification.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.mac.svm.tw_svm.TWSVMModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/tw_svm.html#TWSVMModel.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.tw_svm.TWSVMModel.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Fit the underlying model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.mac.svm.tw_svm.TWSVMModel.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/tw_svm.html#TWSVMModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.tw_svm.TWSVMModel.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for inference.
+x: (Batch, Features) or (Batch, Seq, Features)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.mac.svm.tw_svm.TWSVMModel.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/tw_svm.html#TWSVMModel.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.tw_svm.TWSVMModel.predict" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.mac.svm">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-models.mac.svm" title="Link to this heading">¶</a></h2>
+<p>SVM models package.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.LSSVMModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.</span></span><span class="sig-name descname"><span class="pre">LSSVMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rbf'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/ls_svm.html#LSSVMModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.LSSVMModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="models.mac.html#models.mac.base.ClassicalModel" title="models.mac.base.ClassicalModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicalModel</span></code></a></p>
+<p>Least-Squares SVM.
+Mathematically equivalent to Kernel Ridge Regression.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.LinearSVMModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.</span></span><span class="sig-name descname"><span class="pre">LinearSVMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'regression'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/linear_svm.html#LinearSVMModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.LinearSVMModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="models.mac.html#models.mac.base.ClassicalModel" title="models.mac.base.ClassicalModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicalModel</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.NuSVMModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.</span></span><span class="sig-name descname"><span class="pre">NuSVMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'regression'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/nu_svm.html#NuSVMModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.NuSVMModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="models.mac.html#models.mac.base.ClassicalModel" title="models.mac.base.ClassicalModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicalModel</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.OneClassSVMModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.</span></span><span class="sig-name descname"><span class="pre">OneClassSVMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/one_class_svm.html#OneClassSVMModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.OneClassSVMModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="models.mac.html#models.mac.base.ClassicalModel" title="models.mac.base.ClassicalModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicalModel</span></code></a></p>
+<p>One-Class SVM for Anomaly Detection.
+Output is usually -1 (outlier) or 1 (inlier).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.mac.svm.OneClassSVMModel.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/one_class_svm.html#OneClassSVMModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.OneClassSVMModel.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for inference.
+x: (Batch, Features) or (Batch, Seq, Features)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.SVMModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.</span></span><span class="sig-name descname"><span class="pre">SVMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'regression'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rbf'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/svm.html#SVMModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.SVMModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="models.mac.html#models.mac.base.ClassicalModel" title="models.mac.base.ClassicalModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicalModel</span></code></a></p>
+<p>Support Vector Machine wrapper for classification (SVC) or regression (SVR).</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.SVRModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.</span></span><span class="sig-name descname"><span class="pre">SVRModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/svm.html#SVRModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.SVRModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.mac.svm.svm.SVMModel" title="models.mac.svm.svm.SVMModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">SVMModel</span></code></a></p>
+<p>Support Vector Regression - Alias/Wrapper forcing regression task.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.mac.svm.TWSVMModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">models.mac.svm.</span></span><span class="sig-name descname"><span class="pre">TWSVMModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/tw_svm.html#TWSVMModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.TWSVMModel" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="models.mac.html#models.mac.base.ClassicalModel" title="models.mac.base.ClassicalModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ClassicalModel</span></code></a></p>
+<p>Twin Support Vector Machine (TWSVM).
+Simplified implementation for binary classification.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.mac.svm.TWSVMModel.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/tw_svm.html#TWSVMModel.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.TWSVMModel.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Fit the underlying model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.mac.svm.TWSVMModel.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/tw_svm.html#TWSVMModel.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.TWSVMModel.forward" title="Link to this definition">¶</a></dt>
+<dd><p>Forward pass for inference.
+x: (Batch, Features) or (Batch, Seq, Features)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.mac.svm.TWSVMModel.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/models/mac/svm/tw_svm.html#TWSVMModel.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.mac.svm.TWSVMModel.predict" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">NGLab</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="api.html">api package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html">data package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="env.html">env package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="infer.html">infer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="main.html">main module</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="models.html">models package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pipeline.html">pipeline package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="policies.html">policies package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">src</a><ul>
+  <li><a href="models.html">models package</a><ul>
+  <li><a href="models.mac.html">models.mac package</a><ul>
+      <li>Previous: <a href="models.mac.neighbors.html" title="previous chapter">models.mac.neighbors package</a></li>
+      <li>Next: <a href="models.mac.trees.html" title="next chapter">models.mac.trees package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, NGLab Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/models.mac.svm.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

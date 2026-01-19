@@ -1,0 +1,55 @@
+src.models package
+==================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   src.models.deep
+   src.models.helper
+   src.models.mac
+
+Submodules
+----------
+
+src.models.deep\_factory module
+-------------------------------
+
+.. automodule:: src.models.deep_factory
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.helper\_factory module
+---------------------------------
+
+.. automodule:: src.models.helper_factory
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac\_factory module
+------------------------------
+
+.. automodule:: src.models.mac_factory
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.time\_series module
+------------------------------
+
+.. automodule:: src.models.time_series
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: src.models
+   :members:
+   :show-inheritance:
+   :undoc-members:

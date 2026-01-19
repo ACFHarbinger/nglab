@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>models.helper_factory &#8212; NGLab 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for models.helper_factory</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Factory for Classical and Supplemental ML Models.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.helper.clustering</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">KMeansModel</span><span class="p">,</span>
+    <span class="n">HierarchicalClusteringModel</span><span class="p">,</span>
+    <span class="n">DBSCANModel</span><span class="p">,</span>
+    <span class="n">DBSCANModel</span><span class="p">,</span>
+    <span class="n">GMMModel</span><span class="p">,</span>
+    <span class="n">KMediansModel</span><span class="p">,</span>
+    <span class="n">EMModel</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.helper.dim_reduction</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">PCAModel</span><span class="p">,</span>
+    <span class="n">PCAModel</span><span class="p">,</span>
+    <span class="n">TSNEModel</span><span class="p">,</span>
+    <span class="n">LDAModel</span><span class="p">,</span>
+    <span class="n">PCRModel</span><span class="p">,</span>
+    <span class="n">PLSRModel</span><span class="p">,</span>
+    <span class="n">MDSModel</span><span class="p">,</span>
+    <span class="n">SammonMappingModel</span><span class="p">,</span>
+    <span class="n">ProjectionPursuitModel</span><span class="p">,</span>
+    <span class="n">MDAModel</span><span class="p">,</span>
+    <span class="n">QDAModel</span><span class="p">,</span>
+    <span class="n">FDAModel</span><span class="p">,</span>
+    <span class="n">UMAPModel</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.helper.association_rule</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AprioriModel</span><span class="p">,</span>
+    <span class="n">AprioriModel</span><span class="p">,</span>
+    <span class="n">FPGrowthModel</span><span class="p">,</span>
+    <span class="n">EclatModel</span><span class="p">,</span>
+<span class="p">)</span>
+
+<div class="viewcode-block" id="HelperModelFactory">
+<a class="viewcode-back" href="../../models.html#models.helper_factory.HelperModelFactory">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HelperModelFactory</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Factory class to create instances of supplemental ML models.</span>
+<span class="sd">    Supports Clustering, Dimensionality Reduction, and Association Rule Learning.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="n">_MODELS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="c1"># Clustering</span>
+        <span class="s2">&quot;kmeans&quot;</span><span class="p">:</span> <span class="n">KMeansModel</span><span class="p">,</span>
+        <span class="s2">&quot;hierarchical&quot;</span><span class="p">:</span> <span class="n">HierarchicalClusteringModel</span><span class="p">,</span>
+        <span class="s2">&quot;dbscan&quot;</span><span class="p">:</span> <span class="n">DBSCANModel</span><span class="p">,</span>
+        <span class="s2">&quot;dbscan&quot;</span><span class="p">:</span> <span class="n">DBSCANModel</span><span class="p">,</span>
+        <span class="s2">&quot;gmm&quot;</span><span class="p">:</span> <span class="n">GMMModel</span><span class="p">,</span>
+        <span class="s2">&quot;em&quot;</span><span class="p">:</span> <span class="n">EMModel</span><span class="p">,</span>
+        <span class="s2">&quot;kmedians&quot;</span><span class="p">:</span> <span class="n">KMediansModel</span><span class="p">,</span>
+        
+        <span class="c1"># Dimensionality Reduction</span>
+        <span class="s2">&quot;pca&quot;</span><span class="p">:</span> <span class="n">PCAModel</span><span class="p">,</span>
+        <span class="s2">&quot;tsne&quot;</span><span class="p">:</span> <span class="n">TSNEModel</span><span class="p">,</span>
+        <span class="s2">&quot;pca&quot;</span><span class="p">:</span> <span class="n">PCAModel</span><span class="p">,</span>
+        <span class="s2">&quot;tsne&quot;</span><span class="p">:</span> <span class="n">TSNEModel</span><span class="p">,</span>
+        <span class="s2">&quot;lda&quot;</span><span class="p">:</span> <span class="n">LDAModel</span><span class="p">,</span>
+        <span class="s2">&quot;pcr&quot;</span><span class="p">:</span> <span class="n">PCRModel</span><span class="p">,</span>
+        <span class="s2">&quot;plsr&quot;</span><span class="p">:</span> <span class="n">PLSRModel</span><span class="p">,</span>
+        <span class="s2">&quot;mds&quot;</span><span class="p">:</span> <span class="n">MDSModel</span><span class="p">,</span>
+        <span class="s2">&quot;sammon&quot;</span><span class="p">:</span> <span class="n">SammonMappingModel</span><span class="p">,</span>
+        <span class="s2">&quot;pp&quot;</span><span class="p">:</span> <span class="n">ProjectionPursuitModel</span><span class="p">,</span>
+        <span class="s2">&quot;mda&quot;</span><span class="p">:</span> <span class="n">MDAModel</span><span class="p">,</span>
+        <span class="s2">&quot;qda&quot;</span><span class="p">:</span> <span class="n">QDAModel</span><span class="p">,</span>
+        <span class="s2">&quot;fda&quot;</span><span class="p">:</span> <span class="n">FDAModel</span><span class="p">,</span>
+        <span class="s2">&quot;umap&quot;</span><span class="p">:</span> <span class="n">UMAPModel</span><span class="p">,</span>
+        
+        <span class="c1"># Association Rule Learning</span>
+        <span class="s2">&quot;apriori&quot;</span><span class="p">:</span> <span class="n">AprioriModel</span><span class="p">,</span>
+        <span class="s2">&quot;apriori&quot;</span><span class="p">:</span> <span class="n">AprioriModel</span><span class="p">,</span>
+        <span class="s2">&quot;fpgrowth&quot;</span><span class="p">:</span> <span class="n">FPGrowthModel</span><span class="p">,</span>
+        <span class="s2">&quot;eclat&quot;</span><span class="p">:</span> <span class="n">EclatModel</span><span class="p">,</span>
+    <span class="p">}</span>
+
+<div class="viewcode-block" id="HelperModelFactory.create_model">
+<a class="viewcode-back" href="../../models.html#models.helper_factory.HelperModelFactory.create_model">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a model instance based on the provided name.</span>
+<span class="sd">        </span>
+<span class="sd">        Args:</span>
+<span class="sd">            model_name: Name of the algorithm (e.g., &#39;kmeans&#39;, &#39;pca&#39;, &#39;apriori&#39;).</span>
+<span class="sd">            **kwargs: Hyperparameters for the model.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            An instance of ClassicalModel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model_class</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_MODELS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">model_class</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown model type: </span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">. Available: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_MODELS</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">model_class</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="HelperModelFactory.list_available_models">
+<a class="viewcode-back" href="../../models.html#models.helper_factory.HelperModelFactory.list_available_models">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">list_available_models</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a list of all available model names.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_MODELS</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+</div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">NGLab</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">src</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, NGLab Team.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

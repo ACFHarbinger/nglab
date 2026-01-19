@@ -1,0 +1,101 @@
+src.models.mac.linear package
+=============================
+
+Submodules
+----------
+
+src.models.mac.linear.elastic\_net module
+-----------------------------------------
+
+.. automodule:: src.models.mac.linear.elastic_net
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.linear.lars module
+---------------------------------
+
+.. automodule:: src.models.mac.linear.lars
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.linear.lasso module
+----------------------------------
+
+.. automodule:: src.models.mac.linear.lasso
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.linear.linear\_regression module
+-----------------------------------------------
+
+.. automodule:: src.models.mac.linear.linear_regression
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.linear.loess module
+----------------------------------
+
+.. automodule:: src.models.mac.linear.loess
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.linear.logistic module
+-------------------------------------
+
+.. automodule:: src.models.mac.linear.logistic
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.linear.mars module
+---------------------------------
+
+.. automodule:: src.models.mac.linear.mars
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.linear.olsr module
+---------------------------------
+
+.. automodule:: src.models.mac.linear.olsr
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.linear.polynomial module
+---------------------------------------
+
+.. automodule:: src.models.mac.linear.polynomial
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.linear.ridge module
+----------------------------------
+
+.. automodule:: src.models.mac.linear.ridge
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.linear.stepwise module
+-------------------------------------
+
+.. automodule:: src.models.mac.linear.stepwise
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: src.models.mac.linear
+   :members:
+   :show-inheritance:
+   :undoc-members:

@@ -1,18 +1,32 @@
 use serde::{Deserialize, Serialize};
 
+/**
+ * Overall health status of the application.
+ */
 #[derive(Serialize, Deserialize)]
 pub struct HealthStatus {
+    /** Combined status: "healthy", "degraded", or "unhealthy" */
     pub status: String,
+    /** Application version string */
     pub version: String,
+    /** Total uptime in seconds since last restart */
     pub uptime_seconds: u64,
+    /** Individual health of core components */
     pub components: ComponentHealth,
 }
 
+/**
+ * Health status of individual system components.
+ */
 #[derive(Serialize, Deserialize)]
 pub struct ComponentHealth {
+    /** Simulation arena status */
     pub arena: bool,
+    /** Order matching engine status */
     pub orderbook: bool,
+    /** Market data scrapers status */
     pub polymarket_scraper: bool,
+    /** Rust-to-Python bridge status */
     pub python_binding: bool,
 }
 

@@ -1,0 +1,91 @@
+src.models.mac package
+======================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   src.models.mac.boosting
+   src.models.mac.ensemble
+   src.models.mac.linear
+   src.models.mac.naive_bayes
+   src.models.mac.neighbors
+   src.models.mac.svm
+   src.models.mac.trees
+
+Submodules
+----------
+
+src.models.mac.base module
+--------------------------
+
+.. automodule:: src.models.mac.base
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.boosting module
+------------------------------
+
+.. automodule:: src.models.mac.boosting
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.ensemble module
+------------------------------
+
+.. automodule:: src.models.mac.ensemble
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.linear module
+----------------------------
+
+.. automodule:: src.models.mac.linear
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.naive\_bayes module
+----------------------------------
+
+.. automodule:: src.models.mac.naive_bayes
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.neighbors module
+-------------------------------
+
+.. automodule:: src.models.mac.neighbors
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.svm module
+-------------------------
+
+.. automodule:: src.models.mac.svm
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+src.models.mac.trees module
+---------------------------
+
+.. automodule:: src.models.mac.trees
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: src.models.mac
+   :members:
+   :show-inheritance:
+   :undoc-members:

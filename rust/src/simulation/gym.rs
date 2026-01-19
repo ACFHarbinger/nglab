@@ -47,7 +47,16 @@ impl From<i32> for ActionType {
 /**
  * Step result returned to high-level callers (e.g., Python).
  *
- * Bundles observation, reward, and transition info.
+ * Bundles the new observation, the reward received for the action,
+ * and flags indicating if the episode has finished.
+ *
+ * # Fields
+ *
+ * * `observation` - Vector of feature values for the new state.
+ * * `reward` - Scaled reward value (e.g., risk-adjusted return).
+ * * `terminated` - True if the agent reached a terminal state (e.g., bankruptcy).
+ * * `truncated` - True if the simulation was cut short (e.g., time limit).
+ * * `info` - Additional diagnostic metadata.
  */
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct StepResult {
@@ -273,6 +282,17 @@ impl TradingEnv {
 // =========================================================================
 
 impl TradingEnv {
+    /**
+     * Create a new trading environment.
+     *
+     * # Arguments
+     *
+     * * `initial_capital` - Starting cash balance in USDC.
+     * * `transaction_cost` - Taker fee rate (e.g., 0.001 for 0.1%).
+     * * `lookback` - Number of historical ticks to include in observations.
+     * * `max_steps` - Maximum duration of a single episode.
+     * * `enable_logging` - Whether to stream telemetry to Rerun.
+     */
     pub fn new(
         initial_capital: f64,
         transaction_cost: f64,

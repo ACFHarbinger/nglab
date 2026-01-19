@@ -1,0 +1,21 @@
+src.pipeline.hpo package
+========================
+
+Submodules
+----------
+
+src.pipeline.hpo.optimize module
+--------------------------------
+
+.. automodule:: src.pipeline.hpo.optimize
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: src.pipeline.hpo
+   :members:
+   :show-inheritance:
+   :undoc-members:
