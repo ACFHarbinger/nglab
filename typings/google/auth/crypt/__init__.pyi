@@ -33,7 +33,8 @@ if es is not None and es256 is not None:
     EsVerifier = es.EsVerifier
     ES256Signer = es256.ES256Signer
     ES256Verifier = es256.ES256Verifier
-else: ...
+else:
+    ...
 Signer = base.Signer
 Verifier = base.Verifier
 RSASigner = rsa.RSASigner

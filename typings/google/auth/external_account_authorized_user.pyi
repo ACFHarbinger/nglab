@@ -114,6 +114,7 @@ class Credentials(
 
     def constructor_args(self):  # -> dict[str, Any]:
         ...
+
     @property
     def scopes(self):  # -> None:
         """Optional[str]: The OAuth 2.0 permission scopes."""
@@ -169,6 +170,7 @@ class Credentials(
     @property
     def can_refresh(self):  # -> bool:
         ...
+
     def get_project_id(self, request=...):  # -> None:
         """Retrieves the project ID corresponding to the workload identity or workforce pool.
         For workforce pool credentials, it returns the project ID corresponding to
@@ -214,18 +216,23 @@ class Credentials(
     @_helpers.copy_docstring(credentials.Credentials)
     def get_cred_info(self):  # -> dict[str, Any] | None:
         ...
+
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
+
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
     def with_token_uri(self, token_uri):  # -> Self:
         ...
+
     @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
     def with_universe_domain(self, universe_domain):  # -> Self:
         ...
+
     @_helpers.copy_docstring(credentials.CredentialsWithTrustBoundary)
     def with_trust_boundary(self, trust_boundary):  # -> Self:
         ...
+
     @classmethod
     def from_info(cls, info, **kwargs):  # -> Self:
         """Creates a Credentials instance from parsed external account info.

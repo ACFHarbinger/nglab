@@ -33,9 +33,9 @@ class ContinuousActionWrapper(gym.ActionWrapper):
         Initialize the wrapper.
         """
         super().__init__(env)
-        assert isinstance(env.action_space, spaces.Discrete), (
-            "Expected Discrete action space"
-        )
+        assert isinstance(
+            env.action_space, spaces.Discrete
+        ), "Expected Discrete action space"
         self.n_actions = env.action_space.n
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
 

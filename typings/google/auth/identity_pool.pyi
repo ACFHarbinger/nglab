@@ -168,6 +168,7 @@ class Credentials(external_account.Credentials):
     @_helpers.copy_docstring(external_account.Credentials)
     def retrieve_subject_token(self, request):  # -> Any | str:
         ...
+
     @classmethod
     def from_info(cls, info, **kwargs):  # -> Self:
         """Creates an Identity Pool Credentials instance from parsed external account info.

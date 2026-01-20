@@ -25,6 +25,7 @@ class _ACLEntity:
     def __str__(self) -> str: ...
     def __repr__(self):  # -> str:
         ...
+
     def get_roles(self):  # -> set[Any]:
         """Get the list of roles permitted by this entity.
 
@@ -105,6 +106,7 @@ class ACL:
 
     def __iter__(self):  # -> Generator[dict[str, Any], Any, None]:
         ...
+
     def entity_from_dict(self, entity_dict):  # -> _ACLEntity:
         """Build an _ACLEntity object from a dictionary of data.
 

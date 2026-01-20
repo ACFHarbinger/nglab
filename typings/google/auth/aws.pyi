@@ -152,6 +152,7 @@ class _DefaultAwsSecurityCredentialsSupplier(AwsSecurityCredentialsSupplier):
         self, context, request
     ):  # -> AwsSecurityCredentials:
         ...
+
     @_helpers.copy_docstring(AwsSecurityCredentialsSupplier)
     def get_aws_region(self, context, request):  # -> str:
         ...

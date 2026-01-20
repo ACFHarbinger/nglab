@@ -445,15 +445,15 @@ def plot_attention_maps_wrapper(
     assert sample_idx >= 0, f"sample_idx {sample_idx} must be a non-negative integer"
 
     attention_weights = attention_dict[model_name][sample_idx]["attention_weights"]
-    assert layer_idx < attention_weights.shape[0], (
-        f"layer_idx {layer_idx} exceeds number of layers {attention_weights.shape[0]}"
-    )
-    assert head_idx < attention_weights.shape[1], (
-        f"head_idx {head_idx} exceeds number of heads {attention_weights.shape[1]}"
-    )
-    assert batch_idx < attention_weights.shape[2], (
-        f"layer_idx {batch_idx} exceeds batch size {attention_weights.shape[2]}"
-    )
+    assert (
+        layer_idx < attention_weights.shape[0]
+    ), f"layer_idx {layer_idx} exceeds number of layers {attention_weights.shape[0]}"
+    assert (
+        head_idx < attention_weights.shape[1]
+    ), f"head_idx {head_idx} exceeds number of heads {attention_weights.shape[1]}"
+    assert (
+        batch_idx < attention_weights.shape[2]
+    ), f"layer_idx {batch_idx} exceeds batch size {attention_weights.shape[2]}"
 
     # Extract attention map
     if head_idx >= 0:

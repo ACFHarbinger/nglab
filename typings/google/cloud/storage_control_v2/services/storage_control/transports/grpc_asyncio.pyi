@@ -687,6 +687,7 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
 
     def close(self):  # -> CoroutineType[Any, Any, None]:
         ...
+
     @property
     def kind(self) -> str: ...
 
