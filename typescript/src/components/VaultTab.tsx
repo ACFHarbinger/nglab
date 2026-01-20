@@ -56,7 +56,7 @@ const VaultTab: React.FC = () => {
             if (response.success) {
                 setSummaries(response.data || []);
             }
-        } catch (err) {
+        } catch {
             setError("Failed to fetch entries");
         }
     };
@@ -74,7 +74,7 @@ const VaultTab: React.FC = () => {
             } else {
                 setError(response.message);
             }
-        } catch (err) {
+        } catch {
             setError("Failed to unlock vault");
         } finally {
             setIsLoading(false);
@@ -106,7 +106,7 @@ const VaultTab: React.FC = () => {
             } else {
                 setError(response.message);
             }
-        } catch (err) {
+        } catch {
             setError("Failed to add secret");
         } finally {
             setIsLoading(false);
@@ -132,7 +132,7 @@ const VaultTab: React.FC = () => {
             } else {
                 setError(response.message || "Decryption failed. Vault might be locked.");
             }
-        } catch (err) {
+        } catch {
             setError("Failed to retrieve secret");
         }
     };
@@ -147,7 +147,7 @@ const VaultTab: React.FC = () => {
                 delete newDecrypted[id];
                 setDecryptedValues(newDecrypted);
             }
-        } catch (err) {
+        } catch {
             setError("Failed to delete secret");
         }
     };

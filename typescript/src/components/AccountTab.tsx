@@ -75,7 +75,7 @@ export function AccountTab({ isStreaming = false, startStream, stopStream }: Pro
             } else {
                 setError(response.message);
             }
-        } catch (err) {
+        } catch {
             setError("Failed to fetch integrations");
         } finally {
             setIsLoading(false);
@@ -102,7 +102,7 @@ export function AccountTab({ isStreaming = false, startStream, stopStream }: Pro
             } else {
                 setError(response.message);
             }
-        } catch (err) {
+        } catch {
             setError("Failed to save Polymarket integration");
         } finally {
             setIsLoading(false);
@@ -118,7 +118,7 @@ export function AccountTab({ isStreaming = false, startStream, stopStream }: Pro
             } else {
                 setError(response.message);
             }
-        } catch (err) {
+        } catch {
             setError("Failed to delete integration");
         }
     };
