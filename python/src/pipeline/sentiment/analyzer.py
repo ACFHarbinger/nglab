@@ -5,6 +5,7 @@ Integrates pre-trained NLP models (FinBERT) to extract sentiment signals
 from news headlines, reports, and social media.
 """
 
+from typing import Any
 import torch
 import torch.nn.functional as F  # noqa: N812
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
@@ -24,7 +25,7 @@ class SentimentAnalyzer:
             device: Device to run the model on ('cuda', 'cpu').
         """
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)  # type: ignore
         self.model = AutoModelForSequenceClassification.from_pretrained(model_name).to(
             self.device
         )
@@ -33,7 +34,7 @@ class SentimentAnalyzer:
         # FinBERT labels: 0: positive, 1: negative, 2: neutral
         self.labels = ["positive", "negative", "neutral"]
 
-    def analyze(self, text: str | list[str]) -> list[dict[str, str | float]]:
+    def analyze(self, text: str | list[str]) -> list[dict[str, Any]]:
         """
         Analyze sentiment of the given text(s).
 

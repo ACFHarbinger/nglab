@@ -2,10 +2,12 @@
 Generative Adversarial Network (GAN) Module for Time Series Prediction.
 """
 
-from typing import Any
+from typing import Any, Dict, List, Tuple, Union, cast
 
+import pytorch_lightning as pl
 import torch
 from torch import nn
+from torch.optim import Optimizer
 
 from .base import BaseModule
 
@@ -20,8 +22,8 @@ class GANLightningModule(BaseModule):
     """
 
     def __init__(
-        self, generator: nn.Module, discriminator: nn.Module, cfg: dict[str, Any]
-    ):
+        self, generator: nn.Module, discriminator: nn.Module, cfg: Dict[str, Any]
+    ) -> None:
         """
         Initialize the GAN module.
 
@@ -40,25 +42,23 @@ class GANLightningModule(BaseModule):
         self.l1_loss = nn.L1Loss()  # Optional auxiliary loss for reconstruction
 
         # Hyperparameters
-        self.lambda_adv = cfg.get("lambda_adv", 1.0)
-        self.lambda_l1 = cfg.get(
-            "lambda_l1", 100.0
-        )  # Reconstruction weight often high in cGAN (Pix2Pix style)
-        self.lr_g = cfg.get("lr_g", 2e-4)  # TTUR: D often higher or balanced
-        self.lr_d = cfg.get("lr_d", 2e-4)
-        self.b1 = cfg.get("beta1", 0.5)
-        self.b2 = cfg.get("beta2", 0.999)
+        self.lambda_adv = float(cfg.get("lambda_adv", 1.0))
+        self.lambda_l1 = float(cfg.get("lambda_l1", 100.0))
+        self.lr_g = float(cfg.get("lr_g", 2e-4))
+        self.lr_d = float(cfg.get("lr_d", 2e-4))
+        self.b1 = float(cfg.get("beta1", 0.5))
+        self.b2 = float(cfg.get("beta2", 0.999))
 
         # Buffer for input/target concatenation if needed
         self.automatic_optimization = False  # We handle G and D steps manually
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass (Generator prediction).
         """
-        return self.generator(x)
+        return cast(torch.Tensor, self.generator(x))
 
-    def configure_optimizers(self):
+    def configure_optimizers(self) -> Any:  # Returning Any to avoid complexity with PyTorch Lightning types
         """
         Configure optimizers for Generator and Discriminator.
         """
@@ -70,7 +70,7 @@ class GANLightningModule(BaseModule):
         )
         return [opt_g, opt_d], []
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch: Any, batch_idx: int) -> None:  # type: ignore[override]
         """
         GAN Training Step.
         """
@@ -84,8 +84,22 @@ class GANLightningModule(BaseModule):
             # Tuple assumption
             x, y = batch
 
+        if x is None or y is None:
+            raise ValueError("Training batch must contain observation and target")
+
         # Optimizers
-        opt_g, opt_d = self.optimizers()
+        optimizers = self.optimizers()
+        if isinstance(optimizers, list):
+             # When return is List[LightningOptimizer], but typing says List[Optimizer]
+             # Lightining returns LightningOptimizer wrapper. Using untyped access or ignoring.
+             # Actually self.optimizers() usually returns a single optimizer or list.
+             # With Manual optimization, we access them via indices usually or just tuple unpacking if we know count.
+             opt_g, opt_d = optimizers[0], optimizers[1]
+        else:
+             # Should not happen given configure_optimizers returns list
+             raise RuntimeError("Expected list of optimizers")
+
+        device = cast(torch.device, self.device)
 
         # --- Train Generator ---
         # Generate fake future
@@ -99,14 +113,13 @@ class GANLightningModule(BaseModule):
 
         # Check dimensions
         # x: (B, Lx, F), y: (B, Ly, F), y_hat: (B, Ly, F)
-        # full_fake = torch.cat([x, y_hat], dim=1)
-
+        
         # NOTE: If Feature dims don't match, we assume they do for TS prediction tasks.
         full_fake = torch.cat([x, y_hat], dim=1)
 
         # Adversarial ground truth
-        valid = torch.ones(x.size(0), 1, device=self.device)
-        fake = torch.zeros(x.size(0), 1, device=self.device)
+        valid = torch.ones((x.size(0), 1), device=device)
+        fake = torch.zeros((x.size(0), 1), device=device)
 
         # 1. Generator Update
         self.toggle_optimizer(opt_g)
@@ -121,7 +134,7 @@ class GANLightningModule(BaseModule):
 
         g_loss = self.lambda_adv * g_loss_adv + self.lambda_l1 * g_loss_l1
 
-        opt_g.zero_grad()
+        opt_g.zero_grad()  # type: ignore
         self.manual_backward(g_loss)
         opt_g.step()
         self.untoggle_optimizer(opt_g)
@@ -140,7 +153,7 @@ class GANLightningModule(BaseModule):
         d_loss_fake = self.adversarial_loss(d_pred_fake, fake)
         d_loss = (d_loss_real + d_loss_fake) / 2
 
-        opt_d.zero_grad()
+        opt_d.zero_grad()  # type: ignore
         self.manual_backward(d_loss)
         opt_d.step()
         self.untoggle_optimizer(opt_d)
@@ -151,7 +164,7 @@ class GANLightningModule(BaseModule):
         self.log("train/g_adv", g_loss_adv)
         self.log("train/g_l1", g_loss_l1)
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch: Any, batch_idx: int) -> torch.Tensor:
         """
         Validation step (Check G performance).
         """
@@ -161,7 +174,10 @@ class GANLightningModule(BaseModule):
         else:
             x, y = batch
 
+        if x is None or y is None:
+             raise ValueError("Validation batch must contain observation and target")
+
         y_hat = self.generator(x)
         val_l1 = self.l1_loss(y_hat, y)
         self.log("val/l1_loss", val_l1, prog_bar=True)
-        return val_l1
+        return cast(torch.Tensor, val_l1)

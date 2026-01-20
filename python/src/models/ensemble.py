@@ -8,7 +8,7 @@ Combines multiple models using various strategies:
 - Stacking (meta-learner)
 """
 
-from typing import Literal
+from typing import Any, Dict, List, Literal, Optional, Sequence, cast
 
 import torch
 from torch import nn
@@ -25,11 +25,11 @@ class EnsembleModel(nn.Module):
 
     def __init__(
         self,
-        models: list[nn.Module],
+        models: Sequence[nn.Module],
         strategy: Literal["average", "weighted", "voting", "stacking"] = "average",
-        weights: list[float] | None = None,
-        meta_learner: nn.Module | None = None,
-    ):
+        weights: Optional[List[float]] = None,
+        meta_learner: Optional[nn.Module] = None,
+    ) -> None:
         """
         Initialize ensemble.
 
@@ -48,6 +48,7 @@ class EnsembleModel(nn.Module):
             self.register_buffer("weights", torch.tensor(weights, dtype=torch.float32))
         else:
             self.register_buffer("weights", torch.ones(self.n_models) / self.n_models)
+        self.weights: torch.Tensor
 
         self.meta_learner = meta_learner
 
@@ -63,7 +64,8 @@ class EnsembleModel(nn.Module):
         """
         predictions = []
         for model in self.models:
-            with torch.no_grad() if not self.training else torch.enable_grad():
+            cm = torch.no_grad() if not self.training else torch.enable_grad()  # type: ignore
+            with cm:
                 pred = model(x)
                 predictions.append(pred)
 
@@ -75,6 +77,7 @@ class EnsembleModel(nn.Module):
 
         elif self.strategy == "weighted":
             # Weighted average
+            # Use explicit cast or type hint for self.weights
             weights = self.weights.view(-1, 1, 1)
             return (stacked * weights).sum(dim=0)
 
@@ -91,12 +94,12 @@ class EnsembleModel(nn.Module):
             concat = stacked.permute(1, 0, 2).flatten(
                 start_dim=1
             )  # [batch, n_models * output_dim]
-            return self.meta_learner(concat)
+            return cast(torch.Tensor, self.meta_learner(concat))
 
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
 
-    def predict_with_uncertainty(self, x: torch.Tensor) -> dict:
+    def predict_with_uncertainty(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
         """
         Get predictions along with uncertainty estimates from ensemble disagreement.
 
@@ -123,9 +126,9 @@ class EnsembleModel(nn.Module):
 
 
 def create_ensemble_from_configs(
-    configs: list[dict],
+    configs: List[Dict[str, Any]],
     strategy: str = "average",
-    weights: list[float] | None = None,
+    weights: Optional[List[float]] = None,
 ) -> EnsembleModel:
     """
     Factory function to create an ensemble from a list of model configs.
@@ -138,5 +141,13 @@ def create_ensemble_from_configs(
     Returns:
         EnsembleModel instance.
     """
-    models = [TimeSeriesBackbone(cfg) for cfg in configs]
-    return EnsembleModel(models, strategy=strategy, weights=weights)
+    # Cast to Sequence[nn.Module] to satisfy invariance
+    models: Sequence[nn.Module] = [TimeSeriesBackbone(cfg) for cfg in configs]
+    
+    # Cast strategy string to Literal
+    strat_literal = cast(
+        Literal["average", "weighted", "voting", "stacking"], 
+        strategy if strategy in ["average", "weighted", "voting", "stacking"] else "average"
+    )
+    
+    return EnsembleModel(models, strategy=strat_literal, weights=weights)

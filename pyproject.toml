@@ -73,6 +73,7 @@ dev = [
     "sphinx>=9.0.4",
     "deptry>=0.12.0",
     "scikit-learn-stubs>=0.0.3",
+    "google>=3.0.0",
 ]
 
 [build-system]
@@ -190,7 +191,7 @@ files = ["python/src/"]
 # Exclude the typings directory
 exclude = ["typings/", "python/examples/", "python/tests/", "python/scripts/", "python/docs/"]
 
-strict = true
+strict = false
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

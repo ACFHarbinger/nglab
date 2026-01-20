@@ -1112,6 +1112,18 @@ wheels = [
 ]
 
 [[package]]
+name = "google"
+version = "3.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "beautifulsoup4" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/89/97/b49c69893cddea912c7a660a4b6102c6b02cd268f8c7162dd70b7c16f753/google-3.0.0.tar.gz", hash = "sha256:143530122ee5130509ad5e989f0512f7cb218b2d4eddbafbad40fd10e8d8ccbe", size = 44978, upload-time = "2020-07-11T14:50:45.678Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ac/35/17c9141c4ae21e9a29a43acdfd848e3e468a810517f862cad07977bf8fe9/google-3.0.0-py2.py3-none-any.whl", hash = "sha256:889cf695f84e4ae2c55fbc0cfdaf4c1e729417fa52ab1db0485202ba173e4935", size = 45258, upload-time = "2020-07-11T14:49:58.287Z" },
+]
+
+[[package]]
 name = "google-api-core"
 version = "2.29.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2320,6 +2332,7 @@ dev = [
     { name = "asyncpg-stubs" },
     { name = "black" },
     { name = "deptry" },
+    { name = "google" },
     { name = "hypothesis" },
     { name = "ipykernel" },
     { name = "maturin" },
@@ -2397,6 +2410,7 @@ dev = [
     { name = "asyncpg-stubs", specifier = ">=0.31.1" },
     { name = "black", specifier = ">=25.12.0" },
     { name = "deptry", specifier = ">=0.12.0" },
+    { name = "google", specifier = ">=3.0.0" },
     { name = "hypothesis", specifier = ">=6.150.2" },
     { name = "ipykernel", specifier = "==6.25" },
     { name = "maturin", specifier = ">=1.10.2" },

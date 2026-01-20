@@ -10,9 +10,11 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, Optional, Tuple, cast
 
 import torch
 import torch.nn.functional as F  # noqa: N812
+from torch import nn
 from torch.utils.data import DataLoader
 
 from .base import BaseModule
@@ -23,7 +25,7 @@ class SLLightningModule(BaseModule):
     Module for Supervised Learning (Fine-tuning).
     """
 
-    def __init__(self, backbone, cfg):
+    def __init__(self, backbone: nn.Module, cfg: Dict[str, Any]) -> None:
         """
         Initialize the Supervised module.
 
@@ -34,37 +36,48 @@ class SLLightningModule(BaseModule):
         super().__init__(cfg)
         self.save_hyperparameters(ignore=["backbone"])
         self.backbone = backbone
-        self.head = torch.nn.Linear(
-            cfg.get("hidden_dim", 128), cfg.get("output_dim", 1)
-        )
+        
+        # Determine output dim
+        hidden_dim = int(cfg.get("hidden_dim", 128))
+        output_dim = int(cfg.get("output_dim", 1))
+        
+        self.head = torch.nn.Linear(hidden_dim, output_dim)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass through the backbone and head.
         """
         feat = self.backbone(x)
-        return self.head(feat)
+        return cast(torch.Tensor, self.head(feat))
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch: Any, batch_idx: int) -> torch.Tensor:
         """
         Perform a supervised training step.
         """
         # Batch: {observation, target}
-        x = batch["observation"]
-        y = batch["target"]
+        if isinstance(batch, dict):
+             x = batch["observation"]
+             y = batch["target"]
+        else:
+             x, y = batch
 
         pred = self(x)
         loss = F.mse_loss(pred, y)  # Or CrossEntropy relative to task
+        loss.backward()  # type: ignore
 
         self.log("train/sl_loss", loss)
         return loss
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch: Any, batch_idx: int) -> torch.Tensor:
         """
         Perform a validation step.
         """
-        x = batch["observation"]
-        y = batch["target"]
+        if isinstance(batch, dict):
+             x = batch["observation"]
+             y = batch["target"]
+        else:
+             x, y = batch
+             
         pred = self(x)
         loss = F.mse_loss(pred, y)
         self.log("val/sl_loss", loss)
@@ -74,7 +87,7 @@ class SLLightningModule(BaseModule):
 class ProgressCallback:
     """Callback to stream training progress as JSON."""
 
-    def __init__(self, total_epochs: int):
+    def __init__(self, total_epochs: int) -> None:
         """
         Initialize the progress callback.
 
@@ -84,8 +97,8 @@ class ProgressCallback:
         self.total_epochs = total_epochs
 
     def on_epoch_end(
-        self, epoch: int, train_loss: float, val_loss: float | None = None
-    ):
+        self, epoch: int, train_loss: float, val_loss: Optional[float] = None
+    ) -> None:
         """Emit progress JSON to stdout."""
         progress = {
             "type": "progress",
@@ -108,9 +121,9 @@ def train_from_csv(  # noqa: PLR0913, PLR0915
     seq_len: int = 30,
     pred_len: int = 1,
     train_split: float = 0.8,
-    model_params: dict | None = None,
-    output_path: str | None = None,
-):
+    model_params: Optional[Dict[str, Any]] = None,
+    output_path: Optional[str] = None,
+) -> str:
     """
     Train a supervised model from CSV data.
 
@@ -133,10 +146,10 @@ def train_from_csv(  # noqa: PLR0913, PLR0915
     # Add src to path
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-    from utils.model_versioning import ModelMetadata, save_model_with_metadata
+    from utils.model_versioning import ModelMetadata, save_model_with_metadata  # type: ignore
 
-    from data.time_series_dataset import TimeSeriesDataset
-    from models.time_series import TimeSeriesBackbone
+    from data.time_series_dataset import TimeSeriesDataset  # type: ignore
+    from models.time_series import TimeSeriesBackbone  # type: ignore
 
     # Create datasets
     train_dataset = TimeSeriesDataset(
@@ -169,7 +182,7 @@ def train_from_csv(  # noqa: PLR0913, PLR0915
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     # Build model config
-    cfg = {
+    cfg: Dict[str, Any] = {
         "name": model_name,
         "feature_dim": 1,  # Univariate for now
         "hidden_dim": int(model_params.get("hidden_dim", 128)) if model_params else 128,
@@ -238,7 +251,7 @@ def train_from_csv(  # noqa: PLR0913, PLR0915
             pred = model(x)  # [B, pred_len]
             # y is already [B, pred_len] from dataset collate
             loss = F.mse_loss(pred, y)
-            loss.backward()
+            loss.backward()  # type: ignore
             optimizer.step()
             train_losses.append(loss.item())
 
@@ -255,10 +268,10 @@ def train_from_csv(  # noqa: PLR0913, PLR0915
                 loss = F.mse_loss(pred, y)
                 val_losses.append(loss.item())
 
-        avg_val_loss = sum(val_losses) / len(val_losses) if val_losses else None
+        avg_val_loss = sum(val_losses) / len(val_losses) if val_losses else 0.0
 
         # Track best
-        if avg_val_loss is not None and avg_val_loss < best_val_loss:
+        if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
             import copy
 
@@ -311,10 +324,10 @@ def train_from_csv(  # noqa: PLR0913, PLR0915
     }
     print(json.dumps(result), flush=True)
 
-    return str(output_path)
+    return str(output_path_resolved)
 
 
-def main():
+def main() -> None:
     """CLI entry point for supervised training."""
     parser = argparse.ArgumentParser(description="Train supervised time series model")
     parser.add_argument("--csv_path", type=str, required=True, help="Path to CSV file")

@@ -5,8 +5,11 @@ Integrates Hydra for configuration and PyTorch Lightning for scalable training
 across Reinforcement Learning, Supervised Learning, and Unsupervised Learning tasks.
 """
 
+from typing import cast
+
 import hydra
 import pytorch_lightning as pl
+import torch
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import TensorBoardLogger
 
@@ -26,7 +29,7 @@ from python.src.utils.profiling.profiling import profile
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 @profile(output_dir="./profiles")
-def main(cfg: DictConfig):
+def main(cfg: DictConfig) -> None:
     """
     Main training function triggered by Hydra.
     """
@@ -36,10 +39,12 @@ def main(cfg: DictConfig):
     # 1. Instantiate Backbone
     backbone = TimeSeriesBackbone(cfg.model)
 
+    model: pl.LightningModule
+
     # 2. Select Task Module
     if cfg.task == "rl":
         # Environment
-        def env_maker():
+        def env_maker() -> TradingEnvWrapper:
             """
             Factory function for creating environment instances.
             """
@@ -53,7 +58,7 @@ def main(cfg: DictConfig):
         critic = TimeSeriesBackbone(cfg.model)
 
         model = RLLightningModule(
-            agent_module=policy,
+            agent_module=cast(torch.nn.Module, policy),
             value_module=critic,
             env_maker=env_maker,
             cfg=cfg.algorithm,

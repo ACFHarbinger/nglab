@@ -5,8 +5,11 @@ Implements pretext tasks such as Masked Prediction to learn useful representatio
 from unlabeled financial time series data.
 """
 
+from typing import Any, Dict, cast
+
 import torch
 import torch.nn.functional as F  # noqa: N812
+from torch import nn
 
 from .base import BaseModule
 
@@ -16,7 +19,7 @@ class SelfSupervisedModule(BaseModule):
     Module for Self-Supervised Learning tasks (e.g., Masked Prediction, Contrastive Learning).
     """
 
-    def __init__(self, backbone, cfg):
+    def __init__(self, backbone: nn.Module, cfg: Dict[str, Any]) -> None:
         """
         Initialize the Self-Supervised module.
 
@@ -26,21 +29,28 @@ class SelfSupervisedModule(BaseModule):
         """
         super().__init__(cfg)
         self.backbone = backbone
-        self.head = torch.nn.Linear(cfg.get("hidden_dim", 128), cfg.get("input_dim", 1))
-        self.mask_ratio = cfg.get("mask_ratio", 0.15)
+        self.head = torch.nn.Linear(
+            int(cfg.get("hidden_dim", 128)), int(cfg.get("input_dim", 1))
+        )
+        self.mask_ratio = float(cfg.get("mask_ratio", 0.15))
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass through the backbone.
         """
-        return self.backbone(x)
+        return cast(torch.Tensor, self.backbone(x))
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch: Any, batch_idx: int) -> torch.Tensor:
         """
         Perform a self-supervised training step using Masked Prediction.
         """
         # Taking 'x' from batch (assuming tensor or dict with 'observation')
-        x = batch if isinstance(batch, torch.Tensor) else batch["observation"]
+        if isinstance(batch, torch.Tensor):
+            x = batch
+        elif isinstance(batch, dict):
+            x = batch["observation"]
+        else:
+            raise ValueError(f"Unsupported batch type: {type(batch)}")
 
         # Simple Masked Prediction Logic
         # 1. Mask input
@@ -58,11 +68,17 @@ class SelfSupervisedModule(BaseModule):
         self.log("train/ssl_loss", loss)
         return loss
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch: Any, batch_idx: int) -> None:
         """
         Perform a validation step.
         """
-        x = batch if isinstance(batch, torch.Tensor) else batch["observation"]
+        if isinstance(batch, torch.Tensor):
+            x = batch
+        elif isinstance(batch, dict):
+            x = batch["observation"]
+        else:
+             raise ValueError(f"Unsupported batch type: {type(batch)}")
+
         features = self.backbone(x)
         pred = self.head(features)
         loss = F.mse_loss(pred, x)

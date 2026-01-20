@@ -47,12 +47,13 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         self.selection_params = selection_params or {}
 
         # Components
-        self.gpu_engineer = None
-        self.scaler = None
-        self.selector = None
+        # Components
+        self.gpu_engineer: Any = None
+        self.scaler: Any = None
+        self.selector: Any = None
         self.feature_names: list[str] = []
 
-    def fit(self, X: pd.DataFrame | np.ndarray, y=None):  # noqa: N803
+    def fit(self, X: pd.DataFrame | np.ndarray[Any, Any], y: Any = None) -> "FeaturePipeline":
         """
         Fit the pipeline components (e.g., scalers) on historical data.
 
@@ -121,21 +122,22 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
             raise ValueError(f"Unknown selection method: {self.selection_method}")
 
         # Update feature names
-        selected_mask = self.selector.get_support()
-        if isinstance(features, pd.DataFrame):
-            self.feature_names = [
-                features.columns[i]
-                for i, selected in enumerate(selected_mask)
-                if selected
-            ]
-        else:
-            self.feature_names = [
-                f"feat_{i}" for i, selected in enumerate(selected_mask) if selected
-            ]
+        if self.selector:
+            selected_mask = self.selector.get_support()
+            if isinstance(features, pd.DataFrame):
+                self.feature_names = [
+                    str(features.columns[i])
+                    for i, selected in enumerate(selected_mask)
+                    if selected
+                ]
+            else:
+                self.feature_names = [
+                    f"feat_{i}" for i, selected in enumerate(selected_mask) if selected
+                ]
 
         return self
 
-    def transform(self, X: pd.DataFrame | np.ndarray) -> np.ndarray:  # noqa: N803
+    def transform(self, X: pd.DataFrame | np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:  # noqa: N803
         """
         Transform new data into model inputs.
         """
@@ -161,7 +163,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
 
     def _generate_features(
         self,
-        X: pd.DataFrame | np.ndarray,  # noqa: N803
+        X: pd.DataFrame | np.ndarray[Any, Any],  # noqa: N803
     ) -> pd.DataFrame:
         """
         Internal method to generate raw features using GPU acceleration.
@@ -180,7 +182,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
 
         # Initialize GPU Engineer on demand (to avoid serialization issues)
         if self.gpu_engineer is None:
-            self.gpu_engineer = GPUFeatureEngineer(device=self.gpu_device)
+            self.gpu_engineer = GPUFeatureEngineer(device=self.gpu_device)  # type: ignore
 
         # Convert to tensor
         close_tensor = torch.tensor(df["close"].values, dtype=torch.float32)
@@ -191,11 +193,11 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         log_ret[0] = 0
 
         # 2. SMA
-        sma_short = self.gpu_engineer.moving_average(close_tensor, window=10)
-        sma_long = self.gpu_engineer.moving_average(close_tensor, window=self.lookback)
+        sma_short = self.gpu_engineer.moving_average(close_tensor, window=10) # type: ignore
+        sma_long = self.gpu_engineer.moving_average(close_tensor, window=self.lookback) # type: ignore
 
         # 3. RSI
-        rsi = self.gpu_engineer.rsi(close_tensor, window=14)
+        rsi = self.gpu_engineer.rsi(close_tensor, window=14) # type: ignore
 
         # 4. Bollinger Bands
         # upper, mid, lower = self.gpu_engineer.bollinger_bands(close_tensor, window=20)
@@ -215,11 +217,11 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
 
         return features
 
-    def save(self, path: str):
+    def save(self, path: str) -> None:
         """Save pipeline state."""
         joblib.dump(self, path)
 
     @staticmethod
     def load(path: str) -> "FeaturePipeline":
         """Load pipeline state."""
-        return joblib.load(path)
+        return joblib.load(path)  # type: ignore

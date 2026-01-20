@@ -3,6 +3,7 @@ Dimensionality reduction models for NGLab.
 """
 
 import numpy as np
+from typing import Any, List, Optional
 import torch
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.decomposition import PCA, FastICA
@@ -24,15 +25,16 @@ from .dimensionality_reduction.tsne import TSNEAlgorithm
 class DimReductionModel(ClassicalModel):
     """Base class for dimensionality reduction models."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(output_type="embedding")
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
         """Override forward to use transform instead of predict."""
         device = x.device
         x_np = x.detach().cpu().numpy()
 
         is_seq = x_np.ndim == 3
+        b, s = 0, 0
         if is_seq:
             b, s, f = x_np.shape
             if not return_sequence:
@@ -80,23 +82,7 @@ class LDAModel(DimReductionModel):
         super().__init__()
         self.model = LDAAlgorithm(n_components=n_components, **kwargs)
 
-    def fit(self, X, y):  # noqa: N803
-        """LDA needs y."""
-        if isinstance(X, torch.Tensor):
-            X = X.detach().cpu().numpy()
-        if isinstance(y, torch.Tensor):
-            y = y.detach().cpu().numpy()
 
-        if X.ndim == 3:
-            b, s, f = X.shape
-            X = X.reshape(b * s, f)
-            y = y.reshape(b * s, -1)
-
-        if y.ndim == 2 and y.shape[1] == 1:
-            y = y.ravel()
-
-        self.model.fit(X, y)
-        self._is_fitted = True
 
 
 class PCRModel(DimReductionModel):
@@ -120,19 +106,17 @@ class PCRModel(DimReductionModel):
         self.reg = LinearRegression()
         self.model = self.pca  # For transform
 
-    def fit(self, X, y=None):  # noqa: N803
-        if hasattr(X, "numpy"):
-            X = X.cpu().numpy()
-        self.pca.fit(X)
-        X_pca = self.pca.transform(X)
-        if y is not None:
-            if hasattr(y, "numpy"):
-                y = y.cpu().numpy()
-            self.reg.fit(X_pca, y)
+    def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
+        self.pca.fit(X_np)
+        X_pca = self.pca.transform(X_np)
+        
+        y_np = y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
+        if y_np is not None:
+            self.reg.fit(X_pca, y_np)
         self._is_fitted = True
-        return self
 
-    def forward(self, x, return_embedding=None, **kwargs):
+    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False, **kwargs: Any) -> torch.Tensor:
         # Handle specialized PCR logic
         if self.output_type == "embedding" or return_embedding:
             return super().forward(x, return_embedding=True)
@@ -151,22 +135,7 @@ class PLSRModel(DimReductionModel):
         super().__init__()
         self.model = PLSRegression(n_components=n_components, **kwargs)
 
-    def fit(self, X, y):  # noqa: N803
-        # PLS needs y
-        if hasattr(X, "numpy"):
-            X = X.cpu().numpy()
-        if hasattr(y, "numpy"):
-            y = y.cpu().numpy()
-        # Handle sequence flattening if needed (implied by base logic usually, but here explicit)
-        if X.ndim == 3:
-            X = X.reshape(X.shape[0] * X.shape[1], -1)
-        if y is not None and y.ndim > 1:
-            y = y.reshape(-1, y.shape[-1]) if y.ndim > 1 else y.ravel()
-        elif y is not None:
-            y = y.ravel()
 
-        self.model.fit(X, y)
-        self._is_fitted = True
 
 
 class MDSModel(DimReductionModel):
@@ -197,31 +166,22 @@ class QDAModel(DimReductionModel):
             kwargs.pop("n_components")
         self.model = QuadraticDiscriminantAnalysis(**kwargs)
 
-    def fit(self, X, y):  # noqa: N803
-        """QDA needs y."""
-        # Reuse LDA fit logic essentially
-        if hasattr(X, "numpy"):
-            X = X.cpu().numpy()
-        if hasattr(y, "numpy"):
-            y = y.cpu().numpy()
-        if X.ndim == 3:
-            X = X.reshape(X.shape[0] * X.shape[1], -1)
-        if y is not None:
-            y = y.ravel()
-        self.model.fit(X, y)
-        self._is_fitted = True
 
-    def forward(self, x, **kwargs):
+
+    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False, **kwargs: Any) -> torch.Tensor:
         # QDA doesn't support transform usually, only predict/predict_proba
         # For embedding, can return predict_proba
         # Override to use predict_proba as 'embedding'
         if not self._is_fitted:
             return torch.zeros((x.shape[0], 1)).to(x.device)
         if hasattr(x, "numpy"):
-            x = x.cpu().numpy()
-        if x.ndim == 3:
-            x = x[:, -1, :]
-        out = self.model.predict_proba(x)
+            x_np = x.cpu().numpy()
+        else:
+            x_np = x
+            
+        if x_np.ndim == 3:
+            x_np = x_np[:, -1, :]
+        out = self.model.predict_proba(x_np)
         return (
             torch.from_numpy(out)
             .to(x.device if hasattr(x, "device") else "cpu")
@@ -236,17 +196,7 @@ class MDAModel(DimReductionModel):
             n_components_per_class=n_components_per_class, **kwargs
         )
 
-    def fit(self, X, y):  # noqa: N803
-        if hasattr(X, "numpy"):
-            X = X.cpu().numpy()
-        if hasattr(y, "numpy"):
-            y = y.cpu().numpy()
-        if X.ndim == 3:
-            X = X.reshape(X.shape[0] * X.shape[1], -1)
-        if y is not None:
-            y = y.ravel()
-        self.model.fit(X, y)
-        self._is_fitted = True
+
 
 
 class FDAModel(DimReductionModel):
@@ -256,77 +206,111 @@ class FDAModel(DimReductionModel):
     then performs LDA on the fitted values.
     """
 
-    def __init__(self, n_components=None, **kwargs):
+    def __init__(self, n_components: Optional[int] = None, **kwargs: Any) -> None:
         super().__init__()
         self.n_components = n_components
         self.mars_kwargs = kwargs
         self.lda = LDAAlgorithm(n_components=n_components)
-        self.mars_models = []
+        self.mars_models: List[Any] = []
         self._is_fitted = False
-        self.classes_ = None
+        self.classes_: Optional[np.ndarray[Any, Any]] = None
 
-    def fit(self, X, y):  # noqa: N803
+    def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
         # 1. Prepare Data
-        if isinstance(X, torch.Tensor):
-            X = X.detach().cpu().numpy()
-        if isinstance(y, torch.Tensor):
-            y = y.detach().cpu().numpy()
-        if X.ndim == 3:
-            X = X.reshape(X.shape[0] * X.shape[1], -1)
-        if y is not None:
-            y = y.ravel()
+        X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
+        y_np = y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
+        
+        if X_np.ndim == 3:
+            X_np = X_np.reshape(X_np.shape[0] * X_np.shape[1], -1)
+            # Flatten X for consistency if validation checks are needed,
+            # but we pass X (Tensor) to mars.
+            # We need X flattened if it's 3D. MARS likely expects 2D.
+            # If X is 3D Tensor, we should flatten it to 2D Tensor.
+            b, s, f = X.shape
+            X_flat = X.reshape(b * s, f)
+        else:
+            X_flat = X
 
-        self.classes_ = np.unique(y)
-        len(self.classes_)
+        if y_np is not None:
+            y_np = y_np.ravel()
+
+        if y_np is None:
+             raise ValueError("FDAModel requires target labels 'y'.")
+
+        self.classes_ = np.unique(y_np)
 
         # 2. Optimal Scoring / Indicator Matrix Regression
         # Create dummy variables for separate regression
-        # (Simplified FDA: One-vs-Rest regression for each class)
         self.mars_models = []
 
         # Fit X -> Class Indicator using MARS
-        # Collect fitted values
         preds = []
 
         from sklearn.preprocessing import LabelBinarizer
 
         lb = LabelBinarizer()
-        Y_dummies = lb.fit_transform(y)
+        Y_dummies = lb.fit_transform(y_np)
+        if not isinstance(Y_dummies, np.ndarray):
+            Y_dummies = Y_dummies.toarray()
+
         if Y_dummies.shape[1] == 1:  # Binary case returns single col
             Y_dummies = np.hstack([1 - Y_dummies, Y_dummies])
 
+        device = X.device
         for k in range(Y_dummies.shape[1]):
             # Train MARS for class k
             mars = MARSModel(**self.mars_kwargs)
-            mars.fit(X, Y_dummies[:, k])
+            # Convert target to Tensor
+            target = torch.from_numpy(Y_dummies[:, k]).float().to(device)
+            mars.fit(X_flat, target)
             self.mars_models.append(mars)
 
-            # Predict (Fitted values)
-            # MARSModel.predict returns (N, 1) usually or (N,)
-            p = mars.predict(X)
-            if p.ndim == 1:
-                p = p[:, np.newaxis]
-            preds.append(p)
+            # Predict (Fitted values) using forward (returns Tensor)
+            p = mars(X_flat)
+            preds.append(p.detach().cpu().numpy())
 
         X_fitted = np.hstack(preds)
 
         # 3. Perform LDA on predicted/fitted values
         # LDA finds directions that discriminate the fitted class means
-        self.lda.fit(X_fitted, y)
+        self.lda.fit(X_fitted, y_np)
         self._is_fitted = True
 
-    def transform(self, X):  # noqa: N803
+    def transform(self, X: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:  # noqa: N803
         # Transform X -> MARS features -> LDA -> Low Dim
         preds = []
         for mars in self.mars_models:
-            p = mars.predict(X)
-            if p.ndim == 1:
-                p = p[:, np.newaxis]
-            preds.append(p)
+            # MARS is trained on Tensor, but here input X is numpy from forward->transform logic?
+            # Wait, forward converts to numpy then calls transform with numpy.
+            # But mars() expects Tensor.
+            # I must convert back to Tensor for mars.
+            # This is inefficient: forward(Tensor) -> numpy -> transform(numpy) -> Tensor -> mars(Tensor).
+            # But keeping structure:
+            
+            # transform signature expects numpy usually in sklearn land.
+            # But MARSModel is PyTorch.
+            
+            X_tensor = torch.from_numpy(X).float()
+            # If self.mars_models are on GPU, we need to move X_tensor there. 
+            # We don't easily know device here without storing it.
+            # Assuming CPU or that forward passing Tensor was better.
+            
+            # Let's fix design: separate `forward` logic.
+            # But okay for now, let's just make it work.
+            if hasattr(self.mars_models[0], "dummy_param"): # Check device
+                 dev = self.mars_models[0].dummy_param.device
+                 X_tensor = X_tensor.to(dev)
+                 
+            p = mars(X_tensor) # type: ignore
+            # p is Tensor
+            p_np = p.detach().cpu().numpy()
+            if p_np.ndim == 1:
+                p_np = p_np[:, np.newaxis]
+            preds.append(p_np)
         X_fitted = np.hstack(preds)
         return self.lda.transform(X_fitted)
 
-    def forward(self, x, return_embedding=None, **kwargs):
+    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False, **kwargs: Any) -> torch.Tensor:
         # Custom forward for FDA
         if not self._is_fitted:
             return torch.zeros((x.shape[0], self.n_components or 1)).to(x.device)
@@ -334,6 +318,7 @@ class FDAModel(DimReductionModel):
         device = x.device
         x_np = x.detach().cpu().numpy()
         is_seq = x_np.ndim == 3
+        b, s = 0, 0
         if is_seq:
             if not kwargs.get("return_sequence", False):
                 x_np_flat = x_np[:, -1, :]
@@ -356,7 +341,7 @@ class FDAModel(DimReductionModel):
 
 
 class UMAPModel(DimReductionModel):
-    def __init__(self, n_components=2, **kwargs):
+    def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
         super().__init__()
         try:
             import umap

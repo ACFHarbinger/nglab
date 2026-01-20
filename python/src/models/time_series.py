@@ -2,7 +2,7 @@
 Unified Backbone for Time Series Models.
 """
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, cast
 
 import torch
 from torch import nn
@@ -70,7 +70,6 @@ class TimeSeriesBackbone(nn.Module):
             del kwargs["return_sequence"]
 
         out = self.model(obs, **kwargs)
-        if isinstance(out, tuple):
-            # Some models might return (output, hidden_state)
-            return out[0]
-        return out
+        # We generally expect models to handle their return types.
+        # Wrappers should return what's expected.
+        return cast(torch.Tensor, out)

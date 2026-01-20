@@ -5,8 +5,11 @@ Implements deep unsupervised learning techniques such as Autoencoders
 for dimensionality reduction and feature extraction from financial data.
 """
 
+from typing import Any, Dict, cast
+
 import torch
 import torch.nn.functional as F  # noqa: N812
+from torch import nn
 
 from .base import BaseModule
 
@@ -17,7 +20,7 @@ class UnsupervisedModule(BaseModule):
     Focuses on reconstruction or density estimation.
     """
 
-    def __init__(self, backbone, cfg):
+    def __init__(self, backbone: nn.Module, cfg: Dict[str, Any]) -> None:
         """
         Initialize the Unsupervised module.
 
@@ -29,21 +32,27 @@ class UnsupervisedModule(BaseModule):
         self.encoder = backbone
         # Simple Decoder mirroring encoder manually or learned
         self.decoder = torch.nn.Linear(
-            cfg.get("hidden_dim", 128), cfg.get("input_dim", 1)
+            int(cfg.get("hidden_dim", 128)), int(cfg.get("input_dim", 1))
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass (Encode and Decode).
         """
         z = self.encoder(x)
-        return self.decoder(z)
+        return cast(torch.Tensor, self.decoder(z))
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch: Any, batch_idx: int) -> torch.Tensor:
         """
         Perform an unsupervised training step (reconstruction).
         """
-        x = batch if isinstance(batch, torch.Tensor) else batch["observation"]
+        # Batch: Tensor or Dict
+        if isinstance(batch, torch.Tensor):
+            x = batch
+        elif isinstance(batch, dict):
+            x = batch["observation"]
+        else:
+            raise ValueError(f"Unsupported batch type: {type(batch)}")
 
         reconstruction = self(x)
         loss = F.mse_loss(reconstruction, x)
@@ -51,11 +60,17 @@ class UnsupervisedModule(BaseModule):
         self.log("train/recon_loss", loss)
         return loss
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch: Any, batch_idx: int) -> None:
         """
         Perform a validation step.
         """
-        x = batch if isinstance(batch, torch.Tensor) else batch["observation"]
+        if isinstance(batch, torch.Tensor):
+            x = batch
+        elif isinstance(batch, dict):
+            x = batch["observation"]
+        else:
+             raise ValueError(f"Unsupported batch type: {type(batch)}")
+
         reconstruction = self(x)
         loss = F.mse_loss(reconstruction, x)
         self.log("val/recon_loss", loss)

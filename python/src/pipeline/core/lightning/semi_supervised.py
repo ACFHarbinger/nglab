@@ -5,8 +5,11 @@ Implements techniques like pseudo-labeling and consistency regularization to lev
 both labeled and unlabeled data for training.
 """
 
+from typing import Any, Dict, cast
+
 import torch
 import torch.nn.functional as F  # noqa: N812
+from torch import nn
 
 from .base import BaseModule
 
@@ -17,7 +20,7 @@ class SemiSupervisedModule(BaseModule):
     Combines labeled loss with consistency regularization on unlabeled data.
     """
 
-    def __init__(self, backbone, cfg):
+    def __init__(self, backbone: nn.Module, cfg: Dict[str, Any]) -> None:
         """
         Initialize the Semi-Supervised module.
 
@@ -28,33 +31,36 @@ class SemiSupervisedModule(BaseModule):
         super().__init__(cfg)
         self.backbone = backbone
         self.head = torch.nn.Linear(
-            cfg.get("hidden_dim", 128), cfg.get("num_classes", 2)
+            int(cfg.get("hidden_dim", 128)), int(cfg.get("num_classes", 2))
         )
-        self.threshold = cfg.get("threshold", 0.95)
-        self.lambda_u = cfg.get("lambda_u", 1.0)
+        self.threshold = float(cfg.get("threshold", 0.95))
+        self.lambda_u = float(cfg.get("lambda_u", 1.0))
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass through the backbone and head.
         """
-        return self.head(self.backbone(x))
+        return cast(torch.Tensor, self.head(self.backbone(x)))
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch: Any, batch_idx: int) -> torch.Tensor:
         """
         Perform a semi-supervised training step.
         """
+        if not isinstance(batch, dict):
+            raise ValueError("SemiSupervisedModule requires batch to be a dictionary")
+
         # Expecting batch to have labeled and unlabeled data
         x_labeled, y_labeled = batch.get("labeled", (None, None))
         x_unlabeled = batch.get("unlabeled", None)
 
-        loss = 0.0
+        loss: torch.Tensor = torch.tensor(0.0, device=cast(torch.device, self.device))
 
         # Supervised Loss
         if x_labeled is not None:
             logits_labeled = self(x_labeled)
             loss_s = F.cross_entropy(logits_labeled, y_labeled)
             self.log("train/loss_s", loss_s)
-            loss += loss_s
+            loss = loss + loss_s  # Ensure distinct tensor creation
 
         # Unsupervised (Consistency) Loss
         if x_unlabeled is not None:
@@ -68,11 +74,11 @@ class SemiSupervisedModule(BaseModule):
             # Re-compute logits (e.g. with augmentation/dropout enabled)
             # Here assuming simple consistency
             logits_u_strong = self(x_unlabeled)
-            loss_u = (
-                F.cross_entropy(logits_u_strong, targets_u, reduction="none") * mask
-            ).mean()
+            loss_u_elements = F.cross_entropy(logits_u_strong, targets_u, reduction="none")
+            loss_u = (loss_u_elements * mask).mean()
+            
             self.log("train/loss_u", loss_u)
-            loss += self.lambda_u * loss_u
+            loss = loss + (self.lambda_u * loss_u)
 
         self.log("train/total_loss", loss)
         return loss

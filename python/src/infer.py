@@ -6,8 +6,10 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any, cast
 
 import torch
+from torch import nn
 
 # Add src to path so we can import modules
 sys.path.append(str(Path(__file__).parent))
@@ -16,7 +18,7 @@ from python.src.models.time_series import TimeSeriesBackbone
 from python.src.utils.io.model_versioning import ModelMetadata, load_model_with_metadata
 
 
-def main():  # noqa: PLR0915
+def main() -> None:  # noqa: PLR0915
     """Run inference using a trained model and input JSON."""
     parser = argparse.ArgumentParser(description="Run inference on a trained model")
     parser.add_argument(
@@ -51,7 +53,10 @@ def main():  # noqa: PLR0915
         # Or we read the parallel .json file if it exists (which model_versioning saves).
 
         metadata_path = model_path.with_suffix(".json")
-        if not metadata_path.exists():
+        if metadata_path.exists():
+            with open(metadata_path) as f:
+                metadata = ModelMetadata.from_json(f.read())
+        else:
             # Fallback: try to load checkpoint with torch.load just to get metadata part
             checkpoint = torch.load(model_path, map_location="cpu")
             if "metadata" in checkpoint:
@@ -60,9 +65,6 @@ def main():  # noqa: PLR0915
                 raise ValueError(
                     "Checkpoint missing metadata and no sidecar JSON found."
                 )
-        else:
-            with open(metadata_path) as f:
-                metadata = ModelMetadata.from_json(f.read())
 
         # 3. Instantiate Model
         config = metadata.hyperparameters
@@ -70,7 +72,17 @@ def main():  # noqa: PLR0915
         model = TimeSeriesBackbone(model_config)
 
         # 4. Load Weights
-        model, _ = load_model_with_metadata(model, model_path, map_location="cpu")
+        # cast to fix type error: Incompatible types in assignment
+        loaded_model, _ = load_model_with_metadata(
+            cast(nn.Module, model), model_path, map_location="cpu"
+        )
+        if isinstance(loaded_model, TimeSeriesBackbone):
+            model = loaded_model
+        else:
+             # Should practically never happen if load_model_with_metadata returns the same instance type
+             # But for typing safety:
+             pass 
+
         model.eval()
 
         # 5. Handle Normalization

@@ -247,7 +247,7 @@ def create_mac_model(model_name: str, cfg: Dict[str, Any]) -> Optional[Classical
         return TWSVMModel(**cfg.get("model_kwargs", {}))
     elif model_name == "NaiveBayes":
         return NaiveBayesModel(
-            type=cfg.get("type", "gaussian"), **cfg.get("model_kwargs", {})
+            nb_type=cfg.get("type", "gaussian"), **cfg.get("model_kwargs", {})
         )
     elif model_name == "GaussianNB":
         return GaussianNaiveBayesModel(**cfg.get("model_kwargs", {}))

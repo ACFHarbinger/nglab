@@ -2,7 +2,10 @@
 Factory for Classical and Supplemental ML Models.
 """
 
-from typing import ClassVar
+from typing import Any, ClassVar, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .mac.base import ClassicalModel
 
 from .helper.association_rule import (
     AprioriModel,
@@ -67,7 +70,7 @@ class HelperModelFactory:
     }
 
     @classmethod
-    def create_model(cls, model_name: str, **kwargs):
+    def create_model(cls, model_name: str, **kwargs: Any) -> "ClassicalModel":
         """
         Create a model instance based on the provided name.
 
@@ -84,9 +87,9 @@ class HelperModelFactory:
                 f"Unknown model type: {model_name}. Available: {list(cls._MODELS.keys())}"
             )
 
-        return model_class(**kwargs)
+        return model_class(**kwargs)  # type: ignore
 
     @classmethod
-    def list_available_models(cls):
+    def list_available_models(cls) -> list[str]:
         """Returns a list of all available model names."""
         return list(cls._MODELS.keys())

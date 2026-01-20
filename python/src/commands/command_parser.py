@@ -6,6 +6,7 @@ import argparse
 import os
 import sys
 import time
+from typing import Any, Dict, NoReturn, Tuple
 
 from loguru import logger
 
@@ -15,14 +16,14 @@ class ConfigsParser(argparse.ArgumentParser):
     Custom ArgumentParser with error handling.
     """
 
-    def error(self, message):
+    def error(self, message: str) -> "NoReturn":
         """Handle parsing errors."""
         print(message, end=" ")
         self.print_help()
         sys.exit(2)
 
 
-def process_arguments():
+def process_arguments() -> Tuple[str, Dict[str, Any]]:
     """
     Parse and process command line arguments.
 

@@ -5,8 +5,11 @@ Wraps PyTorch or TorchRL modules to provide a consistent 'act' interface
 for model-based trading strategies.
 """
 
+from typing import Any, Dict, Optional, Union
+
 import torch
 from tensordict import TensorDict
+from torch import nn
 
 from .base import Policy
 
@@ -16,7 +19,7 @@ class NeuralPolicy(Policy):
     Policy that wraps a PyTorch/TorchRL module.
     """
 
-    def __init__(self, model, cfg=None):
+    def __init__(self, model: nn.Module, cfg: Optional[Dict[str, Any]] = None) -> None:
         """
         Initialize the neural policy.
 
@@ -28,7 +31,7 @@ class NeuralPolicy(Policy):
         self.model = model  # Expecting a TensorDictModule or similar
         self.device = self.cfg.get("device", "cpu")
 
-    def act(self, observation):
+    def act(self, observation: Union[torch.Tensor, TensorDict, Dict[str, Any]]) -> Any:
         """
         Execute the model forward pass and extract an action.
 
@@ -48,9 +51,10 @@ class NeuralPolicy(Policy):
 
         # Extract action
         # Assuming model outputs 'action' key or we need to sample distribution
-        if "action" in output.keys():
-            return output["action"]
-        elif "logits" in output.keys():
-            return output["logits"].argmax(dim=-1)
+        if hasattr(output, "keys"):
+            if "action" in output.keys():
+                return output["action"]
+            elif "logits" in output.keys():
+                return output["logits"].argmax(dim=-1)
 
         return output

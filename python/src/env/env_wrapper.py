@@ -5,7 +5,10 @@ Adapts the standard Gymnasium TradingEnv for use within the TorchRL framework,
 handling TensorDict mapping and spec inference.
 """
 
+from typing import Any, Optional
+
 import gymnasium as gym
+import torch
 from torchrl.envs import GymWrapper
 
 from .trading_env import TradingEnv
@@ -18,7 +21,13 @@ class TradingEnvWrapper(GymWrapper):
     Ensures observations and actions are mapped to TensorDicts.
     """
 
-    def __init__(self, env=None, device="cpu", num_envs=1, **kwargs):
+    def __init__(
+        self,
+        env: Optional[gym.Env] = None,
+        device: str = "cpu",
+        num_envs: int = 1,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize the environment wrapper.
 
@@ -32,8 +41,6 @@ class TradingEnvWrapper(GymWrapper):
         if env is None:
             if num_envs > 1:
                 env = make_vec_env(num_envs=num_envs, **kwargs)
-                import torch
-
                 batch_size = torch.Size([num_envs])
             else:
                 env = TradingEnv(**kwargs)

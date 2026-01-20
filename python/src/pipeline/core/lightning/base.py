@@ -4,10 +4,11 @@ Base Lightning Module for the NGLab training pipeline.
 Provides a template for modules with common configuration and optimization setup.
 """
 
-from typing import Any
+from typing import Any, Dict
 
 import pytorch_lightning as pl
 import torch
+from torch.optim import Optimizer
 
 
 class BaseModule(pl.LightningModule):
@@ -15,7 +16,7 @@ class BaseModule(pl.LightningModule):
     Base LightningModule with shared functionality for logging and configuration.
     """
 
-    def __init__(self, cfg: dict[str, Any]):
+    def __init__(self, cfg: Dict[str, Any]) -> None:
         """
         Initialize the base module.
 
@@ -24,10 +25,11 @@ class BaseModule(pl.LightningModule):
         """
         super().__init__()
         self.save_hyperparameters()
+        # Ensure cfg is set and accessible
         self.cfg = cfg
-        self.learning_rate = self.cfg.get("learning_rate", 1e-3)
+        self.learning_rate = float(self.cfg.get("learning_rate", 1e-3))
 
-    def configure_optimizers(self):
+    def configure_optimizers(self) -> Optimizer:
         """
         Configure the default Adam optimizer.
 
@@ -37,13 +39,13 @@ class BaseModule(pl.LightningModule):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optimizer
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch: Any, batch_idx: int) -> Any:
         """
         Abstract training step.
         """
         raise NotImplementedError
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch: Any, batch_idx: int) -> Any:
         """
         Abstract validation step.
         """

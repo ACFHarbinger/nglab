@@ -13,8 +13,8 @@ from enum import Enum
 from typing import Any
 
 import torch
-from torch import nn
-from torch.cuda.amp import GradScaler, autocast
+from torch import nn, autocast
+from torch.cuda.amp import GradScaler
 
 
 class PrecisionMode(Enum):
