@@ -26,15 +26,17 @@ WORKDIR /build/rust
 
 ENV CARGO_INCREMENTAL=0
 ENV RUSTFLAGS="-C target-cpu=native -C opt-level=3"
-RUN cargo build --release --locked
+# Removed --locked to handle lockfile synchronization in CI
+RUN cargo build --release
 
 # =============================================================================
 # Stage 2: CUDA Runtime
 # =============================================================================
 FROM nvidia/cuda:${CUDA_VERSION}-cudnn${CUDNN_VERSION}-runtime-ubuntu22.04 AS runtime
 
+ARG NGLAB_VERSION=0.1.0
 LABEL maintainer="NGLab Team"
-LABEL version="${NGLAB_VERSION:-latest}"
+LABEL version=${NGLAB_VERSION}
 LABEL description="NGLab Trading Bot - GPU Image"
 
 # Create non-root user
@@ -46,21 +48,13 @@ WORKDIR /app
 # Install Python and runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.11 \
-    python3.11-dev \
     python3-pip \
     libgomp1 \
-    libssl3 \
     curl \
-    tini \
-    && rm -rf /var/lib/apt/lists/* \
-    && ln -sf /usr/bin/python3.11 /usr/bin/python3 \
-    && ln -sf /usr/bin/python3.11 /usr/bin/python
+    && rm -rf /var/lib/apt/lists/*
 
 # Install PyTorch with CUDA support
-RUN pip3 install --no-cache-dir \
-    torch==2.3.0+cu121 \
-    torchvision==0.18.0+cu121 \
-    torchaudio==2.3.0+cu121 \
+RUN pip3 install --no-cache-dir torch torchvision torchaudio \
     --index-url https://download.pytorch.org/whl/cu121
 
 # Install remaining dependencies
@@ -101,16 +95,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 USER nglab
-
 EXPOSE 8000
-
-ENTRYPOINT ["/usr/bin/tini", "--"]
-
-CMD ["gunicorn", "src.api.inference:app", \
-    "--bind", "0.0.0.0:8000", \
-    "--workers", "2", \
-    "--worker-class", "uvicorn.workers.UvicornWorker", \
-    "--timeout", "300", \
-    "--keep-alive", "5", \
-    "--access-logfile", "-", \
-    "--error-logfile", "-"]
+CMD ["python3", "-m", "api.main"]

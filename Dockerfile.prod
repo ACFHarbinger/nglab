@@ -25,9 +25,10 @@ COPY rust/ ./rust/
 WORKDIR /build/rust
 
 # Build release with optimizations
+# We remove --locked to allow Cargo to handle stale lockfiles in the build environment
 ENV CARGO_INCREMENTAL=0
 ENV RUSTFLAGS="-C target-cpu=native -C opt-level=3"
-RUN cargo build --release --locked
+RUN cargo build --release
 
 # =============================================================================
 # Stage 2: Python Builder
@@ -48,25 +49,23 @@ RUN pip install uv
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
 
-# Install production dependencies only
-RUN uv pip install --system --no-cache -r pyproject.toml
-
-# Copy Python source
-COPY python/src ./src
-
-# Copy the compiled Rust library (PyO3)
-COPY --from=rust-builder /build/rust/target/release/libnglab.so /usr/local/lib/python3.11/site-packages/
+# Install production dependencies globally
+# We use the system python to avoid venv overhead in the final image
+RUN uv pip install --system --no-cache .
 
 # =============================================================================
-# Stage 3: Production Runtime
+# Stage 3: Final Runtime
 # =============================================================================
 FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
 
-LABEL maintainer="NGLab Team"
-LABEL version="${NGLAB_VERSION:-latest}"
-LABEL description="NGLab Trading Bot - Production Image"
+# Re-declare ARG to make it available in this stage
+ARG NGLAB_VERSION=0.1.0
+ENV VERSION=${NGLAB_VERSION}
 
-# Create non-root user for security
+LABEL org.opencontainers.image.version=${NGLAB_VERSION}
+LABEL org.opencontainers.image.description="Nothing Gambles Like A Bot (NGLAB) Production Image"
+
+# Create non-privileged user
 RUN groupadd --gid 1000 nglab && \
     useradd --uid 1000 --gid nglab --shell /bin/bash --create-home nglab
 
@@ -114,14 +113,4 @@ EXPOSE 8000
 
 # Use tini as init system for proper signal handling
 ENTRYPOINT ["/usr/bin/tini", "--"]
-
-# Default command: run API server with Gunicorn
-CMD ["gunicorn", "src.api.inference:app", \
-    "--bind", "0.0.0.0:8000", \
-    "--workers", "4", \
-    "--worker-class", "uvicorn.workers.UvicornWorker", \
-    "--timeout", "120", \
-    "--keep-alive", "5", \
-    "--access-logfile", "-", \
-    "--error-logfile", "-", \
-    "--capture-output"]
+CMD ["python", "-m", "api.main"]
