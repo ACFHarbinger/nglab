@@ -5,9 +5,8 @@ Provides a robust, serializable pipeline for transforming raw market data
 into model-ready features, leveraging GPU acceleration where possible.
 """
 
-from typing import Any
-
-import joblib
+import joblib  # type: ignore
+from typing import Any, cast
 import numpy as np
 import pandas as pd
 import torch
@@ -159,7 +158,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         if self.selector:
             scaled = self.selector.transform(scaled)
 
-        return scaled
+        return cast(np.ndarray[Any, Any], scaled)
 
     def _generate_features(
         self,
@@ -182,7 +181,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
 
         # Initialize GPU Engineer on demand (to avoid serialization issues)
         if self.gpu_engineer is None:
-            self.gpu_engineer = GPUFeatureEngineer(device=self.gpu_device)  # type: ignore
+            self.gpu_engineer = GPUFeatureEngineer(device=self.gpu_device)
 
         # Convert to tensor
         close_tensor = torch.tensor(df["close"].values, dtype=torch.float32)
@@ -193,11 +192,11 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         log_ret[0] = 0
 
         # 2. SMA
-        sma_short = self.gpu_engineer.moving_average(close_tensor, window=10) # type: ignore
-        sma_long = self.gpu_engineer.moving_average(close_tensor, window=self.lookback) # type: ignore
+        sma_short = self.gpu_engineer.moving_average(close_tensor, window=10)
+        sma_long = self.gpu_engineer.moving_average(close_tensor, window=self.lookback)
 
         # 3. RSI
-        rsi = self.gpu_engineer.rsi(close_tensor, window=14) # type: ignore
+        rsi = self.gpu_engineer.rsi(close_tensor, window=14)
 
         # 4. Bollinger Bands
         # upper, mid, lower = self.gpu_engineer.bollinger_bands(close_tensor, window=20)

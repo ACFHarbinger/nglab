@@ -6,7 +6,7 @@ import subprocess
 import sys
 import time
 
-import requests  # type: ignore[import-untyped]
+import requests
 
 
 def verify() -> None:

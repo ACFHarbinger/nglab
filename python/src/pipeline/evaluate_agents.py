@@ -6,19 +6,20 @@ and computes performance metrics like Sharpe Ratio and Max Drawdown.
 """
 
 import argparse
+from typing import Any, List, Optional
 
 import numpy as np
-from core.train_sac import ContinuousActionWrapper
+from pipeline.core.train_sac import ContinuousActionWrapper
 from environment import TradingEnv
 from stable_baselines3 import PPO, SAC
 
 
-def calculate_metrics(portfolio_values: list) -> dict:
+def calculate_metrics(portfolio_values: list[float]) -> dict[str, Any]:
     """Calculate trading performance metrics."""
-    portfolio_values = np.array(portfolio_values)
+    portfolio_arr = np.array(portfolio_values)
 
     # Returns
-    returns = np.diff(portfolio_values) / portfolio_values[:-1]
+    returns = np.diff(portfolio_arr) / portfolio_arr[:-1]
 
     # Sharpe Ratio (annualized, assuming 252 trading days)
     mean_return = np.mean(returns)
@@ -26,18 +27,18 @@ def calculate_metrics(portfolio_values: list) -> dict:
     sharpe_ratio = mean_return / std_return * np.sqrt(252) if std_return > 0 else 0.0
 
     # Max Drawdown
-    cumulative_max = np.maximum.accumulate(portfolio_values)
-    drawdowns = (cumulative_max - portfolio_values) / cumulative_max
+    cumulative_max = np.maximum.accumulate(portfolio_arr)
+    drawdowns = (cumulative_max - portfolio_arr) / cumulative_max
     max_drawdown = np.max(drawdowns)
 
     # Total Return
-    total_return = (portfolio_values[-1] - portfolio_values[0]) / portfolio_values[0]
+    total_return = (portfolio_arr[-1] - portfolio_arr[0]) / portfolio_arr[0]
 
     return {
         "sharpe_ratio": sharpe_ratio,
         "max_drawdown": max_drawdown,
         "total_return": total_return,
-        "final_value": portfolio_values[-1],
+        "final_value": portfolio_arr[-1],
         "mean_return": mean_return,
         "std_return": std_return,
     }
@@ -49,7 +50,7 @@ def evaluate_agent(
     n_episodes: int = 10,
     lookback: int = 30,
     max_steps: int = 1000,
-):
+) -> dict[str, Any]:
     """Evaluate a trained agent over multiple episodes."""
 
     # Load model
@@ -71,12 +72,14 @@ def evaluate_agent(
     for _episode in range(n_episodes):
         obs, info = env.reset()
         done = False
-        episode_reward = 0
+        episode_reward: float = 0.0
         steps = 0
         portfolio_values = [10000.0]  # Initial capital
 
         while not done:
             action, _ = model.predict(obs, deterministic=True)
+            if isinstance(action, np.ndarray):
+                action = int(action.item())
             obs, reward, terminated, truncated, info = env.step(action)
             done = terminated or truncated
             episode_reward += reward
@@ -108,7 +111,7 @@ def evaluate_agent(
     return avg_metrics
 
 
-def main(args):
+def main(args: argparse.Namespace) -> None:
     """
     Main evaluation entry point.
     """

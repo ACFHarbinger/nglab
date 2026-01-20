@@ -20,13 +20,13 @@ import redis.asyncio as redis
 import torch
 import uvicorn
 from fastapi import FastAPI, HTTPException
-from opentelemetry import trace  # type: ignore
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter  # type: ignore
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor  # type: ignore
-from opentelemetry.sdk.resources import Resource  # type: ignore
-from opentelemetry.sdk.trace import TracerProvider  # type: ignore
-from opentelemetry.sdk.trace.export import BatchSpanProcessor  # type: ignore
-from opentelemetry.sdk.trace.sampling import ParentBased, TraceIdRatioBased  # type: ignore
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.trace.sampling import ParentBased, TraceIdRatioBased
 from pydantic import BaseModel, Field
 
 from python.src.utils import definitions

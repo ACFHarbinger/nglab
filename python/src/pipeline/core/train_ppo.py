@@ -6,6 +6,7 @@ on the Rust-backed TradingEnv using Stable-Baselines3.
 """
 
 import argparse
+import gymnasium as gym
 import os
 
 from environment import TradingEnv
@@ -13,12 +14,14 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
+from typing import Any, Callable
 
 
-def make_env(rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000):
+
+def make_env(rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000) -> "Callable[[], gym.Env[Any, Any]]":
     """Create a TradingEnv instance."""
 
-    def _init():
+    def _init() -> gym.Env[Any, Any]:
         env = TradingEnv(lookback=lookback, max_steps=max_steps)
         env = Monitor(env)
         return env
@@ -26,7 +29,7 @@ def make_env(rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000
     return _init
 
 
-def train_ppo(args):
+def train_ppo(args: argparse.Namespace) -> None:
     """Train a PPO agent on TradingEnv."""
 
     # Create output directory

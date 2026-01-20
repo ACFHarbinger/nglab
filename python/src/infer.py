@@ -5,8 +5,8 @@ Inference script for trained models.
 import argparse
 import json
 import sys
+from typing import cast
 from pathlib import Path
-from typing import Any, cast
 
 import torch
 from torch import nn

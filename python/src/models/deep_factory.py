@@ -100,7 +100,7 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
         Instantiated model or None if not a deep model.
     """
     if model_name == "NSTransformer":
-        return NSTransformer(  # type: ignore
+        return NSTransformer(
             pred_len=int(cfg.get("pred_len", 1)),
             seq_len=int(cfg.get("seq_len", 30)),
             input_dim=int(cfg.get("feature_dim", 12)),
@@ -119,7 +119,7 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             output_type=cfg.get("output_type", "embedding"),
         )
     elif model_name == "LSTM":
-        return LSTM(  # type: ignore
+        return LSTM(
             input_dim=int(cfg.get("feature_dim", 12)),
             output_dim=int(cfg.get("output_dim", 1)),
             hidden_dim=int(cfg.get("hidden_dim", 128)),
@@ -129,7 +129,7 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             apply_softmax=cfg.get("probabilistic", False),
         )
     elif model_name == "GRU":
-        return GRU(  # type: ignore
+        return GRU(
             input_dim=int(cfg.get("feature_dim", 12)),
             output_dim=int(cfg.get("output_dim", 1)),
             hidden_dim=int(cfg.get("hidden_dim", 128)),
@@ -138,7 +138,7 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             output_type=cfg.get("output_type", "embedding"),
         )
     elif model_name == "xLSTM":
-        return xLSTM(  # type: ignore
+        return xLSTM(
             input_dim=int(cfg.get("feature_dim", 12)),
             output_dim=1,
             hidden_dim=int(cfg.get("hidden_dim", 128)),
@@ -149,7 +149,7 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             num_heads=int(cfg.get("num_heads", 4)),
         )
     elif model_name == "SNN":
-        return SNN(  # type: ignore
+        return SNN(
             input_dim=int(cfg.get("feature_dim", 12)),
             output_dim=int(cfg.get("output_dim", 1)),
             hidden_dim=int(cfg.get("hidden_dim", 128)),
@@ -160,7 +160,7 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             threshold=float(cfg.get("threshold", 1.0)),
         )
     elif model_name == "MLP":
-        return MLP(  # type: ignore
+        return MLP(
             input_dim=int(cfg.get("feature_dim", 12)),
             hidden_dims=cfg.get("hidden_dims", [128, 64]),
             output_dim=int(cfg.get("output_dim", 1)),
@@ -169,7 +169,7 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             output_type=cfg.get("output_type", "embedding"),
         )
     elif model_name == "RBF":
-        return RBF(  # type: ignore
+        return RBF(
             input_dim=int(cfg.get("feature_dim", 12)),
             num_centers=int(cfg.get("hidden_dim", 100)),
             output_dim=int(cfg.get("output_dim", 1)),
@@ -184,7 +184,7 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             output_type=cfg.get("output_type", "embedding"),
         )
     elif model_name == "DAE":
-        return DenoisingAE(  # type: ignore
+        return DenoisingAE(
             input_dim=int(cfg.get("feature_dim", 12)),
             hidden_dims=cfg.get("hidden_dims", [64]),
             latent_dim=int(cfg.get("hidden_dim", 32)),
@@ -192,7 +192,7 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             output_type=cfg.get("output_type", "embedding"),
         )
     elif model_name == "SAE":
-        return SparseAE(  # type: ignore
+        return SparseAE(
             input_dim=int(cfg.get("feature_dim", 12)),
             hidden_dims=cfg.get("hidden_dims", [64]),
             latent_dim=int(cfg.get("hidden_dim", 32)),
@@ -201,7 +201,7 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             output_type=cfg.get("output_type", "embedding"),
         )
     elif model_name == "StackedAE":
-        return StackedAutoEncoder(  # type: ignore
+        return StackedAutoEncoder(
             layer_sizes=[
                 int(cfg.get("feature_dim", 12)),
                 *cfg.get("hidden_dims", [64, 32]),
@@ -210,18 +210,18 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             output_type=cfg.get("output_type", "prediction"),
         )
     elif model_name == "Hopfield":
-        return HopfieldNetwork(  # type: ignore
+        return HopfieldNetwork(
             size=int(cfg.get("feature_dim", 12)),
             output_type=cfg.get("output_type", "embedding"),
         )
     elif model_name == "RBM":
-        return RBM(  # type: ignore
+        return RBM(
             visible_dim=int(cfg.get("feature_dim", 12)),
             hidden_dim=int(cfg.get("hidden_dim", 64)),
             output_type=cfg.get("output_type", "embedding"),
         )
     elif model_name == "ESN":
-        return EchoStateNetwork(  # type: ignore
+        return EchoStateNetwork(
             input_dim=int(cfg.get("feature_dim", 12)),
             reservoir_dim=int(cfg.get("hidden_dim", 500)),
             output_dim=int(cfg.get("output_dim", 1)),
@@ -230,7 +230,7 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             output_type=cfg.get("output_type", "embedding"),
         )
     elif model_name == "ELM":
-        return ELM(  # type: ignore
+        return ELM(
             input_dim=int(cfg.get("feature_dim", 12)),
             hidden_dim=int(cfg.get("hidden_dim", 500)),
             output_dim=int(cfg.get("output_dim", 1)),
@@ -260,44 +260,44 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             output_type=cfg.get("output_type", "embedding"),
         )
     elif model_name == "Perceptron":
-        return Perceptron(  # type: ignore
+        return Perceptron(
             input_dim=int(cfg.get("feature_dim", 12)),
             output_dim=int(cfg.get("output_dim", 1)),
             activation=cfg.get("activation", "sigmoid"),
             output_type=cfg.get("output_type", "prediction"),
         )
     elif model_name == "MarkovChain":
-        return MarkovChain(  # type: ignore
+        return MarkovChain(
             num_states=int(cfg.get("num_states", 10)),
             output_type=cfg.get("output_type", "prediction"),
             learnable=cfg.get("learnable", True),
         )
     elif model_name == "BM":
-        return BoltzmannMachine(  # type: ignore
+        return BoltzmannMachine(
             num_units=int(cfg.get("feature_dim", 12)),
             output_type=cfg.get("output_type", "prediction"),
         )
     elif model_name == "DBN":
-        return DeepBeliefNetwork(  # type: ignore
+        return DeepBeliefNetwork(
             layer_sizes=[int(cfg.get("feature_dim", 12)), *cfg.get("hidden_dims", [64, 32])],
             output_type=cfg.get("output_type", "prediction"),
         )
     elif model_name == "DCN":
-        return DeepConvNet(  # type: ignore
+        return DeepConvNet(
             input_dim=int(cfg.get("feature_dim", 12)),
             hidden_channels=cfg.get("hidden_channels", [32, 64, 128]),
             output_dim=int(cfg.get("output_dim", 1)),
             output_type=cfg.get("output_type", "prediction"),
         )
     elif model_name == "Deconv":
-        return DeconvNet(  # type: ignore
+        return DeconvNet(
             input_dim=int(cfg.get("feature_dim", 12)),
             hidden_channels=cfg.get("hidden_channels", [128, 64, 32]),
             output_dim=int(cfg.get("output_dim", 1)),
             output_type=cfg.get("output_type", "prediction"),
         )
     elif model_name == "AutoDeconv":
-        return AutoDeconvNet(  # type: ignore
+        return AutoDeconvNet(
             input_dim=int(cfg.get("feature_dim", 12)),
             latent_dim=int(cfg.get("latent_dim", 64)),
             hidden_channels=cfg.get("hidden_channels", [32, 64, 128]),
@@ -316,7 +316,7 @@ def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Modul
             output_type=cfg.get("output_type", "prediction"),
         )
     elif model_name == "LSM":
-        return LiquidStateMachine(  # type: ignore
+        return LiquidStateMachine(
             input_dim=int(cfg.get("feature_dim", 12)),
             liquid_size=int(cfg.get("liquid_size", 200)),
             output_dim=int(cfg.get("output_dim", 1)),

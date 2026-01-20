@@ -19,15 +19,15 @@ from stable_baselines3 import SAC
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
+from typing import Any, Callable
 
-
-class ContinuousActionWrapper(gym.ActionWrapper):
+class ContinuousActionWrapper(gym.ActionWrapper):  # type: ignore
     """
     Wrapper to convert discrete action space to continuous.
     Maps a continuous action in [-1, 1] to discrete {0, 1, 2}.
     """
 
-    def __init__(self, env):
+    def __init__(self, env: gym.Env) -> None:
         """
         Initialize the wrapper.
         """
@@ -37,7 +37,7 @@ class ContinuousActionWrapper(gym.ActionWrapper):
         self.n_actions = env.action_space.n
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
 
-    def action(self, action):
+    def action(self, action: np.ndarray) -> int:
         """
         Convert continuous action to discrete.
         """
@@ -54,10 +54,10 @@ class ContinuousActionWrapper(gym.ActionWrapper):
             return 0  # Hold
 
 
-def make_env(rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000):
+def make_env(rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000) -> "Callable[[], gym.Env[Any, Any]]":
     """Create a wrapped TradingEnv instance for SAC."""
 
-    def _init():
+    def _init() -> gym.Env[Any, Any]:
         env = TradingEnv(lookback=lookback, max_steps=max_steps)
         env = ContinuousActionWrapper(env)
         env = Monitor(env)
@@ -66,7 +66,7 @@ def make_env(rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000
     return _init
 
 
-def train_sac(args):
+def train_sac(args: argparse.Namespace) -> None:
     """Train a SAC agent on TradingEnv."""
 
     # Create output directory

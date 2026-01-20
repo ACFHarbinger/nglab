@@ -5,10 +5,11 @@ Automated Feature Selection Toolkit for Time Series Data.
 from typing import Any
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sns
+from numpy.typing import NDArray
 from sklearn.base import BaseEstimator
+from sklearn.model_selection import TimeSeriesSplit
 from sklearn.feature_selection import RFECV, mutual_info_regression
 
 
@@ -50,38 +51,40 @@ class TimeSeriesFeatureSelector:
         Recursive Feature Elimination with Cross-Validation.
         Automatically finds the optimal number of features.
         """
+        cv_split = TimeSeriesSplit(n_splits=cv)
         selector = RFECV(
-            estimator=estimator, step=step, cv=cv, scoring=scoring, n_jobs=-1
+            estimator=estimator, step=step, cv=cv_split, scoring=scoring, n_jobs=-1
         )
         selector.fit(X, y)
 
-        selected_features = X.columns[selector.support_].tolist()
+        selected_features: list[str] = list(X.columns[selector.support_])
         return selector, selected_features
 
     @staticmethod
-    def plot_importance(scores: pd.Series, title: str = "Feature Importance"):
+    def plot_importance(scores: pd.Series, title: str = "Feature Importance") -> None:
         """Visualize feature importance scores."""
-        plt.figure(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(10, 6))
         sns.barplot(x=scores.values, y=scores.index)
-        plt.title(title)
-        plt.xlabel("Score")
-        plt.ylabel("Features")
-        plt.tight_layout()
+        ax.set_title(title)
+        ax.set_xlabel("Score")
+        ax.set_ylabel("Features")
+        fig.tight_layout()
         plt.show()
 
 
 try:
-    import shap  # noqa: F401
+    import shap
 
     HAS_SHAP = True
 except ImportError:
+    shap: Any = None
     HAS_SHAP = False
 
 
 class SHAPToolkit:
     """Wrapper for SHAP (SHapley Additive exPlanations)."""
 
-    def __init__(self, model: Any, background_data: np.ndarray | None = None):
+    def __init__(self, model: Any, background_data: NDArray[Any] | None = None) -> None:
         self.model = model
         self.background_data = background_data
         self.explainer = None
@@ -89,20 +92,17 @@ class SHAPToolkit:
         if not HAS_SHAP:
             print("Warning: SHAP library not found. SHAPToolkit will be limited.")
 
-    def explain(self, X: np.ndarray) -> np.ndarray:  # noqa: N803
+    def explain(self, X: NDArray[Any]) -> NDArray[Any]:  # noqa: N803
         """Calculate SHAP values for the given data."""
         if not HAS_SHAP:
             raise RuntimeError("SHAP not installed. Install with 'pip install shap'")
 
         if self.explainer is None:
-            # Automatic explainer choice
-            import shap as shap_pkg
+            self.explainer = shap.Explainer(self.model, self.background_data)
 
-            self.explainer = shap_pkg.Explainer(self.model, self.background_data)
+        return self.explainer(X)  # type: ignore
 
-        return self.explainer(X)
-
-    def plot_summary(self, shap_values: Any, X: pd.DataFrame):  # noqa: N803
+    def plot_summary(self, shap_values: Any, X: pd.DataFrame) -> None:  # noqa: N803
         """Plot SHAP summary plot."""
         if not HAS_SHAP:
             return

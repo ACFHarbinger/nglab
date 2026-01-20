@@ -39,7 +39,7 @@ def train_func(config: dict[str, Any], opts: dict[str, Any]) -> None:
         max_epochs=opts.get("max_epochs", 10),
         devices="auto",
         accelerator="auto",
-        strategy=RayDDPStrategy(),  # type: ignore # For distributed training within Ray trial
+        strategy=RayDDPStrategy(),  # For distributed training within Ray trial
         callbacks=[report_callback],
         enable_checkpointing=False,
         logger=False,

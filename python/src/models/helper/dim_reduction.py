@@ -66,19 +66,19 @@ class DimReductionModel(ClassicalModel):
 
 
 class PCAModel(DimReductionModel):
-    def __init__(self, n_components=None, **kwargs):
+    def __init__(self, n_components: Optional[int] = None, **kwargs: Any) -> None:
         super().__init__()
         self.model = PCAAlgorithm(n_components=n_components, **kwargs)
 
 
 class TSNEModel(DimReductionModel):
-    def __init__(self, n_components=2, **kwargs):
+    def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
         super().__init__()
         self.model = TSNEAlgorithm(n_components=n_components, **kwargs)
 
 
 class LDAModel(DimReductionModel):
-    def __init__(self, n_components=None, **kwargs):
+    def __init__(self, n_components: Optional[int] = None, **kwargs: Any) -> None:
         super().__init__()
         self.model = LDAAlgorithm(n_components=n_components, **kwargs)
 
@@ -88,7 +88,7 @@ class LDAModel(DimReductionModel):
 class PCRModel(DimReductionModel):
     """Principal Component Regression (Dim Reduction aspect)."""
 
-    def __init__(self, n_components=2, **kwargs):
+    def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
         super().__init__()
         # Pipeline of PCA -> Regression, but model output is embedding (PCA part usually)
         # But PCR is a regression model.
@@ -131,7 +131,7 @@ class PCRModel(DimReductionModel):
 
 
 class PLSRModel(DimReductionModel):
-    def __init__(self, n_components=2, **kwargs):
+    def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
         super().__init__()
         self.model = PLSRegression(n_components=n_components, **kwargs)
 
@@ -139,13 +139,13 @@ class PLSRModel(DimReductionModel):
 
 
 class MDSModel(DimReductionModel):
-    def __init__(self, n_components=2, **kwargs):
+    def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
         super().__init__()
         self.model = MDS(n_components=n_components, **kwargs)
 
 
 class SammonMappingModel(DimReductionModel):
-    def __init__(self, n_components=2, **kwargs):
+    def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
         super().__init__()
         self.model = SammonMappingAlgorithm(n_components=n_components, **kwargs)
 
@@ -153,13 +153,13 @@ class SammonMappingModel(DimReductionModel):
 class ProjectionPursuitModel(DimReductionModel):
     """Uses FastICA as proxy for Projection Pursuit."""
 
-    def __init__(self, n_components=2, **kwargs):
+    def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
         super().__init__()
         self.model = FastICA(n_components=n_components, **kwargs)
 
 
 class QDAModel(DimReductionModel):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__()
         # Remove n_components if present as QDA does not use it
         if "n_components" in kwargs:
@@ -174,10 +174,9 @@ class QDAModel(DimReductionModel):
         # Override to use predict_proba as 'embedding'
         if not self._is_fitted:
             return torch.zeros((x.shape[0], 1)).to(x.device)
-        if hasattr(x, "numpy"):
-            x_np = x.cpu().numpy()
-        else:
-            x_np = x
+        
+        # We know x is a Tensor from the signature
+        x_np = x.detach().cpu().numpy()
             
         if x_np.ndim == 3:
             x_np = x_np[:, -1, :]
@@ -190,7 +189,7 @@ class QDAModel(DimReductionModel):
 
 
 class MDAModel(DimReductionModel):
-    def __init__(self, n_components_per_class=1, **kwargs):
+    def __init__(self, n_components_per_class: int = 1, **kwargs: Any) -> None:
         super().__init__()
         self.model = MDAAlgorithm(
             n_components_per_class=n_components_per_class, **kwargs
@@ -301,7 +300,7 @@ class FDAModel(DimReductionModel):
                  dev = self.mars_models[0].dummy_param.device
                  X_tensor = X_tensor.to(dev)
                  
-            p = mars(X_tensor) # type: ignore
+            p = mars(X_tensor)
             # p is Tensor
             p_np = p.detach().cpu().numpy()
             if p_np.ndim == 1:

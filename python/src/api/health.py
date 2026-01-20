@@ -1,12 +1,13 @@
 import psutil
 import torch
 from flask import Flask, jsonify
+from typing import Any
 
 app = Flask(__name__)
 
 
 @app.route("/health", methods=["GET"])
-def health():
+def health() -> dict[str, Any]:
     gpu_available = torch.cuda.is_available()
     gpu_name = torch.cuda.get_device_name(0) if gpu_available else None
 

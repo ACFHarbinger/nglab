@@ -64,7 +64,7 @@ class EnsembleModel(nn.Module):
         """
         predictions = []
         for model in self.models:
-            cm = torch.no_grad() if not self.training else torch.enable_grad()  # type: ignore
+            cm = torch.no_grad() if not self.training else torch.enable_grad()
             with cm:
                 pred = model(x)
                 predictions.append(pred)
