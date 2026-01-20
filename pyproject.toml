@@ -130,7 +130,6 @@ extend-exclude = '''
 line-length = 88
 target-version = "py311"
 include = ["*.py", "*.pyi"]
-extraPaths = ["./typings"]
 exclude = ["typescript", "rust", "android", "build", "node_modules", ".venv"]
 
 [tool.ruff.lint]

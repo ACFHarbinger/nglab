@@ -197,11 +197,9 @@ class Credentials(
     @_helpers.copy_docstring(credentials.Credentials)
     def get_cred_info(self):  # -> dict[str, Any] | None:
         ...
-
     @_helpers.copy_docstring(credentials.Scoped)
     def with_scopes(self, scopes, default_scopes=...):  # -> Self:
         ...
-
     @abc.abstractmethod
     def retrieve_subject_token(self, request):
         """Retrieves the subject token using the credential_source object.
@@ -250,19 +248,15 @@ class Credentials(
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
     def with_token_uri(self, token_uri):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
     def with_universe_domain(self, universe_domain):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithTrustBoundary)
     def with_trust_boundary(self, trust_boundary):  # -> Self:
         ...
-
     @classmethod
     def from_info(cls, info, **kwargs):  # -> Self:
         """Creates a Credentials instance from parsed external account info.

@@ -17,8 +17,7 @@ OptionalRetry = ...
 CLIENT_LOGGING_SUPPORTED = ...
 _LOGGER = ...
 DEFAULT_CLIENT_INFO = ...
-if hasattr(DEFAULT_CLIENT_INFO, "protobuf_runtime_version"):
-    ...
+if hasattr(DEFAULT_CLIENT_INFO, "protobuf_runtime_version"): ...
 
 class StorageControlRestInterceptor:
     """Interceptor for StorageControl.
@@ -1185,7 +1184,9 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
         self,
     ) -> Callable[[storage_control.GetFolderRequest], storage_control.Folder]: ...
     @property
-    def get_folder_intelligence_config(self) -> Callable[
+    def get_folder_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.GetFolderIntelligenceConfigRequest],
         storage_control.IntelligenceConfig,
     ]: ...
@@ -1200,12 +1201,16 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
         [storage_control.GetManagedFolderRequest], storage_control.ManagedFolder
     ]: ...
     @property
-    def get_organization_intelligence_config(self) -> Callable[
+    def get_organization_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.GetOrganizationIntelligenceConfigRequest],
         storage_control.IntelligenceConfig,
     ]: ...
     @property
-    def get_project_intelligence_config(self) -> Callable[
+    def get_project_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.GetProjectIntelligenceConfigRequest],
         storage_control.IntelligenceConfig,
     ]: ...
@@ -1216,7 +1221,9 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
         [storage_control.GetStorageLayoutRequest], storage_control.StorageLayout
     ]: ...
     @property
-    def list_anywhere_caches(self) -> Callable[
+    def list_anywhere_caches(
+        self,
+    ) -> Callable[
         [storage_control.ListAnywhereCachesRequest],
         storage_control.ListAnywhereCachesResponse,
     ]: ...
@@ -1227,7 +1234,9 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
         [storage_control.ListFoldersRequest], storage_control.ListFoldersResponse
     ]: ...
     @property
-    def list_managed_folders(self) -> Callable[
+    def list_managed_folders(
+        self,
+    ) -> Callable[
         [storage_control.ListManagedFoldersRequest],
         storage_control.ListManagedFoldersResponse,
     ]: ...
@@ -1252,7 +1261,9 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
         self,
     ) -> Callable[[iam_policy_pb2.SetIamPolicyRequest], policy_pb2.Policy]: ...
     @property
-    def test_iam_permissions(self) -> Callable[
+    def test_iam_permissions(
+        self,
+    ) -> Callable[
         [iam_policy_pb2.TestIamPermissionsRequest],
         iam_policy_pb2.TestIamPermissionsResponse,
     ]: ...
@@ -1263,17 +1274,23 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
         [storage_control.UpdateAnywhereCacheRequest], operations_pb2.Operation
     ]: ...
     @property
-    def update_folder_intelligence_config(self) -> Callable[
+    def update_folder_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.UpdateFolderIntelligenceConfigRequest],
         storage_control.IntelligenceConfig,
     ]: ...
     @property
-    def update_organization_intelligence_config(self) -> Callable[
+    def update_organization_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.UpdateOrganizationIntelligenceConfigRequest],
         storage_control.IntelligenceConfig,
     ]: ...
     @property
-    def update_project_intelligence_config(self) -> Callable[
+    def update_project_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.UpdateProjectIntelligenceConfigRequest],
         storage_control.IntelligenceConfig,
     ]: ...

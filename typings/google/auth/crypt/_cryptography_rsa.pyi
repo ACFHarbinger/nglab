@@ -29,7 +29,6 @@ class RSAVerifier(base.Verifier):
     @_helpers.copy_docstring(base.Verifier)
     def verify(self, message, signature):  # -> bool:
         ...
-
     @classmethod
     def from_string(cls, public_key):  # -> Self:
         """Construct an Verifier instance from a public key or public
@@ -64,7 +63,6 @@ class RSASigner(base.Signer, base.FromServiceAccountMixin):
     @_helpers.copy_docstring(base.Signer)
     def key_id(self):  # -> None:
         ...
-
     @_helpers.copy_docstring(base.Signer)
     def sign(self, message): ...
     @classmethod

@@ -27,15 +27,12 @@ class Credentials(credentials.Credentials):
     @property
     def expired(self):  # -> Literal[False]:
         ...
-
     @property
     def valid(self):  # -> Literal[True]:
         ...
-
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):  # -> None:
         ...
-
     def apply(self, headers, token=...):  # -> None:
         """Apply the API key token to the x-goog-api-key header.
         Args:

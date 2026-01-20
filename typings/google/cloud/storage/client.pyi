@@ -89,7 +89,6 @@ class Client(ClientWithProject):
     @property
     def universe_domain(self):  # -> str:
         ...
-
     @property
     def api_endpoint(self): ...
     def update_user_agent(self, user_agent):  # -> None:

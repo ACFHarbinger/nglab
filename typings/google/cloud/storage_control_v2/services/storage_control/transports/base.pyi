@@ -12,8 +12,7 @@ from google.protobuf import empty_pb2
 from google.cloud.storage_control_v2.types import storage_control
 
 DEFAULT_CLIENT_INFO = ...
-if hasattr(DEFAULT_CLIENT_INFO, "protobuf_runtime_version"):
-    ...
+if hasattr(DEFAULT_CLIENT_INFO, "protobuf_runtime_version"): ...
 
 class StorageControlTransport(abc.ABC):
     """Abstract transport class for StorageControl."""
@@ -63,7 +62,6 @@ class StorageControlTransport(abc.ABC):
     @property
     def host(self):  # -> str:
         ...
-
     def close(self):
         """Closes resources associated with the transport.
 
@@ -79,22 +77,30 @@ class StorageControlTransport(abc.ABC):
         ...
 
     @property
-    def create_folder(self) -> Callable[
+    def create_folder(
+        self,
+    ) -> Callable[
         [storage_control.CreateFolderRequest],
         Union[storage_control.Folder, Awaitable[storage_control.Folder]],
     ]: ...
     @property
-    def delete_folder(self) -> Callable[
+    def delete_folder(
+        self,
+    ) -> Callable[
         [storage_control.DeleteFolderRequest],
         Union[empty_pb2.Empty, Awaitable[empty_pb2.Empty]],
     ]: ...
     @property
-    def get_folder(self) -> Callable[
+    def get_folder(
+        self,
+    ) -> Callable[
         [storage_control.GetFolderRequest],
         Union[storage_control.Folder, Awaitable[storage_control.Folder]],
     ]: ...
     @property
-    def list_folders(self) -> Callable[
+    def list_folders(
+        self,
+    ) -> Callable[
         [storage_control.ListFoldersRequest],
         Union[
             storage_control.ListFoldersResponse,
@@ -102,32 +108,44 @@ class StorageControlTransport(abc.ABC):
         ],
     ]: ...
     @property
-    def rename_folder(self) -> Callable[
+    def rename_folder(
+        self,
+    ) -> Callable[
         [storage_control.RenameFolderRequest],
         Union[operations_pb2.Operation, Awaitable[operations_pb2.Operation]],
     ]: ...
     @property
-    def get_storage_layout(self) -> Callable[
+    def get_storage_layout(
+        self,
+    ) -> Callable[
         [storage_control.GetStorageLayoutRequest],
         Union[storage_control.StorageLayout, Awaitable[storage_control.StorageLayout]],
     ]: ...
     @property
-    def create_managed_folder(self) -> Callable[
+    def create_managed_folder(
+        self,
+    ) -> Callable[
         [storage_control.CreateManagedFolderRequest],
         Union[storage_control.ManagedFolder, Awaitable[storage_control.ManagedFolder]],
     ]: ...
     @property
-    def delete_managed_folder(self) -> Callable[
+    def delete_managed_folder(
+        self,
+    ) -> Callable[
         [storage_control.DeleteManagedFolderRequest],
         Union[empty_pb2.Empty, Awaitable[empty_pb2.Empty]],
     ]: ...
     @property
-    def get_managed_folder(self) -> Callable[
+    def get_managed_folder(
+        self,
+    ) -> Callable[
         [storage_control.GetManagedFolderRequest],
         Union[storage_control.ManagedFolder, Awaitable[storage_control.ManagedFolder]],
     ]: ...
     @property
-    def list_managed_folders(self) -> Callable[
+    def list_managed_folders(
+        self,
+    ) -> Callable[
         [storage_control.ListManagedFoldersRequest],
         Union[
             storage_control.ListManagedFoldersResponse,
@@ -135,37 +153,51 @@ class StorageControlTransport(abc.ABC):
         ],
     ]: ...
     @property
-    def create_anywhere_cache(self) -> Callable[
+    def create_anywhere_cache(
+        self,
+    ) -> Callable[
         [storage_control.CreateAnywhereCacheRequest],
         Union[operations_pb2.Operation, Awaitable[operations_pb2.Operation]],
     ]: ...
     @property
-    def update_anywhere_cache(self) -> Callable[
+    def update_anywhere_cache(
+        self,
+    ) -> Callable[
         [storage_control.UpdateAnywhereCacheRequest],
         Union[operations_pb2.Operation, Awaitable[operations_pb2.Operation]],
     ]: ...
     @property
-    def disable_anywhere_cache(self) -> Callable[
+    def disable_anywhere_cache(
+        self,
+    ) -> Callable[
         [storage_control.DisableAnywhereCacheRequest],
         Union[storage_control.AnywhereCache, Awaitable[storage_control.AnywhereCache]],
     ]: ...
     @property
-    def pause_anywhere_cache(self) -> Callable[
+    def pause_anywhere_cache(
+        self,
+    ) -> Callable[
         [storage_control.PauseAnywhereCacheRequest],
         Union[storage_control.AnywhereCache, Awaitable[storage_control.AnywhereCache]],
     ]: ...
     @property
-    def resume_anywhere_cache(self) -> Callable[
+    def resume_anywhere_cache(
+        self,
+    ) -> Callable[
         [storage_control.ResumeAnywhereCacheRequest],
         Union[storage_control.AnywhereCache, Awaitable[storage_control.AnywhereCache]],
     ]: ...
     @property
-    def get_anywhere_cache(self) -> Callable[
+    def get_anywhere_cache(
+        self,
+    ) -> Callable[
         [storage_control.GetAnywhereCacheRequest],
         Union[storage_control.AnywhereCache, Awaitable[storage_control.AnywhereCache]],
     ]: ...
     @property
-    def list_anywhere_caches(self) -> Callable[
+    def list_anywhere_caches(
+        self,
+    ) -> Callable[
         [storage_control.ListAnywhereCachesRequest],
         Union[
             storage_control.ListAnywhereCachesResponse,
@@ -173,7 +205,9 @@ class StorageControlTransport(abc.ABC):
         ],
     ]: ...
     @property
-    def get_project_intelligence_config(self) -> Callable[
+    def get_project_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.GetProjectIntelligenceConfigRequest],
         Union[
             storage_control.IntelligenceConfig,
@@ -181,7 +215,9 @@ class StorageControlTransport(abc.ABC):
         ],
     ]: ...
     @property
-    def update_project_intelligence_config(self) -> Callable[
+    def update_project_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.UpdateProjectIntelligenceConfigRequest],
         Union[
             storage_control.IntelligenceConfig,
@@ -189,7 +225,9 @@ class StorageControlTransport(abc.ABC):
         ],
     ]: ...
     @property
-    def get_folder_intelligence_config(self) -> Callable[
+    def get_folder_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.GetFolderIntelligenceConfigRequest],
         Union[
             storage_control.IntelligenceConfig,
@@ -197,7 +235,9 @@ class StorageControlTransport(abc.ABC):
         ],
     ]: ...
     @property
-    def update_folder_intelligence_config(self) -> Callable[
+    def update_folder_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.UpdateFolderIntelligenceConfigRequest],
         Union[
             storage_control.IntelligenceConfig,
@@ -205,7 +245,9 @@ class StorageControlTransport(abc.ABC):
         ],
     ]: ...
     @property
-    def get_organization_intelligence_config(self) -> Callable[
+    def get_organization_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.GetOrganizationIntelligenceConfigRequest],
         Union[
             storage_control.IntelligenceConfig,
@@ -213,7 +255,9 @@ class StorageControlTransport(abc.ABC):
         ],
     ]: ...
     @property
-    def update_organization_intelligence_config(self) -> Callable[
+    def update_organization_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.UpdateOrganizationIntelligenceConfigRequest],
         Union[
             storage_control.IntelligenceConfig,
@@ -221,17 +265,23 @@ class StorageControlTransport(abc.ABC):
         ],
     ]: ...
     @property
-    def get_iam_policy(self) -> Callable[
+    def get_iam_policy(
+        self,
+    ) -> Callable[
         [iam_policy_pb2.GetIamPolicyRequest],
         Union[policy_pb2.Policy, Awaitable[policy_pb2.Policy]],
     ]: ...
     @property
-    def set_iam_policy(self) -> Callable[
+    def set_iam_policy(
+        self,
+    ) -> Callable[
         [iam_policy_pb2.SetIamPolicyRequest],
         Union[policy_pb2.Policy, Awaitable[policy_pb2.Policy]],
     ]: ...
     @property
-    def test_iam_permissions(self) -> Callable[
+    def test_iam_permissions(
+        self,
+    ) -> Callable[
         [iam_policy_pb2.TestIamPermissionsRequest],
         Union[
             iam_policy_pb2.TestIamPermissionsResponse,

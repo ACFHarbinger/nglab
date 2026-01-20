@@ -37,8 +37,7 @@ _DEFAULT_TOKEN_LIFETIME_SECS = ...
 _DEFAULT_MAX_CACHE_SIZE = ...
 _ALGORITHM_TO_VERIFIER_CLASS = ...
 _CRYPTOGRAPHY_BASED_ALGORITHMS = ...
-if es is not None:
-    ...
+if es is not None: ...
 
 def encode(signer, payload, header=..., key_id=...):  # -> bytes:
     """Make a signed JWT.
@@ -264,7 +263,6 @@ class Credentials(
     @_helpers.copy_docstring(google.auth.credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-
     def refresh(self, request):  # -> None:
         """Refreshes the access token.
 
@@ -279,12 +277,10 @@ class Credentials(
     @_helpers.copy_docstring(google.auth.credentials.Signing)
     def signer_email(self):  # -> Any:
         ...
-
     @property
     @_helpers.copy_docstring(google.auth.credentials.Signing)
     def signer(self):  # -> Any:
         ...
-
     @property
     def additional_claims(self):  # -> dict[Any, Any]:
         """Additional claims the JWT object was created with."""
@@ -414,7 +410,6 @@ class OnDemandCredentials(
     @_helpers.copy_docstring(google.auth.credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-
     @property
     def valid(self):  # -> Literal[True]:
         """Checks the validity of the credentials.
@@ -455,7 +450,6 @@ class OnDemandCredentials(
     @_helpers.copy_docstring(google.auth.credentials.Signing)
     def signer_email(self):  # -> Any:
         ...
-
     @property
     @_helpers.copy_docstring(google.auth.credentials.Signing)
     def signer(self):  # -> Any:

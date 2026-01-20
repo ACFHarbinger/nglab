@@ -75,27 +75,21 @@ class Credentials(
     @property
     def requires_scopes(self):  # -> bool:
         ...
-
     @property
     def universe_domain(self):  # -> Any | str:
         ...
-
     @_helpers.copy_docstring(credentials.Credentials)
     def get_cred_info(self):  # -> dict[str, Any]:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.Scoped)
     def with_scopes(self, scopes, default_scopes=...):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
     def with_universe_domain(self, universe_domain):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithTrustBoundary)
     def with_trust_boundary(self, trust_boundary):  # -> Self:
         ...
@@ -179,11 +173,9 @@ class IDTokenCredentials(
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
     def with_token_uri(self, token_uri):  # -> Self:
         ...
-
     def refresh(self, request):  # -> None:
         """Refreshes the ID token.
 
@@ -202,7 +194,6 @@ class IDTokenCredentials(
     @_helpers.copy_docstring(credentials.Signing)
     def signer(self):  # -> Signer | None:
         ...
-
     def sign_bytes(self, message):  # -> bytes:
         """Signs the given message.
 

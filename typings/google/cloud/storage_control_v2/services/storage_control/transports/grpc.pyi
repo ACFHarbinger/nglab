@@ -323,7 +323,9 @@ class StorageControlGrpcTransport(StorageControlTransport):
         ...
 
     @property
-    def list_managed_folders(self) -> Callable[
+    def list_managed_folders(
+        self,
+    ) -> Callable[
         [storage_control.ListManagedFoldersRequest],
         storage_control.ListManagedFoldersResponse,
     ]:
@@ -454,7 +456,9 @@ class StorageControlGrpcTransport(StorageControlTransport):
         ...
 
     @property
-    def list_anywhere_caches(self) -> Callable[
+    def list_anywhere_caches(
+        self,
+    ) -> Callable[
         [storage_control.ListAnywhereCachesRequest],
         storage_control.ListAnywhereCachesResponse,
     ]:
@@ -471,7 +475,9 @@ class StorageControlGrpcTransport(StorageControlTransport):
         ...
 
     @property
-    def get_project_intelligence_config(self) -> Callable[
+    def get_project_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.GetProjectIntelligenceConfigRequest],
         storage_control.IntelligenceConfig,
     ]:
@@ -490,7 +496,9 @@ class StorageControlGrpcTransport(StorageControlTransport):
         ...
 
     @property
-    def update_project_intelligence_config(self) -> Callable[
+    def update_project_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.UpdateProjectIntelligenceConfigRequest],
         storage_control.IntelligenceConfig,
     ]:
@@ -509,7 +517,9 @@ class StorageControlGrpcTransport(StorageControlTransport):
         ...
 
     @property
-    def get_folder_intelligence_config(self) -> Callable[
+    def get_folder_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.GetFolderIntelligenceConfigRequest],
         storage_control.IntelligenceConfig,
     ]:
@@ -527,7 +537,9 @@ class StorageControlGrpcTransport(StorageControlTransport):
         ...
 
     @property
-    def update_folder_intelligence_config(self) -> Callable[
+    def update_folder_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.UpdateFolderIntelligenceConfigRequest],
         storage_control.IntelligenceConfig,
     ]:
@@ -546,7 +558,9 @@ class StorageControlGrpcTransport(StorageControlTransport):
         ...
 
     @property
-    def get_organization_intelligence_config(self) -> Callable[
+    def get_organization_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.GetOrganizationIntelligenceConfigRequest],
         storage_control.IntelligenceConfig,
     ]:
@@ -565,7 +579,9 @@ class StorageControlGrpcTransport(StorageControlTransport):
         ...
 
     @property
-    def update_organization_intelligence_config(self) -> Callable[
+    def update_organization_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.UpdateOrganizationIntelligenceConfigRequest],
         storage_control.IntelligenceConfig,
     ]:
@@ -624,7 +640,9 @@ class StorageControlGrpcTransport(StorageControlTransport):
         ...
 
     @property
-    def test_iam_permissions(self) -> Callable[
+    def test_iam_permissions(
+        self,
+    ) -> Callable[
         [iam_policy_pb2.TestIamPermissionsRequest],
         iam_policy_pb2.TestIamPermissionsResponse,
     ]:
@@ -649,7 +667,6 @@ class StorageControlGrpcTransport(StorageControlTransport):
 
     def close(self):  # -> None:
         ...
-
     @property
     def kind(self) -> str: ...
 

@@ -15,7 +15,6 @@ from python.src.utils.profiling.gpu_optimization import MemoryPool
 
 @pytest.mark.gpu
 class TestGPUTraining:
-
     @pytest.fixture
     def simple_model(self):
         return nn.Sequential(nn.Linear(64, 32), nn.ReLU(), nn.Linear(32, 1))

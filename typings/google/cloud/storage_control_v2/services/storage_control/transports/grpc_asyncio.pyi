@@ -219,7 +219,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def list_folders(self) -> Callable[
+    def list_folders(
+        self,
+    ) -> Callable[
         [storage_control.ListFoldersRequest],
         Awaitable[storage_control.ListFoldersResponse],
     ]:
@@ -259,7 +261,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def get_storage_layout(self) -> Callable[
+    def get_storage_layout(
+        self,
+    ) -> Callable[
         [storage_control.GetStorageLayoutRequest],
         Awaitable[storage_control.StorageLayout],
     ]:
@@ -277,7 +281,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def create_managed_folder(self) -> Callable[
+    def create_managed_folder(
+        self,
+    ) -> Callable[
         [storage_control.CreateManagedFolderRequest],
         Awaitable[storage_control.ManagedFolder],
     ]:
@@ -312,7 +318,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def get_managed_folder(self) -> Callable[
+    def get_managed_folder(
+        self,
+    ) -> Callable[
         [storage_control.GetManagedFolderRequest],
         Awaitable[storage_control.ManagedFolder],
     ]:
@@ -329,7 +337,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def list_managed_folders(self) -> Callable[
+    def list_managed_folders(
+        self,
+    ) -> Callable[
         [storage_control.ListManagedFoldersRequest],
         Awaitable[storage_control.ListManagedFoldersResponse],
     ]:
@@ -347,7 +357,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def create_anywhere_cache(self) -> Callable[
+    def create_anywhere_cache(
+        self,
+    ) -> Callable[
         [storage_control.CreateAnywhereCacheRequest],
         Awaitable[operations_pb2.Operation],
     ]:
@@ -364,7 +376,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def update_anywhere_cache(self) -> Callable[
+    def update_anywhere_cache(
+        self,
+    ) -> Callable[
         [storage_control.UpdateAnywhereCacheRequest],
         Awaitable[operations_pb2.Operation],
     ]:
@@ -382,7 +396,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def disable_anywhere_cache(self) -> Callable[
+    def disable_anywhere_cache(
+        self,
+    ) -> Callable[
         [storage_control.DisableAnywhereCacheRequest],
         Awaitable[storage_control.AnywhereCache],
     ]:
@@ -403,7 +419,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def pause_anywhere_cache(self) -> Callable[
+    def pause_anywhere_cache(
+        self,
+    ) -> Callable[
         [storage_control.PauseAnywhereCacheRequest],
         Awaitable[storage_control.AnywhereCache],
     ]:
@@ -420,7 +438,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def resume_anywhere_cache(self) -> Callable[
+    def resume_anywhere_cache(
+        self,
+    ) -> Callable[
         [storage_control.ResumeAnywhereCacheRequest],
         Awaitable[storage_control.AnywhereCache],
     ]:
@@ -437,7 +457,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def get_anywhere_cache(self) -> Callable[
+    def get_anywhere_cache(
+        self,
+    ) -> Callable[
         [storage_control.GetAnywhereCacheRequest],
         Awaitable[storage_control.AnywhereCache],
     ]:
@@ -454,7 +476,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def list_anywhere_caches(self) -> Callable[
+    def list_anywhere_caches(
+        self,
+    ) -> Callable[
         [storage_control.ListAnywhereCachesRequest],
         Awaitable[storage_control.ListAnywhereCachesResponse],
     ]:
@@ -471,7 +495,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def get_project_intelligence_config(self) -> Callable[
+    def get_project_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.GetProjectIntelligenceConfigRequest],
         Awaitable[storage_control.IntelligenceConfig],
     ]:
@@ -490,7 +516,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def update_project_intelligence_config(self) -> Callable[
+    def update_project_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.UpdateProjectIntelligenceConfigRequest],
         Awaitable[storage_control.IntelligenceConfig],
     ]:
@@ -509,7 +537,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def get_folder_intelligence_config(self) -> Callable[
+    def get_folder_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.GetFolderIntelligenceConfigRequest],
         Awaitable[storage_control.IntelligenceConfig],
     ]:
@@ -527,7 +557,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def update_folder_intelligence_config(self) -> Callable[
+    def update_folder_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.UpdateFolderIntelligenceConfigRequest],
         Awaitable[storage_control.IntelligenceConfig],
     ]:
@@ -546,7 +578,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def get_organization_intelligence_config(self) -> Callable[
+    def get_organization_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.GetOrganizationIntelligenceConfigRequest],
         Awaitable[storage_control.IntelligenceConfig],
     ]:
@@ -565,7 +599,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def update_organization_intelligence_config(self) -> Callable[
+    def update_organization_intelligence_config(
+        self,
+    ) -> Callable[
         [storage_control.UpdateOrganizationIntelligenceConfigRequest],
         Awaitable[storage_control.IntelligenceConfig],
     ]:
@@ -624,7 +660,9 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         ...
 
     @property
-    def test_iam_permissions(self) -> Callable[
+    def test_iam_permissions(
+        self,
+    ) -> Callable[
         [iam_policy_pb2.TestIamPermissionsRequest],
         Awaitable[iam_policy_pb2.TestIamPermissionsResponse],
     ]:
@@ -649,7 +687,6 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
 
     def close(self):  # -> CoroutineType[Any, Any, None]:
         ...
-
     @property
     def kind(self) -> str: ...
 

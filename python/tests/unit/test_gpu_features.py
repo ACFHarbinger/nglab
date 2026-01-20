@@ -9,7 +9,6 @@ from python.src.utils.functions.gpu_features import GPUFeatureEngineer
 
 
 class TestGPUFeatureEngineer:
-
     @pytest.fixture
     def engineer(self):
         return GPUFeatureEngineer(device="cpu")  # Test mostly on CPU for correctness

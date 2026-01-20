@@ -206,15 +206,12 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
     @_helpers.copy_docstring(credentials.Credentials)
     def get_cred_info(self):  # -> dict[str, Any] | None:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
     def with_token_uri(self, token_uri):  # -> Self:
         ...
-
     def with_account(self, account):  # -> Self:
         """Returns a copy of these credentials with a modified account.
 
@@ -229,11 +226,9 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
     @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
     def with_universe_domain(self, universe_domain):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):  # -> None:
         ...
-
     @classmethod
     def from_authorized_user_info(cls, info, scopes=...):  # -> Self:
         """Creates a Credentials instance from parsed authorized user info.
@@ -315,7 +310,6 @@ class UserAccessTokenCredentials(credentials.CredentialsWithQuotaProject):
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-
     def refresh(self, request):  # -> None:
         """Refreshes the access token.
 

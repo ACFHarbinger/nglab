@@ -16,7 +16,6 @@ except ImportError:
 
 @pytest.mark.gpu
 class TestOOMHandling:
-
     def test_oom_recovery(self):
         """
         Attempt to trigger OOM and verify we can recover/clear cache.

@@ -92,7 +92,7 @@ def verify_regime_detection():
     for i, window in enumerate(test_windows):
         regime_id = detector.predict(window)
         regime_name = detector.get_regime_name(regime_id)
-        print(f"Window {i+1}: Detected regime '{regime_name}' (ID: {regime_id})")
+        print(f"Window {i + 1}: Detected regime '{regime_name}' (ID: {regime_id})")
 
     print("\n✓ Regime detection verification passed!")
 

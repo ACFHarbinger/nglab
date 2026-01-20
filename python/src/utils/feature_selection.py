@@ -28,7 +28,9 @@ class TimeSeriesFeatureSelector:
         X_clean = X.fillna(0)
         y_clean = y.fillna(0)
 
-        mi_scores = mutual_info_regression(X_clean, y_clean, discrete_features=discrete_features)  # type: ignore
+        mi_scores = mutual_info_regression(
+            X_clean, y_clean, discrete_features=discrete_features
+        )  # type: ignore
         mi_series = pd.Series(mi_scores, index=X.columns)
         return mi_series.sort_values(ascending=False)
 
