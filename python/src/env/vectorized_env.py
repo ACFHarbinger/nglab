@@ -37,7 +37,7 @@ class VectorizedTradingEnv:
         use_multiprocessing: If True, use ProcessPoolExecutor; else ThreadPoolExecutor.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         num_envs: int = 4,
         initial_capital: float = 10000.0,
@@ -276,7 +276,7 @@ class SubprocVecEnv:
     CPU-bound environment simulations.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         num_envs: int = 4,
         initial_capital: float = 10000.0,
@@ -374,7 +374,7 @@ class SubprocVecEnv:
         return False
 
 
-def _worker(
+def _worker(  # noqa: PLR0913
     pipe,
     initial_capital: float,
     transaction_cost: float,
@@ -406,7 +406,7 @@ def _worker(
             break
 
 
-def make_vec_env(
+def make_vec_env(  # noqa: PLR0913
     num_envs: int = 4,
     initial_capital: float = 10000.0,
     transaction_cost: float = 0.001,

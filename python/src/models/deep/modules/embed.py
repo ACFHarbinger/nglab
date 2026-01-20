@@ -14,7 +14,7 @@ class PositionalEmbedding(nn.Module):
     Standard Positional Embedding.
     """
 
-    def __init__(self, d_model, max_len=5000):  # noqa: PLR0913
+    def __init__(self, d_model, max_len=5000):
         """
         Initialize positional embedding.
 
@@ -50,7 +50,7 @@ class TokenEmbedding(nn.Module):
     Token Embedding using 1D Convolution.
     """
 
-    def __init__(self, c_in, d_model):  # noqa: PLR0913
+    def __init__(self, c_in, d_model):
         """
         Initialize token embedding.
 
@@ -87,7 +87,7 @@ class FixedEmbedding(nn.Module):
     Fixed Sinusoidal Embedding.
     """
 
-    def __init__(self, c_in, d_model):  # noqa: PLR0913
+    def __init__(self, c_in, d_model):
         """
         Initialize fixed embedding.
 
@@ -123,7 +123,7 @@ class TemporalEmbedding(nn.Module):
     Embedding for Temporal Features (Hour, Day, Month, etc).
     """
 
-    def __init__(self, d_model, embed_type="fixed", freq="h"):  # noqa: PLR0913
+    def __init__(self, d_model, embed_type="fixed", freq="h"):
         """
         Initialize temporal embedding.
 
@@ -169,7 +169,7 @@ class TimeFeatureEmbedding(nn.Module):
     Embedding for continuous time features.
     """
 
-    def __init__(self, d_model, embed_type="timeF", freq="h"):  # noqa: PLR0913
+    def __init__(self, d_model, embed_type="timeF", freq="h"):
         """
         Initialize time feature embedding.
 
@@ -196,7 +196,7 @@ class DataEmbedding(nn.Module):
     Standard Data Embedding combining value, position, and temporal embeddings.
     """
 
-    def __init__(self, c_in, d_model, embed_type="fixed", freq="h", dropout=0.1):  # noqa: PLR0913
+    def __init__(self, c_in, d_model, embed_type="fixed", freq="h", dropout=0.1):
         """
         Initialize data embedding.
 
@@ -233,12 +233,12 @@ class DataEmbedding(nn.Module):
         return self.dropout(x)
 
 
-class DataEmbedding_inverted(nn.Module):
+class DataEmbedding_inverted(nn.Module):  # noqa: N801
     """
     Inverted Data Embedding for specific architectures.
     """
 
-    def __init__(self, c_in, d_model, embed_type="fixed", freq="h", dropout=0.1):  # noqa: PLR0913
+    def __init__(self, c_in, d_model, embed_type="fixed", freq="h", dropout=0.1):
         """
         Initialize inverted data embedding.
         """
@@ -260,12 +260,12 @@ class DataEmbedding_inverted(nn.Module):
         return self.dropout(x)
 
 
-class DataEmbedding_wo_pos(nn.Module):
+class DataEmbedding_wo_pos(nn.Module):  # noqa: N801
     """
     Data Embedding without Positional Embedding.
     """
 
-    def __init__(self, c_in, d_model, embed_type="fixed", freq="h", dropout=0.1):  # noqa: PLR0913
+    def __init__(self, c_in, d_model, embed_type="fixed", freq="h", dropout=0.1):
         """
         Initialize.
         """
@@ -296,7 +296,7 @@ class PatchEmbedding(nn.Module):
     Patch Embedding for PatchTST-style models.
     """
 
-    def __init__(self, d_model, patch_len, stride, padding, dropout):  # noqa: PLR0913
+    def __init__(self, d_model, patch_len, stride, padding, dropout):
         """
         Initialize patch embedding.
 

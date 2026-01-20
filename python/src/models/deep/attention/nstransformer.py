@@ -21,7 +21,7 @@ class EncoderLayer(nn.Module):
     Encoder layer for Non-Stationary Transformer.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self, n_heads, embed_dim, hidden_dim, dropout_rate=0.1, normalization="layer"
     ):
         """
@@ -58,7 +58,7 @@ class Encoder(nn.Module):
     Encoder network consisting of multiple layers.
     """
 
-    def __init__(self, attn_layers, conv_layers=None, norm_layer=None):  # noqa: PLR0913
+    def __init__(self, attn_layers, conv_layers=None, norm_layer=None):
         """
         Initialize.
         """
@@ -97,7 +97,7 @@ class DecoderLayer(nn.Module):
     Decoder layer for Non-Stationary Transformer.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self, n_heads, embed_dim, hidden_dim, dropout_rate=0.1, normalization="layer"
     ):
         """
@@ -121,7 +121,9 @@ class DecoderLayer(nn.Module):
         )
         self.norm = Normalization(embed_dim, normalization)
 
-    def forward(self, x, cross, x_mask=None, cross_mask=None, tau=None, delta=None):
+    def forward(  # noqa: PLR0913
+        self, x, cross, x_mask=None, cross_mask=None, tau=None, delta=None
+    ):
         """
         Forward pass.
         """
@@ -140,7 +142,7 @@ class Decoder(nn.Module):
     Decoder network consisting of multiple layers.
     """
 
-    def __init__(self, layers, norm_layer=None, projection=None):  # noqa: PLR0913
+    def __init__(self, layers, norm_layer=None, projection=None):
         """
         Initialize.
         """
@@ -149,7 +151,9 @@ class Decoder(nn.Module):
         self.norm = norm_layer
         self.projection = projection
 
-    def forward(self, x, cross, x_mask=None, cross_mask=None, tau=None, delta=None):
+    def forward(  # noqa: PLR0913
+        self, x, cross, x_mask=None, cross_mask=None, tau=None, delta=None
+    ):
         """
         Forward pass.
         """

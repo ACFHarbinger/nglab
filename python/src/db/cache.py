@@ -25,7 +25,7 @@ _redis_client: redis.Redis | None = None
 
 async def get_redis_client() -> redis.Redis:
     """Get or create singleton Redis client."""
-    global _redis_client
+    global _redis_client  # noqa: PLW0603
     if _redis_client is None:
         _redis_client = redis.Redis(
             host="redis",

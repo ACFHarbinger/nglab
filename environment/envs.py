@@ -49,7 +49,7 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
 
     metadata: ClassVar[dict[str, Any]] = {"render_modes": ["human"]}
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         prices: NDArray[Any] | None = None,
         initial_capital: float = 10000.0,
@@ -297,7 +297,7 @@ class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
     binary outcome prediction markets simultaneously.
     """
 
-    metadata: dict[str, Any] = {"render_modes": ["human"]}
+    metadata: ClassVar[dict[str, Any]] = {"render_modes": ["human"]}
 
     def __init__(
         self,

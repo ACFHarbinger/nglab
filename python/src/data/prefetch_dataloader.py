@@ -221,7 +221,7 @@ class PrefetchDataLoader(DataLoader):
             output = model(batch)
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         dataset: Dataset,
         batch_size: int = 1,

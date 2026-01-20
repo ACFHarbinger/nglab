@@ -37,7 +37,7 @@ class StepwiseRegressionModel(ClassicalModel):
         if X.ndim == 3:
             X = X.reshape(X.shape[0] * X.shape[1], -1)
             y = y.reshape(y.shape[0] * y.shape[1], -1)
-        
+
         self.model.fit(X, y)
 
         self.selected_features_ = self.model.get_support()

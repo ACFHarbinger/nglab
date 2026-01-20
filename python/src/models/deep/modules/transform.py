@@ -10,7 +10,7 @@ class Transpose(torch.nn.Module):
     Transpose layer for neural networks.
     """
 
-    def __init__(self, dims=(-1, 1)):  # noqa: PLR0913
+    def __init__(self, dims=(-1, 1)):
         """
         Initialize.
 

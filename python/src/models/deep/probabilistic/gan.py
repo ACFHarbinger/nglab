@@ -92,7 +92,7 @@ class TimeGANDiscriminator(nn.Module):
     Architecture: Bidirectional LSTM.
     """
 
-    def __init__(self, input_dim, hidden_dim=64, n_layers=2):  # noqa: PLR0913
+    def __init__(self, input_dim, hidden_dim=64, n_layers=2):
         """
         Args:
             input_dim (int): Feature dimension.

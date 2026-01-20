@@ -399,7 +399,9 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         """List of DE objects corresponding to the fidelities."""
         self.de = {}
         seeds = self.rng.integers(0, 2**32 - 1, size=len(self._max_pop_size))
-        for (_i, f), _seed in zip(enumerate(self._max_pop_size.keys()), seeds, strict=False):
+        for (_i, f), _seed in zip(
+            enumerate(self._max_pop_size.keys()), seeds, strict=False
+        ):
             self.de[f] = AsyncDifferentialEvolution(
                 **self.de_params,
                 pop_size=self._max_pop_size[f],

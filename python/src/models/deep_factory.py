@@ -84,7 +84,7 @@ DEEP_MODEL_NAMES = [
 ]
 
 
-def create_deep_model(model_name: str, cfg: dict):
+def create_deep_model(model_name: str, cfg: dict):  # noqa: PLR0911
     """
     Factory function to create deep learning models.
 
@@ -198,7 +198,11 @@ def create_deep_model(model_name: str, cfg: dict):
         )
     elif model_name == "StackedAE":
         return StackedAutoEncoder(
-            layer_sizes=[cfg.get("feature_dim", 12), *cfg.get("hidden_dims", [64, 32]), cfg.get("latent_dim", 16)],
+            layer_sizes=[
+                cfg.get("feature_dim", 12),
+                *cfg.get("hidden_dims", [64, 32]),
+                cfg.get("latent_dim", 16),
+            ],
             output_type=cfg.get("output_type", "prediction"),
         )
     elif model_name == "Hopfield":

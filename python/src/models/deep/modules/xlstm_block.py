@@ -6,12 +6,12 @@ import torch
 from torch import nn
 
 
-class sLSTMCell(nn.Module):
+class sLSTMCell(nn.Module):  # noqa: N801
     """
     Scalar LSTM (sLSTM) Cell with exponential gating and normalization.
     """
 
-    def __init__(self, input_dim, hidden_dim):  # noqa: PLR0913
+    def __init__(self, input_dim, hidden_dim):
         """Initialize sLSTM Cell."""
         super().__init__()
         self.input_dim = input_dim
@@ -93,14 +93,14 @@ class sLSTMCell(nn.Module):
         return h_t, (c_t, n_t, m_t, h_t)
 
 
-class mLSTMCell(nn.Module):
+class mLSTMCell(nn.Module):  # noqa: N801
     """
     Matrix LSTM (mLSTM) Cell.
     Uses a matrix memory C_t (d x d) updated via outer product of keys and values.
     Equivalent to linear attention with a recurrence.
     """
 
-    def __init__(self, input_dim, hidden_dim, num_heads=4):  # noqa: PLR0913
+    def __init__(self, input_dim, hidden_dim, num_heads=4):
         """Initialize mLSTM Cell."""
         super().__init__()
         self.input_dim = input_dim
@@ -230,7 +230,7 @@ class mLSTMCell(nn.Module):
         return h_t, (C_t, n_t, m_t)
 
 
-class xLSTMBlock(nn.Module):
+class xLSTMBlock(nn.Module):  # noqa: N801
     """
     xLSTM Block layer (wrapping sLSTMCell or mLSTMCell).
     """

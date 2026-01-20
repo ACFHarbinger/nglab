@@ -2,9 +2,6 @@
 Deconvolutional Network (DN) implementation.
 """
 
-"""
-Deconvolutional Network (DN) implementation.
-"""
 from torch import nn
 
 
@@ -14,7 +11,7 @@ class DeconvNet(nn.Module):
     Used for generation and reconstruction tasks.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         input_dim,
         hidden_channels=None,
@@ -69,7 +66,7 @@ class AutoDeconvNet(nn.Module):
     AutoDeconvNet - Uses DeconvNet for autoencoder architecture.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         input_dim,
         latent_dim=64,

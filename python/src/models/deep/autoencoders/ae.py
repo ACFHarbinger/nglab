@@ -10,7 +10,7 @@ class AutoEncoder(nn.Module):
     Standard AutoEncoder (AE).
     """
 
-    def __init__(self, input_dim, hidden_dims, latent_dim, output_type="prediction"):  # noqa: PLR0913
+    def __init__(self, input_dim, hidden_dims, latent_dim, output_type="prediction"):
         """Initialize AutoEncoder."""
         super().__init__()
         self.output_type = output_type

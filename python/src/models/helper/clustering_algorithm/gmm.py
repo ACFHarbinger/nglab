@@ -15,5 +15,5 @@ class GMMAlgorithm:
     def fit_predict(self, X):  # noqa: N803
         return self.model.fit_predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(self, X):  # noqa: N803
         return self.model.predict_proba(X)

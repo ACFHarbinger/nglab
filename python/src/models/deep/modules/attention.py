@@ -17,7 +17,7 @@ class DSAttention(nn.Module):
     De-stationary Attention mechanism.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self, mask_flag=True, attention_dropout=0.1, output_attention=False, scale=None
     ):
         """
@@ -35,7 +35,9 @@ class DSAttention(nn.Module):
         self.output_attention = output_attention
         self.dropout = nn.Dropout(attention_dropout)
 
-    def forward(self, queries, keys, values, attn_mask, tau=None, delta=None):
+    def forward(  # noqa: PLR0913
+        self, queries, keys, values, attn_mask, tau=None, delta=None
+    ):
         """
         Forward pass.
         """
@@ -71,7 +73,7 @@ class FullAttention(nn.Module):
     Standard Full Attention.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         mask_flag=True,
         factor=5,
@@ -88,7 +90,9 @@ class FullAttention(nn.Module):
         self.output_attention = output_attention
         self.dropout = nn.Dropout(attention_dropout)
 
-    def forward(self, queries, keys, values, attn_mask, tau=None, delta=None):
+    def forward(  # noqa: PLR0913
+        self, queries, keys, values, attn_mask, tau=None, delta=None
+    ):
         """
         Forward pass.
         """
@@ -118,7 +122,7 @@ class ProbAttention(nn.Module):
     Informer-style Probabilistic Attention.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         mask_flag=True,
         factor=5,
@@ -136,7 +140,7 @@ class ProbAttention(nn.Module):
         self.output_attention = output_attention
         self.dropout = nn.Dropout(attention_dropout)
 
-    def _prob_QK(self, Q, K, sample_k, n_top):  # n_top: c*ln(L_q)
+    def _prob_QK(self, Q, K, sample_k, n_top):  # n_top: c*ln(L_q)  # noqa: N803, N802
         # Q [B, H, L, D]
         B, H, L_K, E = K.shape
         _, _, L_Q, _ = Q.shape
@@ -160,7 +164,7 @@ class ProbAttention(nn.Module):
 
         return Q_K, M_top
 
-    def _get_initial_context(self, V, L_Q):
+    def _get_initial_context(self, V, L_Q):  # noqa: N803
         B, H, L_V, _D = V.shape
         if not self.mask_flag:
             # V_sum = V.sum(dim=-2)
@@ -172,7 +176,9 @@ class ProbAttention(nn.Module):
             contex = V.cumsum(dim=-2)
         return contex
 
-    def _update_context(self, context_in, V, scores, index, L_Q, attn_mask):
+    def _update_context(  # noqa: PLR0913
+        self, context_in, V, scores, index, L_Q, attn_mask  # noqa: N803
+    ):
         B, H, L_V, _D = V.shape
 
         if self.mask_flag:
@@ -193,7 +199,9 @@ class ProbAttention(nn.Module):
         else:
             return context_in, None
 
-    def forward(self, queries, keys, values, attn_mask, tau=None, delta=None):
+    def forward(  # noqa: PLR0913
+        self, queries, keys, values, attn_mask, tau=None, delta=None
+    ):
         """
         Forward pass.
         """
@@ -231,7 +239,7 @@ class AttentionLayer(nn.Module):
     Attention Layer wrapping inner attention mechanisms.
     """
 
-    def __init__(self, attention, d_model, n_heads, d_keys=None, d_values=None):  # noqa: PLR0913
+    def __init__(self, attention, d_model, n_heads, d_keys=None, d_values=None):
         """
         Initialize.
 
@@ -254,7 +262,9 @@ class AttentionLayer(nn.Module):
         self.out_projection = nn.Linear(d_values * n_heads, d_model)
         self.n_heads = n_heads
 
-    def forward(self, queries, keys, values, attn_mask, tau=None, delta=None):
+    def forward(  # noqa: PLR0913
+        self, queries, keys, values, attn_mask, tau=None, delta=None
+    ):
         """
         Forward pass.
         """

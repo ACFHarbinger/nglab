@@ -15,7 +15,7 @@ class DistanceAwareGraphConvolution(nn.Module):
     edge features related to physical distance.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         in_channels: int,
         out_channels: int,

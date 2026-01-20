@@ -7,7 +7,7 @@ from torch import nn
 from python.src.models.deep.modules.xlstm_block import xLSTMBlock
 
 
-class xLSTM(nn.Module):
+class xLSTM(nn.Module):  # noqa: N801
     """
     xLSTM Model (stacked sLSTM/mLSTM blocks) for Time Series or Sequence tasks.
     """

@@ -34,7 +34,7 @@ class FinancialDataset(TimeSeriesDataset):
         multi_asset: Whether to load multiple assets (all CSVs in directory).
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         csv_path: str,
         target_column: str,
@@ -64,7 +64,7 @@ class FinancialDataset(TimeSeriesDataset):
         )
 
 
-def create_dataloader(
+def create_dataloader(  # noqa: PLR0913
     data_path: str,
     target_column: str,
     batch_size: int = 32,

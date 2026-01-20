@@ -21,7 +21,7 @@ class DNCMemory(nn.Module):
         memory_dim: Dimension of each memory slot (W)
     """
 
-    def __init__(self, memory_size: int, memory_dim: int):  # noqa: PLR0913
+    def __init__(self, memory_size: int, memory_dim: int):
         """Initialize DNC Memory."""
         super().__init__()
         self.memory_size = memory_size

@@ -12,7 +12,7 @@ class RBM(nn.Module):
     Restricted Boltzmann Machine (RBM).
     """
 
-    def __init__(self, visible_dim, hidden_dim, output_type="embedding"):  # noqa: PLR0913
+    def __init__(self, visible_dim, hidden_dim, output_type="embedding"):
         """Initialize RBM."""
         super().__init__()
         self.visible_dim = visible_dim
@@ -39,8 +39,8 @@ class RBM(nn.Module):
         if x.dim() == 3:
             b, s, f = x.shape
             v_flat = x.view(b * s, f)
-            p_h, h = self.sample_h(v_flat)
-            p_v, v_recon = self.sample_v(h)
+            _, h = self.sample_h(v_flat)
+            _, v_recon = self.sample_v(h)
             h = h.view(b, s, -1)
             v_recon = v_recon.view(b, s, -1)
         else:

@@ -13,7 +13,7 @@ class FeedForward(nn.Module):
     Often used in Transformer architectures.
     """
 
-    def __init__(self, input_dim: int, output_dim: int, bias: bool = True):  # noqa: PLR0913
+    def __init__(self, input_dim: int, output_dim: int, bias: bool = True):
         """
         Initializes the feed-forward layer.
 

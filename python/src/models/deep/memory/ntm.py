@@ -20,7 +20,7 @@ class NTMMemory(nn.Module):
         memory_dim: Dimension of each memory slot (M)
     """
 
-    def __init__(self, memory_size: int, memory_dim: int):  # noqa: PLR0913
+    def __init__(self, memory_size: int, memory_dim: int):
         """Initialize NTM Memory."""
         super().__init__()
         self.memory_size = memory_size
@@ -66,13 +66,13 @@ class NTMMemory(nn.Module):
 
         1. Interpolation: w_g = g*w_c + (1-g)*w_{t-1}
         2. Shift: w_s = circular_conv(w_g, s)
-        3. Sharpen: w_t = w_s^γ / sum(w_s^γ)
+        3. Sharpen: w_t = w_s^gamma / sum(w_s^gamma)
 
         Args:
             content_weights: Content-based weights (batch, N)
             gate: Interpolation gate g ∈ [0,1] (batch, 1)
             shift: Shift distribution (batch, shift_range)
-            sharpen: Sharpening factor γ >= 1 (batch, 1)
+            sharpen: Sharpening factor gamma >= 1 (batch, 1)
             prev_weights: Previous weights (batch, N)
 
         Returns:
@@ -136,7 +136,7 @@ class NTMReadHead(nn.Module):
         shift_range: Range of allowed shifts (typically 3 for [-1, 0, +1])
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         memory_size: int,
         memory_dim: int,
@@ -207,7 +207,7 @@ class NTMWriteHead(nn.Module):
         shift_range: Range of allowed shifts
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         memory_size: int,
         memory_dim: int,

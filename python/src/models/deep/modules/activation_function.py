@@ -14,7 +14,7 @@ class ActivationFunction(nn.Module):
     by name, with support for parameters like threshold, negative slope, etc.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(  # noqa: PLR0913, PLR0915
         self,
         af_name: str = "relu",
         fparam: float | None = None,

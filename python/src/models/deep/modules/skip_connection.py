@@ -8,7 +8,7 @@ class SkipConnection(nn.Module):
     Implements a residual connection: output = input + module(input).
     """
 
-    def __init__(self, module: nn.Module):  # noqa: PLR0913
+    def __init__(self, module: nn.Module):
         """
         Initializes the skip connection.
 

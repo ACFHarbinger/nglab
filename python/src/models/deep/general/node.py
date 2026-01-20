@@ -66,7 +66,7 @@ class ODEFunc(nn.Module):
     Wrapper for the derivative function to handle time conditioning easily.
     """
 
-    def __init__(self, net: nn.Module):  # noqa: PLR0913
+    def __init__(self, net: nn.Module):
         """Initialize with a neural network."""
         super().__init__()
         self.net = net

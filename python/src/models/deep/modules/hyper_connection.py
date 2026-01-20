@@ -9,7 +9,7 @@ class StaticHyperConnection(nn.Module):
     Hyper-connection with static width/depth expansion.
     """
 
-    def __init__(self, module: nn.Module, hyper_dim: int, expansion_rate: int = 4):  # noqa: PLR0913
+    def __init__(self, module: nn.Module, hyper_dim: int, expansion_rate: int = 4):
         """
         Initializes the static hyper-connection.
 
@@ -29,7 +29,7 @@ class StaticHyperConnection(nn.Module):
         self.input_mixer = nn.Parameter(torch.randn(self.n, 1) * 0.01)
         self.depth_mixer = nn.Parameter(torch.randn(1, self.n) * 0.01)
 
-    def forward(self, H, *args, **kwargs):
+    def forward(self, H, *args, **kwargs):  # noqa: N803
         """
         Forward pass for static hyper connection.
         """
@@ -60,7 +60,7 @@ class DynamicHyperConnection(nn.Module):
     Uses 'streams' (n) concepts to mix information.
     """
 
-    def __init__(self, module, embed_dim, n=4):  # noqa: PLR0913
+    def __init__(self, module, embed_dim, n=4):
         """
         Initializes the dynamic hyper-connection.
 
@@ -102,7 +102,7 @@ class DynamicHyperConnection(nn.Module):
         initial_bias = torch.cat([target_width, target_others])
         self.predictor[-1].bias.data.copy_(initial_bias)
 
-    def forward(self, H, *args, **kwargs):
+    def forward(self, H, *args, **kwargs):  # noqa: N803
         """
         Applies the dynamic hyper-connection.
 

@@ -90,7 +90,7 @@ class EfficientGraphConvolution(MessagePassing):
         self._cached_adj_t = None
         self._cached_edge_index = None
 
-    def forward(self, x: Tensor, edge_index: Adj) -> Tensor:
+    def forward(self, x: Tensor, edge_index: Adj) -> Tensor:  # noqa: PLR0915
         """
         Forward pass for Efficient Graph Convolution.
 

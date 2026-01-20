@@ -16,7 +16,7 @@ from python.src.models.time_series import TimeSeriesBackbone
 from python.src.utils.io.model_versioning import ModelMetadata, load_model_with_metadata
 
 
-def main():
+def main():  # noqa: PLR0915
     """Run inference using a trained model and input JSON."""
     parser = argparse.ArgumentParser(description="Run inference on a trained model")
     parser.add_argument(

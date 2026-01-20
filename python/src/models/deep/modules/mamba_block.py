@@ -15,7 +15,7 @@ class MambaBlock(nn.Module):
     Ref: Section 4.3.1 of the provided text.
     """
 
-    def __init__(self, d_model, d_state=16, d_conv=4, expand=2):  # noqa: PLR0913
+    def __init__(self, d_model, d_state=16, d_conv=4, expand=2):
         """
         Initialize the Mamba block.
 
@@ -59,7 +59,7 @@ class MambaBlock(nn.Module):
         # 5. Output Projection
         self.out_proj = nn.Linear(self.d_inner, d_model)
 
-    def parallel_scan_dummy(self, u, delta, A, B, C):
+    def parallel_scan_dummy(self, u, delta, A, B, C):  # noqa: N803
         """
         A simplified sequential implementation of the SSM equation:
         h_t = A_t * h_{t-1} + B_t * x_t

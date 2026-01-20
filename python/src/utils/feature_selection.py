@@ -19,7 +19,9 @@ class TimeSeriesFeatureSelector:
 
     @staticmethod
     def compute_mutual_info(
-        X: pd.DataFrame, y: pd.Series, discrete_features: bool | list[int] = False  # noqa: N803
+        X: pd.DataFrame,  # noqa: N803
+        y: pd.Series,
+        discrete_features: bool | list[int] = False,
     ) -> pd.Series:
         """
         Compute Mutual Information between features and target.

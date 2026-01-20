@@ -8,7 +8,7 @@ class EclatAlgorithm:
         self.rules = []
         self.frequent_itemsets = {}  # tuple(items) -> support_count
 
-    def fit(self, X):
+    def fit(self, X):  # noqa: N803
         # Expect X to be (n_samples, n_items) binary matrix (0/1)
         if hasattr(X, "numpy"):
             X = X.numpy()
@@ -76,17 +76,17 @@ class EclatAlgorithm:
 
             # Generate all subsets A
             # Iterate through all lengths from 1 to len(itemset)-1
-            l = list(itemset)
+            items_list = list(itemset)
             for r in range(1, len(itemset)):
-                for antecedent in itertools.combinations(l, r):
-                    antecedent = frozenset(antecedent)
-                    consequent = itemset - antecedent
+                for antecedent in itertools.combinations(items_list, r):
+                    antecedent_set = frozenset(antecedent)
+                    consequent = itemset - antecedent_set
 
                     if not consequent:
                         continue
 
                     # Calculate confidence
-                    ant_support_count = self.frequent_itemsets.get(antecedent)
+                    ant_support_count = self.frequent_itemsets.get(antecedent_set)
                     if not ant_support_count:
                         # Should exist by downward closure property, but just in case
                         continue
@@ -96,7 +96,7 @@ class EclatAlgorithm:
                     if confidence >= self.min_confidence:
                         self.rules.append(
                             {
-                                "antecedent": list(antecedent),
+                                "antecedent": list(antecedent_set),
                                 "consequent": list(consequent),
                                 "support": support,
                                 "confidence": confidence,

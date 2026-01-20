@@ -16,7 +16,7 @@ class LVQ(nn.Module):
 
     prototype_labels: torch.Tensor
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         input_dim,
         num_classes,

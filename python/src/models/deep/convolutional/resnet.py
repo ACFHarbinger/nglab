@@ -21,7 +21,7 @@ class ResidualBlock(nn.Module):
         dropout: Dropout probability
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         hidden_dim: int,
         use_conv: bool = False,
@@ -229,7 +229,7 @@ class ResNetBottleneck(nn.Module):
         dropout: Dropout probability
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         in_dim: int,
         bottleneck_dim: int,

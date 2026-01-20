@@ -5,6 +5,8 @@ Provides a Gymnasium-compatible interface for simulating trading scenarios,
 serving as the primary interface between agents and the market simulator.
 """
 
+from typing import Any, ClassVar
+
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
@@ -15,7 +17,7 @@ class TradingEnv(gym.Env):
     A placeholder Trading Environment following Gymnasium API.
     """
 
-    metadata = {"render_modes": ["human"]}
+    metadata: ClassVar[dict[str, Any]] = {"render_modes": ["human"]}
 
     def __init__(self, lookback=30, max_steps=1000, feature_dim=12):
         """

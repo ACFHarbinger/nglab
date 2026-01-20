@@ -302,7 +302,7 @@ class VAE(nn.Module):
         return self.decode(z)
 
 
-def vae_loss(
+def vae_loss(  # noqa: PLR0913
     reconstruction: torch.Tensor,
     target: torch.Tensor,
     mean: torch.Tensor,

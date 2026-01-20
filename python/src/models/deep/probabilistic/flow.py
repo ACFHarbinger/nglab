@@ -20,7 +20,7 @@ class CouplingLayer(nn.Module):
     where s and t are scale and translation networks (MLPs).
     """
 
-    def __init__(self, input_dim: int, hidden_dim: int, mask_type: str = "odd"):  # noqa: PLR0913
+    def __init__(self, input_dim: int, hidden_dim: int, mask_type: str = "odd"):
         """Initialize Coupling Layer."""
         super().__init__()
         self.input_dim = input_dim
@@ -112,7 +112,7 @@ class NormalizingFlow(nn.Module):
     Supports flattening of time-series inputs.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         input_dim: int,  # Feature dim if time-series, or total dim if flat
         num_layers: int = 4,

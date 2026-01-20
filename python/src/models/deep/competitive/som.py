@@ -11,7 +11,7 @@ class KohonenMap(nn.Module):
     Kohonen Self-Organizing Map (SOM).
     """
 
-    def __init__(self, input_dim, grid_size=(10, 10), output_type="embedding"):  # noqa: PLR0913
+    def __init__(self, input_dim, grid_size=(10, 10), output_type="embedding"):
         """Initialize SOM."""
         super().__init__()
         self.input_dim = input_dim

@@ -13,7 +13,7 @@ class MarkovChain(nn.Module):
     Can generate sequences and sample next states.
     """
 
-    def __init__(self, num_states, output_type="prediction", learnable=True):  # noqa: PLR0913
+    def __init__(self, num_states, output_type="prediction", learnable=True):
         """Initialize Markov Chain."""
         super().__init__()
         self.num_states = num_states

@@ -1,6 +1,6 @@
 """
 Rolling Price Window CNN for Time Series.
-Inspired by "S&P 500 Stock’s Movement Prediction using CNN".
+Inspired by "S&P 500 Stock's Movement Prediction using CNN".
 """
 
 import torch
@@ -15,7 +15,7 @@ class RollingWindowCNN(nn.Module):
     Internally reshaped to: (Batch, 1, Seq_Len, Features)
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self, input_dim, output_dim, seq_len=30, hidden_dim=64, output_type="prediction"
     ):
         """

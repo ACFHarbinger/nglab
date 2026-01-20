@@ -12,7 +12,7 @@ class StackedAutoEncoder(nn.Module):
     Stacked AutoEncoder - A stack of individual AutoEncoders trained layer-wise.
     """
 
-    def __init__(self, layer_sizes, output_type="prediction"):  # noqa: PLR0913
+    def __init__(self, layer_sizes, output_type="prediction"):
         """
         Args:
             layer_sizes (list[int]): Sizes of the layers [input, h1, h2, ..., latent].

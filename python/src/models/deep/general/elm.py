@@ -12,7 +12,7 @@ class ELM(nn.Module):
     Extreme Learning Machine (ELM).
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         input_dim,
         hidden_dim,

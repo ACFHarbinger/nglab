@@ -14,7 +14,7 @@ FROM python:${PYTHON_VERSION}-slim-bookworm AS builder
 WORKDIR /app
 
 # 1. Install system build dependencies
-# We include Rust toolchain here to avoid Maturin downloading it again (saves time/space)
+# We install the Rust toolchain directly to ensure compatibility and speed
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
@@ -23,28 +23,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     && rm -rf /var/lib/apt/lists/*
 
+# Add cargo to the path
 ENV PATH="/root/.cargo/bin:${PATH}"
 ENV CARGO_INCREMENTAL=0
 ENV RUSTFLAGS="-C target-cpu=native -C opt-level=3"
 
-# 2. Install uv for fast dependency resolution
+# 2. Install uv for high-speed dependency resolution
 RUN pip install uv
 
-# 3. Copy project metadata and source code
+# 3. Copy metadata and source code for building
 COPY pyproject.toml uv.lock README.md ./
 COPY rust/ ./rust/
 COPY nglab/ ./nglab/
 
-# 4. Install dependencies and build the package
-# OPTIMIZATION: We use the CPU-only index for PyTorch to avoid 3GB+ of CUDA bloat.
-# This is for the standard production image; use Dockerfile.gpu for GPU support.
+# 4. Build and install the package
+# OPTIMIZATION: We explicitly point to the CPU-only wheel index for PyTorch.
+# This prevents the builder from downloading ~4GB of CUDA binaries, solving the "No Space" error.
 RUN uv pip install --system --no-cache \
     --index-url https://download.pytorch.org/whl/cpu \
     --extra-index-url https://pypi.org/simple \
     .
 
 # =============================================================================
-# Stage 2: Final Runtime
+# Stage 2: Final Runtime (Ultra-slim)
 # =============================================================================
 FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
 
@@ -54,13 +55,13 @@ ENV VERSION=${NGLAB_VERSION}
 LABEL org.opencontainers.image.version=${NGLAB_VERSION}
 LABEL org.opencontainers.image.description="Nothing Gambles Like A Bot (NGLAB) Production Image"
 
-# Create non-privileged user
+# Create non-privileged user for security
 RUN groupadd --gid 1000 nglab && \
     useradd --uid 1000 --gid nglab --shell /bin/bash --create-home nglab
 
 WORKDIR /app
 
-# 5. Install ONLY runtime dependencies (no build-essential, no -dev headers)
+# 5. Install ONLY essential runtime libraries (no build tools)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl3 \
     libgomp1 \
@@ -69,36 +70,36 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# 6. Copy Python packages from builder
-# site-packages is now much smaller without the CUDA binaries
+# 6. Copy the compiled Python site-packages from the builder stage
+# This carries over our built Rust extension module (_nglab.so)
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# 7. Copy application code and configuration
+# 7. Copy application logic and configurations
 COPY --chown=nglab:nglab python/src ./src
 COPY --chown=nglab:nglab python/conf ./conf
 
-# Create necessary directories
+# Setup directory permissions for Prometheus and logs
 RUN mkdir -p /app/logs /app/models /app/.cache /tmp/prometheus && \
     chown -R nglab:nglab /app /tmp/prometheus
 
-# Environment configuration
+# Environment variables
 ENV PYTHONPATH=/app/src
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV NGLAB_ENV=production
 ENV PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus
 
-# Health check
+# Health check to ensure the API is responding
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Switch to non-root user
+# Execute as restricted user
 USER nglab
 
-# Expose API port
+# Default port
 EXPOSE 8000
 
-# Use tini as init system
+# Use tini to handle zombie processes (common in Python/ML workloads)
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-m", "api.main"]

@@ -116,7 +116,7 @@ class GatedGraphConvolution(nn.Module):
 
         return h, e
 
-    def aggregate(self, Vh, mask, gates):
+    def aggregate(self, Vh, mask, gates):  # noqa: N803
         """
         Args:
             Vh: Neighborhood features (B x V x V x H)

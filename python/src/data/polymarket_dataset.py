@@ -17,7 +17,7 @@ class PolymarketDataset(torch.utils.data.Dataset):
     Loads multiple candidate files and aligns them by timestamp.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self, name, dataset_dir, seq_len, pred_len, download=False, transform=None
     ):
         """

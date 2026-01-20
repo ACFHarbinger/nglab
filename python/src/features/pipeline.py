@@ -28,7 +28,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
     4. Feature Selection (VarianceThreshold)
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         lookback: int = 30,
         feature_set: str = "standard",
@@ -52,7 +52,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         self.selector = None
         self.feature_names: list[str] = []
 
-    def fit(self, X: pd.DataFrame | np.ndarray, y=None):
+    def fit(self, X: pd.DataFrame | np.ndarray, y=None):  # noqa: N803
         """
         Fit the pipeline components (e.g., scalers) on historical data.
 
@@ -87,9 +87,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
             mi_scores = TimeSeriesFeatureSelector.compute_mutual_info(
                 features_clean, y if y is not None else features_clean.iloc[:, 0]
             )
-            mi_scores.head(
-                self.selection_params.get("n_features", 10)
-            ).index.tolist()
+            mi_scores.head(self.selection_params.get("n_features", 10)).index.tolist()
 
             # Create a simple PassThrough selector that just picks columns
             from sklearn.ensemble import RandomForestRegressor
@@ -137,7 +135,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X: pd.DataFrame | np.ndarray) -> np.ndarray:
+    def transform(self, X: pd.DataFrame | np.ndarray) -> np.ndarray:  # noqa: N803
         """
         Transform new data into model inputs.
         """
@@ -161,7 +159,9 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
 
         return scaled
 
-    def _generate_features(self, X: pd.DataFrame | np.ndarray) -> pd.DataFrame:
+    def _generate_features(
+        self, X: pd.DataFrame | np.ndarray  # noqa: N803
+    ) -> pd.DataFrame:
         """
         Internal method to generate raw features using GPU acceleration.
         """

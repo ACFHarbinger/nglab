@@ -12,7 +12,7 @@ Standard and specialized neural network components:
 
 from .elm import ELM
 from .mlp import MLP
-from .node import NeuralODE, odesolve
+from .node import NeuralODE, odesolve  # noqa: F401
 from .perceptron import Perceptron
 from .pinn import PINN
 from .rbf import RBF

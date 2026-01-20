@@ -20,7 +20,7 @@ class ScaledDotProductAttention(nn.Module):
         dropout: Dropout probability for attention weights
     """
 
-    def __init__(self, dropout: float = 0.1):  # noqa: PLR0913
+    def __init__(self, dropout: float = 0.1):
         """Initialize Scaled Dot-Product Attention."""
         super().__init__()
         self.dropout = nn.Dropout(dropout)
@@ -71,7 +71,7 @@ class MultiHeadAttention(nn.Module):
         dropout: Dropout probability
     """
 
-    def __init__(self, d_model: int, num_heads: int = 8, dropout: float = 0.1):  # noqa: PLR0913
+    def __init__(self, d_model: int, num_heads: int = 8, dropout: float = 0.1):
         """Initialize Multi-Head Attention."""
         super().__init__()
         assert d_model % num_heads == 0, "d_model must be divisible by num_heads"
@@ -153,7 +153,7 @@ class AttentionBlock(nn.Module):
         dropout: Dropout probability
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self, d_model: int, num_heads: int = 8, d_ff: int = 2048, dropout: float = 0.1
     ):
         """Initialize Attention Block."""

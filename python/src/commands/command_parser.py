@@ -22,9 +22,6 @@ class ConfigsParser(argparse.ArgumentParser):
         sys.exit(2)
 
 
-
-
-
 def process_arguments():
     """
     Parse and process command line arguments.
