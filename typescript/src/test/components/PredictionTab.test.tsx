@@ -22,53 +22,39 @@ describe("PredictionTab", () => {
     });
 
     it("should render initial controls", async () => {
-        render(
-            <PredictionTab
-                livePrices={{}}
-                isStreaming={false}
-                activeMarket={null}
-            />
-        );
-        expect(screen.getByText("ARIMA")).toBeInTheDocument();
-        expect(screen.getByText("Load CSV")).toBeInTheDocument();
+        render(<PredictionTab />);
+        expect(screen.getByText("ARIMA (Econometric)")).toBeInTheDocument();
+        expect(screen.getByText("Load CSV Data")).toBeInTheDocument();
     });
 
     it("should switch models", async () => {
-        render(
-            <PredictionTab
-                livePrices={{}}
-                isStreaming={false}
-                activeMarket={null}
-            />
-        );
+        render(<PredictionTab />);
 
-        fireEvent.click(screen.getByText("GARCH"));
-        expect(screen.getByText("GARCH Configuration")).toBeInTheDocument();
+        // Select GARCH from dropdown - find the select by its options
+        const algorithmSelects = screen.getAllByRole("combobox");
+        const algorithmSelect = algorithmSelects[1]; // Second select is the Algorithm dropdown
+        fireEvent.change(algorithmSelect, { target: { value: "garch" } });
+        expect(screen.getByText("About the GARCH Model")).toBeInTheDocument();
 
-        fireEvent.click(screen.getByText("Prophet"));
-        expect(screen.getByText("Prophet Configuration")).toBeInTheDocument();
+        // Select Prophet from dropdown
+        fireEvent.change(algorithmSelect, { target: { value: "prophet" } });
+        expect(screen.getByText("About the PROPHET Model")).toBeInTheDocument();
     });
 
     it("should run ARIMA prediction after loading data", async () => {
         mockOpen.mockResolvedValue("/path.csv");
 
-        render(
-            <PredictionTab
-                livePrices={{}}
-                isStreaming={false}
-                activeMarket={null}
-            />
-        );
+        render(<PredictionTab />);
 
         // Load data
-        fireEvent.click(screen.getByText("Load CSV"));
+        fireEvent.click(screen.getByText("Load CSV Data"));
         await waitFor(() => expect(mockReadTextFile).toHaveBeenCalled());
 
         // Run
-        fireEvent.click(screen.getByText("Generate Path"));
+        fireEvent.click(screen.getByText("Run Prediction"));
 
         await waitFor(() => {
-            expect(mockInvoke).toHaveBeenCalledWith("predict_arima", expect.any(Object));
+            expect(mockInvoke).toHaveBeenCalledWith("run_arima", expect.any(Object));
         });
     });
 });
