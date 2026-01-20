@@ -46,14 +46,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install uv for fast dependency resolution
 RUN pip install uv
 
-# Copy dependency files
-COPY pyproject.toml uv.lock ./
+# 1. Copy project metadata and lockfiles FIRST (for caching)
+COPY pyproject.toml uv.lock README.md ./
 
-# Since maturin needs the manifest at rust/Cargo.toml, the rust folder must exist.
+# 2. Copy the Rust source (required by maturin to build bindings)
 COPY rust/ ./rust/
 
-# Install production dependencies globally
-# We use the system python to avoid venv overhead in the final image
+# 3. Copy the Python package source 
+# This is often required for maturin to verify the module name or package structure
+COPY nglab/ ./nglab/
+
+# 4. Install production dependencies globally
+# Maturin will now find README.md and the source code it needs
 RUN uv pip install --system --no-cache .
 
 # =============================================================================

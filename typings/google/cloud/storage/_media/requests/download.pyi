@@ -322,7 +322,6 @@ if hasattr(urllib3.response, "BrotliDecoder"):
 
         def flush(self):  # -> bytes:
             ...
-
         @property
         def has_unconsumed_tail(self) -> bool: ...
 

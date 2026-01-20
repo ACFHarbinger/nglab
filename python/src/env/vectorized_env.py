@@ -182,9 +182,9 @@ class VectorizedTradingEnv:
 
             actions = np.array(actions).flatten()
 
-        assert (
-            len(actions) == self.num_envs
-        ), f"Expected {self.num_envs} actions, got {len(actions)}"
+        assert len(actions) == self.num_envs, (
+            f"Expected {self.num_envs} actions, got {len(actions)}"
+        )
 
         # Execute steps in parallel
         results = []

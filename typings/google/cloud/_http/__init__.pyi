@@ -46,7 +46,6 @@ class Connection:
     @USER_AGENT.setter
     def USER_AGENT(self, value):  # -> None:
         ...
-
     @property
     def user_agent(self):  # -> str:
         """Get / set user agent sent by connection.
@@ -59,7 +58,6 @@ class Connection:
     @user_agent.setter
     def user_agent(self, value):  # -> None:
         ...
-
     @property
     def extra_headers(self):  # -> dict[Any, Any]:
         """Get / set extra headers sent by connection.
@@ -72,7 +70,6 @@ class Connection:
     @extra_headers.setter
     def extra_headers(self, value):  # -> None:
         ...
-
     @property
     def credentials(self):
         """Getter for current credentials.

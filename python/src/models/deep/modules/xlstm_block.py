@@ -107,9 +107,9 @@ class mLSTMCell(nn.Module):
         self.hidden_dim = hidden_dim
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
-        assert (
-            self.head_dim * num_heads == hidden_dim
-        ), "Hidden dim must be divisible by num_heads"
+        assert self.head_dim * num_heads == hidden_dim, (
+            "Hidden dim must be divisible by num_heads"
+        )
 
         # Projects inputs to q, k, v and gates
         # We need:

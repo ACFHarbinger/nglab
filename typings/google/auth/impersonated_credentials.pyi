@@ -146,39 +146,30 @@ class Credentials(
 
     def sign_bytes(self, message):  # -> bytes:
         ...
-
     @property
     def signer_email(self):  # -> Any:
         ...
-
     @property
     def service_account_email(self):  # -> Any:
         ...
-
     @property
     def signer(self):  # -> Self:
         ...
-
     @property
     def requires_scopes(self):  # -> bool:
         ...
-
     @_helpers.copy_docstring(credentials.Credentials)
     def get_cred_info(self):  # -> dict[str, Any] | None:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithTrustBoundary)
     def with_trust_boundary(self, trust_boundary):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.Scoped)
     def with_scopes(self, scopes, default_scopes=...):  # -> Self:
         ...
-
     @classmethod
     def from_impersonated_service_account_info(cls, info, scopes=...):  # -> Self:
         """Creates a Credentials instance from parsed impersonated service account credentials info.
@@ -231,17 +222,13 @@ class IDTokenCredentials(credentials.CredentialsWithQuotaProject):
 
     def from_credentials(self, target_credentials, target_audience=...):  # -> Self:
         ...
-
     def with_target_audience(self, target_audience):  # -> Self:
         ...
-
     def with_include_email(self, include_email):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):  # -> None:
         ...

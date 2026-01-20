@@ -385,7 +385,6 @@ class XMLMPUContainer(UploadBase):
     @property
     def upload_id(self):  # -> str | None:
         ...
-
     def register_part(self, part_number, etag):  # -> None:
         """Register an uploaded part by part number and corresponding etag.
 
@@ -535,27 +534,21 @@ class XMLMPUPart(UploadBase):
     @property
     def part_number(self):  # -> Any:
         ...
-
     @property
     def upload_id(self):  # -> Any:
         ...
-
     @property
     def filename(self):  # -> Any:
         ...
-
     @property
     def etag(self):  # -> None:
         ...
-
     @property
     def start(self):  # -> Any:
         ...
-
     @property
     def end(self):  # -> Any:
         ...
-
     def upload(self, transport, timeout=...):
         """Upload the part.
 

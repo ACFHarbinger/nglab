@@ -44,9 +44,9 @@ class xLSTM(nn.Module):
         if isinstance(cell_type, str):
             cell_types = [cell_type] * n_layers
         else:
-            assert (
-                len(cell_type) == n_layers
-            ), "cell_type list length must match n_layers"
+            assert len(cell_type) == n_layers, (
+                "cell_type list length must match n_layers"
+            )
             cell_types = cell_type
 
         # We can implement stacking manually or use a loop

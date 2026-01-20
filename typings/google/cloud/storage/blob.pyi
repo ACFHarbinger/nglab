@@ -155,7 +155,6 @@ class Blob(_PropertyMixin):
 
     def __repr__(self):  # -> str:
         ...
-
     @property
     def path(self):
         """Getter property for the URL path to this Blob.
@@ -2588,7 +2587,6 @@ class Retention(dict):
     @mode.setter
     def mode(self, value):  # -> None:
         ...
-
     @property
     def retain_until_time(self):  # -> datetime | None:
         """The earliest time that the object can be deleted or replaced, which is the

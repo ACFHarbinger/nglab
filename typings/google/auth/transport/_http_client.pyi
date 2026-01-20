@@ -20,7 +20,6 @@ class Response(transport.Response):
     @property
     def headers(self):  # -> dict[Any, Any]:
         ...
-
     @property
     def data(self): ...
 

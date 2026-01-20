@@ -80,7 +80,6 @@ class ServiceAccountCredentials(credentials.Credentials):
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):  # -> None:
         ...
-
     def with_gdch_audience(self, audience):  # -> Self:
         """Create a copy of GDCH credentials with the specified audience.
 

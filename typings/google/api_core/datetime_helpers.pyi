@@ -118,7 +118,6 @@ class DatetimeWithNanoseconds(datetime.datetime):
     __slots__ = ...
     def __new__(cls, *args, **kw):  # -> Self:
         ...
-
     @property
     def nanosecond(self):
         """Read-only: nanosecond precision."""

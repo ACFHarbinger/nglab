@@ -101,9 +101,9 @@ def create_dataloader(
         (train_loader, val_loader, test_loader)
     """
     # Validate ratios
-    assert (
-        abs(train_ratio + val_ratio + test_ratio - 1.0) < 1e-6
-    ), "Ratios must sum to 1.0"
+    assert abs(train_ratio + val_ratio + test_ratio - 1.0) < 1e-6, (
+        "Ratios must sum to 1.0"
+    )
 
     # For now, we'll create train/val splits using the existing train_ratio
     # and create a separate test set

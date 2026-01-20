@@ -206,7 +206,6 @@ class Credentials(
     @_helpers.copy_docstring(credentials.Scoped)
     def with_scopes(self, scopes, default_scopes=...):  # -> Self:
         ...
-
     def with_always_use_jwt_access(self, always_use_jwt_access):  # -> Self:
         """Create a copy of these credentials with the specified always_use_jwt_access value.
 
@@ -225,7 +224,6 @@ class Credentials(
     @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
     def with_universe_domain(self, universe_domain):  # -> Self:
         ...
-
     def with_subject(self, subject):  # -> Self:
         """Create a copy of these credentials with the specified subject.
 
@@ -255,27 +253,22 @@ class Credentials(
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
     def with_token_uri(self, token_uri):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithTrustBoundary)
     def with_trust_boundary(self, trust_boundary):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.Signing)
     def sign_bytes(self, message): ...
     @property
     @_helpers.copy_docstring(credentials.Signing)
     def signer(self):  # -> Any:
         ...
-
     @property
     @_helpers.copy_docstring(credentials.Signing)
     def signer_email(self):  # -> Any:
         ...
-
     @_helpers.copy_docstring(credentials.Credentials)
     def get_cred_info(self):  # -> dict[str, Any] | None:
         ...
@@ -412,15 +405,12 @@ class IDTokenCredentials(
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
     def with_token_uri(self, token_uri):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):  # -> None:
         ...
-
     @property
     def service_account_email(self):  # -> Any:
         """The service account email."""
@@ -432,7 +422,6 @@ class IDTokenCredentials(
     @_helpers.copy_docstring(credentials.Signing)
     def signer(self):  # -> Any:
         ...
-
     @property
     @_helpers.copy_docstring(credentials.Signing)
     def signer_email(self):  # -> Any:

@@ -667,7 +667,6 @@ class StorageControlGrpcTransport(StorageControlTransport):
 
     def close(self):  # -> None:
         ...
-
     @property
     def kind(self) -> str: ...
 

@@ -82,7 +82,6 @@ class Credentials(
     @_helpers.copy_docstring(credentials.Credentials)
     def refresh(self, request):  # -> None:
         ...
-
     @property
     def service_account_email(self):
         """The service account email."""
@@ -100,11 +99,9 @@ class Credentials(
     @_helpers.copy_docstring(credentials.Scoped)
     def with_scopes(self, scopes, default_scopes=...):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
     def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-
     @_helpers.copy_docstring(credentials.Signing)
     def sign_bytes(self, message): ...
     @property
