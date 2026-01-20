@@ -2,6 +2,8 @@
 Time Series Mamba implementation.
 """
 
+from typing import Any, Optional
+
 import torch
 from torch import nn
 
@@ -15,25 +17,16 @@ class TSMamba(nn.Module):
 
     def __init__(  # noqa: PLR0913
         self,
-        input_dim,
-        output_dim,
-        d_model=64,
-        n_layers=2,
-        forecast_horizon=1,
-        dropout=0.0,
-        output_type="prediction",
-    ):
+        input_dim: int,
+        output_dim: int,
+        d_model: int = 64,
+        n_layers: int = 2,
+        forecast_horizon: int = 1,
+        dropout: float = 0.0,
+        output_type: str = "prediction",
+    ) -> None:
         """
         Initialize the TSMamba model.
-
-        Args:
-            input_dim (int): Number of input features.
-            output_dim (int): Number of output features per time step.
-            d_model (int): Model hidden dimension.
-            n_layers (int): Number of Mamba blocks.
-            forecast_horizon (int): Prediction offset/horizon.
-            dropout (float): Dropout rate.
-            output_type (str): 'prediction' or 'embedding'.
         """
         super().__init__()
         self.output_type = output_type
@@ -53,10 +46,14 @@ class TSMamba(nn.Module):
         self.norm = nn.LayerNorm(d_model)
 
         # Forecasting Head (Project to output dimension)
-        # Note: For multi-step, we predict a vector or use direct strategy
         self.head = nn.Linear(d_model, output_dim * forecast_horizon)
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: Optional[bool] = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         Forward pass for forecasting.
 
@@ -74,6 +71,7 @@ class TSMamba(nn.Module):
         x = self.norm(x)
 
         # Determine state to use (Full sequence or Last step)
+        state: torch.Tensor
         if return_sequence:
             state = x
         else:
@@ -90,33 +88,3 @@ class TSMamba(nn.Module):
 
         # Apply head
         return self.head(state)
-
-
-# --- Example Usage ---
-if __name__ == "__main__":
-    # Hyperparameters
-    BATCH_SIZE = 32
-    SEQ_LEN = 96  # Lookback window
-    INPUT_DIM = 1  # Univariate time series
-    OUTPUT_DIM = 1  # Forecast one variable
-    HORIZON = 24  # Forecast 24 steps ahead (Direct strategy)
-
-    # Instantiate model
-    model = TSMamba(
-        input_dim=INPUT_DIM,
-        output_dim=OUTPUT_DIM,
-        d_model=64,
-        n_layers=2,
-        forecast_horizon=HORIZON,
-    )
-
-    # Dummy Data (e.g., random noise)
-    # Shape: (Batch, Lookback, Features)
-    dummy_input = torch.randn(BATCH_SIZE, SEQ_LEN, INPUT_DIM)
-
-    # Forward pass
-    forecast = model(dummy_input)
-
-    print(f"Input shape: {dummy_input.shape}")
-    print(f"Forecast shape: {forecast.shape}")  # Should be (32, 24)
-    print("Mamba model initialized successfully.")

@@ -10,6 +10,36 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # --- Python Coverage ---
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Run Python Tests with Coverage
+        run: uv run pytest --cov=python/src --cov-report=xml
+
+      # --- Rust Coverage ---
+      - name: Install Tarpaulin
+        run: cargo install cargo-tarpaulin
+      - name: Run Rust Tests with Coverage
+        run: cargo tarpaulin --out Xml
+
+      # --- TypeScript Coverage ---
+      - name: Install Node Dependencies
+        run: cd typescript && npm install
+      - name: Run Vitest Coverage
+        run: cd typescript && npm run test -- --coverage
+
+      # --- Upload to Codecov ---
+      - name: Upload Coverage Results
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          files: ./coverage.xml,./cobertura.xml,./typescript/coverage/clover.xml
+
   python-ci:
     name: Python CI
     runs-on: ubuntu-latest
