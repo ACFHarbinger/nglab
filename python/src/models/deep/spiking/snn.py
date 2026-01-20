@@ -45,7 +45,7 @@ class LIFCell(nn.Module):
     S[t] = Heaviside(U[t] - threshold)
     """
 
-    def __init__(self, input_dim, hidden_dim, decay=0.9, threshold=1.0, alpha=25.0):
+    def __init__(self, input_dim, hidden_dim, decay=0.9, threshold=1.0, alpha=25.0):  # noqa: PLR0913
         """Initialize LIF Cell."""
         super().__init__()
         self.input_dim = input_dim
@@ -98,7 +98,7 @@ class SNN(nn.Module):
     Currently implements a single recurrent layer of LIF cells.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim,
         hidden_dim,

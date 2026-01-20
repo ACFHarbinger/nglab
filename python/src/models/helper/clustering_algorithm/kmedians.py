@@ -10,7 +10,7 @@ class KMediansAlgorithm:
         self.cluster_centers_ = None
         self.labels_ = None
 
-    def fit(self, X):
+    def fit(self, X):  # noqa: N803
         rng = np.random.RandomState(self.random_state)
         n_samples, n_features = X.shape
 
@@ -48,7 +48,7 @@ class KMediansAlgorithm:
 
         return self
 
-    def predict(self, X):
+    def predict(self, X):  # noqa: N803
         if self.cluster_centers_ is None:
             raise ValueError("Model not fitted yet.")
         dist = np.sum(
@@ -57,5 +57,5 @@ class KMediansAlgorithm:
         )
         return np.argmin(dist, axis=1)
 
-    def fit_predict(self, X):
+    def fit_predict(self, X):  # noqa: N803
         return self.fit(X).labels_

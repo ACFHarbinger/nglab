@@ -21,7 +21,7 @@ def evaluate_model(model: Any, env: TradingEnv, num_steps: int = 100) -> float:
     # loss-landscapes 3.0+ wraps the model in a wrapper that mimics nn.Module
     # but is not directly callable. We use .forward() explicitly.
     model.eval()
-    obs, info = env.reset()
+    obs, _ = env.reset()
     total_reward = 0
 
     # Try to get device from parameters

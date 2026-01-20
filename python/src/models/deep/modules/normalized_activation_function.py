@@ -11,7 +11,7 @@ class NormalizedActivationFunction(nn.Module):
     Wrapper for normalized activation functions (Softmax, LogSoftmax, etc.).
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         naf_name: str = "softmax",
         dim: int | None = -1,

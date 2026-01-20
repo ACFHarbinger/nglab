@@ -80,7 +80,7 @@ class LDAModel(DimReductionModel):
         super().__init__()
         self.model = LDAAlgorithm(n_components=n_components, **kwargs)
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         """LDA needs y."""
         if isinstance(X, torch.Tensor):
             X = X.detach().cpu().numpy()
@@ -120,7 +120,7 @@ class PCRModel(DimReductionModel):
         self.reg = LinearRegression()
         self.model = self.pca  # For transform
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None):  # noqa: N803
         if hasattr(X, "numpy"):
             X = X.cpu().numpy()
         self.pca.fit(X)
@@ -151,7 +151,7 @@ class PLSRModel(DimReductionModel):
         super().__init__()
         self.model = PLSRegression(n_components=n_components, **kwargs)
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         # PLS needs y
         if hasattr(X, "numpy"):
             X = X.cpu().numpy()
@@ -197,7 +197,7 @@ class QDAModel(DimReductionModel):
             kwargs.pop("n_components")
         self.model = QuadraticDiscriminantAnalysis(**kwargs)
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         """QDA needs y."""
         # Reuse LDA fit logic essentially
         if hasattr(X, "numpy"):
@@ -236,7 +236,7 @@ class MDAModel(DimReductionModel):
             n_components_per_class=n_components_per_class, **kwargs
         )
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         if hasattr(X, "numpy"):
             X = X.cpu().numpy()
         if hasattr(y, "numpy"):
@@ -265,7 +265,7 @@ class FDAModel(DimReductionModel):
         self._is_fitted = False
         self.classes_ = None
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         # 1. Prepare Data
         if isinstance(X, torch.Tensor):
             X = X.detach().cpu().numpy()
@@ -315,7 +315,7 @@ class FDAModel(DimReductionModel):
         self.lda.fit(X_fitted, y)
         self._is_fitted = True
 
-    def transform(self, X):
+    def transform(self, X):  # noqa: N803
         # Transform X -> MARS features -> LDA -> Low Dim
         preds = []
         for mars in self.mars_models:

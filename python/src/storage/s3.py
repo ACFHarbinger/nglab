@@ -44,7 +44,7 @@ class S3Storage(ModelStorage):
                 raise ImportError(
                     "boto3 is required for S3 storage. "
                     "Install it with: pip install boto3"
-                )
+                ) from None
         return self._client
 
     def _model_key(self, name: str, version: str) -> str:
@@ -146,7 +146,7 @@ class S3Storage(ModelStorage):
         except self.client.exceptions.NoSuchKey:
             raise FileNotFoundError(
                 f"Model '{name}' version '{version}' not found in S3"
-            )
+            ) from None
 
         data = self._decompress(compressed_data)
 
@@ -252,7 +252,7 @@ class S3Storage(ModelStorage):
         except Exception as e:
             raise FileNotFoundError(
                 f"Metadata for '{name}' version '{version}' not found: {e}"
-            )
+            ) from e
 
     def _get_latest_version(self, name: str) -> str | None:
         """Get the latest version string for a model."""

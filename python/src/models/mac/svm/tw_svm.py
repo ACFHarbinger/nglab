@@ -23,7 +23,7 @@ class TWSVMModel(ClassicalModel):
         self.bias1 = None
         self.bias2 = None
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         if isinstance(X, torch.Tensor):
             X = X.detach().cpu().numpy()
         if isinstance(y, torch.Tensor):
@@ -77,7 +77,7 @@ class TWSVMModel(ClassicalModel):
         self.classes_ = classes
         self._is_fitted = True
 
-    def predict(self, X):
+    def predict(self, X):  # noqa: N803
         if not self._is_fitted:
             return np.zeros((X.shape[0], 1))
 

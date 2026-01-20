@@ -25,7 +25,7 @@ class PINN(nn.Module):
         activation: Activation function (tanh is standard for PINNs due to smoothness).
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim: int,
         hidden_dim: int = 20,

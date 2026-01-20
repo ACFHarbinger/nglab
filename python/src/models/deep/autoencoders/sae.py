@@ -12,7 +12,7 @@ class SparseAE(AutoEncoder):
     Sparse AutoEncoder (SAE).
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim,
         hidden_dims,

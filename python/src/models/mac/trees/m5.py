@@ -19,7 +19,7 @@ class M5Model(ClassicalModel):
         self.tree = DecisionTreeRegressor(**kwargs)
         self.leaf_models = {}
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         if isinstance(X, torch.Tensor):
             X = X.detach().cpu().numpy()
         if isinstance(y, torch.Tensor):
@@ -27,7 +27,7 @@ class M5Model(ClassicalModel):
 
         if X.ndim == 3:
             X = X.reshape(X.shape[0] * X.shape[1], -1)
-            y = y
+
             if y.ndim > 1:
                 y = y.reshape(y.shape[0] * y.shape[1], -1)
 
@@ -54,7 +54,7 @@ class M5Model(ClassicalModel):
 
         self._is_fitted = True
 
-    def predict(self, X):
+    def predict(self, X):  # noqa: N803
         if isinstance(X, torch.Tensor):
             X = X.detach().cpu().numpy()
 

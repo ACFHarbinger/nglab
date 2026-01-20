@@ -27,7 +27,7 @@ class GatedGraphConvolution(nn.Module):
     information flow between neighbors. Updates both node and edge features.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         hidden_dim: int,
         aggregation: str = "sum",

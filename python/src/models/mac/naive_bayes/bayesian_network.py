@@ -17,7 +17,7 @@ class BayesianNetworkModel(ClassicalModel):
         super().__init__()
         self.model = GaussianNB(**kwargs)
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         if isinstance(X, torch.Tensor):
             X = X.detach().cpu().numpy()
         if isinstance(y, torch.Tensor):
@@ -25,7 +25,7 @@ class BayesianNetworkModel(ClassicalModel):
         self.model.fit(X, y.ravel())
         self._is_fitted = True
 
-    def predict(self, X):
+    def predict(self, X):  # noqa: N803
         if isinstance(X, torch.Tensor):
             X = X.detach().cpu().numpy()
 

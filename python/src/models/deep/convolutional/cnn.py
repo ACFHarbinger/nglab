@@ -4,7 +4,7 @@ Inspired by "S&P 500 Stock’s Movement Prediction using CNN".
 """
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
 
@@ -15,7 +15,7 @@ class RollingWindowCNN(nn.Module):
     Internally reshaped to: (Batch, 1, Seq_Len, Features)
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self, input_dim, output_dim, seq_len=30, hidden_dim=64, output_type="prediction"
     ):
         """

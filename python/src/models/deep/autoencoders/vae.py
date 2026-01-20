@@ -37,7 +37,7 @@ class VAE(nn.Module):
         decoder_kwargs: Additional kwargs for decoder backbone
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim: int,
         latent_dim: int,

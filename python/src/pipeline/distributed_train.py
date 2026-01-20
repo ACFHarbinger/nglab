@@ -53,7 +53,7 @@ class DistributedTrainer:
     A boilerplate trainer for distributed training.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         model: torch.nn.Module,
         train_loader: torch.utils.data.DataLoader[Any],
@@ -98,7 +98,7 @@ class DistributedTrainer:
         return total_loss / len(self.train_loader)
 
 
-def train_ddp(
+def train_ddp(  # noqa: PLR0913
     model: torch.nn.Module,
     dataset: torch.utils.data.Dataset[Any],
     optimizer_factory: Callable[[torch.nn.Module], torch.optim.Optimizer],

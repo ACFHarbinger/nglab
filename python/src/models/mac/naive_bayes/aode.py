@@ -19,7 +19,7 @@ class AODEModel(ClassicalModel):
         self.models = []
         self.feature_subsets = []
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         if isinstance(X, torch.Tensor):
             X = X.detach().cpu().numpy()
         if isinstance(y, torch.Tensor):
@@ -40,7 +40,7 @@ class AODEModel(ClassicalModel):
 
         self._is_fitted = True
 
-    def predict(self, X):
+    def predict(self, X):  # noqa: N803
         if isinstance(X, torch.Tensor):
             X = X.detach().cpu().numpy()
 

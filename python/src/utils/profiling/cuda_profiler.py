@@ -328,7 +328,7 @@ def profile_model_forward(
     }
 
 
-def profile_training_step(
+def profile_training_step(  # noqa: PLR0913
     model: nn.Module,
     optimizer: torch.optim.Optimizer,
     loss_fn: Callable,

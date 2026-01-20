@@ -21,7 +21,7 @@ class ResidualBlock(nn.Module):
         dropout: Dropout probability
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         hidden_dim: int,
         use_conv: bool = False,
@@ -97,7 +97,7 @@ class DeepResNet(nn.Module):
         output_type: 'prediction' returns final output, 'embedding' returns features
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim: int,
         hidden_dim: int = 128,
@@ -229,7 +229,7 @@ class ResNetBottleneck(nn.Module):
         dropout: Dropout probability
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         in_dim: int,
         bottleneck_dim: int,

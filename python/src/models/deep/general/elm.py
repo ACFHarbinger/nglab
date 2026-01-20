@@ -3,7 +3,7 @@ Extreme Learning Machine (ELM) implementation.
 """
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
 
@@ -12,7 +12,7 @@ class ELM(nn.Module):
     Extreme Learning Machine (ELM).
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim,
         hidden_dim,

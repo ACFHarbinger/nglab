@@ -10,10 +10,10 @@ class SammonMappingAlgorithm:
         self.lr = lr
         self.embedding_ = None
 
-    def fit(self, X):
+    def fit(self, X):  # noqa: N803
         return self
 
-    def fit_transform(self, X):
+    def fit_transform(self, X):  # noqa: N803
         # Expecting numpy input, convert to torch
         if not isinstance(X, torch.Tensor):
             X_t = torch.tensor(X, dtype=torch.float32)
@@ -37,7 +37,7 @@ class SammonMappingAlgorithm:
             pca = PCA(n_components=self.n_components)
             Y_init = pca.fit_transform(X_t.numpy())
             Y = torch.tensor(Y_init, dtype=torch.float32, requires_grad=True)
-        except:
+        except Exception:
             Y = torch.randn(n_samples, self.n_components, requires_grad=True)
 
         optimizer = torch.optim.LBFGS([Y], lr=self.lr, max_iter=20)
@@ -68,7 +68,7 @@ class SammonMappingAlgorithm:
         self.embedding_ = Y.detach().numpy()
         return self.embedding_
 
-    def transform(self, X):
+    def transform(self, X):  # noqa: N803
         # Sammon does not provide out-of-sample extension natively.
         # Typically return stored embedding or raise error?
         # Or project new point minimizing stress wrt stored points.

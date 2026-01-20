@@ -6,7 +6,7 @@ both labeled and unlabeled data for training.
 """
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 
 from .base import BaseModule
 

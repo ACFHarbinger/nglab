@@ -15,7 +15,7 @@ class CriticNetwork(nn.Module):
     Critic network based on Graph Attention Encoder and a Linear Value Head.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         method,
         input_dim,

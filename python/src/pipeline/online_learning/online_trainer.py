@@ -17,7 +17,7 @@ class ExperienceReplayBuffer:
             maxlen=capacity
         )
 
-    def add(self, X: np.ndarray, y: np.ndarray):
+    def add(self, X: np.ndarray, y: np.ndarray):  # noqa: N803
         """Add a batch of experience to the buffer."""
         for i in range(len(X)):
             self.buffer.append({"X": X[i], "y": y[i]})
@@ -61,7 +61,7 @@ class OnlineTrainer:
         # Check if model supports partial_fit
         self.supports_incremental = hasattr(model, "partial_fit")
 
-    def update(self, X: np.ndarray, y: np.ndarray) -> bool:
+    def update(self, X: np.ndarray, y: np.ndarray) -> bool:  # noqa: N803
         """
         Perform an incremental update using new data and replay buffer.
         Returns: True if update was successful and stable.
@@ -99,7 +99,7 @@ class OnlineTrainer:
             self.model = self.last_stable_model
             print("Rollback performed due to unstable online update.")
 
-    def evaluate(self, X: np.ndarray, y: np.ndarray) -> float:
+    def evaluate(self, X: np.ndarray, y: np.ndarray) -> float:  # noqa: N803
         """Evaluate current model performance."""
         if hasattr(self.model, "score"):
             return self.model.score(X, y)

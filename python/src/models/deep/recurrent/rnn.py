@@ -10,7 +10,7 @@ class LSTM(nn.Module):
     Long Short-Term Memory (LSTM) network for sequence processing.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim,
         hidden_dim,
@@ -80,7 +80,7 @@ class LSTM(nn.Module):
         output = self.fc(state)
 
         if self.apply_softmax and self.output_type == "prediction":
-            import torch.nn.functional as F
+            import torch.nn.functional as F  # noqa: N812
 
             output = F.softmax(output, dim=-1)
 
@@ -92,7 +92,7 @@ class GRU(nn.Module):
     Gated Recurrent Unit (GRU) network for sequence processing.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim,
         hidden_dim,

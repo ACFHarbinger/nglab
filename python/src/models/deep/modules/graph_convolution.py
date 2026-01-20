@@ -15,7 +15,7 @@ class GraphConvolution(nn.Module):
     h_i' = W * h_i + Agg({h_j})
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         in_channels: int,
         out_channels: int,

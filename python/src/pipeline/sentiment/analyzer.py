@@ -6,7 +6,7 @@ from news headlines, reports, and social media.
 """
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 

@@ -11,7 +11,7 @@ class Connections(nn.Module):
     Factory for creating connection modules.
     """
 
-    def __init__(self):
+    def __init__(self):  # noqa: PLR0913
         """Initializes the connections factory."""
         super().__init__()
 

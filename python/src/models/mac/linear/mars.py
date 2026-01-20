@@ -22,7 +22,7 @@ class MARSModel(ClassicalModel):
             ]
         )
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         if isinstance(X, torch.Tensor):
             X = X.detach().cpu().numpy()
 
@@ -70,7 +70,7 @@ class MARSModel(ClassicalModel):
 
         return torch.from_numpy(out_np).to(device).to(torch.float32)
 
-    def predict(self, X):
+    def predict(self, X):  # noqa: N803
         if not self._is_fitted:
             return np.zeros((X.shape[0], 1))
 

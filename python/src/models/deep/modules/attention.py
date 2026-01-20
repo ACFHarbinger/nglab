@@ -17,7 +17,7 @@ class DSAttention(nn.Module):
     De-stationary Attention mechanism.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self, mask_flag=True, attention_dropout=0.1, output_attention=False, scale=None
     ):
         """
@@ -71,7 +71,7 @@ class FullAttention(nn.Module):
     Standard Full Attention.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         mask_flag=True,
         factor=5,
@@ -118,7 +118,7 @@ class ProbAttention(nn.Module):
     Informer-style Probabilistic Attention.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         mask_flag=True,
         factor=5,
@@ -231,7 +231,7 @@ class AttentionLayer(nn.Module):
     Attention Layer wrapping inner attention mechanisms.
     """
 
-    def __init__(self, attention, d_model, n_heads, d_keys=None, d_values=None):
+    def __init__(self, attention, d_model, n_heads, d_keys=None, d_values=None):  # noqa: PLR0913
         """
         Initialize.
 

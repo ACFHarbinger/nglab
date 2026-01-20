@@ -233,7 +233,7 @@ class S3Backend(CloudStorageBackend):
             )
 
         except self.client.exceptions.NoSuchKey:
-            raise FileNotFoundError(f"Checkpoint not found: {remote_key}")
+            raise FileNotFoundError(f"Checkpoint not found: {remote_key}") from None
 
     def list_objects(self, prefix: str) -> list[dict[str, Any]]:
         """List objects in S3 with given prefix."""
@@ -460,7 +460,7 @@ class CloudCheckpointManager:
         """Generate storage key for model."""
         return f"{model_type}/v{version}/checkpoint.pt.zst"
 
-    def save_checkpoint(
+    def save_checkpoint(  # noqa: PLR0913
         self,
         model: torch.nn.Module,
         model_type: str,
@@ -521,7 +521,7 @@ class CloudCheckpointManager:
         finally:
             temp_path.unlink()  # Delete temp file
 
-    def load_checkpoint(
+    def load_checkpoint(  # noqa: PLR0913
         self,
         model: torch.nn.Module,
         model_type: str,

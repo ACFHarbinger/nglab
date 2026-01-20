@@ -350,7 +350,7 @@ class ModelRegistry:
         return deleted
 
 
-def create_metadata_from_config(
+def create_metadata_from_config(  # noqa: PLR0913
     model_type: str,
     config: dict[str, Any],
     metrics: dict[str, float],

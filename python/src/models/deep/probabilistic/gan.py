@@ -13,7 +13,7 @@ class TimeGANGenerator(nn.Module):
     Takes history X_{1:t} and generates X_{t+1:t+k}.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self, input_dim, output_dim, seq_len, pred_len, hidden_dim=64, n_layers=2
     ):
         """
@@ -92,7 +92,7 @@ class TimeGANDiscriminator(nn.Module):
     Architecture: Bidirectional LSTM.
     """
 
-    def __init__(self, input_dim, hidden_dim=64, n_layers=2):
+    def __init__(self, input_dim, hidden_dim=64, n_layers=2):  # noqa: PLR0913
         """
         Args:
             input_dim (int): Feature dimension.

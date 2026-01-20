@@ -34,7 +34,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
         **kwargs: Additional args.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         cs=None,
         f=None,

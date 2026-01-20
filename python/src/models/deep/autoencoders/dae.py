@@ -16,7 +16,7 @@ class DenoisingAE(AutoEncoder):
     Adds Gaussian noise during training.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim,
         hidden_dims,

@@ -12,7 +12,7 @@ class RBF(nn.Module):
     Typically consist of an input layer, a hidden layer of RBF neurons, and a linear output layer.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self, input_dim, num_centers, output_dim, sigma=1.0, output_type="prediction"
     ):
         """

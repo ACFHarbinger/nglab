@@ -12,7 +12,7 @@ class Perceptron(nn.Module):
     The simplest neural network with configurable activation functions.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self, input_dim, output_dim, activation="sigmoid", output_type="prediction"
     ):
         """Initialize Perceptron."""

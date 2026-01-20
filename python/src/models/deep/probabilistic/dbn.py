@@ -13,7 +13,7 @@ class DeepBeliefNetwork(nn.Module):
     Greedy layer-wise pretraining; forward/backward passes for encoding/decoding.
     """
 
-    def __init__(self, layer_sizes, output_type="prediction"):
+    def __init__(self, layer_sizes, output_type="prediction"):  # noqa: PLR0913
         """
         Args:
             layer_sizes: [input_dim, h1, h2, ..., latent_dim]

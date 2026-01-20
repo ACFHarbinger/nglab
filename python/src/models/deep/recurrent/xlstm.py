@@ -12,7 +12,7 @@ class xLSTM(nn.Module):
     xLSTM Model (stacked sLSTM/mLSTM blocks) for Time Series or Sequence tasks.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim,
         hidden_dim,

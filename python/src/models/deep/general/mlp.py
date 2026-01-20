@@ -11,7 +11,7 @@ class MLP(nn.Module):
     Supports a configurable number of hidden layers and activation functions.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim,
         hidden_dims,

@@ -11,7 +11,7 @@ class sLSTMCell(nn.Module):
     Scalar LSTM (sLSTM) Cell with exponential gating and normalization.
     """
 
-    def __init__(self, input_dim, hidden_dim):
+    def __init__(self, input_dim, hidden_dim):  # noqa: PLR0913
         """Initialize sLSTM Cell."""
         super().__init__()
         self.input_dim = input_dim
@@ -100,7 +100,7 @@ class mLSTMCell(nn.Module):
     Equivalent to linear attention with a recurrence.
     """
 
-    def __init__(self, input_dim, hidden_dim, num_heads=4):
+    def __init__(self, input_dim, hidden_dim, num_heads=4):  # noqa: PLR0913
         """Initialize mLSTM Cell."""
         super().__init__()
         self.input_dim = input_dim
@@ -235,7 +235,7 @@ class xLSTMBlock(nn.Module):
     xLSTM Block layer (wrapping sLSTMCell or mLSTMCell).
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim,
         hidden_dim,

@@ -262,7 +262,7 @@ def mae_loss_fn(m: Any, x_batch: torch.Tensor, target: torch.Tensor) -> float:
     return float(loss.item())
 
 
-def plot_loss_landscape(
+def plot_loss_landscape(  # noqa: PLR0913
     model: nn.Module,
     opts: dict[str, Any],
     output_dir: str,

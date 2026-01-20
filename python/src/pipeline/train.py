@@ -80,7 +80,7 @@ def clip_grad_norms(
     return grad_norms, grad_norms_clipped
 
 
-def train_epoch(
+def train_epoch(  # noqa: PLR0913
     model: torch.nn.Module,
     optimizer: torch.optim.Optimizer,
     baseline: Any,
@@ -142,7 +142,7 @@ def train_epoch(
     lr_scheduler.step()
 
 
-def train_batch(
+def train_batch(  # noqa: PLR0913
     model: torch.nn.Module,
     optimizer: torch.optim.Optimizer,
     baseline: Any,

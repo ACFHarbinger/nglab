@@ -6,7 +6,7 @@ for dimensionality reduction and feature extraction from financial data.
 """
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 
 from .base import BaseModule
 

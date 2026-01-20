@@ -15,7 +15,7 @@ import torch
 import wandb
 
 
-def log_timeseries_values(
+def log_timeseries_values(  # noqa: PLR0913
     loss: float,
     grad_norms: tuple[list[float], list[float]],
     epoch: int,

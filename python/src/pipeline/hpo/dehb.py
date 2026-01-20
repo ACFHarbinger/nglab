@@ -78,7 +78,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
     execution.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         cs=None,
         f=None,
@@ -1097,7 +1097,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             self.save()
 
     @logger.catch
-    def run(
+    def run(  # noqa: PLR0915
         self,
         fevals=None,
         brackets=None,
@@ -1292,7 +1292,7 @@ class DEHB(DifferentialEvolutionHyperbandBase):
         **kwargs: Additional arguments.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         cs,
         f,
@@ -1322,8 +1322,8 @@ class DEHB(DifferentialEvolutionHyperbandBase):
         kwargs["output_path"] = output_path
         try:
             os.makedirs(output_path, exist_ok=True)
-        except Exception as e:  # noqa: B904
-            self.logger.error(
+        except Exception as e:
+            raise RuntimeError(
                 "directories to save output files do not exist and could not be created"
             ) from e
 
@@ -1333,8 +1333,8 @@ class DEHB(DifferentialEvolutionHyperbandBase):
 
         # Initialize the base DEHB class
         super().__init__(
-            cs=config_space,
-            f=objective_function,
+            cs=cs,
+            f=f,
             dimensions=dimensions,
             mutation_factor=mutation_factor,
             crossover_prob=crossover_prob,
@@ -1412,8 +1412,8 @@ class DEHB(DifferentialEvolutionHyperbandBase):
         try:
             with open(os.path.join(self.output_path, "dehb_state.pkl"), "wb") as f:
                 pickle.dump(d, f)
-        except Exception as e:  # noqa: B904
-            logging.warning(f"Checkpointing failed: {e!r}") from e
+        except Exception as e:
+            logging.warning(f"Checkpointing failed: {e!r}")
 
         if self.wandb_project:
             stats = {
@@ -1486,7 +1486,7 @@ class DEHB(DifferentialEvolutionHyperbandBase):
             return True
         return False
 
-    def run(  # noqa: PLR0913, PLR0915
+    def run(  # noqa: PLR0913  # noqa: PLR0915
         self,
         fevals=None,
         brackets=None,

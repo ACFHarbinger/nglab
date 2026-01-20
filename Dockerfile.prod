@@ -7,66 +7,47 @@ ARG PYTHON_VERSION=3.11
 ARG RUST_VERSION=1.83
 
 # =============================================================================
-# Stage 1: Rust Builder (Optional/Used for pure Rust artifacts)
+# Stage 1: Build Stage (Combined Rust & Python Build)
 # =============================================================================
-FROM rust:${RUST_VERSION}-slim-bookworm AS rust-builder
-
-WORKDIR /build
-
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    pkg-config \
-    libssl-dev \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy Rust source
-COPY rust/ ./rust/
-WORKDIR /build/rust
-
-# Build release with optimizations
-ENV CARGO_INCREMENTAL=0
-ENV RUSTFLAGS="-C target-cpu=native -C opt-level=3"
-RUN cargo build --release
-
-# =============================================================================
-# Stage 2: Python Builder (Where compilation actually happens)
-# =============================================================================
-FROM python:${PYTHON_VERSION}-slim-bookworm AS python-builder
+FROM python:${PYTHON_VERSION}-slim-bookworm AS builder
 
 WORKDIR /app
 
-# IMPORTANT: You must install pkg-config and libssl-dev HERE.
-# Maturin needs these to compile the Rust extension into a Python wheel.
+# 1. Install system build dependencies
+# We include Rust toolchain here to avoid Maturin downloading it again (saves time/space)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     pkg-config \
     libssl-dev \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv for fast dependency resolution
+ENV PATH="/root/.cargo/bin:${PATH}"
+ENV CARGO_INCREMENTAL=0
+ENV RUSTFLAGS="-C target-cpu=native -C opt-level=3"
+
+# 2. Install uv for fast dependency resolution
 RUN pip install uv
 
-# 1. Copy project metadata and lockfiles FIRST (for caching)
+# 3. Copy project metadata and source code
 COPY pyproject.toml uv.lock README.md ./
-
-# 2. Copy the Rust source (required by maturin to build bindings)
 COPY rust/ ./rust/
-
-# 3. Copy the Python package source 
 COPY nglab/ ./nglab/
 
-# 4. Install production dependencies globally
-# This command triggers the Rust compilation, which now has access to pkg-config/libssl
-RUN uv pip install --system --no-cache .
+# 4. Install dependencies and build the package
+# OPTIMIZATION: We use the CPU-only index for PyTorch to avoid 3GB+ of CUDA bloat.
+# This is for the standard production image; use Dockerfile.gpu for GPU support.
+RUN uv pip install --system --no-cache \
+    --index-url https://download.pytorch.org/whl/cpu \
+    --extra-index-url https://pypi.org/simple \
+    .
 
 # =============================================================================
-# Stage 3: Final Runtime
+# Stage 2: Final Runtime
 # =============================================================================
 FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
 
-# Re-declare ARG to make it available in this stage
 ARG NGLAB_VERSION=0.1.0
 ENV VERSION=${NGLAB_VERSION}
 
@@ -75,22 +56,25 @@ LABEL org.opencontainers.image.description="Nothing Gambles Like A Bot (NGLAB) P
 
 # Create non-privileged user
 RUN groupadd --gid 1000 nglab && \
-    useradd --uid 1000 --gid 1000 --shell /bin/bash --create-home nglab
+    useradd --uid 1000 --gid nglab --shell /bin/bash --create-home nglab
 
 WORKDIR /app
 
-# In runtime, we ONLY need the library, not the headers (-dev)
+# 5. Install ONLY runtime dependencies (no build-essential, no -dev headers)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl3 \
+    libgomp1 \
     curl \
     tini \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Copy Python packages from builder
-COPY --from=python-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY --from=python-builder /usr/local/bin /usr/local/bin
+# 6. Copy Python packages from builder
+# site-packages is now much smaller without the CUDA binaries
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy application code
+# 7. Copy application code and configuration
 COPY --chown=nglab:nglab python/src ./src
 COPY --chown=nglab:nglab python/conf ./conf
 
@@ -103,8 +87,6 @@ ENV PYTHONPATH=/app/src
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV NGLAB_ENV=production
-
-# Prometheus multiprocess mode
 ENV PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus
 
 # Health check

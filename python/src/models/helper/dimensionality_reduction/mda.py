@@ -11,7 +11,7 @@ class MDAAlgorithm:
         self.priors_ = None
         self.le = LabelEncoder()
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         y = self.le.fit_transform(y)
         self.classes_ = self.le.classes_
         n_classes = len(self.classes_)
@@ -33,7 +33,7 @@ class MDAAlgorithm:
 
         return self
 
-    def transform(self, X):
+    def transform(self, X):  # noqa: N803
         # Return posterior probs per class as new features
         n_samples = X.shape[0]
         n_classes = len(self.classes_)
@@ -53,6 +53,6 @@ class MDAAlgorithm:
 
         return probs
 
-    def fit_transform(self, X, y):
+    def fit_transform(self, X, y):  # noqa: N803
         self.fit(X, y)
         return self.transform(X)

@@ -296,7 +296,7 @@ class _IteratorWrapper:
         return self._length
 
 
-def create_optimized_dataloader(
+def create_optimized_dataloader(  # noqa: PLR0913
     dataset: Dataset,
     batch_size: int = 32,
     num_workers: int | None = None,
@@ -346,7 +346,7 @@ def create_optimized_dataloader(
         device=device if use_cuda else None,
         drop_last=drop_last,
         persistent_workers=num_workers > 0,
-        prefetch_factor=2 if num_workers > 0 else 2,
+        prefetch_factor=2,
         **kwargs,
     )
 

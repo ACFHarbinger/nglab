@@ -39,7 +39,7 @@ class GCSStorage(ModelStorage):
                 raise ImportError(
                     "google-cloud-storage is required for GCS storage. "
                     "Install it with: pip install google-cloud-storage"
-                )
+                ) from None
         return self._client
 
     @property

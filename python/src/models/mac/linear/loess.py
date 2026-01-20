@@ -20,7 +20,7 @@ class LOESSModel(ClassicalModel):
         self.it = it
         self.kwargs = kwargs
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         if lowess is None:
             raise ImportError("statsmodels is required for LOESSModel")
 
@@ -37,7 +37,7 @@ class LOESSModel(ClassicalModel):
         self.y_train = y
         self._is_fitted = True
 
-    def predict(self, X):
+    def predict(self, X):  # noqa: N803
         if not self._is_fitted:
             return np.zeros((X.shape[0], 1))
 

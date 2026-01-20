@@ -79,10 +79,10 @@ class TestGPUFeatureEngineer:
 
         # With variance
         data_var = torch.tensor([10.0, 12.0, 10.0, 8.0, 10.0] * 5)
-        u, m, l = engineer.bollinger_bands(data_var, window=5)
+        u, m, l_band = engineer.bollinger_bands(data_var, window=5)
 
         assert u[-1] > m[-1]
-        assert l[-1] < m[-1]
+        assert l_band[-1] < m[-1]
 
     @pytest.mark.gpu
     def test_gpu_execution(self):

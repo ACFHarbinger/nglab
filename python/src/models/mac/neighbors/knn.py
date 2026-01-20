@@ -5,7 +5,7 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from ..base import ClassicalModel
 
 
-class kNNModel(ClassicalModel):
+class kNNModel(ClassicalModel):  # noqa: N801
     """
     k-Nearest Neighbors wrapper for classification or regression.
     """

@@ -47,7 +47,7 @@ class VAELightningModule(LightningModule):
         decoder_kwargs: Additional kwargs for decoder
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim: int,
         latent_dim: int,

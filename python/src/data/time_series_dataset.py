@@ -25,7 +25,7 @@ class TimeSeriesDataset(Dataset):
         normalize: Normalization method ('minmax', 'zscore', or None).
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         csv_path: str,
         target_column: str,

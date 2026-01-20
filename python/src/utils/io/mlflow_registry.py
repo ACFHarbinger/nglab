@@ -23,7 +23,7 @@ class ModelRegistry:
         except Exception as e:
             logger.error(f"Failed to initialize MLflow: {e}")
 
-    def log_model(
+    def log_model(  # noqa: PLR0913
         self,
         model: Any,
         artifact_path: str,

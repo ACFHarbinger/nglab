@@ -9,7 +9,7 @@ class StaticHyperConnection(nn.Module):
     Hyper-connection with static width/depth expansion.
     """
 
-    def __init__(self, module: nn.Module, hyper_dim: int, expansion_rate: int = 4):
+    def __init__(self, module: nn.Module, hyper_dim: int, expansion_rate: int = 4):  # noqa: PLR0913
         """
         Initializes the static hyper-connection.
 
@@ -60,7 +60,7 @@ class DynamicHyperConnection(nn.Module):
     Uses 'streams' (n) concepts to mix information.
     """
 
-    def __init__(self, module, embed_dim, n=4):
+    def __init__(self, module, embed_dim, n=4):  # noqa: PLR0913
         """
         Initializes the dynamic hyper-connection.
 

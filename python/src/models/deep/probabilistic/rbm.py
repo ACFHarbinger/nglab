@@ -3,7 +3,7 @@ Restricted Boltzmann Machine (RBM).
 """
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
 
@@ -12,7 +12,7 @@ class RBM(nn.Module):
     Restricted Boltzmann Machine (RBM).
     """
 
-    def __init__(self, visible_dim, hidden_dim, output_type="embedding"):
+    def __init__(self, visible_dim, hidden_dim, output_type="embedding"):  # noqa: PLR0913
         """Initialize RBM."""
         super().__init__()
         self.visible_dim = visible_dim

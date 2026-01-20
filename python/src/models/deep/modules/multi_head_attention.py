@@ -14,7 +14,7 @@ class MultiHeadAttention(nn.Module):
     at different positions. Implements scaled dot-product attention.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         n_heads: int,
         input_dim: int,

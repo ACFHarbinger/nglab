@@ -13,7 +13,7 @@ class BoltzmannMachine(nn.Module):
     Full connectivity between all units.
     """
 
-    def __init__(self, num_units, output_type="prediction"):
+    def __init__(self, num_units, output_type="prediction"):  # noqa: PLR0913
         """Initialize Boltzmann Machine."""
         super().__init__()
         self.num_units = num_units

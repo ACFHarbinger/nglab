@@ -29,7 +29,7 @@ class StreamingFinancialDataset(IterableDataset):
     - Preprocessing hooks
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         filepath: str | Path,
         chunk_size: int = 10000,

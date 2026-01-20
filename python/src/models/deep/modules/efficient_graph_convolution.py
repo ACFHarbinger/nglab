@@ -25,7 +25,7 @@ class EfficientGraphConvolution(MessagePassing):
     _cached_edge_index: tuple[Tensor, OptTensor] | None
     _cached_adj_t: SparseTensor | None
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         in_channels: int,
         out_channels: int,

@@ -37,7 +37,7 @@ class ProbMask:
     Probabilistic mask for Informer-style attention.
     """
 
-    def __init__(self, B, H, L, index, scores, device="cpu"):  # noqa: N803
+    def __init__(self, B, H, L, index, scores, device="cpu"):  # noqa: N803, PLR0913
         """
         Initialize the mask.
         """

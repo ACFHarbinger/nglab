@@ -3,7 +3,7 @@ Diffusion Lightning Module for Time Series Forecasting (DDPM).
 """
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
 from .base import BaseModule

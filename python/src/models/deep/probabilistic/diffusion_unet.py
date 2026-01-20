@@ -5,7 +5,7 @@
 import math
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
 
@@ -14,7 +14,7 @@ class SinusoidalPositionEmbeddings(nn.Module):
     Sinusoidal embeddings for time steps t.
     """
 
-    def __init__(self, dim):
+    def __init__(self, dim):  # noqa: PLR0913
         """Initialize Sinusoidal Embeddings."""
         super().__init__()
         self.dim = dim
@@ -35,7 +35,7 @@ class ResidualBlock1D(nn.Module):
     1D Residual Block with optional time embedding injection and group norm.
     """
 
-    def __init__(self, in_channels, out_channels, time_emb_dim=None, n_groups=8):
+    def __init__(self, in_channels, out_channels, time_emb_dim=None, n_groups=8):  # noqa: PLR0913
         """Initialize Residual Block."""
         super().__init__()
         self.norm1 = nn.GroupNorm(n_groups, in_channels)
@@ -75,7 +75,7 @@ class DiffusionUNet1D(nn.Module):
         cond: (Batch, Seq_Len, Features) Condition (e.g., historical window)
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self, input_dim, output_dim, hidden_dim=64, layers=None, time_emb_dim=128
     ):
         """Initialize Diffusion UNet."""

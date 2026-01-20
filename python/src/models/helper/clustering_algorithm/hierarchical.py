@@ -5,14 +5,14 @@ class HierarchicalClusteringAlgorithm:
     def __init__(self, n_clusters=2, **kwargs):
         self.model = AgglomerativeClustering(n_clusters=n_clusters, **kwargs)
 
-    def fit(self, X):
+    def fit(self, X):  # noqa: N803
         self.model.fit(X)
         return self
 
-    def fit_predict(self, X):
+    def fit_predict(self, X):  # noqa: N803
         return self.model.fit_predict(X)
 
-    def predict(self, X):
+    def predict(self, X):  # noqa: N803
         # AgglomerativeClustering does not have a predict method for new data
         # but we can return fit_predict results if fit on the same X.
         if hasattr(self.model, "labels_"):

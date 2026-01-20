@@ -19,8 +19,7 @@ def update_lock_wait_time(num_cpu_cores=None):
     Returns:
         The new (or default) value of LOCK_TIMEOUT.
     """
-    global LOCK_TIMEOUT
-    global CORE_LOCK_WAIT_TIME
+    global LOCK_TIMEOUT  # noqa: PLW0603
     if num_cpu_cores is None:
         LOCK_TIMEOUT = CORE_LOCK_WAIT_TIME
     else:

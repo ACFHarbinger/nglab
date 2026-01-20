@@ -22,19 +22,19 @@ class LDAAlgorithm:
         """
         self.model = LinearDiscriminantAnalysis(n_components=n_components, **kwargs)
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         """Fit the LDA model."""
         self.model.fit(X, y)
         return self
 
-    def transform(self, X):
+    def transform(self, X):  # noqa: N803
         """Project data to maximize class separation."""
         return self.model.transform(X)
 
-    def fit_transform(self, X, y):
+    def fit_transform(self, X, y):  # noqa: N803
         """Fit to data, then transform it."""
         return self.model.fit_transform(X, y)
 
-    def predict(self, X):
+    def predict(self, X):  # noqa: N803
         """Predict class labels."""
         return self.model.predict(X)

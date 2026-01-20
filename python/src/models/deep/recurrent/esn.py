@@ -11,7 +11,7 @@ class EchoStateNetwork(nn.Module):
     Echo State Network (ESN).
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim,
         reservoir_dim,

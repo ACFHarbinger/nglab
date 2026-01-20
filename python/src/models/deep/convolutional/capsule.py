@@ -11,7 +11,7 @@ class CapsuleLayer(nn.Module):
     Simplified Capsule Layer (CN).
     """
 
-    def __init__(self, in_caps, in_dim, out_caps, out_dim, output_type="embedding"):
+    def __init__(self, in_caps, in_dim, out_caps, out_dim, output_type="embedding"):  # noqa: PLR0913
         """
         Initialize Capsule Layer.
         """

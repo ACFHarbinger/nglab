@@ -76,7 +76,7 @@ class ClassicalModel(nn.Module, ABC):
 
         return out
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         """Fit the underlying model."""
         if isinstance(X, torch.Tensor):
             X = X.detach().cpu().numpy()

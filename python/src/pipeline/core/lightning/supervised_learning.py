@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from torch.utils.data import DataLoader
 
 from .base import BaseModule
@@ -98,7 +98,7 @@ class ProgressCallback:
         print(json.dumps(progress), flush=True)
 
 
-def train_from_csv(
+def train_from_csv(  # noqa: PLR0913, PLR0915
     csv_path: str,
     target_column: str,
     model_name: str,

@@ -10,7 +10,7 @@ class Normalization(nn.Module):
     Wrapper for various Normalization layers (Batch, Layer, Instance).
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         embed_dim: int,
         norm_name: str = "batch",

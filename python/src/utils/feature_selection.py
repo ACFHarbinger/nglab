@@ -19,7 +19,7 @@ class TimeSeriesFeatureSelector:
 
     @staticmethod
     def compute_mutual_info(
-        X: pd.DataFrame, y: pd.Series, discrete_features: bool | list[int] = False
+        X: pd.DataFrame, y: pd.Series, discrete_features: bool | list[int] = False  # noqa: N803
     ) -> pd.Series:
         """
         Compute Mutual Information between features and target.
@@ -36,9 +36,9 @@ class TimeSeriesFeatureSelector:
         return mi_series.sort_values(ascending=False)
 
     @staticmethod
-    def run_rfecv(
+    def run_rfecv(  # noqa: PLR0913
         estimator: BaseEstimator,
-        X: pd.DataFrame,
+        X: pd.DataFrame,  # noqa: N803
         y: pd.Series,
         step: int = 1,
         cv: int = 5,

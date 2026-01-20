@@ -5,7 +5,7 @@ Neural Turing Machine (NTM) - Neural network with addressable memory
 from typing import Literal
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
 
@@ -20,7 +20,7 @@ class NTMMemory(nn.Module):
         memory_dim: Dimension of each memory slot (M)
     """
 
-    def __init__(self, memory_size: int, memory_dim: int):
+    def __init__(self, memory_size: int, memory_dim: int):  # noqa: PLR0913
         """Initialize NTM Memory."""
         super().__init__()
         self.memory_size = memory_size
@@ -136,7 +136,7 @@ class NTMReadHead(nn.Module):
         shift_range: Range of allowed shifts (typically 3 for [-1, 0, +1])
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         memory_size: int,
         memory_dim: int,
@@ -207,7 +207,7 @@ class NTMWriteHead(nn.Module):
         shift_range: Range of allowed shifts
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         memory_size: int,
         memory_dim: int,
@@ -300,7 +300,7 @@ class NTM(nn.Module):
         output_type: 'prediction' returns output, 'embedding' returns controller state
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim: int,
         hidden_dim: int = 128,

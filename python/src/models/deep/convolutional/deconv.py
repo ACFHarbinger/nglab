@@ -14,7 +14,7 @@ class DeconvNet(nn.Module):
     Used for generation and reconstruction tasks.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim,
         hidden_channels=None,
@@ -69,7 +69,7 @@ class AutoDeconvNet(nn.Module):
     AutoDeconvNet - Uses DeconvNet for autoencoder architecture.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim,
         latent_dim=64,

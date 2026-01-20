@@ -11,7 +11,7 @@ class HopfieldNetwork(nn.Module):
     Discrete Hopfield Network.
     """
 
-    def __init__(self, size, output_type="embedding"):
+    def __init__(self, size, output_type="embedding"):  # noqa: PLR0913
         """Initialize Hopfield Network."""
         super().__init__()
         self.size = size

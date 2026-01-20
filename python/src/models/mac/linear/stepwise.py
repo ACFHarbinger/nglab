@@ -27,7 +27,7 @@ class StepwiseRegressionModel(ClassicalModel):
         )
         self.selected_features_ = None
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         super().fit(X, y)
         if isinstance(X, torch.Tensor):
             X = X.detach().cpu().numpy()
@@ -37,6 +37,8 @@ class StepwiseRegressionModel(ClassicalModel):
         if X.ndim == 3:
             X = X.reshape(X.shape[0] * X.shape[1], -1)
             y = y.reshape(y.shape[0] * y.shape[1], -1)
+        
+        self.model.fit(X, y)
 
         self.selected_features_ = self.model.get_support()
         self.final_model = LinearRegression()
@@ -59,7 +61,7 @@ class StepwiseRegressionModel(ClassicalModel):
 
         return torch.from_numpy(out_np).to(device).to(torch.float32)
 
-    def predict(self, X):
+    def predict(self, X):  # noqa: N803
         if not self._is_fitted:
             return np.zeros((X.shape[0], 1))
         return self.final_model.predict(X[:, self.selected_features_])

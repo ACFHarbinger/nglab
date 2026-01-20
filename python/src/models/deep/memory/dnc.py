@@ -5,7 +5,7 @@ Differentiable Neural Computer (DNC) - Neural network with external memory
 from typing import Literal
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
 
@@ -21,7 +21,7 @@ class DNCMemory(nn.Module):
         memory_dim: Dimension of each memory slot (W)
     """
 
-    def __init__(self, memory_size: int, memory_dim: int):
+    def __init__(self, memory_size: int, memory_dim: int):  # noqa: PLR0913
         """Initialize DNC Memory."""
         super().__init__()
         self.memory_size = memory_size
@@ -116,7 +116,7 @@ class DNC(nn.Module):
         output_type: 'prediction' returns output, 'embedding' returns controller state
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         input_dim: int,
         hidden_dim: int = 128,

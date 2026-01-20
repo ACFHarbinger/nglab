@@ -101,7 +101,7 @@ MAC_MODEL_NAMES = [
 ]
 
 
-def create_mac_model(model_name: str, cfg: dict):
+def create_mac_model(model_name: str, cfg: dict):  # noqa: PLR0911
     """
     Factory function to create classical machine learning models.
 

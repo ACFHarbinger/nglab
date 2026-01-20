@@ -2,6 +2,8 @@
 Factory for Classical and Supplemental ML Models.
 """
 
+from typing import ClassVar
+
 from .helper.association_rule import (
     AprioriModel,
     EclatModel,
@@ -37,7 +39,7 @@ class HelperModelFactory:
     Supports Clustering, Dimensionality Reduction, and Association Rule Learning.
     """
 
-    _MODELS = {
+    _MODELS: ClassVar[dict[str, type]] = {
         # Clustering
         "kmeans": KMeansModel,
         "hierarchical": HierarchicalClusteringModel,

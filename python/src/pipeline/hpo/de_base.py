@@ -8,8 +8,8 @@ and boundary handling.
 
 from pathlib import Path
 
-import ConfigSpace as CS
-import ConfigSpace.util as CSU
+import ConfigSpace as CS  # noqa: N817
+import ConfigSpace.util as CSU  # noqa: N812
 import numpy as np
 from numpy.typing import NDArray
 
@@ -38,7 +38,7 @@ class DifferentialEvolutionBase:
         **kwargs: Additional keyword arguments.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         cs=None,
         f=None,

@@ -5,7 +5,7 @@ Mamba Block implementation for state-space model layers.
 import math
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
 
@@ -15,7 +15,7 @@ class MambaBlock(nn.Module):
     Ref: Section 4.3.1 of the provided text.
     """
 
-    def __init__(self, d_model, d_state=16, d_conv=4, expand=2):
+    def __init__(self, d_model, d_state=16, d_conv=4, expand=2):  # noqa: PLR0913
         """
         Initialize the Mamba block.
 

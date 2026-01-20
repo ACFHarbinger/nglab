@@ -21,7 +21,7 @@ class EncoderLayer(nn.Module):
     Encoder layer for Non-Stationary Transformer.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self, n_heads, embed_dim, hidden_dim, dropout_rate=0.1, normalization="layer"
     ):
         """
@@ -58,7 +58,7 @@ class Encoder(nn.Module):
     Encoder network consisting of multiple layers.
     """
 
-    def __init__(self, attn_layers, conv_layers=None, norm_layer=None):
+    def __init__(self, attn_layers, conv_layers=None, norm_layer=None):  # noqa: PLR0913
         """
         Initialize.
         """
@@ -97,7 +97,7 @@ class DecoderLayer(nn.Module):
     Decoder layer for Non-Stationary Transformer.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self, n_heads, embed_dim, hidden_dim, dropout_rate=0.1, normalization="layer"
     ):
         """
@@ -140,7 +140,7 @@ class Decoder(nn.Module):
     Decoder network consisting of multiple layers.
     """
 
-    def __init__(self, layers, norm_layer=None, projection=None):
+    def __init__(self, layers, norm_layer=None, projection=None):  # noqa: PLR0913
         """
         Initialize.
         """
@@ -173,7 +173,7 @@ class Projector(nn.Module):
     Paper link: https://openreview.net/pdf?id=ucNDIDRNjjv
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self, enc_in, seq_len, hidden_dims, hidden_layers, output_dim, kernel_size=3
     ):
         """
@@ -235,7 +235,7 @@ class NSTransformer(nn.Module):
     Non-stationary Transformer Model.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         pred_len,
         seq_len,

@@ -18,5 +18,5 @@ class PolynomialRegressionModel(ClassicalModel):
         )
         self._is_fitted = False
 
-    def fit(self, X, y):
+    def fit(self, X, y):  # noqa: N803
         super().fit(X, y)

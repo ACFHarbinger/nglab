@@ -110,7 +110,7 @@ class GPUBenchmark:
             info["cuda_version"] = torch.version.cuda or ""
         return info
 
-    def run_inference(
+    def run_inference(  # noqa: PLR0913
         self,
         input_shape: tuple,
         batch_sizes: list[int] | None = None,
@@ -160,7 +160,7 @@ class GPUBenchmark:
 
         return results
 
-    def _benchmark_inference(
+    def _benchmark_inference(  # noqa: PLR0913
         self,
         input_shape: tuple,
         batch_size: int,
@@ -256,7 +256,7 @@ class GPUBenchmark:
             **self._hardware_info,
         )
 
-    def run_training(
+    def run_training(  # noqa: PLR0913
         self,
         input_shape: tuple,
         target_shape: tuple,
@@ -314,7 +314,7 @@ class GPUBenchmark:
 
         return results
 
-    def _benchmark_training(
+    def _benchmark_training(  # noqa: PLR0913, PLR0915
         self,
         input_shape: tuple,
         target_shape: tuple,
@@ -499,7 +499,7 @@ def run_inference_benchmark(
     return benchmark.run_inference(input_shape, batch_sizes=batch_sizes, **kwargs)
 
 
-def run_training_benchmark(
+def run_training_benchmark(  # noqa: PLR0913
     model: nn.Module,
     input_shape: tuple,
     target_shape: tuple,
