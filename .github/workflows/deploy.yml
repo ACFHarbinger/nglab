@@ -40,7 +40,7 @@ jobs:
 
       # ADDED: Ensure uv is available for python-builder stage if Dockerfile uses it
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
