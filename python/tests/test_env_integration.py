@@ -7,7 +7,6 @@ consistency between implementations, and system stability.
 
 import numpy as np
 import pytest
-from gymnasium import spaces
 
 
 class TestEnvironmentIntegration:

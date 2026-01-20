@@ -28,7 +28,7 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.trace.sampling import ParentBased, TraceIdRatioBased
-from pydantic import BaseModel, Field, ConfigDict, validator
+from pydantic import BaseModel, ConfigDict, Field, validator
 
 from python.src.utils import definitions
 from python.src.utils.functions.functions import load_model

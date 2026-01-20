@@ -72,6 +72,13 @@ export default function PredictionTab() {
   const [hwGamma] = useState(0.1);
   const [hwSeasonality] = useState(7);
 
+  // Prophet Parameters
+  const [prophetGrowth, setProphetGrowth] = useState<"linear" | "logistic">("linear");
+  const [seasonalityMode, setSeasonalityMode] = useState<"additive" | "multiplicative">("additive");
+  const [yearlySeasonality, setYearlySeasonality] = useState(true);
+  const [weeklySeasonality, setWeeklySeasonality] = useState(true);
+  const [dailySeasonality, setDailySeasonality] = useState(false);
+
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -294,15 +301,17 @@ export default function PredictionTab() {
           const params = {
             times: rawData.map((r) => Number(r._ts) / 1000), // Convert to seconds
             values: dataValues,
-            growth: "linear",
-            seasonality_mode: "additive",
-            yearly_seasonality: true,
-            weekly_seasonality: true,
-            daily_seasonality: false,
-            seasonality_prior_scale: 10.0,
+            growth: prophetGrowth,
+            seasonality_mode: seasonalityMode,
+            yearly_seasonality: yearlySeasonality,
+            weekly_seasonality: weeklySeasonality,
+            daily_seasonality: dailySeasonality,
             changepoint_prior_scale: 0.05,
-            forecast_horizon: steps,
+            seasonality_prior_scale: 10.0,
+            holidays_prior_scale: 10.0,
+            steps,
           };
+
           ProphetParamsSchema.parse(params);
           const res = await invoke<ProphetResult>("run_prophet", { params });
           result = res.values;
@@ -476,6 +485,62 @@ export default function PredictionTab() {
                       onChange={(e) => setArimaQ(parseInt(e.target.value))}
                       className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-sm"
                     />
+                  </div>
+                </div>
+              )}
+
+              {activeModel === "prophet" && (
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-slate-500 uppercase">Growth</label>
+                    <select
+                      value={prophetGrowth}
+                      onChange={(e) => setProphetGrowth(e.target.value as "linear" | "logistic")}
+                      className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-sm"
+                    >
+                      <option value="linear">Linear</option>
+                      <option value="logistic">Logistic</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-slate-500 uppercase">Seasonality Mode</label>
+                    <select
+                      value={seasonalityMode}
+                      onChange={(e) => setSeasonalityMode(e.target.value as "additive" | "multiplicative")}
+                      className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-sm"
+                    >
+                      <option value="additive">Additive</option>
+                      <option value="multiplicative">Multiplicative</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-2 pt-2">
+                    <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={yearlySeasonality}
+                        onChange={(e) => setYearlySeasonality(e.target.checked)}
+                        className="rounded bg-slate-950 border-slate-800 text-blue-600 focus:ring-blue-500"
+                      />
+                      Yearly Seasonality
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={weeklySeasonality}
+                        onChange={(e) => setWeeklySeasonality(e.target.checked)}
+                        className="rounded bg-slate-950 border-slate-800 text-blue-600 focus:ring-blue-500"
+                      />
+                      Weekly Seasonality
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={dailySeasonality}
+                        onChange={(e) => setDailySeasonality(e.target.checked)}
+                        className="rounded bg-slate-950 border-slate-800 text-blue-600 focus:ring-blue-500"
+                      />
+                      Daily Seasonality
+                    </label>
                   </div>
                 </div>
               )}

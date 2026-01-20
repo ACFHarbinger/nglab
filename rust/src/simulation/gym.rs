@@ -507,7 +507,7 @@ impl TradingEnv {
                 let price = self.prices[idx];
                 let prev_price = if idx > 0 { self.prices[idx - 1] } else { price };
                 let returns = if prev_price > 0.0 {
-                    (price - prev_price) / prev_price
+                    safe_div(price - prev_price, prev_price, 0.0)
                 } else {
                     0.0
                 };
@@ -595,7 +595,7 @@ impl TradingEnv {
 
         let current_value = self.portfolio_value();
         let drawdown = if max_value > 0.0 {
-            (max_value - current_value) / max_value
+            safe_div(max_value - current_value, max_value, 0.0)
         } else {
             0.0
         };
@@ -616,13 +616,16 @@ impl TradingEnv {
             return 0.0;
         }
 
-        let mean: f64 = recent.iter().sum::<f64>() / recent.len() as f64;
-        let variance: f64 =
-            recent.iter().map(|r| (r - mean).powi(2)).sum::<f64>() / (recent.len() - 1) as f64;
+        let mean: f64 = safe_div(recent.iter().sum::<f64>(), recent.len() as f64, 0.0);
+        let variance: f64 = safe_div(
+            recent.iter().map(|r| (r - mean).powi(2)).sum::<f64>(),
+            (recent.len() - 1) as f64,
+            0.0,
+        );
         let std = variance.sqrt();
 
         if std > 0.0 {
-            mean / std * (252.0_f64).sqrt() // Annualized
+            safe_div(mean, std, 0.0) * (252.0_f64).sqrt() // Annualized
         } else {
             0.0
         }

@@ -5,7 +5,6 @@ Comprehensive tests for PolymarketEnv.
 import numpy as np
 import pytest
 from gymnasium import spaces
-from numpy.typing import NDArray
 
 
 class TestPolymarketEnvInitialization:

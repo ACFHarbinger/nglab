@@ -22,7 +22,7 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 
-use crate::errors::{ArenaError, ArenaResult};
+use crate::errors::ArenaResult;
 use crate::validation::{validate_price, validate_quantity};
 
 /**

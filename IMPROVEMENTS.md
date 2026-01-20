@@ -35,9 +35,9 @@ NGLab has successfully completed 6 phases of development, resulting in a product
 
 ```
 Tasks:
-□ Replace unwrap() calls in time series models (arima.rs, prophet.rs, es.rs)
-  - Add proper Result<T, ArenaError> return types
-  - Create specific error variants for numerical failures
+x Replace unwrap() calls in time series models (arima.rs, prophet.rs, es.rs)
+  - [x] Add proper Result<T, ArenaError> return types
+  - [x] Create specific error variants for numerical failures
 □ Replace unwrap() calls in multi_asset.rs (11 instances)
   - Add validation for asset existence
   - Handle missing price data gracefully
@@ -57,13 +57,13 @@ Tasks:
 
 ```
 Tasks:
-□ Create validation module in rust/src/validation/
+x Create validation module in rust/src/validation/
   - Price validation (positive, reasonable bounds)
   - Quantity validation (non-negative, position limits)
   - Asset validation (known assets, valid symbols)
 □ Add validation decorators for Python API endpoints
 □ Implement request schema validation (Pydantic v2 strict mode)
-□ Add TypeScript runtime type checking (zod integration)
+x Add TypeScript runtime type checking (zod integration)
 □ Create validation error response format
 □ Document validation rules in API docs
 ```

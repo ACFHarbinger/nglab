@@ -1,12 +1,14 @@
-import pytest
 import json
 import sys
 from io import StringIO
 from unittest.mock import patch
 
+import pytest
+
 # Import the module to test
 # Since infer.py is a script, we import it as a module to access main
 from python.src import infer
+
 
 def test_inference_script_success(mock_model_artifact):
     """Test the inference script end-to-end with a valid model and input."""

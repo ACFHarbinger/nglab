@@ -124,7 +124,7 @@ impl RiskManager {
 
         // Calculate return
         if prev_value > 0.0 {
-            let ret = (portfolio_value - prev_value) / prev_value;
+            let ret = safe_div(portfolio_value - prev_value, prev_value, 0.0);
             self.returns_history.push_back(ret);
 
             // Maintain lookback window
@@ -151,14 +151,18 @@ impl RiskManager {
     fn calculate_metrics(&mut self) {
         // Drawdown
         self.status.current_drawdown = if self.peak_value > 0.0 {
-            (self.peak_value - self.current_value) / self.peak_value
+            safe_div(self.peak_value - self.current_value, self.peak_value, 0.0)
         } else {
             0.0
         };
 
         // Daily P&L
         self.status.daily_pnl = if self.daily_start_value > 0.0 {
-            (self.current_value - self.daily_start_value) / self.daily_start_value
+            safe_div(
+                self.current_value - self.daily_start_value,
+                self.daily_start_value,
+                0.0,
+            )
         } else {
             0.0
         };
@@ -271,14 +275,17 @@ impl RiskManager {
         }
 
         let returns: Vec<f64> = self.returns_history.iter().cloned().collect();
-        let mean = returns.iter().sum::<f64>() / returns.len() as f64;
-        let variance: f64 =
-            returns.iter().map(|r| (r - mean).powi(2)).sum::<f64>() / (returns.len() - 1) as f64;
+        let mean = safe_div(returns.iter().sum::<f64>(), returns.len() as f64, 0.0);
+        let variance: f64 = safe_div(
+            returns.iter().map(|r| (r - mean).powi(2)).sum::<f64>(),
+            (returns.len() - 1) as f64,
+            0.0,
+        );
         let std_dev = variance.sqrt();
 
         if std_dev > 0.0 {
             // Annualized Sharpe (assuming daily returns, 252 trading days)
-            (mean * 252.0_f64.sqrt()) / std_dev
+            safe_div(mean * 252.0_f64.sqrt(), std_dev, 0.0)
         } else {
             0.0
         }
@@ -291,7 +298,7 @@ impl RiskManager {
         }
 
         let returns: Vec<f64> = self.returns_history.iter().cloned().collect();
-        let mean = returns.iter().sum::<f64>() / returns.len() as f64;
+        let mean = safe_div(returns.iter().sum::<f64>(), returns.len() as f64, 0.0);
 
         // Downside deviation
         let negative_returns: Vec<f64> = returns.iter().filter(|&&r| r < 0.0).cloned().collect();
@@ -300,12 +307,15 @@ impl RiskManager {
             return f64::INFINITY;
         }
 
-        let downside_variance: f64 =
-            negative_returns.iter().map(|r| r.powi(2)).sum::<f64>() / negative_returns.len() as f64;
+        let downside_variance: f64 = safe_div(
+            negative_returns.iter().map(|r| r.powi(2)).sum::<f64>(),
+            negative_returns.len() as f64,
+            0.0,
+        );
         let downside_std = downside_variance.sqrt();
 
         if downside_std > 0.0 {
-            (mean * 252.0_f64.sqrt()) / downside_std
+            safe_div(mean * 252.0_f64.sqrt(), downside_std, 0.0)
         } else {
             0.0
         }

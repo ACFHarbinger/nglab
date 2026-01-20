@@ -2,11 +2,25 @@
 
 All notable changes to the NGLab project will be documented in this file.
 
+
 ## [Unreleased] - 2026-01-20
 
 ### Added
 
-- **HPO & Inference Test Suite**:
+- **Forecasting Model Integration (Hardening)**:
+  - **Robust ARIMA**: Implemented Yule-Walker equation solving in Rust (`rust/src/moon/arima.rs`) for stable AR coefficient estimation.
+  - **Prophet Configuration**: Added UI controls in `PredictionTab.tsx` for Prophet growth (linear/logistic), seasonality mode, and component flags.
+  - **Numerical Stability**: Introduced `safe_div` and `SafeFloat` utilities (`rust/src/utils/math.rs`) to prevent NaN propagation in Gym, Risk, and GARCH modules.
+  - **Validation**: Implemented Zod schemas for all forecasting model parameters in the frontend.
+  - **Testing**: Added `test_fit_and_simulate` unit test for verifying end-to-end ARIMA fitting.
+
+### Fixed
+
+- **Inference Script Import**: Resolved module resolution errors in `python/src/infer.py` when running via subprocess from Rust.
+- **Rust Lints**: Cleaned up unused import and variable warnings in simulation modules.
+
+## [Unreleased] - 2026-01-20
+
   - Implemented comprehensive unit tests for **Differential Evolution (DE)** and HPO optimization wrappers in `python/tests/unit/test_hpo.py`.
   - Created end-to-end tests for the `infer.py` script in `python/tests/unit/test_infer.py`, verifying JSON prediction responses and error handling.
   - Developed `hpo_fixtures.py` and `model_fixtures.py` for automated mock model artifact generation with full `ModelMetadata`.

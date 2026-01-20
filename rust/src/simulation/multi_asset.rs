@@ -15,7 +15,7 @@ use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::errors::{ArenaError, ArenaResult};
+use crate::errors::ArenaResult;
 
 #[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]

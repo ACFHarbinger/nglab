@@ -98,7 +98,7 @@ pub fn fit_and_simulate(
 fn estimate_ar_yule_walker(data: &[f64], p: usize) -> ArenaResult<Vec<f64>> {
     let n = data.len();
     let mean = data.iter().sum::<f64>() / n as f64;
-    let mut centered: Vec<f64> = data.iter().map(|&x| x - mean).collect();
+    let centered: Vec<f64> = data.iter().map(|&x| x - mean).collect();
 
     // Autocovariances gamma(k)
     let mut gamma = vec![0.0; p + 1];
@@ -347,5 +347,34 @@ mod tests {
             "ARIMA simulation should be deterministic with fixed seed"
         );
         assert_eq!(result1.used_seed, Some(42));
+    }
+
+    #[test]
+    fn test_fit_and_simulate() {
+        use rand::SeedableRng;
+        use rand_distr::Distribution;
+
+        // Generate simple random walk data
+        let mut data = vec![100.0];
+        let mut rng = rand::rngs::StdRng::seed_from_u64(42);
+        for _ in 0..100 {
+            let noise: f64 = match StandardNormal.sample(&mut rng) {
+                x => x,
+            };
+            let last = *data.last().unwrap();
+            data.push(last + noise);
+        }
+
+        // Test fitting ARIMA(1,1,0)
+        let result = fit_and_simulate(data.clone(), 1, 1, 0, 10);
+
+        assert!(result.is_ok(), "Fitting should succeed");
+        let sim = result.unwrap();
+        assert_eq!(sim.path.len(), 10, "Should generate 10 steps");
+
+        // Ensure values are not NaN or Infinite
+        for val in sim.path {
+            assert!(val.is_finite(), "Simulation values should be finite");
+        }
     }
 }

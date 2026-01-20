@@ -1,12 +1,10 @@
-import pytest
-import numpy as np
-import ConfigSpace as CS
-import pytorch_lightning as pl
 from unittest.mock import MagicMock, patch
-from typing import Any, Dict
+
+import numpy as np
 
 from python.src.pipeline.hpo.de import DifferentialEvolution
-from python.src.pipeline.hpo.optimize import optimize_model, bayesian_optimization
+from python.src.pipeline.hpo.optimize import bayesian_optimization, optimize_model
+
 
 def test_de_initialization(hpo_config_space, hpo_config_repo, dummy_objective):
     """Test initializing DifferentialEvolution with a config space and repository."""

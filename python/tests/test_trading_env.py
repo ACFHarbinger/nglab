@@ -5,7 +5,6 @@ Comprehensive tests for TradingEnv and ClobEnv.
 import numpy as np
 import pytest
 from gymnasium import spaces
-from numpy.typing import NDArray
 
 
 class TestTradingEnvInitialization:

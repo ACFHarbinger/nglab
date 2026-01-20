@@ -1,7 +1,8 @@
-import pytest
 import ConfigSpace as CS
+import pytest
 
 from python.src.pipeline.hpo.dehb_config_repo import ConfigRepository
+
 
 @pytest.fixture
 def hpo_config_space():
