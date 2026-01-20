@@ -2,7 +2,7 @@
 AutoEncoder (AE) implementation.
 """
 
-from typing import Any, List, Optional, cast
+from typing import cast
 
 import torch
 from torch import nn
@@ -16,7 +16,7 @@ class AutoEncoder(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        hidden_dims: List[int],
+        hidden_dims: list[int],
         latent_dim: int,
         output_type: str = "prediction",
     ) -> None:
@@ -25,7 +25,7 @@ class AutoEncoder(nn.Module):
         self.output_type = output_type
 
         # Encoder
-        encoder_layers: List[nn.Module] = []
+        encoder_layers: list[nn.Module] = []
         last_dim = input_dim
         for h_dim in hidden_dims:
             encoder_layers.append(nn.Linear(last_dim, h_dim))
@@ -35,7 +35,7 @@ class AutoEncoder(nn.Module):
         self.encoder = nn.Sequential(*encoder_layers)
 
         # Decoder
-        decoder_layers: List[nn.Module] = []
+        decoder_layers: list[nn.Module] = []
         last_dim = latent_dim
         for h_dim in reversed(hidden_dims):
             decoder_layers.append(nn.Linear(last_dim, h_dim))
@@ -55,7 +55,7 @@ class AutoEncoder(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
         """Forward pass."""

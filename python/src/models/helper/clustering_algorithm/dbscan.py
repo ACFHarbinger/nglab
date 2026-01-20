@@ -25,5 +25,5 @@ class DBSCANAlgorithm:
         """Predict labels."""
         # DBSCAN sklearn does not have a predict method for new data.
         if hasattr(self.model, "labels_"):
-            return cast(NDArray[np.int_], getattr(self.model, "labels_"))
+            return cast(NDArray[np.int_], self.model.labels_)
         return cast(NDArray[np.int_], self.model.fit_predict(X))

@@ -2,7 +2,7 @@
 Deconvolutional Network (DN) implementation.
 """
 
-from typing import Any, List, Optional, cast
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -17,7 +17,7 @@ class DeconvNet(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        hidden_channels: Optional[List[int]] = None,
+        hidden_channels: list[int] | None = None,
         output_dim: int = 1,
         output_type: str = "prediction",
     ) -> None:
@@ -29,7 +29,7 @@ class DeconvNet(nn.Module):
         self.output_dim = output_dim
         self.output_type = output_type
 
-        layers: List[nn.Module] = []
+        layers: list[nn.Module] = []
         last_channels = input_dim
 
         for h_channels in hidden_channels:
@@ -49,7 +49,7 @@ class DeconvNet(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
         """
@@ -79,7 +79,7 @@ class AutoDeconvNet(nn.Module):
         self,
         input_dim: int,
         latent_dim: int = 64,
-        hidden_channels: Optional[List[int]] = None,
+        hidden_channels: list[int] | None = None,
         output_type: str = "prediction",
     ) -> None:
         """Initialize AutoDeconvNet."""
@@ -91,7 +91,7 @@ class AutoDeconvNet(nn.Module):
         self.output_type = output_type
 
         # Encoder (Mirror of DeconvNet)
-        layers: List[nn.Module] = []
+        layers: list[nn.Module] = []
         last_channels = input_dim
         for h_channels in hidden_channels:
             layers.append(
@@ -113,7 +113,7 @@ class AutoDeconvNet(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
         **kwargs: Any,
     ) -> torch.Tensor:

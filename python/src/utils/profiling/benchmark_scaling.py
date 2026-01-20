@@ -6,7 +6,6 @@ import argparse
 import os
 import sys
 import time
-from typing import List, Union
 
 import torch
 from tensordict import TensorDict
@@ -17,7 +16,7 @@ from python.src.env.env_wrapper import TradingEnvWrapper
 
 
 def run_benchmark(
-    num_envs: int, num_steps: int = 1000, device: Union[str, torch.device] = "cpu"
+    num_envs: int, num_steps: int = 1000, device: str | torch.device = "cpu"
 ) -> float:
     """Run benchmark for a given number of environments."""
     print(f"Benchmarking with {num_envs} environments on {device}...")
@@ -61,7 +60,7 @@ if __name__ == "__main__":
         device_str = "cpu"
 
     env_counts = [1, 2, 4, 8]  # Keep small for quick test, go higher for real bench
-    results: List[float] = []
+    results: list[float] = []
 
     for n in env_counts:
         try:

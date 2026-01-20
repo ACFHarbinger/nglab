@@ -2,7 +2,6 @@
 Utilities for downloading datasets from Google Drive.
 """
 
-from typing import Optional
 
 import requests
 
@@ -16,7 +15,7 @@ def download_file_from_gdrive(file_id: str, dest: str) -> None:
         dest (str): Destination path to save the file.
     """
 
-    def get_confirm_token(response: requests.Response) -> Optional[str]:
+    def get_confirm_token(response: requests.Response) -> str | None:
         """Extract confirmation token from response cookies."""
         for key, value in response.cookies.items():
             if key.startswith("download_warning"):

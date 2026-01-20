@@ -4,7 +4,7 @@ Threshold-based Policy for NGLab.
 Simple rule-based strategy that buys/sells based on fixed price thresholds.
 """
 
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from .base import Policy
 
@@ -16,7 +16,7 @@ class ThresholdPolicy(Policy):
     Sell if price > sell_threshold.
     """
 
-    def __init__(self, cfg: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, cfg: dict[str, Any] | None = None) -> None:
         """
         Initialize Threshold policy.
 

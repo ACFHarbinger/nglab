@@ -2,7 +2,7 @@
 
 import math
 from collections.abc import Sequence
-from typing import Optional, Any, Union, cast
+from typing import Any
 
 import torch
 from torch import nn
@@ -17,8 +17,8 @@ class NormalizedActivationFunction(nn.Module):
         self,
         naf_name: str = "softmax",
         dim: int = -1,
-        n_classes: Optional[int] = None,
-        cutoffs: Optional[Sequence[int]] = None,
+        n_classes: int | None = None,
+        cutoffs: Sequence[int] | None = None,
         dval: float = 4.0,
         bias: bool = False,
     ) -> None:
@@ -77,7 +77,7 @@ class NormalizedActivationFunction(nn.Module):
                 stdv = 1.0 / math.sqrt(param.size(-1))
                 param.data.uniform_(-stdv, stdv)
 
-    def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None) -> Union[torch.Tensor, Any]:
+    def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor | Any:
         """
         Applies the normalized activation function to the input.
 

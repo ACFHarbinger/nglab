@@ -11,10 +11,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 
 import torch
-import torch.nn as nn
 import zstandard as zstd
 
 logger = logging.getLogger(__name__)
@@ -36,16 +35,16 @@ class CloudStorageConfig:
     prefix: str = "models"
     compression_level: int = 3
     enable_versioning: bool = True
-    fallback_local_path: Optional[str] = None
+    fallback_local_path: str | None = None
 
     # AWS specific
     aws_region: str = "us-east-1"
-    aws_access_key_id: Optional[str] = None
-    aws_secret_access_key: Optional[str] = None
+    aws_access_key_id: str | None = None
+    aws_secret_access_key: str | None = None
 
     # GCS specific
-    gcs_project: Optional[str] = None
-    gcs_credentials_path: Optional[str] = None
+    gcs_project: str | None = None
+    gcs_credentials_path: str | None = None
 
 
 class CloudStorageBackend(ABC):
@@ -56,7 +55,7 @@ class CloudStorageBackend(ABC):
         self,
         local_path: Path,
         remote_key: str,
-        metadata: Dict[str, str],
+        metadata: dict[str, str],
     ) -> str:
         """Upload a file to cloud storage.
 
@@ -81,7 +80,7 @@ class CloudStorageBackend(ABC):
         ...
 
     @abstractmethod
-    def list_objects(self, prefix: str) -> List[Dict[str, Any]]:
+    def list_objects(self, prefix: str) -> list[dict[str, Any]]:
         """List objects with given prefix.
 
         Args:
@@ -139,7 +138,7 @@ class S3Backend(CloudStorageBackend):
             try:
                 import boto3
 
-                session_kwargs: Dict[str, Any] = {
+                session_kwargs: dict[str, Any] = {
                     "region_name": self.config.aws_region,
                 }
 
@@ -166,7 +165,7 @@ class S3Backend(CloudStorageBackend):
         self,
         local_path: Path,
         remote_key: str,
-        metadata: Dict[str, str],
+        metadata: dict[str, str],
     ) -> str:
         """Upload file to S3 with optional compression."""
         full_key = self._get_full_key(remote_key)
@@ -238,7 +237,7 @@ class S3Backend(CloudStorageBackend):
                 raise FileNotFoundError(f"Checkpoint not found: {remote_key}") from None
             raise
 
-    def list_objects(self, prefix: str) -> List[Dict[str, Any]]:
+    def list_objects(self, prefix: str) -> list[dict[str, Any]]:
         """List objects in S3 with given prefix."""
         full_prefix = self._get_full_key(prefix)
 
@@ -334,7 +333,7 @@ class GCSBackend(CloudStorageBackend):
         self,
         local_path: Path,
         remote_key: str,
-        metadata: Dict[str, str],
+        metadata: dict[str, str],
     ) -> str:
         """Upload file to GCS with compression."""
         blob_name = self._get_blob_name(remote_key)
@@ -387,7 +386,7 @@ class GCSBackend(CloudStorageBackend):
 
         logger.info(f"Downloaded checkpoint from gs://{self.config.bucket}/{blob_name}")
 
-    def list_objects(self, prefix: str) -> List[Dict[str, Any]]:
+    def list_objects(self, prefix: str) -> list[dict[str, Any]]:
         """List blobs in GCS with given prefix."""
         full_prefix = self._get_blob_name(prefix)
 
@@ -458,10 +457,10 @@ class CloudCheckpointManager:
         model: torch.nn.Module,
         model_type: str,
         version: str,
-        optimizer: Optional[torch.optim.Optimizer] = None,
-        scheduler: Optional[Any] = None,
-        metrics: Optional[Dict[str, float]] = None,
-        extra_data: Optional[Dict[str, Any]] = None,
+        optimizer: torch.optim.Optimizer | None = None,
+        scheduler: Any | None = None,
+        metrics: dict[str, float] | None = None,
+        extra_data: dict[str, Any] | None = None,
     ) -> str:
         """Save model checkpoint to cloud storage.
 
@@ -477,7 +476,7 @@ class CloudCheckpointManager:
         Returns:
             Cloud URI of saved checkpoint.
         """
-        checkpoint: Dict[str, Any] = {
+        checkpoint: dict[str, Any] = {
             "model_state_dict": model.state_dict(),
             "model_type": model_type,
             "version": version,
@@ -501,7 +500,7 @@ class CloudCheckpointManager:
 
         try:
             remote_key = self._generate_key(model_type, version)
-            metadata: Dict[str, str] = {
+            metadata: dict[str, str] = {
                 "model_type": model_type,
                 "version": version,
                 "timestamp": str(checkpoint["timestamp"]),
@@ -519,10 +518,10 @@ class CloudCheckpointManager:
         model: torch.nn.Module,
         model_type: str,
         version: str,
-        optimizer: Optional[torch.optim.Optimizer] = None,
-        scheduler: Optional[Any] = None,
-        map_location: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        optimizer: torch.optim.Optimizer | None = None,
+        scheduler: Any | None = None,
+        map_location: str | None = None,
+    ) -> dict[str, Any]:
         """Load model checkpoint from cloud storage.
 
         Args:
@@ -544,7 +543,7 @@ class CloudCheckpointManager:
         try:
             self._backend.download(remote_key, temp_path)
 
-            checkpoint = cast(Dict[str, Any], torch.load(temp_path, map_location=map_location))
+            checkpoint = cast(dict[str, Any], torch.load(temp_path, map_location=map_location))
             model.load_state_dict(checkpoint["model_state_dict"])
 
             if optimizer is not None and "optimizer_state_dict" in checkpoint:
@@ -559,7 +558,7 @@ class CloudCheckpointManager:
         finally:
             temp_path.unlink()
 
-    def list_versions(self, model_type: str) -> List[str]:
+    def list_versions(self, model_type: str) -> list[str]:
         """List all versions for a model type.
 
         Args:
@@ -570,7 +569,7 @@ class CloudCheckpointManager:
         """
         objects = self._backend.list_objects(model_type)
 
-        versions: List[str] = []
+        versions: list[str] = []
         for obj in objects:
             # Parse version from key: model_type/vX.X.X/checkpoint.pt.zst
             parts = str(obj["key"]).split("/")

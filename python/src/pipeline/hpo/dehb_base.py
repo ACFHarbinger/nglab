@@ -9,11 +9,11 @@ algorithm for efficient hyperparameter tuning with multi-fidelity support.
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 import ConfigSpace as CS  # noqa: N817
 import numpy as np
 from loguru import logger
-from typing import Any, List
 
 from .dehb_config_repo import ConfigRepository
 
@@ -211,8 +211,8 @@ class DifferentialEvolutionHyperbandBase:
         self.inc_config = None
         self.population = None
         self.fitness = None
-        self.traj: List[float] = []
-        self.runtime: List[float] = []
+        self.traj: list[float] = []
+        self.runtime: list[float] = []
         self.history = []
         if reset_seeds:
             if isinstance(self.cs, CS.ConfigurationSpace):

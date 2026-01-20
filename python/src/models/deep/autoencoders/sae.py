@@ -2,7 +2,6 @@
 Sparse AutoEncoder (SAE) implementation.
 """
 
-from typing import List, Optional
 
 import torch
 
@@ -17,7 +16,7 @@ class SparseAE(AutoEncoder):
     def __init__(  # noqa: PLR0913
         self,
         input_dim: int,
-        hidden_dims: List[int],
+        hidden_dims: list[int],
         latent_dim: int,
         sparsity_target: float = 0.05,
         sparsity_weight: float = 0.1,
@@ -31,7 +30,7 @@ class SparseAE(AutoEncoder):
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
         """Forward pass."""

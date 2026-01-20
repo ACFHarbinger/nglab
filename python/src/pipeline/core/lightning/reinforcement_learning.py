@@ -5,10 +5,10 @@ Integrates TorchRL components with PyTorch Lightning to provide a scalable
 training loop for RL agents (PPO and variants).
 """
 
-from typing import Any, Callable, Dict, cast
+from collections.abc import Callable
+from typing import Any, cast
 
 import torch
-from pytorch_lightning import LightningModule
 from torch import nn
 from torchrl.collectors import SyncDataCollector
 from torchrl.data import LazyTensorStorage, ReplayBuffer
@@ -28,7 +28,7 @@ class RLLightningModule(BaseModule):
         agent_module: nn.Module,
         value_module: nn.Module,
         env_maker: Callable[[], Any],
-        cfg: Dict[str, Any],
+        cfg: dict[str, Any],
     ) -> None:
         """
         Initialize the RL module.

@@ -3,7 +3,7 @@ Data Embedding layers for Time Series Models.
 """
 
 import math
-from typing import Optional, Union, Tuple
+
 import torch
 from torch import nn
 
@@ -189,7 +189,7 @@ class DataEmbedding(nn.Module):
         )
         self.dropout = nn.Dropout(p=dropout)
 
-    def forward(self, x: torch.Tensor, x_mark: Optional[torch.Tensor]) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, x_mark: torch.Tensor | None) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -217,7 +217,7 @@ class DataEmbedding_inverted(nn.Module):  # noqa: N801
         self.value_embedding = nn.Linear(c_in, d_model)
         self.dropout = nn.Dropout(p=dropout)
 
-    def forward(self, x: torch.Tensor, x_mark: Optional[torch.Tensor]) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, x_mark: torch.Tensor | None) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -251,7 +251,7 @@ class DataEmbedding_wo_pos(nn.Module):  # noqa: N801
         )
         self.dropout = nn.Dropout(p=dropout)
 
-    def forward(self, x: torch.Tensor, x_mark: Optional[torch.Tensor]) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, x_mark: torch.Tensor | None) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -286,7 +286,7 @@ class PatchEmbedding(nn.Module):
         # Residual dropout
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, int]:
+    def forward(self, x: torch.Tensor) -> tuple[torch.Tensor, int]:
         """
         Forward pass.
         """

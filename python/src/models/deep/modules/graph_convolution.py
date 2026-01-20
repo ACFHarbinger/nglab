@@ -1,6 +1,7 @@
 """Standard Graph Convolutional Network (GCN) layer."""
 
 import math
+from typing import cast
 
 import torch
 from torch import nn
@@ -21,7 +22,7 @@ class GraphConvolution(nn.Module):
         out_channels: int,
         aggregation: str = "sum",
         bias: bool = True,
-    ):
+    ) -> None:
         """
         Args:
             in_channels: Dimension of input node features.
@@ -73,13 +74,13 @@ class GraphConvolution(nn.Module):
             unique_targets = batch_offset + expanded_target
 
             # Use scatter to aggregate messages to targets
-            flat_output = scatter(
+            flat_output = cast(torch.Tensor, scatter(
                 messages,
                 unique_targets,
                 dim=0,
                 dim_size=batch_size * num_nodes,
                 reduce="max",
-            )
+            ))
             out = flat_output.view(batch_size, num_nodes, self.out_channels)
         elif self.aggregation == "mean":
             # Check if mask is batched (B, V, V) or shared (1, V, V) / (V, V)
@@ -108,7 +109,7 @@ class GraphConvolution(nn.Module):
 
         if self.bias is not None:
             out += self.bias
-        return out
+        return cast(torch.Tensor, out)
 
     def single_graph_forward(self, h: torch.Tensor, adj: torch.Tensor) -> torch.Tensor:
         """
@@ -123,7 +124,7 @@ class GraphConvolution(nn.Module):
         if self.aggregation == "max":
             source_idx, target_idx = adj.nonzero(as_tuple=True)
             messages = support[source_idx]
-            out = scatter(messages, target_idx, dim=0, dim_size=h.size(0), reduce="max")
+            out = cast(torch.Tensor, scatter(messages, target_idx, dim=0, dim_size=h.size(0), reduce="max"))
         elif self.aggregation == "mean":
             degrees = adj.sum(dim=0).clamp(min=1)
             messages = torch.matmul(adj, support)
@@ -133,4 +134,4 @@ class GraphConvolution(nn.Module):
 
         if self.bias is not None:
             out += self.bias
-        return out
+        return cast(torch.Tensor, out)

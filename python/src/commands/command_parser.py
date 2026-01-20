@@ -6,7 +6,7 @@ import argparse
 import os
 import sys
 import time
-from typing import Any, Dict, NoReturn, Tuple
+from typing import Any, NoReturn
 
 from loguru import logger
 
@@ -23,7 +23,7 @@ class ConfigsParser(argparse.ArgumentParser):
         sys.exit(2)
 
 
-def process_arguments() -> Tuple[str, Dict[str, Any]]:
+def process_arguments() -> tuple[str, dict[str, Any]]:
     """
     Parse and process command line arguments.
 

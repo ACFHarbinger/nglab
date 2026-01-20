@@ -1,4 +1,5 @@
 from numpy.typing import NDArray
+
 """
 Asynchronous Differential Evolution (AsyncDE).
 
@@ -7,9 +8,9 @@ as soon as individual evaluations are completed. This is particularly efficient
 for parallel hyperparameter optimization where evaluation times vary.
 """
 
+from typing import Any, cast
+
 import numpy as np
-from typing import Any, List, Optional, Tuple, Union, cast
-from numpy.typing import NDArray
 
 from .de import DifferentialEvolution
 
@@ -39,18 +40,18 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
 
     def __init__(  # noqa: PLR0913
         self,
-        cs: Optional[Any] = None,
-        f: Optional[Any] = None,
-        dimensions: Optional[int] = None,
-        pop_size: Optional[int] = None,
+        cs: Any | None = None,
+        f: Any | None = None,
+        dimensions: int | None = None,
+        pop_size: int | None = None,
         max_age: float = np.inf,
-        mutation_factor: Optional[float] = None,
-        crossover_prob: Optional[float] = None,
+        mutation_factor: float | None = None,
+        crossover_prob: float | None = None,
         strategy: str = "rand1_bin",
         async_strategy: str = "immediate",
-        seed: Optional[int] = None,
-        rng: Optional[np.random.Generator] = None,
-        config_repository: Optional[Any] = None,
+        seed: int | None = None,
+        rng: np.random.Generator | None = None,
+        config_repository: Any | None = None,
         **kwargs: Any,
     ) -> None:
         """Extends DE to be Asynchronous with variations
@@ -92,9 +93,9 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
         
         # Attributes used by DEHB
         self.parent_counter: int = 0
-        self.promotion_pop: Optional[NDArray[np.float64]] = None
-        self.promotion_pop_ids: Optional[NDArray[np.int64]] = None
-        self.promotion_fitness: Optional[NDArray[np.float64]] = None
+        self.promotion_pop: NDArray[np.float64] | None = None
+        self.promotion_pop_ids: NDArray[np.int64] | None = None
+        self.promotion_fitness: NDArray[np.float64] | None = None
         assert self.async_strategy in [
             "immediate",
             "random",
@@ -102,7 +103,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
             "deferred",
         ], f"{self.async_strategy} is not a valid choice for type of DE"
 
-    def _add_random_population(self, pop_size: int, population: Optional[np.ndarray[Any, Any]] = None, fitness: Optional[np.ndarray[Any, Any]] = None, age: Optional[np.ndarray[Any, Any]] = None) -> Tuple[np.ndarray[Any, Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
+    def _add_random_population(self, pop_size: int, population: np.ndarray[Any, Any] | None = None, fitness: np.ndarray[Any, Any] | None = None, age: np.ndarray[Any, Any] | None = None) -> tuple[np.ndarray[Any, Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
         """Adds random individuals to the population"""
         if age is None:
             age = np.array([], dtype=np.int64)
@@ -126,7 +127,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
 
         return population, fitness, age
 
-    def _init_mutant_population(self, pop_size: int, population: np.ndarray[Any, Any], target: Optional[np.ndarray[Any, Any]] = None, best: Optional[np.ndarray[Any, Any]] = None) -> np.ndarray[Any, Any]:
+    def _init_mutant_population(self, pop_size: int, population: np.ndarray[Any, Any], target: np.ndarray[Any, Any] | None = None, best: np.ndarray[Any, Any] | None = None) -> np.ndarray[Any, Any]:
         """Generates pop_size mutants from the passed population"""
         if self.dimensions is None:
              raise ValueError("Dimensions not set")
@@ -135,13 +136,13 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
             mutants[i] = self.mutation(current=target, best=best, alt_pop=population)
         return mutants
 
-    def _sample_population(self, size: int = 3, alt_pop: Optional[Union[List[Any], np.ndarray[Any, Any]]] = None, target: Optional[np.ndarray[Any, Any]] = None) -> np.ndarray[Any, Any]:
+    def _sample_population(self, size: int = 3, alt_pop: list[Any] | np.ndarray[Any, Any] | None = None, target: np.ndarray[Any, Any] | None = None) -> np.ndarray[Any, Any]:
         """Samples 'size' individuals for mutation step
 
         If alt_pop is None or a list/array of None, sample from own population
         Else sample from the specified alternate population
         """
-        population: Optional[np.ndarray[Any, Any]] = None
+        population: np.ndarray[Any, Any] | None = None
         if isinstance(alt_pop, list) or isinstance(alt_pop, np.ndarray):
             idx = [
                 indv is None for indv in alt_pop
@@ -178,7 +179,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
         selection = self.rng.choice(np.arange(len(population)), size, replace=False)
         return cast(np.ndarray[Any, Any], population[selection])
 
-    def eval_pop(self, population: Optional[np.ndarray[Any, Any]] = None, population_ids: Optional[np.ndarray[Any, Any]] = None, fidelity: Optional[float] = None, **kwargs: Any) -> Tuple[List[float], List[float], List[Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
+    def eval_pop(self, population: np.ndarray[Any, Any] | None = None, population_ids: np.ndarray[Any, Any] | None = None, fidelity: float | None = None, **kwargs: Any) -> tuple[list[float], list[float], list[Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
         """Evaluate a population and return fitness, runtime, and history."""
         pop = self.population if population is None else population
         pop_ids = self.population_ids if population_ids is None else population_ids
@@ -191,12 +192,12 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
         assert self.pop_size is not None
         pop_size = self.pop_size if population is None else len(pop)
 
-        traj: List[float] = []
-        runtime: List[float] = []
-        history: List[Any] = []
-        fitnesses: List[float] = []
-        costs: List[float] = []
-        ages: List[float] = []
+        traj: list[float] = []
+        runtime: list[float] = []
+        history: list[Any] = []
+        fitnesses: list[float] = []
+        costs: list[float] = []
+        ages: list[float] = []
         for i in range(pop_size):
             res = self.f_objective(pop[i], fidelity, **kwargs)
             fitness, cost = float(res["fitness"]), float(res["cost"])
@@ -224,9 +225,9 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
 
     def mutation(
         self,
-        current: Optional[np.ndarray[Any, Any]] = None,
-        best: Optional[np.ndarray[Any, Any]] = None,
-        alt_pop: Optional[Union[List[Any], np.ndarray[Any, Any]]] = None,
+        current: np.ndarray[Any, Any] | None = None,
+        best: np.ndarray[Any, Any] | None = None,
+        alt_pop: list[Any] | np.ndarray[Any, Any] | None = None,
     ) -> np.ndarray[Any, Any]:
         """Performs DE mutation"""
         if self.mutation_strategy == "rand1":
@@ -300,7 +301,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
 
         return mutant
 
-    def sample_mutants(self, size: int, population: Optional[Union[List[Any], np.ndarray[Any, Any]]] = None) -> np.ndarray[Any, Any]:
+    def sample_mutants(self, size: int, population: list[Any] | np.ndarray[Any, Any] | None = None) -> np.ndarray[Any, Any]:
         """Samples 'size' mutants from the population"""
         if population is None:
             population = self.population
@@ -320,11 +321,11 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
 
         return mutants
 
-    def evolve_generation(self, fidelity: Optional[float] = None, best: Optional[np.ndarray[Any, Any]] = None, alt_pop: Optional[Union[List[Any], np.ndarray[Any, Any]]] = None, **kwargs: Any) -> Tuple[List[Any], List[Any], List[Any]]:
+    def evolve_generation(self, fidelity: float | None = None, best: np.ndarray[Any, Any] | None = None, alt_pop: list[Any] | np.ndarray[Any, Any] | None = None, **kwargs: Any) -> tuple[list[Any], list[Any], list[Any]]:
         """Performs a complete DE evolution, mutation -> crossover -> selection"""
-        traj: List[Any] = []
-        runtime: List[Any] = []
-        history: List[Any] = []
+        traj: list[Any] = []
+        runtime: list[Any] = []
+        history: list[Any] = []
 
         if self.pop_size is None:
              raise ValueError("Population size must be set before evolution")
@@ -415,7 +416,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
 
         return traj, runtime, history
 
-    def run(self, generations: int = 1, verbose: bool = False, fidelity: Optional[float] = None, reset: bool = True, **kwargs: Any) -> Tuple[np.ndarray[Any, Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
+    def run(self, generations: int = 1, verbose: bool = False, fidelity: float | None = None, reset: bool = True, **kwargs: Any) -> tuple[np.ndarray[Any, Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
         """Run asynchronous DE for the specified generations."""
         # checking if a run exists
         if not hasattr(self, "traj") or reset:

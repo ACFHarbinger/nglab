@@ -10,19 +10,21 @@ This module provides functions for generating various plots:
 
 import math
 import os
-from typing import Any, Optional, List, Callable, Union, Dict, Tuple
-from numpy.typing import NDArray
+from collections.abc import Callable
+from typing import Any
 
+import matplotlib.axes
 import networkx as nx
 import numpy as np
 import plotly.express as px
 import seaborn as sns
 import torch
-from .io.file_utils import compose_dirpath
 from matplotlib import pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
-import matplotlib.axes
+from numpy.typing import NDArray
+
+from .io.file_utils import compose_dirpath
 
 
 def draw_graph(distance_matrix: NDArray[Any]) -> None:
@@ -44,18 +46,18 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
     output_dest: str,
     graph_log: NDArray[Any],
     plot_func: Callable[..., Any],
-    policies: List[str],
-    x_label: Optional[str] = None,
-    y_label: Optional[str] = None,
-    title: Optional[str] = None,
+    policies: list[str],
+    x_label: str | None = None,
+    y_label: str | None = None,
+    title: str | None = None,
     fsave: bool = True,
     scale: str = "linear",
-    x_values: Optional[List[float]] = None,
-    linestyles: Optional[List[str]] = None,
-    markers: Optional[List[str]] = None,
+    x_values: list[float] | None = None,
+    linestyles: list[str] | None = None,
+    markers: list[str] | None = None,
     annotate: bool = True,
     pareto_front: bool = False,
-) -> Optional[List[List[int]]]:
+) -> list[list[int]] | None:
     """
     Plots a generic line chart, optionally handling multiple policies and Pareto fronts.
 
@@ -66,14 +68,14 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
     def plot_graphs_out(
         plot_func: Callable[..., Any], 
         graph_log: NDArray[Any], 
-        x_values: Optional[List[float]], 
-        linestyles: Optional[List[str]], 
-        markers: Optional[List[str]]
-    ) -> Dict[int, List[Tuple[float, float]]]:
+        x_values: list[float] | None, 
+        linestyles: list[str] | None, 
+        markers: list[str] | None
+    ) -> dict[int, list[tuple[float, float]]]:
         """
         Helper to plot graphs for different policies.
         """
-        points_by_nbins: Dict[int, List[Tuple[float, float]]] = {}
+        points_by_nbins: dict[int, list[tuple[float, float]]] = {}
         for idx, lg in enumerate(zip(*graph_log, strict=False)):
             if x_values is None:
                 to_plot = (*lg,)
@@ -83,8 +85,8 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
                     *lg,
                 )
 
-            line: Optional[str] = linestyles[idx % len(linestyles)] if linestyles is not None else None
-            mark: Optional[str] = markers[idx % len(markers)] if markers is not None else None
+            line: str | None = linestyles[idx % len(linestyles)] if linestyles is not None else None
+            mark: str | None = markers[idx % len(markers)] if markers is not None else None
 
             if not line and not mark:
                 plot_func(*to_plot)
@@ -110,7 +112,7 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
     if title is not None:
         plt.title(title)
 
-    points_by_nbins: Dict[int, List[Tuple[float, float]]] = {}
+    points_by_nbins: dict[int, list[tuple[float, float]]] = {}
 
     if len(graph_log.shape) == 2:
         points_by_nbins = {0: []}
@@ -143,7 +145,7 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
                             zorder=10,
                         )
 
-    pareto_dominants: List[List[int]] = []
+    pareto_dominants: list[list[int]] = []
     if pareto_front:
         for id_nbins, points in points_by_nbins.items():
             dominance_ls = [0] * len(points)
@@ -230,7 +232,7 @@ def plot_tsp(xy: NDArray[Any], tour: NDArray[Any], ax1: matplotlib.axes.Axes) ->
     ax1.set_title(f"{len(tour)} nodes, total length {lengths[-1]:.2f}")
 
 
-def discrete_cmap(n: int, base_cmap: Optional[Union[str, Any]] = None) -> Any:
+def discrete_cmap(n: int, base_cmap: str | Any | None = None) -> Any:
     """
     Create an N-bin discrete colormap from the specified input map.
     """
@@ -241,7 +243,7 @@ def discrete_cmap(n: int, base_cmap: Optional[Union[str, Any]] = None) -> Any:
 
 
 def plot_vehicle_routes(  # noqa: PLR0913
-    data: Dict[str, torch.Tensor],
+    data: dict[str, torch.Tensor],
     route: torch.Tensor,
     ax1: matplotlib.axes.Axes,
     markersize: int = 5,
@@ -341,17 +343,17 @@ def plot_vehicle_routes(  # noqa: PLR0913
 
 
 @compose_dirpath
-def plot_attention_maps_wrapper(  # noqa: PLR0913, PLR0915
+def plot_attention_maps_wrapper(  # noqa: PLR0913
     dir_path: str,
-    attention_dict: Dict[str, List[Dict[str, torch.Tensor]]],
+    attention_dict: dict[str, list[dict[str, torch.Tensor]]],
     model_name: str,
     execution_function: Callable[..., Any],
     layer_idx: int = 0,
     sample_idx: int = 0,
     head_idx: int = 0,
     batch_idx: int = 0,
-    x_labels: Optional[List[str]] = None,
-    y_labels: Optional[List[str]] = None,
+    x_labels: list[str] | None = None,
+    y_labels: list[str] | None = None,
     **execution_kwargs: Any,
 ) -> NDArray[Any]:
     """

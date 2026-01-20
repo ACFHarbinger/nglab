@@ -3,7 +3,8 @@ Non-stationary Transformer for Time Series Forecasting.
 Adapted from the Time-Series-Library.
 """
 
-from typing import Optional, List, Any, Tuple
+from typing import Any
+
 import torch
 from torch import nn
 
@@ -43,7 +44,7 @@ class EncoderLayer(nn.Module):
         )
         self.norm = Normalization(embed_dim, normalization)
 
-    def forward(self, x: torch.Tensor, attn_mask: Any, tau: Optional[torch.Tensor], delta: Optional[torch.Tensor]) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, attn_mask: Any, tau: torch.Tensor | None, delta: torch.Tensor | None) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -59,7 +60,7 @@ class Encoder(nn.Module):
     Encoder network consisting of multiple layers.
     """
 
-    def __init__(self, attn_layers: List[EncoderLayer], conv_layers: Optional[List[nn.Module]] = None, norm_layer: Optional[nn.Module] = None) -> None:
+    def __init__(self, attn_layers: list[EncoderLayer], conv_layers: list[nn.Module] | None = None, norm_layer: nn.Module | None = None) -> None:
         """
         Initialize.
         """
@@ -70,7 +71,7 @@ class Encoder(nn.Module):
         )
         self.norm = norm_layer
 
-    def forward(self, x: torch.Tensor, attn_mask: Any = None, tau: Optional[torch.Tensor] = None, delta: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, attn_mask: Any = None, tau: torch.Tensor | None = None, delta: torch.Tensor | None = None) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -137,7 +138,7 @@ class DecoderLayer(nn.Module):
         self.norm = Normalization(embed_dim, normalization)
 
     def forward(  # noqa: PLR0913
-        self, x: torch.Tensor, cross: torch.Tensor, x_mask: Any = None, cross_mask: Any = None, tau: Optional[torch.Tensor] = None, delta: Optional[torch.Tensor] = None
+        self, x: torch.Tensor, cross: torch.Tensor, x_mask: Any = None, cross_mask: Any = None, tau: torch.Tensor | None = None, delta: torch.Tensor | None = None
     ) -> torch.Tensor:
         """
         Forward pass.
@@ -157,7 +158,7 @@ class Decoder(nn.Module):
     Decoder network consisting of multiple layers.
     """
 
-    def __init__(self, layers: List[DecoderLayer], norm_layer: Optional[nn.Module] = None, projection: Optional[nn.Module] = None) -> None:
+    def __init__(self, layers: list[DecoderLayer], norm_layer: nn.Module | None = None, projection: nn.Module | None = None) -> None:
         """
         Initialize.
         """
@@ -167,7 +168,7 @@ class Decoder(nn.Module):
         self.projection = projection
 
     def forward(  # noqa: PLR0913
-        self, x: torch.Tensor, cross: torch.Tensor, x_mask: Any = None, cross_mask: Any = None, tau: Optional[torch.Tensor] = None, delta: Optional[torch.Tensor] = None
+        self, x: torch.Tensor, cross: torch.Tensor, x_mask: Any = None, cross_mask: Any = None, tau: torch.Tensor | None = None, delta: torch.Tensor | None = None
     ) -> torch.Tensor:
         """
         Forward pass.
@@ -191,7 +192,7 @@ class Projector(nn.Module):
     """
 
     def __init__(  # noqa: PLR0913
-        self, enc_in: int, seq_len: int, hidden_dims: List[int], hidden_layers: int, output_dim: int, kernel_size: int = 3
+        self, enc_in: int, seq_len: int, hidden_dims: list[int], hidden_layers: int, output_dim: int, kernel_size: int = 3
     ) -> None:
         """
         Initialize the Projector.
@@ -241,7 +242,7 @@ class NSTransformer(nn.Module):
         embed_dim: int,
         hidden_dim: int,
         output_dim: int,
-        learner_dims: List[int],
+        learner_dims: list[int],
         embed_type: str = "fixed",
         freq: str = "h",
         n_enc_layers: int = 2,
@@ -289,7 +290,7 @@ class NSTransformer(nn.Module):
         )
         self.label_len: int = 0
 
-    def forecast(self, x_enc: torch.Tensor, x_mark_enc: Optional[torch.Tensor], x_dec: torch.Tensor, x_mark_dec: Optional[torch.Tensor]) -> torch.Tensor:
+    def forecast(self, x_enc: torch.Tensor, x_mark_enc: torch.Tensor | None, x_dec: torch.Tensor, x_mark_dec: torch.Tensor | None) -> torch.Tensor:
         """
         Forecasting function.
         """
@@ -328,7 +329,7 @@ class NSTransformer(nn.Module):
         dec_out = dec_out * std_enc + mean_enc
         return dec_out
 
-    def forward(self, x_enc: torch.Tensor, x_mark_enc: Optional[torch.Tensor], x_dec: torch.Tensor, x_mark_dec: Optional[torch.Tensor], mask: Any = None) -> torch.Tensor:
+    def forward(self, x_enc: torch.Tensor, x_mark_enc: torch.Tensor | None, x_dec: torch.Tensor, x_mark_dec: torch.Tensor | None, mask: Any = None) -> torch.Tensor:
         """
         Forward pass for the NSTransformer.
         """

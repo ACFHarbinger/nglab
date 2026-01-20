@@ -6,7 +6,7 @@ factory functions for creating DataLoaders with proper configuration.
 """
 
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal, cast
 
 import pandas as pd
 import torch
@@ -45,7 +45,7 @@ class FinancialDataset(TimeSeriesDataset):
         normalize: Literal["minmax", "zscore"] | None = "minmax",
         add_technical_indicators: bool = False,
         multi_asset: bool = False,
-        stats: dict | None = None,
+        stats: dict[str, Any] | None = None,
     ):
         # Store additional config
         self.add_technical_indicators = add_technical_indicators
@@ -78,7 +78,7 @@ def create_dataloader(  # noqa: PLR0913
     format: Literal["csv", "parquet", "hdf5"] = "csv",
     streaming: bool = False,
     add_technical_indicators: bool = False,
-) -> tuple[DataLoader, DataLoader, DataLoader]:
+) -> tuple[DataLoader[Any], DataLoader[Any], DataLoader[Any]]:
     """
     Factory function to create train/val/test DataLoaders.
 
@@ -115,12 +115,12 @@ def create_dataloader(  # noqa: PLR0913
         csv_path = data_path
     elif format == "parquet":
         # Convert parquet to CSV for now (could optimize later)
-        df = pd.read_parquet(data_path)
+        df = cast(pd.DataFrame, pd.read_parquet(data_path))
         csv_path = str(Path(data_path).with_suffix(".csv"))
         df.to_csv(csv_path, index=False)
     elif format == "hdf5":
         # Read HDF5 file (key must be specified or uses default)
-        df = pd.read_hdf(data_path, key="data")
+        df = cast(pd.DataFrame, pd.read_hdf(data_path, key="data"))
         csv_path = str(Path(data_path).with_suffix(".csv"))
         df.to_csv(csv_path, index=False)
     else:
@@ -165,7 +165,7 @@ def create_dataloader(  # noqa: PLR0913
     )
 
     # Create DataLoaders
-    train_loader = DataLoader(
+    train_loader: DataLoader[Any] = DataLoader(
         train_dataset,
         batch_size=batch_size,
         shuffle=True,
@@ -174,7 +174,7 @@ def create_dataloader(  # noqa: PLR0913
         persistent_workers=num_workers > 0,
     )
 
-    val_loader = DataLoader(
+    val_loader: DataLoader[Any] = DataLoader(
         val_dataset,
         batch_size=batch_size,
         shuffle=False,
@@ -183,7 +183,7 @@ def create_dataloader(  # noqa: PLR0913
         persistent_workers=num_workers > 0,
     )
 
-    test_loader = DataLoader(
+    test_loader: DataLoader[Any] = DataLoader(
         test_dataset,
         batch_size=batch_size,
         shuffle=False,
@@ -195,7 +195,7 @@ def create_dataloader(  # noqa: PLR0913
     return train_loader, val_loader, test_loader
 
 
-class StreamingDataset(Dataset):
+class StreamingDataset(Dataset[Any]):
     """
     Streaming dataset for large files that don't fit in memory.
 
@@ -219,10 +219,10 @@ class StreamingDataset(Dataset):
         # Get total length by reading just the first column
         self.total_length = sum(1 for _ in open(csv_path)) - 1  # Subtract header
 
-    def __len__(self):
+    def __len__(self) -> int:
         return max(0, self.total_length - self.seq_len - self.pred_len + 1)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Any:
         # This is a placeholder - actual streaming implementation would
         # require more sophisticated chunk management and caching
         raise NotImplementedError("Streaming dataset not fully implemented yet")

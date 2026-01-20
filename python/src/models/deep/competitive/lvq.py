@@ -4,9 +4,9 @@ Learning Vector Quantization (LVQ) Module.
 This module implements the LVQ algorithm, a prototype-based classification model.
 """
 
+
 import torch
 from torch import nn
-from typing import Any, List, Optional, Union
 
 
 class LVQ(nn.Module):

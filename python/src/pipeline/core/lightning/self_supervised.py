@@ -5,7 +5,7 @@ Implements pretext tasks such as Masked Prediction to learn useful representatio
 from unlabeled financial time series data.
 """
 
-from typing import Any, Dict, cast
+from typing import Any, cast
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -19,7 +19,7 @@ class SelfSupervisedModule(BaseModule):
     Module for Self-Supervised Learning tasks (e.g., Masked Prediction, Contrastive Learning).
     """
 
-    def __init__(self, backbone: nn.Module, cfg: Dict[str, Any]) -> None:
+    def __init__(self, backbone: nn.Module, cfg: dict[str, Any]) -> None:
         """
         Initialize the Self-Supervised module.
 

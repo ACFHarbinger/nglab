@@ -5,7 +5,7 @@ Provides a Gymnasium-compatible interface for simulating trading scenarios,
 serving as the primary interface between agents and the market simulator.
 """
 
-from typing import Any, ClassVar, Tuple, Optional, Dict
+from typing import Any, ClassVar
 
 import gymnasium as gym
 import numpy as np
@@ -43,17 +43,17 @@ class TradingEnv(gym.Env[np.ndarray, np.ndarray]):
 
         self.current_step = 0
 
-    def reset(self, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) -> Tuple[np.ndarray, Dict[str, Any]]:
+    def reset(self, seed: int | None = None, options: dict[str, Any] | None = None) -> tuple[np.ndarray, dict[str, Any]]:
         """
         Reset the environment state.
         """
         super().reset(seed=seed)
         self.current_step = 0
         observation = self.observation_space.sample()  # Placeholder
-        info: Dict[str, Any] = {}
+        info: dict[str, Any] = {}
         return observation, info
 
-    def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
+    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
         """
         Execute one step in the environment.
         """
@@ -62,7 +62,7 @@ class TradingEnv(gym.Env[np.ndarray, np.ndarray]):
         truncated = False
         reward = float(np.random.randn())  # Placeholder
         observation = self.observation_space.sample()
-        info: Dict[str, Any] = {}
+        info: dict[str, Any] = {}
         return observation, reward, terminated, truncated, info
 
     def render(self) -> None:

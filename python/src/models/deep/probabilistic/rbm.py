@@ -2,10 +2,10 @@
 Restricted Boltzmann Machine (RBM).
 """
 
+
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
-from typing import Optional, Tuple
 
 
 class RBM(nn.Module):
@@ -24,17 +24,17 @@ class RBM(nn.Module):
         self.v_bias = nn.Parameter(torch.zeros(visible_dim))
         self.h_bias = nn.Parameter(torch.zeros(hidden_dim))
 
-    def sample_h(self, v: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def sample_h(self, v: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """Sample hidden states given visible states."""
         prob = torch.sigmoid(F.linear(v, self.weights, self.h_bias))
         return prob, torch.bernoulli(prob)
 
-    def sample_v(self, h: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def sample_v(self, h: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """Sample visible states given hidden states."""
         prob = torch.sigmoid(F.linear(h, self.weights.t(), self.v_bias))
         return prob, torch.bernoulli(prob)
 
-    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
         """Forward pass - Gibbs sampling step."""
         # x is visible layer v
         if x.dim() == 3:

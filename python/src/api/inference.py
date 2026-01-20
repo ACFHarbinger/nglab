@@ -13,8 +13,9 @@ import hashlib
 import json
 import os
 import time
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator, Callable, Dict, List, Optional, Tuple, cast
+from typing import Any, cast
 
 import redis.asyncio as redis
 import torch
@@ -31,6 +32,7 @@ from pydantic import BaseModel, Field
 
 from python.src.utils import definitions
 from python.src.utils.functions.functions import load_model
+
 
 # Dummy tracer for when OpenTelemetry is disabled/missing
 class DummySpan:
@@ -57,18 +59,18 @@ except ImportError:
 
 
 # Global State
-_MODEL: Optional[torch.nn.Module] = None
-_OPTS: Optional[Dict[str, Any]] = None
-_REDIS: Optional[redis.Redis] = None
+_MODEL: torch.nn.Module | None = None
+_OPTS: dict[str, Any] | None = None
+_REDIS: redis.Redis | None = None
 
 
 class PredictionRequest(BaseModel):
     """Schema for model prediction request."""
 
-    observations: List[List[float]] = Field(
+    observations: list[list[float]] = Field(
         ..., description="Batch of observation tensors."
     )
-    model_path: Optional[str] = Field(
+    model_path: str | None = Field(
         None, description="Path to specific model checkpoint."
     )
     temperature: float = Field(1.0, ge=0.01, le=2.0)
@@ -77,7 +79,7 @@ class PredictionRequest(BaseModel):
 class PredictionResponse(BaseModel):
     """Schema for model prediction response."""
 
-    predictions: List[List[float]]
+    predictions: list[list[float]]
     model_version: str
     latency_ms: float
     cached: bool = False
@@ -90,10 +92,10 @@ class BatchInferenceHandler:
     """
 
     def __init__(self, model_loader_func: Callable[[], torch.nn.Module]) -> None:
-        self.queue: asyncio.Queue[Tuple[PredictionRequest, asyncio.Future[List[List[float]]]]] = asyncio.Queue()
+        self.queue: asyncio.Queue[tuple[PredictionRequest, asyncio.Future[list[list[float]]]]] = asyncio.Queue()
         self.model_loader = model_loader_func
         self._shutdown = False
-        self._worker_task: Optional[asyncio.Task[None]] = None
+        self._worker_task: asyncio.Task[None] | None = None
 
     async def start(self) -> None:
         self._shutdown = False
@@ -108,22 +110,22 @@ class BatchInferenceHandler:
             except asyncio.CancelledError:
                 pass
 
-    async def predict(self, request: PredictionRequest) -> List[List[float]]:
+    async def predict(self, request: PredictionRequest) -> list[list[float]]:
         """Add request to queue and await result."""
-        future: asyncio.Future[List[List[float]]] = asyncio.get_running_loop().create_future()
+        future: asyncio.Future[list[list[float]]] = asyncio.get_running_loop().create_future()
         await self.queue.put((request, future))
         return await future
 
     async def _worker_loop(self) -> None:
         """Background loop to process batches."""
         while not self._shutdown:
-            batch: List[Tuple[PredictionRequest, asyncio.Future[List[List[float]]]]] = []
+            batch: list[tuple[PredictionRequest, asyncio.Future[list[list[float]]]]] = []
 
             # 1. Fetch first item (blocking)
             try:
                 item = await asyncio.wait_for(self.queue.get(), timeout=1.0)
                 batch.append(item)
-            except (asyncio.TimeoutError, TimeoutError):
+            except TimeoutError:
                 continue
 
             # 2. Fetch remaining items up to BATCH_SIZE (non-blocking/timeout)
@@ -143,7 +145,7 @@ class BatchInferenceHandler:
                 await self._process_batch(batch)
 
     async def _process_batch(
-        self, batch: List[Tuple[PredictionRequest, asyncio.Future[List[List[float]]]]]
+        self, batch: list[tuple[PredictionRequest, asyncio.Future[list[list[float]]]]]
     ) -> None:
         """Process a batch of requests."""
         with tracer.start_as_current_span("process_batch") as span:
@@ -164,8 +166,8 @@ class BatchInferenceHandler:
                 # Prepare batch tensor
                 # Flatten all observations from all requests: [req1_obs, req2_obs...] -> single batch
                 # Track slice indices to split results back
-                all_obs: List[List[float]] = []
-                splits: List[int] = []
+                all_obs: list[list[float]] = []
+                splits: list[int] = []
                 for req in requests:
                     all_obs.extend(req.observations)
                     splits.append(len(req.observations))
@@ -182,12 +184,12 @@ class BatchInferenceHandler:
                 # Inference
                 with torch.no_grad():
                     output = model(obs_tensor)
-                    output_list: List[List[float]] = output.cpu().tolist()
+                    output_list: list[list[float]] = output.cpu().tolist()
 
                 # Distribute results
                 cursor = 0
                 # Cast futures to correct type since zip result is Tuple[Any, ...]
-                typed_futures = cast(Tuple[asyncio.Future[List[List[float]]], ...], futures)
+                typed_futures = cast(tuple[asyncio.Future[list[list[float]]], ...], futures)
                 
                 for i, future in enumerate(typed_futures):
                     num_samples = splits[i]
@@ -198,13 +200,13 @@ class BatchInferenceHandler:
                         future.set_result(result)
 
             except Exception as e:
-                typed_futures_err = cast(Tuple[asyncio.Future[List[List[float]]], ...], futures)
+                typed_futures_err = cast(tuple[asyncio.Future[list[list[float]]], ...], futures)
                 for future in typed_futures_err:
                     if not future.done():
                         future.set_exception(e)
 
 
-def get_model(model_path: Optional[str] = None) -> torch.nn.Module:
+def get_model(model_path: str | None = None) -> torch.nn.Module:
     """Singleton model loader with caching."""
     global _MODEL, _OPTS  # noqa: PLW0603
 
@@ -242,7 +244,7 @@ class RayModelDeployment:
         # Load model on init to warm up the actor
         get_model()
 
-    async def __call__(self, request: PredictionRequest) -> List[List[float]]:
+    async def __call__(self, request: PredictionRequest) -> list[list[float]]:
         return await batch_handler.predict(request)
 
 
@@ -322,7 +324,7 @@ if os.getenv("NGLAB_ENABLE_TELEMETRY", "true").lower() == "true":
 
 
 @app.get("/health")
-async def health_check() -> Dict[str, Any]:
+async def health_check() -> dict[str, Any]:
     """Service health check."""
     return {
         "status": "online",

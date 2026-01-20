@@ -1,6 +1,7 @@
-from typing import Any, Optional, Union
-import torch
+from typing import Any
+
 import numpy as np
+import torch
 from numpy.typing import NDArray
 from sklearn.decomposition import PCA
 
@@ -14,13 +15,13 @@ class SammonMappingAlgorithm:
         self.max_iter = max_iter
         self.tol = tol
         self.lr = lr
-        self.embedding_: Optional[NDArray[np.float64]] = None
+        self.embedding_: NDArray[np.float64] | None = None
 
     def fit(self, X: NDArray[Any]) -> "SammonMappingAlgorithm":  # noqa: N803
         """Fit the model (Sammon is transductive, usually calls fit_transform)."""
         return self
 
-    def fit_transform(self, X: Union[NDArray[Any], torch.Tensor]) -> NDArray[np.float64]:  # noqa: N803
+    def fit_transform(self, X: NDArray[Any] | torch.Tensor) -> NDArray[np.float64]:  # noqa: N803
         """Fit and transform."""
         # Expecting numpy input, convert to torch
         if not isinstance(X, torch.Tensor):

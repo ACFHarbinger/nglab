@@ -2,7 +2,7 @@
 Masking utilities for self-attention.
 """
 
-from typing import Union
+
 import torch
 
 
@@ -11,7 +11,7 @@ class TriangularCausalMask:
     Triangular causal mask for sequence processing.
     """
 
-    def __init__(self, B: int, L: int, device: Union[str, torch.device] = "cpu") -> None:  # noqa: N803
+    def __init__(self, B: int, L: int, device: str | torch.device = "cpu") -> None:  # noqa: N803
         """
         Initialize the mask.
 
@@ -37,7 +37,7 @@ class ProbMask:
     Probabilistic mask for Informer-style attention.
     """
 
-    def __init__(self, B: int, H: int, L: int, index: torch.Tensor, scores: torch.Tensor, device: Union[str, torch.device] = "cpu") -> None:  # noqa: N803, PLR0913
+    def __init__(self, B: int, H: int, L: int, index: torch.Tensor, scores: torch.Tensor, device: str | torch.device = "cpu") -> None:  # noqa: N803, PLR0913
         """
         Initialize the mask.
         """

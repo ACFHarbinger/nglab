@@ -2,8 +2,9 @@
 Clustering models for NGLab.
 """
 
-from ..mac.base import ClassicalModel
 from typing import Any
+
+from ..mac.base import ClassicalModel
 from .clustering_algorithm.dbscan import DBSCANAlgorithm
 from .clustering_algorithm.gmm import GMMAlgorithm
 from .clustering_algorithm.hierarchical import HierarchicalClusteringAlgorithm

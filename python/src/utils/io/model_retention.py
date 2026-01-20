@@ -7,7 +7,7 @@ and enforcing retention rules across local and cloud storage.
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Protocol, Union, cast
+from typing import Any, Protocol, cast
 
 from python.src.utils.io.cloud_storage import CloudCheckpointManager
 from python.src.utils.io.model_versioning import ModelRegistry
@@ -20,16 +20,16 @@ class RetentionConfig:
     """Configuration for model retention."""
 
     keep_latest_n: int = 5
-    keep_best_metric: Optional[str] = "val_loss"
+    keep_best_metric: str | None = "val_loss"
     keep_best_n: int = 1
-    max_age_days: Optional[int] = None
+    max_age_days: int | None = None
     dry_run: bool = False
 
 
 class CheckpointManagerProtocol(Protocol):
     """Protocol for checkpoint managers (local or cloud)."""
 
-    def list_versions(self, model_type: str) -> List[str]: ...
+    def list_versions(self, model_type: str) -> list[str]: ...
 
     def delete(self, model_type: str, version: str) -> bool: ...
 
@@ -44,7 +44,7 @@ class ModelRetentionPolicy:
     def __init__(
         self,
         config: RetentionConfig,
-        manager: Union[ModelRegistry, CloudCheckpointManager],
+        manager: ModelRegistry | CloudCheckpointManager,
     ) -> None:
         """
         Initialize retention policy.
@@ -128,7 +128,7 @@ class ModelRetentionPolicy:
 
         return deleted_count
 
-    def enforce_all(self, model_types: List[str]) -> Dict[str, int]:
+    def enforce_all(self, model_types: list[str]) -> dict[str, int]:
         """Enforce policy on a list of model types."""
         results = {}
         for m_type in model_types:

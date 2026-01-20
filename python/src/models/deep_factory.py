@@ -2,7 +2,7 @@
 Deep Learning Model Factory.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from torch import nn
 
@@ -47,7 +47,7 @@ from .deep import (
 )
 
 # List of deep model names
-DEEP_MODEL_NAMES: List[str] = [
+DEEP_MODEL_NAMES: list[str] = [
     "NSTransformer",
     "Mamba",
     "LSTM",
@@ -88,7 +88,7 @@ DEEP_MODEL_NAMES: List[str] = [
 ]
 
 
-def create_deep_model(model_name: str, cfg: Dict[str, Any]) -> Optional[nn.Module]:  # noqa: PLR0911
+def create_deep_model(model_name: str, cfg: dict[str, Any]) -> nn.Module | None:  # noqa: PLR0911
     """
     Factory function to create deep learning models.
 

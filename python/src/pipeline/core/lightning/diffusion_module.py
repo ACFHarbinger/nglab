@@ -2,7 +2,7 @@
 Diffusion Lightning Module for Time Series Forecasting (DDPM).
 """
 
-from typing import Any, Dict, Optional, cast
+from typing import Any, cast
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -18,7 +18,7 @@ class DiffusionLightningModule(BaseModule):
     Sampling: Reverse diffusion from noise to y_0 conditioned on x.
     """
 
-    def __init__(self, model: nn.Module, cfg: Dict[str, Any]) -> None:
+    def __init__(self, model: nn.Module, cfg: dict[str, Any]) -> None:
         """
         Args:
             model (nn.Module): The noise prediction model (e.g. DiffusionUNet1D).
@@ -72,7 +72,7 @@ class DiffusionLightningModule(BaseModule):
         self,
         x_start: torch.Tensor,
         t: torch.Tensor,
-        noise: Optional[torch.Tensor] = None,
+        noise: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """
         Forward diffusion process: q(x_t | x_0).

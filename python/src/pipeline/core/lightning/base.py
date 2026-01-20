@@ -4,7 +4,7 @@ Base Lightning Module for the NGLab training pipeline.
 Provides a template for modules with common configuration and optimization setup.
 """
 
-from typing import Any, Dict
+from typing import Any
 
 import pytorch_lightning as pl
 import torch
@@ -16,7 +16,7 @@ class BaseModule(pl.LightningModule):
     Base LightningModule with shared functionality for logging and configuration.
     """
 
-    def __init__(self, cfg: Dict[str, Any]) -> None:
+    def __init__(self, cfg: dict[str, Any]) -> None:
         """
         Initialize the base module.
 

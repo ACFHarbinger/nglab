@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -17,7 +17,7 @@ class M5Model(ClassicalModel):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__()
         self.tree = DecisionTreeRegressor(**kwargs)
-        self.leaf_models: Dict[int, Optional[LinearRegression]] = {}
+        self.leaf_models: dict[int, LinearRegression | None] = {}
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
         if y is None:

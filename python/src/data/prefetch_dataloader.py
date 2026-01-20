@@ -8,11 +8,10 @@ GPU computation, reducing GPU idle time.
 import queue
 import threading
 from collections.abc import Iterator
-from typing import Any
+from typing import Any, Union
 
 import torch
 from torch.utils.data import DataLoader, Dataset
-from typing import Any, Dict, List, Optional, Union
 
 
 class CUDAPrefetcher:
@@ -51,7 +50,7 @@ class CUDAPrefetcher:
         self.stream = torch.cuda.Stream(device=self.device)
 
         self._iterator: Iterator[Any] | None = None
-        self._prefetched: List[Any] = []
+        self._prefetched: list[Any] = []
 
     def __iter__(self) -> "CUDAPrefetcher":
         """Initialize iterator and start prefetching."""
@@ -356,7 +355,7 @@ def benchmark_dataloader(
     dataloader: DataLoader[Any],
     num_batches: int = 100,
     warmup_batches: int = 10,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Benchmark DataLoader throughput.
 

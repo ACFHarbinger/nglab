@@ -12,7 +12,7 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Type, cast
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -56,13 +56,13 @@ class BenchmarkResult:
     cuda_version: str = ""
 
     # Extra metrics
-    extra: Dict[str, Any] = field(default_factory=dict)
+    extra: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
-    def to_json(self, path: Optional[str] = None) -> str:
+    def to_json(self, path: str | None = None) -> str:
         """Export to JSON."""
         data = self.to_dict()
         if path:
@@ -87,12 +87,12 @@ class GPUBenchmark:
         self.device = device
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.results: List[BenchmarkResult] = []
+        self.results: list[BenchmarkResult] = []
 
         # Collect hardware info
         self._hardware_info = self._get_hardware_info()
 
-    def _get_hardware_info(self) -> Dict[str, Any]:
+    def _get_hardware_info(self) -> dict[str, Any]:
         """Collect hardware information."""
         info = {
             "gpu_name": "",
@@ -109,13 +109,13 @@ class GPUBenchmark:
 
     def run_inference(  # noqa: PLR0913
         self,
-        input_shape: Tuple[int, ...],
-        batch_sizes: Optional[List[int]] = None,
+        input_shape: tuple[int, ...],
+        batch_sizes: list[int] | None = None,
         num_iterations: int = 100,
         warmup_iterations: int = 10,
         dtype: torch.dtype = torch.float32,
         mixed_precision: bool = False,
-    ) -> List[BenchmarkResult]:
+    ) -> list[BenchmarkResult]:
         """
         Run inference benchmarks across different batch sizes.
         """
@@ -147,7 +147,7 @@ class GPUBenchmark:
 
     def _benchmark_inference(  # noqa: PLR0913
         self,
-        input_shape: Tuple[int, ...],
+        input_shape: tuple[int, ...],
         batch_size: int,
         num_iterations: int,
         warmup_iterations: int,
@@ -177,8 +177,8 @@ class GPUBenchmark:
             torch.cuda.synchronize()
 
         # Benchmark
-        times: List[float] = []
-        memory_readings: List[float] = []
+        times: list[float] = []
+        memory_readings: list[float] = []
 
         with torch.no_grad():
             for _ in range(num_iterations):
@@ -239,16 +239,16 @@ class GPUBenchmark:
 
     def run_training(  # noqa: PLR0913
         self,
-        input_shape: Tuple[int, ...],
-        target_shape: Tuple[int, ...],
+        input_shape: tuple[int, ...],
+        target_shape: tuple[int, ...],
         loss_fn: Callable[..., torch.Tensor],
-        optimizer_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
-        batch_sizes: Optional[List[int]] = None,
+        optimizer_class: type[torch.optim.Optimizer] = torch.optim.Adam,
+        batch_sizes: list[int] | None = None,
         num_iterations: int = 50,
         warmup_iterations: int = 5,
         dtype: torch.dtype = torch.float32,
         mixed_precision: bool = False,
-    ) -> List[BenchmarkResult]:
+    ) -> list[BenchmarkResult]:
         """
         Run training benchmarks across different batch sizes.
         """
@@ -281,12 +281,12 @@ class GPUBenchmark:
 
         return results
 
-    def _benchmark_training(  # noqa: PLR0913, PLR0915
+    def _benchmark_training(  # noqa: PLR0913
         self,
-        input_shape: Tuple[int, ...],
-        target_shape: Tuple[int, ...],
+        input_shape: tuple[int, ...],
+        target_shape: tuple[int, ...],
         loss_fn: Callable[..., torch.Tensor],
-        optimizer_class: Type[torch.optim.Optimizer],
+        optimizer_class: type[torch.optim.Optimizer],
         batch_size: int,
         num_iterations: int,
         warmup_iterations: int,
@@ -314,7 +314,7 @@ class GPUBenchmark:
             torch.cuda.empty_cache()
             torch.cuda.reset_peak_memory_stats()
 
-        def train_step(opt: torch.optim.Optimizer, sclr: Optional[torch.cuda.amp.GradScaler]) -> None:
+        def train_step(opt: torch.optim.Optimizer, sclr: torch.cuda.amp.GradScaler | None) -> None:
             opt.zero_grad()
             if mixed_precision and sclr is not None:
                 with torch.autocast(device_type="cuda", dtype=torch.float16):
@@ -337,8 +337,8 @@ class GPUBenchmark:
             torch.cuda.synchronize()
 
         # Benchmark
-        times: List[float] = []
-        memory_readings: List[float] = []
+        times: list[float] = []
+        memory_readings: list[float] = []
 
         for _ in range(num_iterations):
             if torch.cuda.is_available():
@@ -396,7 +396,7 @@ class GPUBenchmark:
             **self._hardware_info,
         )
 
-    def save_results(self, filename: Optional[str] = None) -> str:
+    def save_results(self, filename: str | None = None) -> str:
         """Save all benchmark results to JSON file."""
         if filename is None:
             filename = f"benchmark_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -413,7 +413,7 @@ class GPUBenchmark:
 
         return str(path)
 
-    def compare_with_baseline(self, baseline_path: str) -> Dict[str, Any]:
+    def compare_with_baseline(self, baseline_path: str) -> dict[str, Any]:
         """
         Compare current results with a baseline.
         """
@@ -421,7 +421,7 @@ class GPUBenchmark:
             baseline = json.load(f)
 
         baseline_results = {r["name"]: r for r in baseline["results"]}
-        comparisons: Dict[str, Any] = {}
+        comparisons: dict[str, Any] = {}
 
         for result in self.results:
             if result.name in baseline_results:
@@ -443,11 +443,11 @@ class GPUBenchmark:
 
 def run_inference_benchmark(
     model: nn.Module,
-    input_shape: Tuple[int, ...],
+    input_shape: tuple[int, ...],
     device: str = "cuda",
-    batch_sizes: Optional[List[int]] = None,
+    batch_sizes: list[int] | None = None,
     **kwargs: Any,
-) -> List[BenchmarkResult]:
+) -> list[BenchmarkResult]:
     """Convenience function for running inference benchmarks."""
     if batch_sizes is None:
         batch_sizes = [1, 8, 32, 64]
@@ -457,13 +457,13 @@ def run_inference_benchmark(
 
 def run_training_benchmark(  # noqa: PLR0913
     model: nn.Module,
-    input_shape: Tuple[int, ...],
-    target_shape: Tuple[int, ...],
+    input_shape: tuple[int, ...],
+    target_shape: tuple[int, ...],
     loss_fn: Callable[..., torch.Tensor],
     device: str = "cuda",
-    batch_sizes: Optional[List[int]] = None,
+    batch_sizes: list[int] | None = None,
     **kwargs: Any,
-) -> List[BenchmarkResult]:
+) -> list[BenchmarkResult]:
     """Convenience function for running training benchmarks."""
     if batch_sizes is None:
         batch_sizes = [8, 32, 64]

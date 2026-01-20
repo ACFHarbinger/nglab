@@ -7,12 +7,12 @@ and boundary handling.
 """
 
 from pathlib import Path
+from typing import Any, cast
 
 import ConfigSpace as CS  # noqa: N817
 import ConfigSpace.util as CSU  # noqa: N812
 import numpy as np
 from numpy.typing import NDArray
-from typing import Optional, List, Any, Union, cast
 
 from .dehb_config_repo import ConfigRepository
 
@@ -41,17 +41,17 @@ class DifferentialEvolutionBase:
 
     def __init__(  # noqa: PLR0913
         self,
-        cs: Optional[CS.ConfigurationSpace] = None,
-        f: Optional[Any] = None,
-        dimensions: Optional[int] = None,
-        pop_size: Optional[int] = None,
-        max_age: Optional[float] = None,
-        mutation_factor: Optional[float] = None,
-        crossover_prob: Optional[float] = None,
-        strategy: Optional[str] = None,
+        cs: CS.ConfigurationSpace | None = None,
+        f: Any | None = None,
+        dimensions: int | None = None,
+        pop_size: int | None = None,
+        max_age: float | None = None,
+        mutation_factor: float | None = None,
+        crossover_prob: float | None = None,
+        strategy: str | None = None,
         boundary_fix_type: str = "random",
-        config_repository: Optional[ConfigRepository] = None,
-        seed: Optional[Union[int, np.random.Generator]] = None,
+        config_repository: ConfigRepository | None = None,
+        seed: int | np.random.Generator | None = None,
         **kwargs: Any,
     ):
         """Initialize the DE base optimizer with RNG and configuration space metadata."""
@@ -68,7 +68,7 @@ class DifferentialEvolutionBase:
         # Benchmark related variables
         self.cs = cs
         self.f = f
-        self.dimensions: Optional[int] = dimensions
+        self.dimensions: int | None = dimensions
         if dimensions is None and self.cs is not None:
              self.dimensions = len(self.cs.get_hyperparameters())
 
@@ -77,8 +77,8 @@ class DifferentialEvolutionBase:
         self.max_age = max_age
         self.mutation_factor = mutation_factor
         self.crossover_prob = crossover_prob
-        self.mutation_strategy: Optional[str] = None
-        self.crossover_strategy: Optional[str] = None
+        self.mutation_strategy: str | None = None
+        self.crossover_strategy: str | None = None
         if strategy is not None:
             self.mutation_strategy = strategy.split("_")[0]
             self.crossover_strategy = strategy.split("_")[1]
@@ -105,13 +105,13 @@ class DifferentialEvolutionBase:
 
         # Global trackers
         self.inc_score: float = np.inf
-        self.inc_config: Optional[np.ndarray[Any, Any]] = None
+        self.inc_config: np.ndarray[Any, Any] | None = None
         self.inc_id: int = -1
-        self.population: Optional[np.ndarray[Any, Any]] = None
-        self.population_ids: Optional[np.ndarray[Any, Any]] = None
-        self.fitness: Optional[np.ndarray[Any, Any]] = None
-        self.age: Optional[np.ndarray[Any, Any]] = None
-        self.history: List[Any] = []
+        self.population: np.ndarray[Any, Any] | None = None
+        self.population_ids: np.ndarray[Any, Any] | None = None
+        self.fitness: np.ndarray[Any, Any] | None = None
+        self.age: np.ndarray[Any, Any] | None = None
+        self.history: list[Any] = []
         self.reset()
 
     def reset(self, *, reset_seeds: bool = True) -> None:
@@ -168,7 +168,7 @@ class DifferentialEvolutionBase:
 
         return self._min_pop_size
 
-    def init_population(self, pop_size: Optional[int] = None) -> NDArray[np.float64]:
+    def init_population(self, pop_size: int | None = None) -> NDArray[np.float64]:
         """Initialize a population in unit hypercube or ConfigSpace representation."""
         if pop_size is None:
              assert self.pop_size is not None
@@ -196,7 +196,7 @@ class DifferentialEvolutionBase:
         return population
 
     def sample_population(
-        self, size: int = 3, alt_pop: Optional[Union[List[Any], np.ndarray[Any, Any]]] = None
+        self, size: int = 3, alt_pop: list[Any] | np.ndarray[Any, Any] | None = None
     ) -> NDArray[np.float64]:
         """Samples 'size' individuals
 
@@ -205,7 +205,7 @@ class DifferentialEvolutionBase:
         """
         assert self.population is not None
         
-        target_pop: Union[List[Any], np.ndarray[Any, Any]] = self.population
+        target_pop: list[Any] | np.ndarray[Any, Any] = self.population
         if alt_pop is not None:
              if isinstance(alt_pop, list):
                  if any(indv is None for indv in alt_pop):

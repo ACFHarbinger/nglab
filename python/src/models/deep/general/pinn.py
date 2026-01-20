@@ -6,7 +6,7 @@ that is designed to compute gradients with respect to its inputs (space/time)
 to solve partial differential equations (PDEs).
 """
 
-from typing import Any, Dict, List, Optional, cast
+from typing import cast
 
 import torch
 from torch import nn
@@ -57,7 +57,7 @@ class PINN(nn.Module):
         else:
             raise ValueError(f"Unknown activation: {activation}")
 
-        layers: List[nn.Module] = []
+        layers: list[nn.Module] = []
         layers.append(nn.Linear(input_dim, hidden_dim))
         layers.append(act_fn)
 
@@ -128,11 +128,11 @@ class PINN(nn.Module):
 
 def pinn_loss(
     u_pred: torch.Tensor,
-    u_target: Optional[torch.Tensor],
+    u_target: torch.Tensor | None,
     f_pred: torch.Tensor,  # Physics residual (e.g., u_t + u*u_x - u_xx)
     data_weight: float = 1.0,
     physics_weight: float = 1.0,
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     """
     Compute PINN loss = MSE_data + MSE_physics.
 

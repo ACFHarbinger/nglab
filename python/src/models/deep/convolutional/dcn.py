@@ -2,7 +2,7 @@
 Deep Convolutional Network (DCN).
 """
 
-from typing import Any, List, Optional, cast
+from typing import cast
 
 import torch
 from torch import nn
@@ -17,7 +17,7 @@ class DeepConvNet(nn.Module):
     def __init__(
         self,
         input_dim: int,
-        hidden_channels: Optional[List[int]] = None,
+        hidden_channels: list[int] | None = None,
         output_dim: int = 1,
         output_type: str = "prediction",
     ) -> None:
@@ -29,7 +29,7 @@ class DeepConvNet(nn.Module):
         self.output_dim = output_dim
         self.output_type = output_type
 
-        layers: List[nn.Module] = []
+        layers: list[nn.Module] = []
 
         # Handle input_dim if we treat it as (Channels, Seq) or similar
         # For simplicity, we assume input is (Batch, Seq, Features) and we treat Features as channels
@@ -51,7 +51,7 @@ class DeepConvNet(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
         """

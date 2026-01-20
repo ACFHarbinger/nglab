@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union, cast
+from typing import Any, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -9,7 +9,7 @@ class PCAAlgorithm:
     """Principal Component Analysis (PCA) Algorithm wrapper."""
 
     def __init__(
-        self, n_components: Optional[Union[int, float, str]] = None, **kwargs: Any
+        self, n_components: int | float | str | None = None, **kwargs: Any
     ) -> None:
         """Initialize PCA."""
         self.model = PCA(n_components=n_components, **kwargs)

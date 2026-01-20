@@ -1,8 +1,8 @@
 """Elastic Net Model."""
 
-from sklearn.linear_model import ElasticNet
-
 from typing import Any
+
+from sklearn.linear_model import ElasticNet
 
 from ..base import ClassicalModel
 

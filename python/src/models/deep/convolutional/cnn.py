@@ -3,7 +3,7 @@ Rolling Price Window CNN for Time Series.
 Inspired by "S&P 500 Stock's Movement Prediction using CNN".
 """
 
-from typing import Optional, cast
+from typing import cast
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -73,7 +73,7 @@ class RollingWindowCNN(nn.Module):
         self.fc2 = nn.Linear(hidden_dim, output_dim)
 
     def forward(
-        self, x: torch.Tensor, return_embedding: Optional[bool] = None
+        self, x: torch.Tensor, return_embedding: bool | None = None
     ) -> torch.Tensor:
         """
         Forward pass.

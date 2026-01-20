@@ -2,7 +2,7 @@
 Portfolio Optimization algorithms for multi-asset management.
 """
 
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -22,8 +22,8 @@ class PortfolioOptimizer:
         expected_returns: NDArray[Any],
         covariance_matrix: NDArray[Any],
         risk_aversion: float = 1.0,
-        target_return: Optional[float] = None,
-        constraints: Optional[List[Dict[str, Any]]] = None,
+        target_return: float | None = None,
+        constraints: list[dict[str, Any]] | None = None,
     ) -> NDArray[Any]:
         """
         Markowitz Mean-Variance Optimization.
@@ -41,7 +41,7 @@ class PortfolioOptimizer:
         bounds = [(0, 1) for _ in range(n)]
 
         # Default constraints: sum(weights) == 1
-        cons: List[Dict[str, Any]] = [{"type": "eq", "fun": lambda w: np.sum(w) - 1}]
+        cons: list[dict[str, Any]] = [{"type": "eq", "fun": lambda w: np.sum(w) - 1}]
         if constraints:
             cons.extend(constraints)
 
@@ -98,8 +98,8 @@ class PortfolioOptimizer:
 
     @staticmethod
     def _bisect(
-        indices: List[int], cov: NDArray[Any], weights: pd.Series
-    ) -> List[List[int]]:
+        indices: list[int], cov: NDArray[Any], weights: pd.Series
+    ) -> list[list[int]]:
         if len(indices) <= 1:
             return []
 
@@ -122,7 +122,7 @@ class PortfolioOptimizer:
         return [left, right]
 
     @staticmethod
-    def _get_cluster_var(cov: NDArray[Any], indices: List[int]) -> float:
+    def _get_cluster_var(cov: NDArray[Any], indices: list[int]) -> float:
         cluster_cov = cov[np.ix_(indices, indices)]
         # Inverse variance weights within cluster
         diag_val = np.diag(cluster_cov)

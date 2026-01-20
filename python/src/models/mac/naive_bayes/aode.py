@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 import numpy as np
 import torch
@@ -16,8 +16,8 @@ class AODEModel(ClassicalModel):
     def __init__(self, n_estimators: int = 10, **kwargs: Any) -> None:
         super().__init__()
         self.n_estimators = n_estimators
-        self.models: List[GaussianNB] = []
-        self.feature_subsets: List[List[int]] = []
+        self.models: list[GaussianNB] = []
+        self.feature_subsets: list[list[int]] = []
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
         if y is None:

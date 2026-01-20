@@ -4,9 +4,8 @@ Linear Discriminant Analysis (LDA) Wrapper.
 Provides transformation and classification using Fisher's Linear Discriminant.
 """
 
-from typing import Any, Optional, cast
+from typing import Any, cast
 
-import numpy as np
 from numpy.typing import NDArray
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
@@ -16,7 +15,7 @@ class LDAAlgorithm:
     Linear Discriminant Analysis for dimensionality reduction and classification.
     """
 
-    def __init__(self, n_components: Optional[int] = None, **kwargs: Any) -> None:
+    def __init__(self, n_components: int | None = None, **kwargs: Any) -> None:
         """
         Initialize LDA.
 

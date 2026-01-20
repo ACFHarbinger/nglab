@@ -5,7 +5,8 @@ Implements specialized RL losses including DR-GRPO, GSPO, and SAPO,
 designed to improve stability and performance in financial trading tasks.
 """
 
-from typing import Any, Optional
+from typing import Any
+
 import torch
 from tensordict import TensorDict
 from torchrl.objectives import ClipPPOLoss

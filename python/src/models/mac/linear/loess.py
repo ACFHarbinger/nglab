@@ -1,6 +1,6 @@
 """LOESS Model."""
 
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -21,8 +21,8 @@ class LOESSModel(ClassicalModel):
         self.frac = frac
         self.it = it
         self.kwargs = kwargs
-        self.X_train: Optional[np.ndarray[Any, Any]] = None
-        self.y_train: Optional[np.ndarray[Any, Any]] = None
+        self.X_train: np.ndarray[Any, Any] | None = None
+        self.y_train: np.ndarray[Any, Any] | None = None
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
         if y is None:

@@ -5,9 +5,10 @@ This module provides the standard synchronous DE algorithm, supporting various
 mutation and crossover strategies for global optimization of hyperparameters.
 """
 
+from typing import Any, cast
+
 import ConfigSpace as CS  # noqa: N817
 import numpy as np
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from distributed import Client
 
 from .de_base import DifferentialEvolutionBase
@@ -39,23 +40,23 @@ class DifferentialEvolution(DifferentialEvolutionBase):
 
     def __init__(  # noqa: PLR0913
         self,
-        cs: Optional[CS.ConfigurationSpace] = None,
-        f: Optional[Any] = None,
-        dimensions: Optional[int] = None,
-        pop_size: Optional[int] = None,
-        max_age: Optional[float] = None,
-        mutation_factor: Optional[float] = None,
-        crossover_prob: Optional[float] = None,
-        strategy: Optional[str] = None,
+        cs: CS.ConfigurationSpace | None = None,
+        f: Any | None = None,
+        dimensions: int | None = None,
+        pop_size: int | None = None,
+        max_age: float | None = None,
+        mutation_factor: float | None = None,
+        crossover_prob: float | None = None,
+        strategy: str | None = None,
         encoding: bool = False,
-        dim_map: Optional[Dict[Any, Any]] = None,
-        seed: Optional[Union[int, np.random.Generator]] = None,
-        config_repository: Optional[ConfigRepository] = None,
+        dim_map: dict[Any, Any] | None = None,
+        seed: int | np.random.Generator | None = None,
+        config_repository: ConfigRepository | None = None,
         boundary_fix_type: str = "random",
         **kwargs: Any,
     ) -> None:
         """Initialize a synchronous DE optimizer with optional encoding support."""
-        self.client: Optional[Client] = None
+        self.client: Client | None = None
         super().__init__(
             cs=cs,
             f=f,
@@ -72,13 +73,13 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         self.strategy = strategy
         self.encoding = encoding
         self.dim_map = dim_map
-        self.traj: List[float] = []
-        self.runtime: List[float] = []
-        self.history: List[Any] = []
+        self.traj: list[float] = []
+        self.runtime: list[float] = []
+        self.history: list[Any] = []
         self._min_pop_size: int = 1
         self._set_min_pop_size()
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self) -> dict[str, Any]:
         """Allows the object to picklable while having Dask client as a class attribute."""
         d = dict(self.__dict__)
         d["client"] = None  # hack to allow Dask client to be a class attribute
@@ -121,7 +122,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             new_vector[i] = np.max(np.array(vector)[self.dim_map[i]])
         return new_vector
 
-    def f_objective(self, x: Union[np.ndarray[Any, Any], CS.Configuration], fidelity: Optional[float] = None, **kwargs: Any) -> Dict[str, Any]:
+    def f_objective(self, x: np.ndarray[Any, Any] | CS.Configuration, fidelity: float | None = None, **kwargs: Any) -> dict[str, Any]:
         """Evaluate the objective for a given config or vector."""
         if self.f is None:
             raise NotImplementedError("An objective function needs to be passed.")
@@ -134,14 +135,13 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             if not isinstance(x, CS.Configuration):
                 # converts [0, 1] vector to a CS object
                 assert isinstance(x, np.ndarray)
-                config: Union[np.ndarray[Any, Any], CS.Configuration] = self.vector_to_configspace(x)
+                config: np.ndarray[Any, Any] | CS.Configuration = self.vector_to_configspace(x)
             else:
                 config = x
+        elif isinstance(x, np.ndarray):
+            config = x.copy()
         else:
-            if isinstance(x, np.ndarray):
-                config = x.copy()
-            else:
-                config = x
+            config = x
 
         if (
             fidelity is not None
@@ -154,7 +154,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         assert "cost" in res
         return res
 
-    def init_eval_pop(self, fidelity: Optional[float] = None, eval: bool = True, **kwargs: Any) -> Tuple[List[float], List[float], List[Any]]:
+    def init_eval_pop(self, fidelity: float | None = None, eval: bool = True, **kwargs: Any) -> tuple[list[float], list[float], list[Any]]:
         """Creates new population of 'pop_size' and evaluates individuals."""
         assert self.pop_size is not None
         self.population = self.init_population(self.pop_size)
@@ -164,9 +164,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         self.fitness = np.array([np.inf for i in range(self.pop_size)])
         self.age = np.array([self.max_age] * self.pop_size)
 
-        traj: List[float] = []
-        runtime: List[float] = []
-        history: List[Any] = []
+        traj: list[float] = []
+        runtime: list[float] = []
+        history: list[Any] = []
 
         if not eval:
             return traj, runtime, history
@@ -181,7 +181,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             f_val = float(res["fitness"])
             c_val = float(res["cost"])
             self.fitness[i] = f_val
-            info: Dict[str, Any] = res["info"] if "info" in res else dict()
+            info: dict[str, Any] = res["info"] if "info" in res else dict()
             if f_val < self.inc_score:
                 self.inc_score = f_val
                 self.inc_config = config
@@ -197,7 +197,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
 
         return traj, runtime, history
 
-    def eval_pop(self, population: Optional[np.ndarray[Any, Any]] = None, population_ids: Optional[np.ndarray[Any, Any]] = None, fidelity: Optional[float] = None, **kwargs: Any) -> Tuple[List[float], List[float], List[Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
+    def eval_pop(self, population: np.ndarray[Any, Any] | None = None, population_ids: np.ndarray[Any, Any] | None = None, fidelity: float | None = None, **kwargs: Any) -> tuple[list[float], list[float], list[Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
         """Evaluates a population
 
         If population=None, the current population's fitness will be evaluated
@@ -226,7 +226,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             fitnesses.append(f_val)
             costs.append(c_val)
             ages.append(self.max_age)
-            info: Dict[str, Any] = res["info"] if "info" in res else dict()
+            info: dict[str, Any] = res["info"] if "info" in res else dict()
             if f_val < self.inc_score:
                 self.inc_score = f_val
                 self.inc_config = pop[i]
@@ -276,9 +276,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
 
     def mutation(
         self,
-        current: Optional[np.ndarray[Any, Any]] = None,
-        best: Optional[np.ndarray[Any, Any]] = None,
-        alt_pop: Optional[Union[List[Any], np.ndarray[Any, Any]]] = None,
+        current: np.ndarray[Any, Any] | None = None,
+        best: np.ndarray[Any, Any] | None = None,
+        alt_pop: list[Any] | np.ndarray[Any, Any] | None = None,
     ) -> np.ndarray[Any, Any]:
         """Performs DE mutation"""
         if self.mutation_strategy == "rand1":
@@ -385,8 +385,8 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         return offspring
 
     def selection(
-        self, trials: np.ndarray[Any, Any], trial_ids: np.ndarray[Any, Any], fidelity: Optional[float] = None, **kwargs: Any
-    ) -> Tuple[List[float], List[float], List[Any]]:
+        self, trials: np.ndarray[Any, Any], trial_ids: np.ndarray[Any, Any], fidelity: float | None = None, **kwargs: Any
+    ) -> tuple[list[float], list[float], list[Any]]:
         """Carries out a parent-offspring competition given a set of trial population"""
         traj = []
         runtime = []
@@ -428,7 +428,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             )
         return traj, runtime, history
 
-    def evolve_generation(self, fidelity: Optional[float] = None, best: Optional[np.ndarray[Any, Any]] = None, alt_pop: Optional[np.ndarray[Any, Any]] = None, **kwargs: Any) -> Tuple[List[float], List[float], List[Any]]:
+    def evolve_generation(self, fidelity: float | None = None, best: np.ndarray[Any, Any] | None = None, alt_pop: np.ndarray[Any, Any] | None = None, **kwargs: Any) -> tuple[list[float], list[float], list[Any]]:
         """Performs a complete DE evolution: mutation -> crossover -> selection"""
         trials = []
         trial_ids = []
@@ -449,7 +449,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         traj, runtime, history = self.selection(trials_arr, trial_ids_arr, fidelity, **kwargs)
         return traj, runtime, history
 
-    def sample_mutants(self, size: int, population: Optional[np.ndarray[Any, Any]] = None) -> np.ndarray[Any, Any]:
+    def sample_mutants(self, size: int, population: np.ndarray[Any, Any] | None = None) -> np.ndarray[Any, Any]:
         """Generates 'size' mutants from the population using rand1"""
         if population is None:
             population = self.population
@@ -467,7 +467,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         self.mutation_strategy = old_strategy
         return mutants
 
-    def run(self, generations: int = 1, verbose: bool = False, fidelity: Optional[float] = None, reset: bool = True, **kwargs: Any) -> Tuple[np.ndarray[Any, Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
+    def run(self, generations: int = 1, verbose: bool = False, fidelity: float | None = None, reset: bool = True, **kwargs: Any) -> tuple[np.ndarray[Any, Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
         """Run DE for a fixed number of generations and return trackers."""
         # checking if a run exists
         if not hasattr(self, "traj") or reset:

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, cast
+from typing import Any, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -12,16 +12,16 @@ class MDAAlgorithm:
     def __init__(self, n_components_per_class: int = 1, **kwargs: Any) -> None:
         """Initialize MDA."""
         self.n_components_per_class = n_components_per_class
-        self.gmms: Dict[int, GaussianMixture] = {}
-        self.classes_: Optional[NDArray[Any]] = None
-        self.priors_: Optional[NDArray[np.float64]] = None
+        self.gmms: dict[int, GaussianMixture] = {}
+        self.classes_: NDArray[Any] | None = None
+        self.priors_: NDArray[np.float64] | None = None
         self.le = LabelEncoder()
 
     def fit(self, X: NDArray[Any], y: NDArray[Any]) -> "MDAAlgorithm":  # noqa: N803
         """Fit the model."""
         y_encoded = cast(NDArray[np.int_], self.le.fit_transform(y))
-        self.classes_ = self.le.classes_
-        n_classes = len(self.classes_)
+        self.classes_ = cast(NDArray[Any], self.le.classes_)
+        n_classes = len(cast(Any, self.classes_))
         self.gmms = {}
         self.priors_ = np.zeros(n_classes, dtype=np.float64)
 
@@ -64,7 +64,7 @@ class MDAAlgorithm:
 
     def fit_transform(
         self, X: NDArray[Any], y: NDArray[Any]
-    ) -> NDArray[np.float64]:  # noqa: N803
+    ) -> NDArray[np.float64]:
         """Fit and transform."""
         self.fit(X, y)
         return self.transform(X)

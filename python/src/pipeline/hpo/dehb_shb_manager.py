@@ -8,8 +8,9 @@ Successive Halving (SH) brackets within the DEHB algorithm. It manages:
 - Promotions to higher fidelities
 """
 
+from typing import Any
+
 import numpy as np
-from typing import Any, Dict, Optional, Tuple
 
 
 # Adapted from https://github.com/automl/DEHB/blob/master/src/dehb/utils/bracket_manager.py
@@ -30,16 +31,16 @@ class SynchronousHalvingBracketManager:
         self,
         n_configs: np.ndarray[Any, Any],
         fidelities: np.ndarray[Any, Any],
-        bracket_id: Optional[int] = None,
+        bracket_id: int | None = None,
     ) -> None:
         """Initialize the bracket state for synchronous successive halving."""
         assert len(n_configs) == len(fidelities)
         self.n_configs: np.ndarray[Any, Any] = n_configs
         self.fidelities: np.ndarray[Any, Any] = fidelities
-        self.bracket_id: Optional[int] = bracket_id
-        self.sh_bracket: Dict[float, int] = {}
-        self._sh_bracket: Dict[float, int] = {}
-        self._config_map: Dict[int, Any] = {}
+        self.bracket_id: int | None = bracket_id
+        self.sh_bracket: dict[float, int] = {}
+        self._sh_bracket: dict[float, int] = {}
+        self._config_map: dict[int, Any] = {}
         for i, fidelity in enumerate(fidelities):
             # sh_bracket keeps track of jobs/configs that are still to be scheduled/allocatted
             # _sh_bracket keeps track of jobs/configs that have been run and results retrieved for
@@ -52,7 +53,7 @@ class SynchronousHalvingBracketManager:
         self.n_rungs = len(fidelities)
         self.current_rung = 0
 
-    def get_fidelity(self, rung: Optional[int] = None) -> float:
+    def get_fidelity(self, rung: int | None = None) -> float:
         """Returns the exact fidelity that rung is pointing to.
 
         Returns current rung's fidelity if no rung is passed.
@@ -61,7 +62,7 @@ class SynchronousHalvingBracketManager:
             return float(self.fidelities[rung])
         return float(self.fidelities[self.current_rung])
 
-    def get_lower_fidelity_promotions(self, fidelity: float) -> Tuple[float, int]:
+    def get_lower_fidelity_promotions(self, fidelity: float) -> tuple[float, int]:
         """Returns the immediate lower fidelity and the number of configs to be promoted from there"""
         assert fidelity in self.fidelities
         rung = int(np.where(fidelity == self.fidelities)[0][0])
@@ -70,7 +71,7 @@ class SynchronousHalvingBracketManager:
         num_promote_configs = int(self.n_configs[rung])
         return lower_fidelity, num_promote_configs
 
-    def get_next_job_fidelity(self) -> Optional[float]:
+    def get_next_job_fidelity(self) -> float | None:
         """Returns the fidelity that will be selected if current_rung is incremented by 1"""
         current_fidelity = self.get_fidelity()
         if self.sh_bracket[current_fidelity] > 0:

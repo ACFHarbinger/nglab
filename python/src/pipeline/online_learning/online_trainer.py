@@ -4,7 +4,7 @@ Online Learning Trainer for real-time model adaptation.
 
 import collections
 import copy
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
@@ -15,7 +15,7 @@ class ExperienceReplayBuffer:
     """A simple FIFO buffer for experience replay in online learning."""
 
     def __init__(self, capacity: int = 1000) -> None:
-        self.buffer: collections.deque[Dict[str, NDArray[Any]]] = collections.deque(
+        self.buffer: collections.deque[dict[str, NDArray[Any]]] = collections.deque(
             maxlen=capacity
         )
 
@@ -24,7 +24,7 @@ class ExperienceReplayBuffer:
         for i in range(len(X)):
             self.buffer.append({"X": X[i], "y": y[i]})
 
-    def sample(self, batch_size: int) -> Optional[Dict[str, NDArray[Any]]]:
+    def sample(self, batch_size: int) -> dict[str, NDArray[Any]] | None:
         """Sample a random batch from the buffer."""
         if len(self.buffer) < batch_size:
             return None
@@ -57,8 +57,8 @@ class OnlineTrainer:
         self.performance_threshold = performance_threshold
 
         # Performance tracking
-        self.baseline_score: Optional[float] = None
-        self.last_stable_model: Optional[BaseEstimator] = None
+        self.baseline_score: float | None = None
+        self.last_stable_model: BaseEstimator | None = None
 
         # Check if model supports partial_fit
         self.supports_incremental = hasattr(model, "partial_fit")

@@ -3,7 +3,8 @@ Base class for classical machine learning models.
 """
 
 from abc import ABC
-from typing import Any, Dict, Mapping, cast
+from collections.abc import Mapping
+from typing import Any, cast
 
 import numpy as np
 import torch
@@ -108,9 +109,9 @@ class ClassicalModel(nn.Module, ABC):
             self.model.fit(X_np)
         self._is_fitted = True
 
-    def state_dict(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:  # type: ignore[override]
+    def state_dict(self, *args: Any, **kwargs: Any) -> dict[str, Any]:  # type: ignore[override]
         """Override to include the classical model state if needed."""
-        sd = cast(Dict[str, Any], super().state_dict(*args, **kwargs))
+        sd = cast(dict[str, Any], super().state_dict(*args, **kwargs))
         if self.model is not None and self._is_fitted:
             sd["_classical_model"] = self.model
         return sd

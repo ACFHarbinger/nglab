@@ -10,11 +10,10 @@ from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any
 
 import torch
-import torch.nn as nn
-from torch import autocast
+from torch import autocast, nn
 from torch.cuda.amp.grad_scaler import GradScaler
 
 
@@ -91,14 +90,14 @@ class MixedPrecisionTrainer:
         self,
         model: nn.Module,
         optimizer: torch.optim.Optimizer,
-        config: Optional[MixedPrecisionConfig] = None,
+        config: MixedPrecisionConfig | None = None,
     ) -> None:
         self.model = model
         self.optimizer = optimizer
         self.config = config or MixedPrecisionConfig()
 
         # Initialize GradScaler for FP16 mixed precision
-        self._scaler: Optional[GradScaler] = None
+        self._scaler: GradScaler | None = None
         if self.config.use_amp and self.config.precision == "16-mixed":
             self._scaler = GradScaler(
                 init_scale=self.config.init_scale,
@@ -134,7 +133,7 @@ class MixedPrecisionTrainer:
         forward_fn: Callable[[nn.Module, Any], torch.Tensor],
         loss_fn: Callable[[torch.Tensor, Any], torch.Tensor],
         accumulation_steps: int = 1,
-    ) -> Tuple[torch.Tensor, float]:
+    ) -> tuple[torch.Tensor, float]:
         """
         Execute a single training step with mixed precision.
 
@@ -161,7 +160,7 @@ class MixedPrecisionTrainer:
 
         return loss, float(loss.item()) * accumulation_steps
 
-    def step(self, clip_grad_norm: Optional[float] = None) -> None:
+    def step(self, clip_grad_norm: float | None = None) -> None:
         """
         Execute optimizer step with gradient unscaling and optional clipping.
 
@@ -183,9 +182,9 @@ class MixedPrecisionTrainer:
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), clip_grad_norm)
             self.optimizer.step()
 
-    def state_dict(self) -> Dict[str, Any]:
+    def state_dict(self) -> dict[str, Any]:
         """Get state dict for checkpointing."""
-        state: Dict[str, Any] = {
+        state: dict[str, Any] = {
             "config": {
                 "precision": self.config.precision,
                 "enabled": self.config.enabled,
@@ -195,7 +194,7 @@ class MixedPrecisionTrainer:
             state["scaler"] = self._scaler.state_dict()
         return state
 
-    def load_state_dict(self, state: Dict[str, Any]) -> None:
+    def load_state_dict(self, state: dict[str, Any]) -> None:
         """Load state dict from checkpoint."""
         if self._scaler is not None and "scaler" in state:
             self._scaler.load_state_dict(state["scaler"])
@@ -287,7 +286,7 @@ def estimate_memory_savings(
     batch_size: int,
     sequence_length: int,
     precision: str = "16-mixed",
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Estimate memory savings from using mixed precision.
 

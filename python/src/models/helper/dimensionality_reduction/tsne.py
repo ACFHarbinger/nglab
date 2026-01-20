@@ -1,6 +1,5 @@
-from typing import Any, Optional, cast
+from typing import Any, cast
 
-import numpy as np
 from numpy.typing import NDArray
 from sklearn.manifold import TSNE
 
@@ -8,7 +7,7 @@ from sklearn.manifold import TSNE
 class TSNEAlgorithm:
     def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
         self.model = TSNE(n_components=n_components, **kwargs)
-        self._X: Optional[NDArray[Any]] = None
+        self._X: NDArray[Any] | None = None
 
     def fit(self, X: NDArray[Any]) -> "TSNEAlgorithm":  # noqa: N803
         # TSNE doesn't have a separate fit method in most versions (it's fit_transform or nothing)

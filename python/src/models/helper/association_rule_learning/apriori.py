@@ -2,7 +2,8 @@
 Apriori Algorithm for Association Rule Learning.
 """
 
-from typing import Any, Dict, List, Set, Union, Tuple
+from typing import Any
+
 import pandas as pd
 
 
@@ -17,14 +18,14 @@ class AprioriAlgorithm:
         """
         self.min_support = min_support
         self.min_confidence = min_confidence
-        self.frequent_itemsets: Dict[int, Dict[frozenset[Any], float]] = {}
-        self.rules: List[Dict[str, Any]] = []
+        self.frequent_itemsets: dict[int, dict[frozenset[Any], float]] = {}
+        self.rules: list[dict[str, Any]] = []
 
-    def fit(self, transactions: Union[pd.DataFrame, List[List[Any]]]) -> "AprioriAlgorithm":
+    def fit(self, transactions: pd.DataFrame | list[list[Any]]) -> "AprioriAlgorithm":
         """
         Execute the Apriori algorithm on the dataset.
         """
-        processed_transactions: List[List[Any]]
+        processed_transactions: list[list[Any]]
         if isinstance(transactions, pd.DataFrame):
             items = transactions.columns.tolist()
             transaction_list = []
@@ -38,10 +39,10 @@ class AprioriAlgorithm:
         self.rules = self._generate_rules()
         return self
 
-    def _find_frequent_itemsets(self, transactions: List[List[Any]]) -> Dict[int, Dict[frozenset[Any], float]]:
+    def _find_frequent_itemsets(self, transactions: list[list[Any]]) -> dict[int, dict[frozenset[Any], float]]:
         """Find frequent itemsets using Apriori logic."""
         n_transactions = len(transactions)
-        item_counts: Dict[frozenset[Any], int] = {}
+        item_counts: dict[frozenset[Any], int] = {}
         for t in transactions:
             for item in t:
                 item_set = frozenset([item])
@@ -52,7 +53,7 @@ class AprioriAlgorithm:
             for item, count in item_counts.items()
             if count / n_transactions >= self.min_support
         }
-        all_frequent: Dict[int, Dict[frozenset[Any], float]] = {1: frequent}
+        all_frequent: dict[int, dict[frozenset[Any], float]] = {1: frequent}
 
         k = 2
         while True:
@@ -79,10 +80,10 @@ class AprioriAlgorithm:
 
         return all_frequent
 
-    def _generate_candidates(self, prev_frequent: Set[frozenset[Any]], k: int) -> Set[frozenset[Any]]:
+    def _generate_candidates(self, prev_frequent: set[frozenset[Any]], k: int) -> set[frozenset[Any]]:
         """Generate candidates of size k from frequent itemsets of size k-1."""
         items = list(prev_frequent)
-        candidates: Set[frozenset[Any]] = set()
+        candidates: set[frozenset[Any]] = set()
         for i in range(len(items)):
             for j in range(i + 1, len(items)):
                 l1 = sorted(list(items[i]))
@@ -91,9 +92,9 @@ class AprioriAlgorithm:
                     candidates.add(items[i] | items[j])
         return candidates
 
-    def _generate_rules(self) -> List[Dict[str, Any]]:
+    def _generate_rules(self) -> list[dict[str, Any]]:
         """Generate association rules from frequent itemsets."""
-        rules: List[Dict[str, Any]] = []
+        rules: list[dict[str, Any]] = []
         for k, itemsets in self.frequent_itemsets.items():
             if k < 2:
                 continue
@@ -117,12 +118,12 @@ class AprioriAlgorithm:
                                 )
         return rules
 
-    def _get_all_subsets(self, itemset: frozenset[Any]) -> List[Tuple[Any, ...]]:
+    def _get_all_subsets(self, itemset: frozenset[Any]) -> list[tuple[Any, ...]]:
         """Get all non-empty subsets of an itemset."""
         from itertools import combinations
 
         s = list(itemset)
-        subsets: List[Tuple[Any, ...]] = []
+        subsets: list[tuple[Any, ...]] = []
         for i in range(1, len(s)):
             subsets.extend(combinations(s, i))
         return subsets

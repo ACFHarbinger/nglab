@@ -2,7 +2,7 @@
 xLSTM Block implementation (sLSTM variant).
 """
 
-from typing import Optional, Tuple, List, Union
+
 import torch
 from torch import nn
 
@@ -22,7 +22,7 @@ class sLSTMCell(nn.Module):  # noqa: N801
         self.weight_ih = nn.Linear(input_dim, 4 * hidden_dim)
         self.weight_hh = nn.Linear(hidden_dim, 4 * hidden_dim)
 
-    def forward(self, x: torch.Tensor, state: Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
+    def forward(self, x: torch.Tensor, state: tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
         """
         Forward pass for a single time step.
 
@@ -80,7 +80,7 @@ class mLSTMCell(nn.Module):  # noqa: N801
             input_dim, 3 * hidden_dim + 2 * num_heads + hidden_dim
         )
 
-    def forward(self, x: torch.Tensor, state: Optional[Tuple[torch.Tensor, torch.Tensor, torch.Tensor]]) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+    def forward(self, x: torch.Tensor, state: tuple[torch.Tensor, torch.Tensor, torch.Tensor] | None) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
         """
         Forward step.
         State: (C, n, m)
@@ -177,7 +177,7 @@ class xLSTMBlock(nn.Module):  # noqa: N801
 
         self.dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
 
-    def forward(self, x: torch.Tensor, state: Optional[Tuple[torch.Tensor, ...]] = None) -> Tuple[torch.Tensor, Optional[Tuple[torch.Tensor, ...]]]:
+    def forward(self, x: torch.Tensor, state: tuple[torch.Tensor, ...] | None = None) -> tuple[torch.Tensor, tuple[torch.Tensor, ...] | None]:
         """
         Process sequence.
         x: (Batch, Seq, Feat) if batch_first

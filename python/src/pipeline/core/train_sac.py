@@ -10,6 +10,8 @@ This script uses a custom wrapper to convert the discrete space to continuous.
 
 import argparse
 import os
+from collections.abc import Callable
+from typing import Any, cast
 
 import gymnasium as gym
 import numpy as np
@@ -19,25 +21,25 @@ from stable_baselines3 import SAC
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
-from typing import Any, Callable
 
-class ContinuousActionWrapper(gym.ActionWrapper):  # type: ignore
+
+class ContinuousActionWrapper(gym.ActionWrapper[Any, Any, Any]):
     """
     Wrapper to convert discrete action space to continuous.
     Maps a continuous action in [-1, 1] to discrete {0, 1, 2}.
     """
 
-    def __init__(self, env: gym.Env) -> None:
+    def __init__(self, env: gym.Env[Any, Any]) -> None:
         """
         Initialize the wrapper.
         """
         super().__init__(env)
-        is_discrete = isinstance(env.action_space, spaces.Discrete)
-        assert is_discrete, "Expected Discrete action space"
-        self.n_actions = env.action_space.n
+        action_space = env.action_space
+        assert isinstance(action_space, spaces.Discrete), "Expected Discrete action space"
+        self.n_actions = int(cast(Any, action_space).n)
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
 
-    def action(self, action: np.ndarray) -> int:
+    def action(self, action: np.ndarray[Any, Any]) -> int:
         """
         Convert continuous action to discrete.
         """
@@ -45,7 +47,7 @@ class ContinuousActionWrapper(gym.ActionWrapper):  # type: ignore
         # -1 to -0.33: Sell (2)
         # -0.33 to 0.33: Hold (0)
         # 0.33 to 1: Buy (1)
-        continuous_action = np.clip(action[0], -1.0, 1.0)
+        continuous_action = float(np.clip(action[0], -1.0, 1.0))
         if continuous_action < -0.33:
             return 2  # Sell
         elif continuous_action > 0.33:
@@ -54,11 +56,11 @@ class ContinuousActionWrapper(gym.ActionWrapper):  # type: ignore
             return 0  # Hold
 
 
-def make_env(rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000) -> "Callable[[], gym.Env[Any, Any]]":
+def make_env(rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000) -> Callable[[], gym.Env[Any, Any]]:
     """Create a wrapped TradingEnv instance for SAC."""
 
     def _init() -> gym.Env[Any, Any]:
-        env = TradingEnv(lookback=lookback, max_steps=max_steps)
+        env: gym.Env[Any, Any] = TradingEnv(lookback=lookback, max_steps=max_steps)
         env = ContinuousActionWrapper(env)
         env = Monitor(env)
         return env

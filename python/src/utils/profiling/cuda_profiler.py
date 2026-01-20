@@ -15,15 +15,17 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any
 
 import torch
 from torch import nn
 from torch.profiler import (
     ProfilerActivity,
-    profile as torch_profile,
     schedule,
     tensorboard_trace_handler,
+)
+from torch.profiler import (
+    profile as torch_profile,
 )
 
 
@@ -78,9 +80,9 @@ class ProfilingResult:
     total_cpu_time_ms: float
     peak_memory_mb: float
     avg_memory_mb: float
-    top_operations: List[Dict[str, Any]] = field(default_factory=list)
-    chrome_trace_path: Optional[str] = None
-    tensorboard_dir: Optional[str] = None
+    top_operations: list[dict[str, Any]] = field(default_factory=list)
+    chrome_trace_path: str | None = None
+    tensorboard_dir: str | None = None
 
 
 class CUDAProfiler:
@@ -96,11 +98,11 @@ class CUDAProfiler:
         result = profiler.get_results()
     """
 
-    def __init__(self, config: Optional[ProfilerConfig] = None) -> None:
+    def __init__(self, config: ProfilerConfig | None = None) -> None:
         self.config = config or ProfilerConfig()
-        self._profiler: Optional[torch_profile] = None
+        self._profiler: torch_profile | None = None
         self._step_count = 0
-        self._results: Optional[ProfilingResult] = None
+        self._results: ProfilingResult | None = None
 
         # Create output directory
         Path(self.config.output_dir).mkdir(parents=True, exist_ok=True)
@@ -184,7 +186,7 @@ class CUDAProfiler:
             peak_memory = 0.0
 
         # Get top operations by CUDA time
-        top_ops: List[Dict[str, Any]] = []
+        top_ops: list[dict[str, Any]] = []
         for event in sorted(
             key_averages, key=lambda x: x.cuda_time_total or 0, reverse=True
         )[:10]:
@@ -206,7 +208,7 @@ class CUDAProfiler:
             top_operations=top_ops,
         )
 
-    def get_results(self) -> Optional[ProfilingResult]:
+    def get_results(self) -> ProfilingResult | None:
         """Get profiling results."""
         return self._results
 
@@ -233,7 +235,7 @@ class CUDAProfiler:
         print("=" * 60 + "\n")
 
 
-def get_gpu_memory_stats(device: int = 0) -> Optional[GPUMemoryStats]:
+def get_gpu_memory_stats(device: int = 0) -> GPUMemoryStats | None:
     """
     Get current GPU memory statistics.
 
@@ -275,7 +277,7 @@ def profile_model_forward(
     sample_input: torch.Tensor,
     num_iterations: int = 100,
     warmup_iterations: int = 10,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Profile model forward pass.
 
@@ -301,7 +303,7 @@ def profile_model_forward(
         torch.cuda.synchronize()
 
     # Profile
-    times: List[float] = []
+    times: list[float] = []
     with torch.no_grad():
         for _ in range(num_iterations):
             if torch.cuda.is_available():
@@ -336,7 +338,7 @@ def profile_training_step(  # noqa: PLR0913
     sample_target: torch.Tensor,
     num_iterations: int = 50,
     warmup_iterations: int = 5,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Profile complete training step (forward + backward + optimizer).
 
@@ -373,9 +375,9 @@ def profile_training_step(  # noqa: PLR0913
         torch.cuda.synchronize()
 
     # Profile
-    times: List[float] = []
-    losses: List[float] = []
-    memory_used: List[float] = []
+    times: list[float] = []
+    losses: list[float] = []
+    memory_used: list[float] = []
 
     for _ in range(num_iterations):
         if torch.cuda.is_available():

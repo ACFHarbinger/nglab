@@ -1,8 +1,8 @@
 """LARS Model."""
 
-from sklearn.linear_model import Lars
-
 from typing import Any
+
+from sklearn.linear_model import Lars
 
 from ..base import ClassicalModel
 

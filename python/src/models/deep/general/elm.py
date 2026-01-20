@@ -2,7 +2,6 @@
 Extreme Learning Machine (ELM) implementation.
 """
 
-from typing import Any, Optional
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -44,7 +43,7 @@ class ELM(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
         """Forward pass."""

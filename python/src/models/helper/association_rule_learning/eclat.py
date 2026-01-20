@@ -1,6 +1,7 @@
-from typing import Any, Dict, List, Set, Union
-import numpy as np
 import itertools
+from typing import Any, cast
+
+import numpy as np
 from numpy.typing import NDArray
 
 
@@ -11,14 +12,14 @@ class EclatAlgorithm:
         """Initialize Eclat."""
         self.min_support = min_support
         self.min_confidence = min_confidence
-        self.rules: List[Dict[str, Any]] = []
-        self.frequent_itemsets: Dict[frozenset[Any], int] = {}  # itemset -> support_count
+        self.rules: list[dict[str, Any]] = []
+        self.frequent_itemsets: dict[frozenset[Any], int] = {}  # itemset -> support_count
 
-    def fit(self, X: Union[NDArray[Any], Any]) -> "EclatAlgorithm":  # noqa: N803
+    def fit(self, X: NDArray[Any] | Any) -> "EclatAlgorithm":  # noqa: N803
         """Fit the model."""
         # Expect X to be (n_samples, n_items) binary matrix (0/1)
         if hasattr(X, "numpy"):
-            X_data = X.numpy()
+            X_data = cast(Any, X).numpy()
         else:
             X_data = np.asarray(X)
 
@@ -26,7 +27,7 @@ class EclatAlgorithm:
         min_support_count = self.min_support * n_transactions
 
         # 1. Transform to Vertical Format: Item -> Set of Transaction IDs (TIDs)
-        tid_sets: Dict[frozenset[Any], Set[int]] = {}
+        tid_sets: dict[frozenset[Any], set[int]] = {}
         for item in range(n_items):
             tids = set(np.where(X_data[:, item] > 0)[0])
             if len(tids) >= min_support_count:
@@ -42,14 +43,14 @@ class EclatAlgorithm:
         self._generate_rules(n_transactions)
         return self
 
-    def _eclat(self, itemsets: List[frozenset[Any]], tid_sets: Dict[frozenset[Any], Set[int]], min_support_count: float) -> None:
+    def _eclat(self, itemsets: list[frozenset[Any]], tid_sets: dict[frozenset[Any], set[int]], min_support_count: float) -> None:
         """Recursive DFS for Eclat."""
         for i in range(len(itemsets)):
             itemset_i = itemsets[i]
             tids_i = tid_sets[itemset_i]
 
-            suffix_itemsets: List[frozenset[Any]] = []
-            suffix_tid_sets: Dict[frozenset[Any], Set[int]] = {}
+            suffix_itemsets: list[frozenset[Any]] = []
+            suffix_tid_sets: dict[frozenset[Any], set[int]] = {}
 
             for j in range(i + 1, len(itemsets)):
                 itemset_j = itemsets[j]

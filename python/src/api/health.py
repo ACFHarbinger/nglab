@@ -1,7 +1,8 @@
+from typing import Any
+
 import psutil
 import torch
-from flask import Flask, jsonify, Response
-from typing import Any, Dict
+from flask import Flask, Response, jsonify
 
 app = Flask(__name__)
 
@@ -16,7 +17,7 @@ def health() -> Response:
     gpu_name = torch.cuda.get_device_name(0) if gpu_available else None
 
     # Mypy now knows jsonify returns a Response, so no cast is needed.
-    response_data: Dict[str, Any] = {
+    response_data: dict[str, Any] = {
         "status": "healthy",
         "system": {
             "cpu_percent": psutil.cpu_percent(),

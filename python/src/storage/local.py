@@ -6,7 +6,7 @@ import json
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from python.src.storage.base import ModelMetadata, ModelStorage, StorageConfig
 
@@ -43,8 +43,8 @@ class LocalStorage(ModelStorage):
         self,
         model_data: bytes,
         name: str,
-        version: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        version: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> str:
         """Save model to local filesystem."""
         if version is None:
@@ -82,7 +82,7 @@ class LocalStorage(ModelStorage):
 
         return str(model_path)
 
-    def load(self, name: str, version: Optional[str] = None) -> bytes:
+    def load(self, name: str, version: str | None = None) -> bytes:
         """Load model from local filesystem."""
         if version is None:
             version = self._get_latest_version(name)
@@ -98,13 +98,13 @@ class LocalStorage(ModelStorage):
 
         return self._decompress(compressed_data)
 
-    def exists(self, name: str, version: Optional[str] = None) -> bool:
+    def exists(self, name: str, version: str | None = None) -> bool:
         """Check if model exists."""
         if version is None:
             return self._model_dir(name).exists()
         return self._version_path(name, version).exists()
 
-    def delete(self, name: str, version: Optional[str] = None) -> bool:
+    def delete(self, name: str, version: str | None = None) -> bool:
         """Delete model from storage."""
         if version is None:
             # Delete entire model directory
@@ -125,7 +125,7 @@ class LocalStorage(ModelStorage):
                 meta_path.unlink()
             return deleted
 
-    def list_models(self) -> List[str]:
+    def list_models(self) -> list[str]:
         """List all model names."""
         if not self.base_path.exists():
             return []
@@ -135,7 +135,7 @@ class LocalStorage(ModelStorage):
             if d.is_dir() and not d.name.startswith(".")
         ]
 
-    def list_versions(self, name: str) -> List[str]:
+    def list_versions(self, name: str) -> list[str]:
         """List all versions of a model."""
         model_dir = self._model_dir(name)
         if not model_dir.exists():
@@ -145,7 +145,7 @@ class LocalStorage(ModelStorage):
             reverse=True,
         )
 
-    def get_metadata(self, name: str, version: Optional[str] = None) -> ModelMetadata:
+    def get_metadata(self, name: str, version: str | None = None) -> ModelMetadata:
         """Get metadata for a model."""
         if version is None:
             version = self._get_latest_version(name)
@@ -163,7 +163,7 @@ class LocalStorage(ModelStorage):
 
         return ModelMetadata(**data)
 
-    def _get_latest_version(self, name: str) -> Optional[str]:
+    def _get_latest_version(self, name: str) -> str | None:
         """Get the latest version string for a model."""
         latest_path = self._latest_path(name)
         if latest_path.exists():

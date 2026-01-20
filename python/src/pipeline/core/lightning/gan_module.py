@@ -2,12 +2,10 @@
 Generative Adversarial Network (GAN) Module for Time Series Prediction.
 """
 
-from typing import Any, Dict, List, Tuple, Union, cast
+from typing import Any, cast
 
-import pytorch_lightning as pl
 import torch
 from torch import nn
-from torch.optim import Optimizer
 
 from .base import BaseModule
 
@@ -22,7 +20,7 @@ class GANLightningModule(BaseModule):
     """
 
     def __init__(
-        self, generator: nn.Module, discriminator: nn.Module, cfg: Dict[str, Any]
+        self, generator: nn.Module, discriminator: nn.Module, cfg: dict[str, Any]
     ) -> None:
         """
         Initialize the GAN module.

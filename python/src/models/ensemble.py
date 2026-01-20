@@ -8,7 +8,8 @@ Combines multiple models using various strategies:
 - Stacking (meta-learner)
 """
 
-from typing import Any, Dict, List, Literal, Optional, Sequence, cast
+from collections.abc import Sequence
+from typing import Any, Literal, cast
 
 import torch
 from torch import nn
@@ -27,8 +28,8 @@ class EnsembleModel(nn.Module):
         self,
         models: Sequence[nn.Module],
         strategy: Literal["average", "weighted", "voting", "stacking"] = "average",
-        weights: Optional[List[float]] = None,
-        meta_learner: Optional[nn.Module] = None,
+        weights: list[float] | None = None,
+        meta_learner: nn.Module | None = None,
     ) -> None:
         """
         Initialize ensemble.
@@ -99,7 +100,7 @@ class EnsembleModel(nn.Module):
         else:
             raise ValueError(f"Unknown strategy: {self.strategy}")
 
-    def predict_with_uncertainty(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def predict_with_uncertainty(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         """
         Get predictions along with uncertainty estimates from ensemble disagreement.
 
@@ -126,9 +127,9 @@ class EnsembleModel(nn.Module):
 
 
 def create_ensemble_from_configs(
-    configs: List[Dict[str, Any]],
+    configs: list[dict[str, Any]],
     strategy: str = "average",
-    weights: Optional[List[float]] = None,
+    weights: list[float] | None = None,
 ) -> EnsembleModel:
     """
     Factory function to create an ensemble from a list of model configs.

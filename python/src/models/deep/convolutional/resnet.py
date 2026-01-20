@@ -2,7 +2,7 @@
 Deep Residual Network (ResNet) - Network with skip connections
 """
 
-from typing import Any, Literal, cast
+from typing import Literal, cast
 
 import torch
 from torch import nn

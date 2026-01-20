@@ -3,7 +3,7 @@
 """
 
 import math
-from typing import Optional, List, Any
+
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
@@ -35,7 +35,7 @@ class ResidualBlock1D(nn.Module):
     1D Residual Block with optional time embedding injection and group norm.
     """
 
-    def __init__(self, in_channels: int, out_channels: int, time_emb_dim: Optional[int] = None, n_groups: int = 8) -> None:
+    def __init__(self, in_channels: int, out_channels: int, time_emb_dim: int | None = None, n_groups: int = 8) -> None:
         """Initialize Residual Block."""
         super().__init__()
         self.norm1 = nn.GroupNorm(n_groups, in_channels)
@@ -54,7 +54,7 @@ class ResidualBlock1D(nn.Module):
         else:
             self.shortcut = nn.Identity()
 
-    def forward(self, x: torch.Tensor, time_emb: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, time_emb: torch.Tensor | None = None) -> torch.Tensor:
         """Forward pass."""
         h = self.conv1(F.silu(self.norm1(x)))
 
@@ -76,7 +76,7 @@ class DiffusionUNet1D(nn.Module):
     """
 
     def __init__(
-        self, input_dim: int, output_dim: int, hidden_dim: int = 64, layers: Optional[List[int]] = None, time_emb_dim: int = 128
+        self, input_dim: int, output_dim: int, hidden_dim: int = 64, layers: list[int] | None = None, time_emb_dim: int = 128
     ) -> None:
         """Initialize Diffusion UNet."""
         if layers is None:
@@ -135,7 +135,7 @@ class DiffusionUNet1D(nn.Module):
 
         self.out_conv = nn.Conv1d(channels, output_dim, kernel_size=1)
 
-    def forward(self, x: torch.Tensor, t: torch.Tensor, cond: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, t: torch.Tensor, cond: torch.Tensor | None = None) -> torch.Tensor:
         """
         Forward pass.
         Args:
@@ -156,7 +156,7 @@ class DiffusionUNet1D(nn.Module):
         h = self.init_conv(x)
 
         # Down
-        skips: List[torch.Tensor] = []
+        skips: list[torch.Tensor] = []
         for down_layer in self.downs:
             if not isinstance(down_layer, nn.ModuleList):
                 continue

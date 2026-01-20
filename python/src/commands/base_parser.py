@@ -4,7 +4,8 @@ Base parser utilities for the modular CLI.
 
 import argparse
 import sys
-from typing import Any, Dict, List, NoReturn, Optional, Tuple, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, NoReturn
 
 
 class ConfigsParser(argparse.ArgumentParser):
@@ -19,8 +20,8 @@ class ConfigsParser(argparse.ArgumentParser):
         sys.exit(2)
 
     def parse_process_args(
-        self, args: Optional[List[str]] = None
-    ) -> Tuple[str, Dict[str, Any]]:
+        self, args: list[str] | None = None
+    ) -> tuple[str, dict[str, Any]]:
         """
         Parses arguments and returns the command and options dictionary.
         """
@@ -43,8 +44,8 @@ class LowercaseAction(argparse.Action):
         self,
         parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: Union[str, Sequence[Any], None],
-        option_string: Optional[str] = None,
+        values: str | Sequence[Any] | None,
+        option_string: str | None = None,
     ) -> None:
         """Invoke action: lowercase input string."""
         if values is not None:
@@ -59,11 +60,11 @@ class StoreDictKeyPair(argparse.Action):
         self,
         parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: Union[str, Sequence[Any], None],
-        option_string: Optional[str] = None,
+        values: str | Sequence[Any] | None,
+        option_string: str | None = None,
     ) -> None:
         """Invoke action: parse key=value strings into dictionary."""
-        my_dict: Dict[str, str] = {}
+        my_dict: dict[str, str] = {}
         if values and isinstance(values, (list, tuple)):
             for kv in values:
                 kv_str = str(kv)

@@ -5,7 +5,7 @@ Implements techniques like pseudo-labeling and consistency regularization to lev
 both labeled and unlabeled data for training.
 """
 
-from typing import Any, Dict, cast
+from typing import Any, cast
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -20,7 +20,7 @@ class SemiSupervisedModule(BaseModule):
     Combines labeled loss with consistency regularization on unlabeled data.
     """
 
-    def __init__(self, backbone: nn.Module, cfg: Dict[str, Any]) -> None:
+    def __init__(self, backbone: nn.Module, cfg: dict[str, Any]) -> None:
         """
         Initialize the Semi-Supervised module.
 

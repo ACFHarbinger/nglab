@@ -8,7 +8,7 @@ Provides a unified interface for accessing secrets from multiple backends
 import logging
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class VaultConfig:
     """Configuration for HashiCorp Vault."""
 
     url: str
-    token: Optional[str] = None
+    token: str | None = None
     mount_point: str = "secret"
     path: str = "nglab"
 
@@ -33,11 +33,11 @@ class SecretsManager:
     3. Docker Secrets (optional, typical path /run/secrets/)
     """
 
-    def __init__(self, vault_config: Optional[VaultConfig] = None) -> None:
+    def __init__(self, vault_config: VaultConfig | None = None) -> None:
         """Initialize secrets manager with optional Vault config."""
         self.vault_config = vault_config
         self._vault_client: Any = None
-        self._vault_cache: Dict[str, str] = {}
+        self._vault_cache: dict[str, str] = {}
 
         if self.vault_config:
             self._init_vault()
@@ -63,7 +63,7 @@ class SecretsManager:
         except Exception as e:
             logger.error(f"Failed to connect to Vault: {e}")
 
-    def get_secret(self, key: str, default: Optional[str] = None) -> Optional[str]:
+    def get_secret(self, key: str, default: str | None = None) -> str | None:
         """
         Get a secret by key.
 

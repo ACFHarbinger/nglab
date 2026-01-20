@@ -6,12 +6,13 @@ and computes performance metrics like Sharpe Ratio and Max Drawdown.
 """
 
 import argparse
-from typing import Any, List, Optional
+from typing import Any
 
 import numpy as np
-from pipeline.core.train_sac import ContinuousActionWrapper
 from environment import TradingEnv
 from stable_baselines3 import PPO, SAC
+
+from pipeline.core.train_sac import ContinuousActionWrapper
 
 
 def calculate_metrics(portfolio_values: list[float]) -> dict[str, Any]:
@@ -54,6 +55,7 @@ def evaluate_agent(
     """Evaluate a trained agent over multiple episodes."""
 
     # Load model
+    model: PPO | SAC
     if agent_type.lower() == "ppo":
         model = PPO.load(model_path)
         env = TradingEnv(lookback=lookback, max_steps=max_steps)
@@ -79,10 +81,13 @@ def evaluate_agent(
         while not done:
             action, _ = model.predict(obs, deterministic=True)
             if isinstance(action, np.ndarray):
-                action = int(action.item())
-            obs, reward, terminated, truncated, info = env.step(action)
+                # Use a specific variable for the step action to avoid type mismatch
+                step_action: Any = int(action.item())
+            else:
+                step_action = action
+            obs, reward, terminated, truncated, info = env.step(step_action)
             done = terminated or truncated
-            episode_reward += reward
+            episode_reward += float(reward)
             steps += 1
             portfolio_values.append(info.get("portfolio_value", portfolio_values[-1]))
 

@@ -7,7 +7,7 @@ training with algorithms that support batched environments (PPO, SAC, etc.).
 
 import multiprocessing as mp
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-from typing import Optional, Union, Any, Tuple, List, Type, Dict
+from typing import Any, cast
 
 import gymnasium as gym
 import numpy as np
@@ -32,7 +32,7 @@ class VectorizedTradingEnv:
         transaction_cost: float = 0.001,
         lookback: int = 30,
         max_steps: int = 1000,
-        seed: Optional[int] = None,
+        seed: int | None = None,
         use_multiprocessing: bool = False,
     ) -> None:
         if not HAS_NGLAB:
@@ -47,9 +47,11 @@ class VectorizedTradingEnv:
         self.use_multiprocessing = use_multiprocessing
 
         # Create individual environments
-        self.envs: List[Any] = []
+        self.envs: list[Any] = []
         for i in range(num_envs):
-            env = nglab.TradingEnv(
+            # Use cast to Any to avoid unbound error in some type checkers
+            env_cls: Any = nglab.TradingEnv
+            env = env_cls(
                 initial_capital=initial_capital,
                 transaction_cost=transaction_cost,
                 lookback=lookback,
@@ -62,7 +64,7 @@ class VectorizedTradingEnv:
         self.observation_shape = (num_envs, *self.single_observation_shape)
         self.action_space_n = 3
 
-        single_action_space: gym.spaces.Discrete[int] = gym.spaces.Discrete(self.action_space_n)
+        single_action_space: gym.spaces.Discrete[Any] = gym.spaces.Discrete(self.action_space_n)
         single_observation_space: gym.spaces.Box = gym.spaces.Box(
             low=-np.inf,
             high=np.inf,
@@ -76,11 +78,11 @@ class VectorizedTradingEnv:
         self.single_observation_space = single_observation_space
 
         if use_multiprocessing:
-            self._executor: Union[ProcessPoolExecutor, ThreadPoolExecutor] = ProcessPoolExecutor(max_workers=num_envs)
+            self._executor: ProcessPoolExecutor | ThreadPoolExecutor = ProcessPoolExecutor(max_workers=num_envs)
         else:
             self._executor = ThreadPoolExecutor(max_workers=num_envs)
         
-        self._futures: List[Any] = []
+        self._futures: list[Any] = []
 
     @property
     def unwrapped(self) -> 'VectorizedTradingEnv':
@@ -92,9 +94,9 @@ class VectorizedTradingEnv:
 
     def reset(
         self,
-        seed: Optional[int] = None,
-        options: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[NDArray[np.float64], Dict[str, Any]]:
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[NDArray[np.float64], dict[str, Any]]:
         observations = []
         for i, env in enumerate(self.envs):
             env_seed = (seed + i) if seed is not None else None
@@ -106,23 +108,24 @@ class VectorizedTradingEnv:
 
     def step(
         self,
-        actions: Union[NDArray[np.int64], List[int]],
-    ) -> Tuple[
+        actions: NDArray[np.int64] | list[int],
+    ) -> tuple[
         NDArray[np.float64],
         NDArray[np.float64],
         NDArray[np.bool_],
         NDArray[np.bool_],
-        Dict[str, Any],
+        dict[str, Any],
     ]:
-        if isinstance(actions, (np.ndarray, list)):
+        if isinstance(actions, np.ndarray):
             if len(actions) != self.num_envs:
-                 # Flatten if possible
-                 if hasattr(actions, 'flatten'):
-                     actions = actions.flatten()
+                 actions = actions.flatten()
                  if len(actions) != self.num_envs:
                      raise ValueError(f"Expected {self.num_envs} actions, got {len(actions)}")
+        elif isinstance(actions, list):
+            if len(actions) != self.num_envs:
+                raise ValueError(f"Expected {self.num_envs} actions, got {len(actions)}")
         else:
-            actions = [int(actions)] * self.num_envs
+            actions = [int(cast(Any, actions))] * self.num_envs
 
         results = []
         for env, action in zip(self.envs, actions, strict=False):
@@ -141,7 +144,7 @@ class VectorizedTradingEnv:
 
         return observations, rewards, terminated, truncated, infos
 
-    def step_async(self, actions: Union[NDArray[np.int64], List[int]]) -> None:
+    def step_async(self, actions: NDArray[np.int64] | list[int]) -> None:
         self._futures = [
             self._executor.submit(env.step, int(action))
             for env, action in zip(self.envs, actions, strict=False)
@@ -149,12 +152,12 @@ class VectorizedTradingEnv:
 
     def step_wait(
         self,
-    ) -> Tuple[
+    ) -> tuple[
         NDArray[np.float64],
         NDArray[np.float64],
         NDArray[np.bool_],
         NDArray[np.bool_],
-        Dict[str, Any],
+        dict[str, Any],
     ]:
         results = [f.result() for f in self._futures]
 
@@ -170,7 +173,7 @@ class VectorizedTradingEnv:
 
         return observations, rewards, terminated, truncated, infos
 
-    def load_prices(self, prices: Union[List[float], NDArray[np.float64]]) -> None:
+    def load_prices(self, prices: list[float] | NDArray[np.float64]) -> None:
         for env in self.envs:
             env.load_prices(list(prices))
 
@@ -181,7 +184,7 @@ class VectorizedTradingEnv:
     def __enter__(self) -> 'VectorizedTradingEnv':
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Any) -> Optional[bool]:
+    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any) -> bool | None:
         self.close()
         return None
 
@@ -198,7 +201,7 @@ class SubprocVecEnv:
         transaction_cost: float = 0.001,
         lookback: int = 30,
         max_steps: int = 1000,
-        seed: Optional[int] = None,
+        seed: int | None = None,
     ) -> None:
         self.num_envs = num_envs
         self.closed = False
@@ -231,9 +234,9 @@ class SubprocVecEnv:
 
     def reset(
         self,
-        seed: Optional[int] = None,
-        options: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[NDArray[np.float64], Dict[str, Any]]:
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[NDArray[np.float64], dict[str, Any]]:
         for i, pipe in enumerate(self.parent_pipes):
             env_seed = (seed + i) if seed is not None else None
             pipe.send(("reset", {"seed": env_seed, "options": options}))
@@ -247,13 +250,13 @@ class SubprocVecEnv:
 
     def step(
         self,
-        actions: Union[NDArray[np.int64], List[int]],
-    ) -> Tuple[
+        actions: NDArray[np.int64] | list[int],
+    ) -> tuple[
         NDArray[np.float64],
         NDArray[np.float64],
         NDArray[np.bool_],
         NDArray[np.bool_],
-        Dict[str, Any],
+        dict[str, Any],
     ]:
         for pipe, action in zip(self.parent_pipes, actions, strict=False):
             pipe.send(("step", int(action)))
@@ -283,7 +286,7 @@ class SubprocVecEnv:
     def __enter__(self) -> 'SubprocVecEnv':
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_tb: Any) -> Optional[bool]:
+    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any) -> bool | None:
         self.close()
         return None
 
@@ -294,7 +297,7 @@ def _worker(  # noqa: PLR0913
     transaction_cost: float,
     lookback: int,
     max_steps: int,
-    seed: Optional[int],
+    seed: int | None,
 ) -> None:
     """Worker process for SubprocVecEnv."""
     import nglab
@@ -329,9 +332,9 @@ def make_vec_env(  # noqa: PLR0913
     transaction_cost: float = 0.001,
     lookback: int = 30,
     max_steps: int = 1000,
-    seed: Optional[int] = None,
+    seed: int | None = None,
     use_subproc: bool = False,
-) -> Union[VectorizedTradingEnv, SubprocVecEnv]:
+) -> VectorizedTradingEnv | SubprocVecEnv:
     """
     Factory function to create vectorized environments.
     """

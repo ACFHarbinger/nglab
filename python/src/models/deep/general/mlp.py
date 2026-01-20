@@ -2,7 +2,7 @@
 Multi-Layer Perceptron (MLP) implementation.
 """
 
-from typing import Any, List, Optional, Type, cast
+from typing import cast
 
 import torch
 from torch import nn
@@ -17,7 +17,7 @@ class MLP(nn.Module):
     def __init__(  # noqa: PLR0913
         self,
         input_dim: int,
-        hidden_dims: List[int],
+        hidden_dims: list[int],
         output_dim: int,
         dropout: float = 0.0,
         activation: str = "relu",
@@ -35,12 +35,12 @@ class MLP(nn.Module):
         super().__init__()
         self.output_type = output_type
 
-        layers: List[nn.Module] = []
+        layers: list[nn.Module] = []
         last_dim = input_dim
 
         # Select activation
-        act_fn_cls: Type[nn.Module] = cast(
-            Type[nn.Module],
+        act_fn_cls: type[nn.Module] = cast(
+            type[nn.Module],
             {
                 "relu": nn.ReLU,
                 "tanh": nn.Tanh,
@@ -62,7 +62,7 @@ class MLP(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
         """

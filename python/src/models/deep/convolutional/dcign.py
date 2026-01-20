@@ -2,7 +2,7 @@
 Deep Convolutional Inverse Graphics Network (DCIGN).
 """
 
-from typing import Any, List, Optional, Tuple, cast
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -19,7 +19,7 @@ class DCIGN(nn.Module):
         self,
         input_dim: int,
         latent_dim: int = 128,
-        hidden_channels: Optional[List[int]] = None,
+        hidden_channels: list[int] | None = None,
         num_intrinsic: int = 32,
         num_extrinsic: int = 96,
         output_type: str = "prediction",
@@ -35,7 +35,7 @@ class DCIGN(nn.Module):
         self.output_type = output_type
 
         # Encoder (Hierarchical feature learning)
-        enc_layers: List[nn.Module] = []
+        enc_layers: list[nn.Module] = []
         last_channels = input_dim
         for h_channels in hidden_channels:
             enc_layers.append(
@@ -50,7 +50,7 @@ class DCIGN(nn.Module):
         self.fc_latent = nn.Linear(last_channels, latent_dim)
 
         # Decoder (Generation)
-        dec_layers: List[nn.Module] = []
+        dec_layers: list[nn.Module] = []
         last_channels = latent_dim
         for h_channels in reversed(hidden_channels):
             dec_layers.append(
@@ -65,7 +65,7 @@ class DCIGN(nn.Module):
         self.decoder_body = nn.Sequential(*dec_layers)
         self.final_conv = nn.Conv1d(last_channels, input_dim, kernel_size=1)
 
-    def encode(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def encode(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """Encode input into intrinsic and extrinsic features."""
         # x: (Batch, Seq, Input_Dim) -> (Batch, Input_Dim, Seq)
         x_in = x.transpose(1, 2)
@@ -88,7 +88,7 @@ class DCIGN(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
         **kwargs: Any,
     ) -> torch.Tensor:

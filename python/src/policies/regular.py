@@ -4,7 +4,7 @@ Periodic (Regular) Policy for NGLab.
 Executes a specific action at fixed intervals (e.g., rebalancing).
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .base import Policy
 
@@ -16,7 +16,7 @@ class RegularPolicy(Policy):
     Here adapted for trading: e.g. Rebalance every N days.
     """
 
-    def __init__(self, cfg: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, cfg: dict[str, Any] | None = None) -> None:
         """
         Initialize Periodic policy.
 

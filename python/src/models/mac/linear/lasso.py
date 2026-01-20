@@ -1,8 +1,8 @@
 """Lasso Regression Model."""
 
-from sklearn.linear_model import Lasso
-
 from typing import Any
+
+from sklearn.linear_model import Lasso
 
 from ..base import ClassicalModel
 

@@ -2,9 +2,9 @@
 Capsule Network Layer.
 """
 
+
 import torch
 from torch import nn
-from typing import Optional
 
 
 class CapsuleLayer(nn.Module):
@@ -34,7 +34,7 @@ class CapsuleLayer(nn.Module):
         scale = norm_sq / (1 + norm_sq) / (torch.sqrt(norm_sq) + 1e-8)
         return scale * x
 
-    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
         """
         Forward pass.
         x: (Batch, Seq, In_Caps, In_Dim) or (Batch, In_Caps, In_Dim)

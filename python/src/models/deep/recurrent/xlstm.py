@@ -2,7 +2,7 @@
 xLSTM Model wrapping xLSTMBlocks.
 """
 
-from typing import Any, List, Optional, Union, cast
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -23,7 +23,7 @@ class xLSTM(nn.Module):  # noqa: N801
         output_dim: int,
         dropout: float = 0.0,
         output_type: str = "prediction",
-        cell_type: Union[str, List[str]] = "slstm",
+        cell_type: str | list[str] = "slstm",
         num_heads: int = 4,
     ) -> None:
         """
@@ -45,7 +45,7 @@ class xLSTM(nn.Module):  # noqa: N801
         self.n_layers = n_layers
 
         # Determine cell types per layer
-        cell_types: List[str]
+        cell_types: list[str]
         if isinstance(cell_type, str):
             cell_types = [cell_type] * n_layers
         else:
@@ -74,7 +74,7 @@ class xLSTM(nn.Module):  # noqa: N801
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
         """
@@ -87,7 +87,7 @@ class xLSTM(nn.Module):  # noqa: N801
         """
         # x is [Batch, Seq, Feat] (since batch_first=True in blocks)
 
-        current_state_list: List[Any] = [None] * self.n_layers
+        current_state_list: list[Any] = [None] * self.n_layers
 
         x_out = x
         for i, layer_module in enumerate(self.layers):

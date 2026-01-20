@@ -3,12 +3,11 @@ Attention Network - Self-attention mechanism for sequence modeling
 """
 
 import math
-from typing import Literal
+from typing import Literal, cast
 
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
-from typing import Any, cast, Literal
 
 
 class ScaledDotProductAttention(nn.Module):

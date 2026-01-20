@@ -2,7 +2,7 @@
 Boltzmann Machine (BM) implementation.
 """
 
-from typing import Optional
+
 import torch
 from torch import nn
 
@@ -30,7 +30,7 @@ class BoltzmannMachine(nn.Module):
         w = (self.weights + self.weights.t()) / 2
         return w.fill_diagonal_(0)
 
-    def forward(self, x: torch.Tensor, iterations: int = 10, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, iterations: int = 10, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
         """
         Gibbs sampling for state evolution.
         x: (Batch, Num_Units) or (Batch, Seq, Num_Units)

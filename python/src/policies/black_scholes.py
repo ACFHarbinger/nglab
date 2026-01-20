@@ -5,10 +5,11 @@ Implements a trading strategy based on the Black-Scholes option pricing model,
 buying or selling based on deviations from the theoretical fair value.
 """
 
-from typing import Any, Dict, Optional, Union
+from typing import Any
+
 import numpy as np
-from scipy.stats import norm
 import torch
+from scipy.stats import norm
 
 from .base import Policy
 
@@ -19,7 +20,7 @@ class BlackScholesPolicy(Policy):
     Decides to buy or sell based on the theoretical price vs market price.
     """
 
-    def __init__(self, cfg: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, cfg: dict[str, Any] | None = None) -> None:
         """
         Initialize Black-Scholes policy.
 
@@ -39,7 +40,7 @@ class BlackScholesPolicy(Policy):
         call_price = float(S * norm.cdf(d1) - K * np.exp(-r * T) * norm.cdf(d2))
         return call_price
 
-    def act(self, observation: Union[Dict[str, float], Any]) -> int:
+    def act(self, observation: dict[str, float] | Any) -> int:
         """
         Determine action based on Black-Scholes fair value.
         """

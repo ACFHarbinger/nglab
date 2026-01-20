@@ -4,7 +4,7 @@ News Crawler for Financial Sentiment Analysis.
 Fetches data from financial news RSS feeds and websites.
 """
 
-from typing import Any, ClassVar, Dict, List, Optional
+from typing import Any, ClassVar
 
 import feedparser
 
@@ -14,23 +14,23 @@ class NewsCrawler:
     Crawler for financial news feeds.
     """
 
-    DEFAULT_FEEDS: ClassVar[List[str]] = [
+    DEFAULT_FEEDS: ClassVar[list[str]] = [
         "https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC",  # S&P 500
         "https://www.marketwatch.com/rss/topstories",
         "https://search.cnbc.com/rs/search/view.xml?partnerId=2000&keywords=finance",
     ]
 
-    def __init__(self, feeds: Optional[List[str]] = None) -> None:
+    def __init__(self, feeds: list[str] | None = None) -> None:
         self.feeds = feeds or self.DEFAULT_FEEDS
 
-    def crawl(self) -> List[Dict[str, Any]]:
+    def crawl(self) -> list[dict[str, Any]]:
         """
         Crawl RSS feeds and return a list of news items.
 
         Returns:
             List of dictionaries with 'title', 'summary', 'link', 'published'.
         """
-        all_news: List[Dict[str, Any]] = []
+        all_news: list[dict[str, Any]] = []
         for url in self.feeds:
             # Note: In a real production environment, we should handle timeouts and retries.
             feed = feedparser.parse(url)
@@ -48,7 +48,7 @@ class NewsCrawler:
         return all_news
 
 
-def main_crawler(url: Optional[str] = None) -> List[Dict[str, Any]]:
+def main_crawler(url: str | None = None) -> list[dict[str, Any]]:
     """Entry point for the webcrawler command."""
     feeds = [url] if url else None
     crawler = NewsCrawler(feeds)

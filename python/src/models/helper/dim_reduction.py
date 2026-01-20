@@ -2,8 +2,9 @@
 Dimensionality reduction models for NGLab.
 """
 
+from typing import Any
+
 import numpy as np
-from typing import Any, List, Optional
 import torch
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.decomposition import PCA, FastICA
@@ -66,7 +67,7 @@ class DimReductionModel(ClassicalModel):
 
 
 class PCAModel(DimReductionModel):
-    def __init__(self, n_components: Optional[int] = None, **kwargs: Any) -> None:
+    def __init__(self, n_components: int | None = None, **kwargs: Any) -> None:
         super().__init__()
         self.model = PCAAlgorithm(n_components=n_components, **kwargs)
 
@@ -78,7 +79,7 @@ class TSNEModel(DimReductionModel):
 
 
 class LDAModel(DimReductionModel):
-    def __init__(self, n_components: Optional[int] = None, **kwargs: Any) -> None:
+    def __init__(self, n_components: int | None = None, **kwargs: Any) -> None:
         super().__init__()
         self.model = LDAAlgorithm(n_components=n_components, **kwargs)
 
@@ -205,14 +206,14 @@ class FDAModel(DimReductionModel):
     then performs LDA on the fitted values.
     """
 
-    def __init__(self, n_components: Optional[int] = None, **kwargs: Any) -> None:
+    def __init__(self, n_components: int | None = None, **kwargs: Any) -> None:
         super().__init__()
         self.n_components = n_components
         self.mars_kwargs = kwargs
         self.lda = LDAAlgorithm(n_components=n_components)
-        self.mars_models: List[Any] = []
+        self.mars_models: list[Any] = []
         self._is_fitted = False
-        self.classes_: Optional[np.ndarray[Any, Any]] = None
+        self.classes_: np.ndarray[Any, Any] | None = None
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
         # 1. Prepare Data

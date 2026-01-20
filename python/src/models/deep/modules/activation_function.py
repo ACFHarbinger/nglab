@@ -1,7 +1,6 @@
 """Activation functions wrapper for neural networks."""
 
 import math
-from typing import Optional
 
 import torch
 from torch import nn
@@ -117,7 +116,7 @@ class ActivationFunction(nn.Module):
             stdv = 1.0 / math.sqrt(param.size(-1))
             param.data.uniform_(-stdv, stdv)
 
-    def forward(self, input: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(self, input: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
         """
         Applies the activation function to the input.
 

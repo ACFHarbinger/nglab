@@ -5,8 +5,9 @@ Provides a robust, serializable pipeline for transforming raw market data
 into model-ready features, leveraging GPU acceleration where possible.
 """
 
-import joblib  # type: ignore
 from typing import Any, cast
+
+import joblib  # type: ignore
 import numpy as np
 import pandas as pd
 import torch

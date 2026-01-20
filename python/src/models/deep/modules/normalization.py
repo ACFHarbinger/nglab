@@ -1,7 +1,7 @@
 """Normalization layer wrapper supporting various types (Batch, Layer, Instance)."""
 
 import math
-from typing import Optional, Any, cast
+from typing import cast
 
 import torch
 from torch import nn
@@ -20,7 +20,7 @@ class Normalization(nn.Module):
         learn_affine: bool = True,
         track_stats: bool = False,
         mbval: float = 0.1,
-        n_groups: Optional[int] = None,
+        n_groups: int | None = None,
         kval: float = 1.0,
         bias: bool = True,
     ) -> None:
@@ -85,7 +85,7 @@ class Normalization(nn.Module):
                 stdv = 1.0 / math.sqrt(param.size(-1))
                 param.data.uniform_(-stdv, stdv)
 
-    def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
         """
         Applies the normalization to the input.
 

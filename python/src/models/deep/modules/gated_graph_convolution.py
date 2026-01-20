@@ -1,7 +1,6 @@
 """Gated Graph Convolution (GatedGCN) with explicit edge updates."""
 
 import math
-from typing import Tuple
 
 import torch
 from torch import nn
@@ -72,7 +71,7 @@ class GatedGraphConvolution(nn.Module):
             stdv = 1.0 / math.sqrt(param.size(-1))
             param.data.uniform_(-stdv, stdv)
 
-    def forward(self, h: torch.Tensor, e: torch.Tensor, mask: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, h: torch.Tensor, e: torch.Tensor, mask: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Args:
             h: Input node features (B x V x H)

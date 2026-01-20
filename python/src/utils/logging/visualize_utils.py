@@ -9,7 +9,7 @@ This module provides tools for:
 
 import argparse
 import os
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, cast
 
 import loss_landscapes
 import matplotlib
@@ -64,7 +64,7 @@ class MyModelWrapper(nn.Module):
 
 def load_model_instance(
     model_path: str, device: torch.device
-) -> Tuple[nn.Module, Dict[str, Any]]:
+) -> tuple[nn.Module, dict[str, Any]]:
     """
     Loads a model for visualization using the project's standard loading utility.
 
@@ -108,8 +108,8 @@ def plot_weight_trajectories(checkpoint_dir: str, output_file: str) -> None:
     except (IndexError, ValueError):
         files.sort()
 
-    weights: List[NDArray[Any]] = []
-    epochs: List[str] = []
+    weights: list[NDArray[Any]] = []
+    epochs: list[str] = []
 
     for f in files:
         path = os.path.join(checkpoint_dir, f)
@@ -157,7 +157,7 @@ def plot_weight_trajectories(checkpoint_dir: str, output_file: str) -> None:
 
 
 def log_weight_distributions(
-    model: nn.Module, epoch: int, log_dir: str, writer: Optional[SummaryWriter] = None
+    model: nn.Module, epoch: int, log_dir: str, writer: SummaryWriter | None = None
 ) -> None:
     """
     Logs histograms of model weight distributions to TensorBoard.
@@ -212,24 +212,24 @@ def plot_logit_lens(
         try:
             # We follow the forward pass logic
             if hasattr(model, "enc_embedding"):
-                curr = cast(nn.Module, getattr(model, "enc_embedding"))(x_batch, x_mark)
+                curr = cast(nn.Module, model.enc_embedding)(x_batch, x_mark)
             else:
                 curr = x_batch
 
-            layer_outputs: List[torch.Tensor] = []
+            layer_outputs: list[torch.Tensor] = []
             layer_outputs.append(curr)  # Layer 0: Embedding
 
             # Encoder layers
-            encoder = getattr(model, "encoder")
+            encoder = model.encoder
             if hasattr(encoder, "attn_layers"):
-                attn_layers = getattr(encoder, "attn_layers")
-                for attn_layer in cast(List[nn.Module], attn_layers):
+                attn_layers = encoder.attn_layers
+                for attn_layer in cast(list[nn.Module], attn_layers):
                     curr, _ = attn_layer(curr)
                     layer_outputs.append(curr)
 
             # Final projection of each layer output
-            projection = cast(nn.Module, getattr(model, "projection"))
-            preds: List[NDArray[Any]] = []
+            projection = cast(nn.Module, model.projection)
+            preds: list[NDArray[Any]] = []
             for out in layer_outputs:
                 p = projection(out)
                 # Take last step of the sequence for visualization
@@ -273,7 +273,7 @@ def mae_loss_fn(m: Any, x_batch: torch.Tensor, target: torch.Tensor) -> float:
 
 def plot_loss_landscape(  # noqa: PLR0913
     model: nn.Module,
-    opts: Dict[str, Any],
+    opts: dict[str, Any],
     output_dir: str,
     epoch: int = 0,
     seq_len: int = 30,
@@ -332,9 +332,9 @@ def plot_loss_landscape(  # noqa: PLR0913
 
 def visualize_epoch(
     model: nn.Module,
-    opts: Dict[str, Any],
+    opts: dict[str, Any],
     epoch: int,
-    tb_logger: Optional[Any] = None,
+    tb_logger: Any | None = None,
 ) -> None:
     """
     Main entry point for visualization during training.
@@ -358,7 +358,7 @@ def visualize_epoch(
     try:
         if "distributions" in viz_modes or "both" in viz_modes:
             writer = (
-                getattr(tb_logger, "writer")
+                tb_logger.writer
                 if tb_logger is not None and hasattr(tb_logger, "writer")
                 else None
             )

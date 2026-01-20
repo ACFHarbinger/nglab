@@ -2,7 +2,7 @@
 Liquid State Machine (LSM) model.
 """
 
-from typing import Any, List, Optional, Tuple, cast
+from typing import cast
 
 import torch
 from torch import nn
@@ -70,15 +70,15 @@ class LiquidStateMachine(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
         """
         x: (Batch, Seq, Feat)
         """
         batch_size, seq_len, _ = x.shape
-        state: Optional[Tuple[torch.Tensor, torch.Tensor]] = None  # (u, s)
-        outputs: List[torch.Tensor] = []
+        state: tuple[torch.Tensor, torch.Tensor] | None = None  # (u, s)
+        outputs: list[torch.Tensor] = []
 
         device = x.device
         win = cast(torch.Tensor, self.win)

@@ -2,7 +2,7 @@
 Time Series Mamba implementation.
 """
 
-from typing import Any, Optional, cast
+from typing import cast
 
 import torch
 from torch import nn
@@ -51,7 +51,7 @@ class TSMamba(nn.Module):
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
         """

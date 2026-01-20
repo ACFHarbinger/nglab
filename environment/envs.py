@@ -2,7 +2,7 @@
 Gymnasium-compatible environments wrapping the Rust arena
 """
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import gymnasium as gym
 import numpy as np
@@ -50,16 +50,16 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
     """
 
     # metadata must be a dictionary, matching gym.Env
-    metadata: Dict[str, Any] = {"render_modes": ["human"]}
+    metadata: dict[str, Any] = {"render_modes": ["human"]}
 
     def __init__(  # noqa: PLR0913
         self,
-        prices: Optional[NDArray[Any]] = None,
+        prices: NDArray[Any] | None = None,
         initial_capital: float = 10000.0,
         transaction_cost: float = 0.001,
         lookback: int = 30,
         max_steps: int = 1000,
-        render_mode: Optional[str] = None,
+        render_mode: str | None = None,
     ) -> None:
         """
         Initialize the trading environment.
@@ -99,7 +99,7 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
         self.current_step = lookback
         self.position = 0.0
         self.cash = initial_capital
-        self.returns_history: List[float] = []
+        self.returns_history: list[float] = []
         self.prev_portfolio_value = initial_capital
 
         # Initialize Rust backend if available
@@ -116,9 +116,9 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
     def reset(
         self,
         *,
-        seed: Optional[int] = None,
-        options: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[NDArray[Any], Dict[str, Any]]:
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[NDArray[Any], dict[str, Any]]:
         """
         Reset the environment and return the initial observation.
 
@@ -146,7 +146,7 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
 
     def step(
         self, action: int
-    ) -> Tuple[NDArray[Any], float, bool, bool, Dict[str, Any]]:
+    ) -> tuple[NDArray[Any], float, bool, bool, dict[str, Any]]:
         """
         Execute one step in the environment.
 
@@ -282,14 +282,14 @@ class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
     Polymarket Arena - Python wrapper for Rust RL trading environment
     """
 
-    metadata: Dict[str, Any] = {"render_modes": ["human"]}
+    metadata: dict[str, Any] = {"render_modes": ["human"]}
 
     def __init__(
         self,
-        market_ids: Optional[List[str]] = None,
+        market_ids: list[str] | None = None,
         initial_collateral: float = 10000.0,
         taker_fee: float = 0.001,
-        render_mode: Optional[str] = None,
+        render_mode: str | None = None,
     ) -> None:
         """
         Initialize the Polymarket prediction market environment.
@@ -323,15 +323,15 @@ class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
             )
         else:
             self._collateral = initial_collateral
-            self._positions: Dict[str, Tuple[float, float]] = {}
-            self._prices: Dict[str, float] = {}
+            self._positions: dict[str, tuple[float, float]] = {}
+            self._prices: dict[str, float] = {}
 
     def reset(
         self,
         *,
-        seed: Optional[int] = None,
-        options: Optional[Dict[str, Any]] = None,
-    ) -> Tuple[NDArray[Any], Dict[str, Any]]:
+        seed: int | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> tuple[NDArray[Any], dict[str, Any]]:
         """
         Reset the Polymarket environment.
         """
@@ -349,7 +349,7 @@ class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
 
     def step(
         self, action: NDArray[Any]
-    ) -> Tuple[NDArray[Any], float, bool, bool, Dict[str, Any]]:
+    ) -> tuple[NDArray[Any], float, bool, bool, dict[str, Any]]:
         """
         Execute actions across multiple prediction markets.
         """
@@ -383,7 +383,7 @@ class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
             collateral = self._collateral
             pnl = 0.0
 
-        obs: List[float] = [collateral / self.initial_collateral, pnl / self.initial_collateral]
+        obs: list[float] = [collateral / self.initial_collateral, pnl / self.initial_collateral]
 
         for market_id in self.market_ids:
             if self._arena is not None:

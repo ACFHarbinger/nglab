@@ -1,12 +1,13 @@
-from typing import Any, Literal, Optional, cast, Union
+from typing import Any, Literal, cast
 
 import numpy as np
-import numpy.typing as npt # Use this for modern numpy hints
+import numpy.typing as npt  # Use this for modern numpy hints
 import torch
 from sklearn.feature_selection import SequentialFeatureSelector
 from sklearn.linear_model import LinearRegression
 
 from ..base import ClassicalModel
+
 
 class StepwiseRegressionModel(ClassicalModel):
     """Stepwise Regression using Sequential Feature Selection."""
@@ -14,7 +15,7 @@ class StepwiseRegressionModel(ClassicalModel):
     def __init__(
         self,
         direction: str = "forward",
-        n_features_to_select: Union[str, int, float] = "auto",
+        n_features_to_select: str | int | float = "auto",
         **kwargs: Any,
     ) -> None:
         super().__init__()
@@ -31,8 +32,8 @@ class StepwiseRegressionModel(ClassicalModel):
             **kwargs,
         )
         # Fix: np.ndarray takes 1 type arg (dtype), not 2
-        self.selected_features_: Optional[npt.NDArray[Any]] = None
-        self.final_model: Optional[LinearRegression] = None
+        self.selected_features_: npt.NDArray[Any] | None = None
+        self.final_model: LinearRegression | None = None
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
         if y is None:
@@ -88,7 +89,7 @@ class StepwiseRegressionModel(ClassicalModel):
         return torch.from_numpy(out_np).to(device).to(torch.float32)
 
     # Fix: Corrected Union typing and Return type
-    def predict(self, X: Union[npt.NDArray[Any], torch.Tensor]) -> npt.NDArray[Any]:  # noqa: N803
+    def predict(self, X: npt.NDArray[Any] | torch.Tensor) -> npt.NDArray[Any]:  # noqa: N803
         X_np: npt.NDArray[Any] = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 
         if not self._is_fitted or self.selected_features_ is None or self.final_model is None:

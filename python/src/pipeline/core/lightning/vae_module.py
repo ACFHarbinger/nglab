@@ -5,11 +5,10 @@ This module provides a Lightning wrapper for training the VAE model
 with support for beta-VAE, KL annealing, and various reconstruction losses.
 """
 
-from typing import Any, Dict, List, Literal, Optional, Tuple, Union, cast
+from typing import Any, Literal, cast
 
 import torch
 from pytorch_lightning import LightningModule
-from torch.optim import Optimizer
 
 from python.src.models.deep.autoencoders.vae import VAE, vae_loss
 
@@ -57,7 +56,7 @@ class VAELightningModule(LightningModule):
         pred_len: int = 20,
         encoder_type: Literal["transformer", "mamba", "lstm", "gru", "xlstm"] = "mamba",
         decoder_type: (
-            Optional[Literal["transformer", "mamba", "lstm", "gru", "xlstm"]]
+            Literal["transformer", "mamba", "lstm", "gru", "xlstm"] | None
         ) = None,
         n_layers: int = 3,
         n_heads: int = 8,
@@ -70,8 +69,8 @@ class VAELightningModule(LightningModule):
         kl_anneal_epochs: int = 0,
         reconstruction_loss: Literal["mse", "l1", "huber"] = "mse",
         num_val_samples: int = 4,
-        encoder_kwargs: Optional[Dict[str, Any]] = None,
-        decoder_kwargs: Optional[Dict[str, Any]] = None,
+        encoder_kwargs: dict[str, Any] | None = None,
+        decoder_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """Initialize VAELightningModule."""
         super().__init__()
@@ -118,13 +117,13 @@ class VAELightningModule(LightningModule):
         else:
             return self.kl_weight * (current_epoch / self.kl_anneal_epochs)
 
-    def forward(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         """Forward pass through VAE."""
-        return cast(Dict[str, torch.Tensor], self.model(x))
+        return cast(dict[str, torch.Tensor], self.model(x))
 
     def compute_loss(
-        self, batch: Dict[str, torch.Tensor], batch_idx: int
-    ) -> Dict[str, torch.Tensor]:
+        self, batch: dict[str, torch.Tensor], batch_idx: int
+    ) -> dict[str, torch.Tensor]:
         """
         Compute VAE loss for a batch.
 
@@ -167,7 +166,7 @@ class VAELightningModule(LightningModule):
         return loss_dict
 
     def training_step(
-        self, batch: Dict[str, torch.Tensor], batch_idx: int
+        self, batch: dict[str, torch.Tensor], batch_idx: int
     ) -> torch.Tensor:
         """Training step."""
         loss_dict = self.compute_loss(batch, batch_idx)
@@ -184,7 +183,7 @@ class VAELightningModule(LightningModule):
         return loss_dict["total_loss"]
 
     def validation_step(
-        self, batch: Dict[str, torch.Tensor], batch_idx: int
+        self, batch: dict[str, torch.Tensor], batch_idx: int
     ) -> torch.Tensor:
         """Validation step."""
         loss_dict = self.compute_loss(batch, batch_idx)
@@ -213,7 +212,7 @@ class VAELightningModule(LightningModule):
             self.log("val/sample_mean", samples.mean())
             self.log("val/sample_std", samples.std())
 
-    def configure_optimizers(self) -> Dict[str, Any]:
+    def configure_optimizers(self) -> dict[str, Any]:
         """Configure optimizer and learning rate scheduler."""
         optimizer = torch.optim.AdamW(
             self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay
@@ -238,8 +237,8 @@ class VAELightningModule(LightningModule):
         }
 
     def predict_step(
-        self, batch: Dict[str, torch.Tensor], batch_idx: int, dataloader_idx: int = 0
-    ) -> Dict[str, torch.Tensor]:
+        self, batch: dict[str, torch.Tensor], batch_idx: int, dataloader_idx: int = 0
+    ) -> dict[str, torch.Tensor]:
         """
         Prediction step for inference.
 

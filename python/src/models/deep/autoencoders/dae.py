@@ -2,7 +2,6 @@
 Denoising AutoEncoder (DAE) implementation.
 """
 
-from typing import List, Optional
 
 import torch
 
@@ -18,7 +17,7 @@ class DenoisingAE(AutoEncoder):
     def __init__(
         self,
         input_dim: int,
-        hidden_dims: List[int],
+        hidden_dims: list[int],
         latent_dim: int,
         noise_std: float = 0.1,
         output_type: str = "prediction",
@@ -30,7 +29,7 @@ class DenoisingAE(AutoEncoder):
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
         """Forward pass."""

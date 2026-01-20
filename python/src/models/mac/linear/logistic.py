@@ -1,8 +1,8 @@
 """Logistic Regression Model."""
 
-from sklearn.linear_model import LogisticRegression
-
 from typing import Any
+
+from sklearn.linear_model import LogisticRegression
 
 from ..base import ClassicalModel
 

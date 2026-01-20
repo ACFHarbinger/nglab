@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -20,11 +20,11 @@ class TWSVMModel(ClassicalModel):
         self.c1 = c1
         self.c2 = c2
         self.epsilon = epsilon
-        self.weights1: Optional[np.ndarray[Any, Any]] = None
-        self.weights2: Optional[np.ndarray[Any, Any]] = None
-        self.bias1: Optional[float] = None
-        self.bias2: Optional[float] = None
-        self.fallback: Optional[LinearSVC] = None
+        self.weights1: np.ndarray[Any, Any] | None = None
+        self.weights2: np.ndarray[Any, Any] | None = None
+        self.bias1: float | None = None
+        self.bias2: float | None = None
+        self.fallback: LinearSVC | None = None
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
         if y is None:

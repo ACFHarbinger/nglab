@@ -2,7 +2,7 @@
 Unified Backbone for Time Series Models.
 """
 
-from typing import Any, Dict, Union, cast
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -17,7 +17,7 @@ class TimeSeriesBackbone(nn.Module):
     Wraps specific implementations (Transformer, LSTM, etc).
     """
 
-    def __init__(self, cfg: Dict[str, Any]) -> None:
+    def __init__(self, cfg: dict[str, Any]) -> None:
         """
         Initialize TimeSeriesBackbone.
 
@@ -41,7 +41,7 @@ class TimeSeriesBackbone(nn.Module):
 
         self.model = model
 
-    def forward(self, x: Union[torch.Tensor, Dict[str, torch.Tensor]]) -> torch.Tensor:
+    def forward(self, x: torch.Tensor | dict[str, torch.Tensor]) -> torch.Tensor:
         """
         Forward pass.
 
@@ -57,7 +57,7 @@ class TimeSeriesBackbone(nn.Module):
         else:
             obs = x
 
-        kwargs: Dict[str, Any] = {}
+        kwargs: dict[str, Any] = {}
         if self.cfg.get("return_sequence", False):
             kwargs["return_sequence"] = True
 

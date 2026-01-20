@@ -4,10 +4,10 @@ Handles loading and processing of multivariate time-series data from Polymarket 
 """
 
 import os
+from collections.abc import Callable
 
 import pandas as pd
 import torch
-from typing import Any, Callable, Optional
 
 from .data_utils import read_json
 
@@ -19,7 +19,7 @@ class PolymarketDataset(torch.utils.data.Dataset[dict[str, torch.Tensor]]):
     """
 
     def __init__(  # noqa: PLR0913
-        self, name: str, dataset_dir: str, seq_len: int, pred_len: int, download: bool = False, transform: Optional[Callable[[dict[str, torch.Tensor]], dict[str, torch.Tensor]]] = None
+        self, name: str, dataset_dir: str, seq_len: int, pred_len: int, download: bool = False, transform: Callable[[dict[str, torch.Tensor]], dict[str, torch.Tensor]] | None = None
     ) -> None:
         """
         Initialize the dataset.
@@ -42,8 +42,8 @@ class PolymarketDataset(torch.utils.data.Dataset[dict[str, torch.Tensor]]):
         self.transform = transform
         self.dataset_dir = dataset_dir
 
-        self.dataset = {}
-        self.dataset_len = 0
+        self.dataset: dict[str, torch.Tensor] = {}
+        self.dataset_len: int = 0
         self._load_multivariate_data()
 
     def _download(self) -> None:

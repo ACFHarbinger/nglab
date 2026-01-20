@@ -5,7 +5,7 @@ This module implements a VAE architecture specifically designed for time series 
 with support for multiple backbone architectures (Transformer, Mamba, LSTM, etc.)
 """
 
-from typing import Any, Dict, Literal, Optional, Tuple, cast
+from typing import Any, Literal, cast
 
 import torch
 from torch import nn
@@ -30,15 +30,15 @@ class VAE(nn.Module):
         pred_len: int = 20,
         encoder_type: Literal["transformer", "mamba", "lstm", "gru", "xlstm"] = "mamba",
         decoder_type: (
-            Optional[Literal["transformer", "mamba", "lstm", "gru", "xlstm"]]
+            Literal["transformer", "mamba", "lstm", "gru", "xlstm"] | None
         ) = None,
         n_layers: int = 3,
         n_heads: int = 8,
         d_ff: int = 512,
         dropout: float = 0.1,
         activation: str = "gelu",
-        encoder_kwargs: Optional[Dict[str, Any]] = None,
-        decoder_kwargs: Optional[Dict[str, Any]] = None,
+        encoder_kwargs: dict[str, Any] | None = None,
+        decoder_kwargs: dict[str, Any] | None = None,
     ) -> None:
         """
         Initialize the VAE.
@@ -76,7 +76,7 @@ class VAE(nn.Module):
         from python.src.models.time_series import TimeSeriesBackbone
 
         # Encoder: maps input sequence to embedding space
-        encoder_cfg: Dict[str, Any] = {
+        encoder_cfg: dict[str, Any] = {
             "name": backbone_encoder_type,
             "feature_dim": input_dim,
             "hidden_dim": d_model,
@@ -107,7 +107,7 @@ class VAE(nn.Module):
         self.latent_expander = nn.Linear(d_model, d_model * pred_len)
 
         # Decoder: maps latent representation back to sequence space
-        decoder_cfg: Dict[str, Any] = {
+        decoder_cfg: dict[str, Any] = {
             "name": backbone_decoder_type,
             "feature_dim": d_model,
             "output_dim": input_dim,
@@ -127,7 +127,7 @@ class VAE(nn.Module):
 
         self.decoder = TimeSeriesBackbone(decoder_cfg)
 
-    def encode(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def encode(self, x: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Encode input sequence to latent distribution parameters.
 
@@ -178,7 +178,7 @@ class VAE(nn.Module):
 
         return reconstruction
 
-    def forward(self, x: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         """
         Forward pass through the VAE.
         """
@@ -232,7 +232,7 @@ def vae_loss(  # noqa: PLR0913
     log_var: torch.Tensor,
     kl_weight: float = 1.0,
     reconstruction_loss: Literal["mse", "l1", "huber"] = "mse",
-) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
     """
     Compute VAE loss = Reconstruction Loss + KL Divergence.
     """

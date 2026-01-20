@@ -1,8 +1,8 @@
 """Ridge Regression Model."""
 
-from sklearn.linear_model import Ridge
-
 from typing import Any
+
+from sklearn.linear_model import Ridge
 
 from ..base import ClassicalModel
 

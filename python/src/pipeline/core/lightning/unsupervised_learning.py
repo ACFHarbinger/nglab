@@ -5,7 +5,7 @@ Implements deep unsupervised learning techniques such as Autoencoders
 for dimensionality reduction and feature extraction from financial data.
 """
 
-from typing import Any, Dict, cast
+from typing import Any, cast
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -20,7 +20,7 @@ class UnsupervisedModule(BaseModule):
     Focuses on reconstruction or density estimation.
     """
 
-    def __init__(self, backbone: nn.Module, cfg: Dict[str, Any]) -> None:
+    def __init__(self, backbone: nn.Module, cfg: dict[str, Any]) -> None:
         """
         Initialize the Unsupervised module.
 

@@ -6,14 +6,14 @@ is parameterized by a neural network: dh/dt = f(h, t).
 """
 
 from collections.abc import Callable
-from typing import List, Optional, Union, Any, cast
+from typing import cast
 
 import torch
 from torch import nn
 
 
 def odesolve(
-    func: Callable[[Union[float, torch.Tensor], torch.Tensor], torch.Tensor],
+    func: Callable[[float | torch.Tensor, torch.Tensor], torch.Tensor],
     y0: torch.Tensor,
     t: torch.Tensor,
     method: str = "rk4",
@@ -72,7 +72,7 @@ class ODEFunc(nn.Module):
         super().__init__()
         self.net = net
 
-    def forward(self, t: Union[float, torch.Tensor], y: torch.Tensor) -> torch.Tensor:
+    def forward(self, t: float | torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         """Compute the derivative dy/dt."""
         # For this implementation, we assume simple autonomous dynamics f(y)
         return cast(torch.Tensor, self.net(y))
@@ -107,7 +107,7 @@ class NeuralODE(nn.Module):
         self.output_type = output_type
 
         # Derivative network f(z)
-        layers: List[nn.Module] = []
+        layers: list[nn.Module] = []
         layers.append(nn.Linear(input_dim, hidden_dim))
         layers.append(nn.Tanh())  # Tanh is often good for ODEs (smooth)
         for _ in range(num_layers - 1):
@@ -126,7 +126,7 @@ class NeuralODE(nn.Module):
         else:
             self.projection = nn.Identity()
 
-    def forward(self, x: torch.Tensor, t: Optional[torch.Tensor] = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, t: torch.Tensor | None = None) -> torch.Tensor:
         """
         Forward pass.
 

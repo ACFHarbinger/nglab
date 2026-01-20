@@ -2,7 +2,7 @@
 Time Series GAN Networks (Generator and Discriminator).
 """
 
-from typing import List
+
 import torch
 from torch import nn
 
@@ -45,7 +45,7 @@ class TimeGANGenerator(nn.Module):
         # Let's seed decoder with last observation
         curr_input = x[:, -1:, :]  # (B, 1, F)
 
-        outputs: List[torch.Tensor] = []
+        outputs: list[torch.Tensor] = []
 
         # State
         h_state, c_state = h_n, c_n

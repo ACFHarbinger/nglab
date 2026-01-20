@@ -10,7 +10,7 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, cast
+from typing import Any, cast
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -25,7 +25,7 @@ class SLLightningModule(BaseModule):
     Module for Supervised Learning (Fine-tuning).
     """
 
-    def __init__(self, backbone: nn.Module, cfg: Dict[str, Any]) -> None:
+    def __init__(self, backbone: nn.Module, cfg: dict[str, Any]) -> None:
         """
         Initialize the Supervised module.
 
@@ -97,7 +97,7 @@ class ProgressCallback:
         self.total_epochs = total_epochs
 
     def on_epoch_end(
-        self, epoch: int, train_loss: float, val_loss: Optional[float] = None
+        self, epoch: int, train_loss: float, val_loss: float | None = None
     ) -> None:
         """Emit progress JSON to stdout."""
         progress = {
@@ -121,8 +121,8 @@ def train_from_csv(  # noqa: PLR0913, PLR0915
     seq_len: int = 30,
     pred_len: int = 1,
     train_split: float = 0.8,
-    model_params: Optional[Dict[str, Any]] = None,
-    output_path: Optional[str] = None,
+    model_params: dict[str, Any] | None = None,
+    output_path: str | None = None,
 ) -> str:
     """
     Train a supervised model from CSV data.
@@ -182,7 +182,7 @@ def train_from_csv(  # noqa: PLR0913, PLR0915
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     # Build model config
-    cfg: Dict[str, Any] = {
+    cfg: dict[str, Any] = {
         "name": model_name,
         "feature_dim": 1,  # Univariate for now
         "hidden_dim": int(model_params.get("hidden_dim", 128)) if model_params else 128,

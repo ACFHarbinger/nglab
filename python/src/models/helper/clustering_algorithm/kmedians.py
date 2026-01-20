@@ -1,4 +1,4 @@
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -12,15 +12,15 @@ class KMediansAlgorithm:
         n_clusters: int = 8,
         max_iter: int = 300,
         tol: float = 1e-4,
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
     ) -> None:
         """Initialize K-Medians."""
         self.n_clusters = n_clusters
         self.max_iter = max_iter
         self.tol = tol
         self.random_state = random_state
-        self.cluster_centers_: Optional[NDArray[Any]] = None
-        self.labels_: Optional[NDArray[np.int_]] = None
+        self.cluster_centers_: NDArray[Any] | None = None
+        self.labels_: NDArray[np.int_] | None = None
 
     def fit(self, X: NDArray[Any]) -> "KMediansAlgorithm":  # noqa: N803
         """Fit the model."""

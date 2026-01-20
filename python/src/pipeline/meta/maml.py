@@ -5,7 +5,7 @@ Integrates Model-Agnostic Meta-Learning with PyTorch Lightning training loop.
 """
 
 import copy
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
+from collections.abc import Iterator
 
 import pytorch_lightning as pl
 import torch
@@ -90,7 +90,7 @@ class MAMLLightningModule(pl.LightningModule):
 
         return query_loss
 
-    def training_step(self, batch: Dict[str, List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]], batch_idx: int) -> torch.Tensor:
+    def training_step(self, batch: dict[str, list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]], batch_idx: int) -> torch.Tensor:
         """
         Meta-training step across multiple tasks.
 
@@ -118,7 +118,7 @@ class MAMLLightningModule(pl.LightningModule):
 
         return meta_loss
 
-    def validation_step(self, batch: Dict[str, List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]], batch_idx: int) -> torch.Tensor:
+    def validation_step(self, batch: dict[str, list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]], batch_idx: int) -> torch.Tensor:
         """
         Validation step to evaluate meta-learning performance.
 
@@ -144,7 +144,7 @@ class MAMLLightningModule(pl.LightningModule):
         self,
         support_x: torch.Tensor,
         support_y: torch.Tensor,
-        num_steps: Optional[int] = None,
+        num_steps: int | None = None,
     ) -> nn.Module:
         """
         Fast adaptation to new market regime.
@@ -182,7 +182,7 @@ class MAMLDataModule(pl.LightningDataModule):
 
     def __init__(
         self,
-        regime_datasets: Dict[int, torch.Tensor],
+        regime_datasets: dict[int, torch.Tensor],
         support_size: int = 50,
         query_size: int = 50,
         meta_batch_size: int = 4,
@@ -205,7 +205,7 @@ class MAMLDataModule(pl.LightningDataModule):
         self.meta_batch_size = meta_batch_size
         self.num_workers = num_workers
 
-    def create_task(self, regime_data: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def create_task(self, regime_data: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Create a task (support/query split) from regime data.
 
@@ -247,7 +247,7 @@ class MAMLDataModule(pl.LightningDataModule):
 
         return support_x, support_y, query_x, query_y
 
-    def train_dataloader(self) -> Iterator[Dict[str, List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]]]:
+    def train_dataloader(self) -> Iterator[dict[str, list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]]]:
         """Create training dataloader with task batches."""
         # For simplicity, create a static list of task batches
         # In practice, you'd implement a proper Dataset/DataLoader
@@ -265,7 +265,7 @@ class MAMLDataModule(pl.LightningDataModule):
 
         return iter(task_batches)
 
-    def val_dataloader(self) -> Iterator[Dict[str, List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]]]:
+    def val_dataloader(self) -> Iterator[dict[str, list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]]]:
         """Create validation dataloader."""
         # Similar to train but with fewer batches
         task_batches = []

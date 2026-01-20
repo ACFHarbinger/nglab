@@ -2,7 +2,7 @@
 Differentiable Neural Computer (DNC) - Neural network with external memory
 """
 
-from typing import Dict, Literal, List, Optional, Tuple, Union, cast
+from typing import Literal, cast
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -170,7 +170,7 @@ class DNC(nn.Module):
         # Output network
         self.output_net = nn.Linear(hidden_dim + num_reads * memory_dim, output_dim)
 
-    def parse_interface_vector(self, interface: torch.Tensor) -> Dict[str, torch.Tensor]:
+    def parse_interface_vector(self, interface: torch.Tensor) -> dict[str, torch.Tensor]:
         """
         Parse the interface vector into DNC parameters.
 
@@ -246,13 +246,13 @@ class DNC(nn.Module):
             batch_size, self.num_reads, self.memory_dim, device=x.device
         )
 
-        h_state: Optional[torch.Tensor] = None
-        c_state: Optional[torch.Tensor] = None
+        h_state: torch.Tensor | None = None
+        c_state: torch.Tensor | None = None
         if self.controller_type == "lstm":
             h_state = torch.zeros(1, batch_size, self.hidden_dim, device=x.device)
             c_state = torch.zeros(1, batch_size, self.hidden_dim, device=x.device)
 
-        outputs: List[torch.Tensor] = []
+        outputs: list[torch.Tensor] = []
 
         for t in range(seq_len):
             # Concatenate input with previous read vectors
@@ -285,7 +285,7 @@ class DNC(nn.Module):
             )
 
             # Read from memory (simplified: content-based only)
-            all_read_weights: List[torch.Tensor] = []
+            all_read_weights: list[torch.Tensor] = []
             for i in range(self.num_reads):
                 weights = self.memory_module.content_addressing(
                     memory,

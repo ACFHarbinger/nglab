@@ -2,7 +2,7 @@
 Association rule learning models for NGLab.
 """
 
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 
 import torch
 
@@ -18,12 +18,12 @@ class AssociationRuleModel(ClassicalModel):
     def __init__(self, **kwargs: Any) -> None:
         """Initialize Association Rule Model."""
         super().__init__(output_type="rules")
-        self.model: Optional[Any] = None
+        self.model: Any | None = None
 
     def forward(
         self,
         x: torch.Tensor,
-        return_embedding: Optional[bool] = None,
+        return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
         """
@@ -32,10 +32,10 @@ class AssociationRuleModel(ClassicalModel):
         device = x.device
         return torch.zeros((x.shape[0], 1)).to(device)
 
-    def get_rules(self) -> List[Dict[str, Any]]:
+    def get_rules(self) -> list[dict[str, Any]]:
         """Return the learned rules."""
         if self.model and self._is_fitted:
-            return cast(List[Dict[str, Any]], self.model.rules)
+            return cast(list[dict[str, Any]], self.model.rules)
         return []
 
 

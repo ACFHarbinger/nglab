@@ -4,12 +4,14 @@ Utility functions for data loading and processing.
 
 import json
 import os
+import threading
+from typing import Any
 
 import pandas as pd
 import torch
 
 
-def read_json(json_path, lock=None):
+def read_json(json_path: str, lock: threading.Lock | None = None) -> Any:
     """
     Read a JSON file.
 
@@ -29,7 +31,7 @@ def read_json(json_path, lock=None):
     return json_data
 
 
-def read_csv(csv_path, lock=None):
+def read_csv(csv_path: str, lock: threading.Lock | None = None) -> pd.DataFrame | None:
     """
     Read a CSV file into a pandas DataFrame.
 
@@ -48,7 +50,9 @@ def read_csv(csv_path, lock=None):
     return df
 
 
-def df_to_torch(df, key_avoid, fill_nan=0):
+def df_to_torch(
+    df: pd.DataFrame, key_avoid: str, fill_nan: float | None = 0
+) -> dict[str, torch.Tensor]:
     """
     Convert a pandas DataFrame to a dictionary of torch tensors.
 
@@ -65,6 +69,6 @@ def df_to_torch(df, key_avoid, fill_nan=0):
         df = df.fillna(fill_nan)
 
     for col in df.columns:
-        if key_avoid not in col:
-            torch_dict[col] = torch.tensor(df[col].values)
+        if key_avoid not in str(col):
+            torch_dict[str(col)] = torch.tensor(df[col].values)
     return torch_dict
