@@ -1,4 +1,4 @@
-import React from 'react';
+// Mock for lucide-react
 
 const Icon = (props: any) => <svg {...props} />;
 

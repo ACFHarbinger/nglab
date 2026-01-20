@@ -1,0 +1,32 @@
+# Grafana Datasources Configuration
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      timeInterval: "15s"
+
+  - name: Jaeger
+    type: jaeger
+    access: proxy
+    url: http://jaeger:16686
+    editable: false
+
+  # PostgreSQL datasource (if needed for direct queries)
+  # - name: PostgreSQL
+  #   type: postgres
+  #   url: postgres:5432
+  #   database: nglab
+  #   user: nglab
+  #   secureJsonData:
+  #     password: $POSTGRES_PASSWORD
+  #   jsonData:
+  #     sslmode: disable
+  #     maxOpenConns: 5
+  #     maxIdleConns: 5

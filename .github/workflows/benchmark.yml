@@ -1,0 +1,74 @@
+name: Continuous Benchmarking
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ADDED: Install uv binary
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      # ADDED: Install Python via uv
+      - name: Set up Python
+        run: uv python install
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libssl-dev python3-dev
+
+      # SYNC: Required to build the Rust-to-Python extension (nglab)
+      - name: Sync environment
+        run: uv sync --dev
+
+      - name: Run GPU Benchmarks
+        run: |
+          uv run python python/src/utils/profiling/benchmark.py --output benchmark_result.json
+
+      - name: Download Baseline Benchmark
+        uses: actions/download-artifact@v4
+        with:
+          name: benchmark-baseline
+          path: .
+        continue-on-error: true
+
+      - name: Check for Performance Regression
+        run: |
+          if [ -f "benchmark_baseline.json" ]; then
+            uv run python python/src/utils/profiling/compare_benchmarks.py benchmark_result.json benchmark_baseline.json --threshold 0.10
+          else
+            echo "No baseline found. Skipping regression check."
+          fi
+
+      - name: Upload New Benchmark Result
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-baseline
+          path: benchmark_result.json
+
+      - name: Compare with main
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin main
+          git checkout origin/main
+          cd rust
+          cargo bench -- --save-baseline main
+          git checkout -
+          cargo bench -- --baseline main
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: rust/target/criterion/

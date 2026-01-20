@@ -7,22 +7,24 @@ across Reinforcement Learning, Supervised Learning, and Unsupervised Learning ta
 
 import hydra
 import pytorch_lightning as pl
-from agents.env_wrapper import TradingEnvWrapper
-from models.time_series import TimeSeriesBackbone
 from omegaconf import DictConfig, OmegaConf
 
 # Imports from our modules
-from pipeline.lightning.rl_module import RLLightningModule
-from pipeline.lightning.self_supervised import SelfSupervisedModule
-from pipeline.lightning.semi_supervised import SemiSupervisedModule
-from pipeline.lightning.sl_module import SLLightningModule
-from pipeline.lightning.unsupervised import UnsupervisedModule
-from pipeline.lightning.vae_module import VAELightningModule
-from policies.neural import NeuralPolicy
+from python.src.models.time_series import TimeSeriesBackbone
+from python.src.env.env_wrapper import TradingEnvWrapper
+from python.src.pipeline.core.lightning.reinforcement_learning import RLLightningModule
+from python.src.pipeline.core.lightning.self_supervised import SelfSupervisedModule
+from python.src.pipeline.core.lightning.semi_supervised import SemiSupervisedModule
+from python.src.pipeline.core.lightning.supervised_learning import SLLightningModule
+from python.src.pipeline.core.lightning.unsupervised_learning import UnsupervisedModule
+from python.src.pipeline.core.lightning.vae_module import VAELightningModule
+from python.src.utils.profiling.profiling import profile
+from python.src.policies.neural import NeuralPolicy
 from pytorch_lightning.loggers import TensorBoardLogger
 
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
+@profile(output_dir="./profiles")
 def main(cfg: DictConfig):
     """
     Main training function triggered by Hydra.
@@ -89,12 +91,29 @@ def main(cfg: DictConfig):
     if cfg.task == "rl":
         trainer.fit(model)
     else:
-        # Dummy dataloaders for other tasks (User needs to implement DataLoading)
-        # Or we raise/print reminder
-        print(
-            "DataLoaders for SL/SSL not implemented in this skeleton. Please provide datamodule."
+        # DataLoader for SL/SSL/UL tasks
+        from python.src.data.dataloaders import create_dataloader
+
+        # Get dataloader config (with defaults if not present)
+        data_cfg = cfg.get("data", {})
+
+        train_loader, val_loader, test_loader = create_dataloader(
+            data_path=data_cfg.get("data_path", "data/polymarket/"),
+            target_column=data_cfg.get("target_column", "price"),
+            batch_size=data_cfg.get("batch_size", 32),
+            seq_len=data_cfg.get("seq_len", 30),
+            pred_len=data_cfg.get("pred_len", 1),
+            train_ratio=data_cfg.get("train_ratio", 0.7),
+            val_ratio=data_cfg.get("val_ratio", 0.15),
+            test_ratio=data_cfg.get("test_ratio", 0.15),
+            normalize=data_cfg.get("normalize", "minmax"),
+            num_workers=data_cfg.get("num_workers", 4),
+            format=data_cfg.get("format", "csv"),
+            streaming=data_cfg.get("streaming", False),
+            add_technical_indicators=data_cfg.get("add_technical_indicators", False),
         )
-        # trainer.fit(model, train_dataloaders=..., val_dataloaders=...)
+
+        trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
 
 if __name__ == "__main__":

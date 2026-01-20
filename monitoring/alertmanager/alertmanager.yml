@@ -1,0 +1,103 @@
+# NGLab AlertManager Configuration
+
+global:
+  resolve_timeout: 5m
+  # SMTP settings for email alerts
+  # smtp_smarthost: 'smtp.gmail.com:587'
+  # smtp_from: 'alerts@nglab.example.com'
+  # smtp_auth_username: 'alerts@nglab.example.com'
+  # smtp_auth_password: 'your-app-password'
+
+# Route tree
+route:
+  group_by: ['alertname', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'default-receiver'
+
+  routes:
+    # Critical alerts
+    - match:
+        severity: critical
+      receiver: 'critical-receiver'
+      group_wait: 10s
+      repeat_interval: 1h
+
+    # Warning alerts
+    - match:
+        severity: warning
+      receiver: 'warning-receiver'
+      group_wait: 1m
+      repeat_interval: 4h
+
+    # Info alerts
+    - match:
+        severity: info
+      receiver: 'info-receiver'
+      group_wait: 5m
+      repeat_interval: 24h
+
+# Receivers
+receivers:
+  - name: 'default-receiver'
+    # Configure your notification channels here
+
+  - name: 'critical-receiver'
+    # Slack webhook for critical alerts
+    # slack_configs:
+    #   - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+    #     channel: '#nglab-alerts-critical'
+    #     send_resolved: true
+    #     title: '{{ .GroupLabels.alertname }}'
+    #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+    # PagerDuty for critical alerts
+    # pagerduty_configs:
+    #   - service_key: 'your-pagerduty-service-key'
+
+  - name: 'warning-receiver'
+    # slack_configs:
+    #   - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+    #     channel: '#nglab-alerts'
+    #     send_resolved: true
+
+  - name: 'info-receiver'
+    # Lower priority notifications
+
+# Inhibition rules
+inhibit_rules:
+  # If critical alert fires, suppress warning for same alertname
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname']
+
+  # If API is down, suppress high latency alerts
+  - source_match:
+      alertname: 'NGLabAPIDown'
+    target_match:
+      alertname: 'NGLabHighLatency'
+    equal: ['job']
+
+  # If database is down, suppress API errors
+  - source_match:
+      alertname: 'NGLabDatabaseDown'
+    target_match_re:
+      alertname: 'NGLabAPI.*'
+    equal: ['instance']
+
+  # If Redis is down, suppress cache-related alerts
+  - source_match:
+      alertname: 'NGLabRedisDown'
+    target_match:
+      alertname: 'NGLabHighLatency'
+    equal: ['instance']
+
+  # If GPU failure detected, suppress GPU metric alerts
+  - source_match:
+      alertname: 'NGLabGPUUtilizationDrop'
+    target_match_re:
+      alertname: 'NGLabGPU.*'
+    equal: ['instance']

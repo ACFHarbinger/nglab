@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { UserProfileWidget } from "../../../components/dashboard/UserProfileWidget";
 import { createChart } from "lightweight-charts";

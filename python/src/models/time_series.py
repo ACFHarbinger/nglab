@@ -27,15 +27,15 @@ class TimeSeriesBackbone(nn.Module):
 
         # Try deep model factory first
         model = create_deep_model(model_name, cfg)
-        
+
         # Try MAC model factory if not found
         if model is None:
             model = create_mac_model(model_name, cfg)
-        
+
         # Raise error if still not found
         if model is None:
             raise ValueError(f"Unknown model: {model_name}")
-            
+
         self.model = model
 
     def forward(self, x):

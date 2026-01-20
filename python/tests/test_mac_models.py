@@ -2,6 +2,7 @@ import pytest
 import torch
 from python.src.models.time_series import TimeSeriesBackbone
 
+
 class TestRegressionModels:
     @pytest.mark.parametrize(
         "model_name",
@@ -42,16 +43,23 @@ class TestRegressionModels:
         ],
     )
     def test_regression_integration(self, model_name, mac_dummy_input):
-        cfg = {"name": model_name, "feature_dim": 10, "output_dim": 1, "model_kwargs": {}}
+        cfg = {
+            "name": model_name,
+            "feature_dim": 10,
+            "output_dim": 1,
+            "model_kwargs": {},
+        }
         backbone = TimeSeriesBackbone(cfg)
         with torch.no_grad():
             out = backbone(mac_dummy_input)
         assert isinstance(out, torch.Tensor)
         assert out.shape == (4, 1)
 
+
 # Moved out of TestRegressionModels class as they no longer use 'self'
 def test_olsr_model(regression_data):
     from python.src.models.mac import OLSRModel
+
     X, y = regression_data
     model = OLSRModel()
     model.fit(X, y)
@@ -62,17 +70,20 @@ def test_olsr_model(regression_data):
 
 def test_stepwise_model(regression_data):
     from python.src.models.mac import StepwiseRegressionModel
+
     X, y = regression_data
     model = StepwiseRegressionModel(n_features_to_select=2)
     model.fit(X, y)
     out = model(X)
     assert out.shape == (50, 1)
     # Check if only 2 features were selected in the internal model
+    assert model.selected_features_ is not None
     assert model.selected_features_.sum() == 2
 
 
 def test_mars_model(regression_data):
     from python.src.models.mac import MARSModel
+
     X, y = regression_data
     model = MARSModel(n_segments=3)
     model.fit(X, y)
@@ -82,6 +93,7 @@ def test_mars_model(regression_data):
 
 def test_loess_model(regression_data):
     from python.src.models.mac import LOESSModel
+
     X, y = regression_data
     # LOESS needs sorted X for stable interpolation test, but our model handles it
     model = LOESSModel(frac=0.5)
@@ -89,28 +101,35 @@ def test_loess_model(regression_data):
     out = model(X)
     assert out.shape == (50, 1)
 
+
 def test_lwl_model(regression_data):
     from python.src.models.mac import LWLModel
+
     model = LWLModel(n_neighbors=5)
     model.fit(regression_data[0], regression_data[1])
     out = model(regression_data[0])
     assert out.shape == (50, 1)
     assert out.dtype == torch.float32
 
+
 def test_m5_model(regression_data):
     from python.src.models.mac import M5Model
+
     model = M5Model()
     model.fit(regression_data[0], regression_data[1])
     out = model(regression_data[0])
     assert out.shape == (50, 1)
     assert out.dtype == torch.float32
 
+
 def test_lars_model(regression_data):
     from python.src.models.mac import LARSModel
+
     model = LARSModel()
     model.fit(regression_data[0], regression_data[1])
     out = model(regression_data[0])
     assert out.shape == (50, 1)
+
 
 @pytest.mark.parametrize(
     "model_name",
@@ -141,43 +160,55 @@ def test_tree_model_regression(model_name, regression_data):
     # Let's instantiate directly based on name.
 
     if model_name == "RandomForest":
-         from python.src.models.mac import RandomForestModel
-         model = RandomForestModel(task="regression")
+        from python.src.models.mac import RandomForestModel
+
+        model = RandomForestModel(task="regression")
     elif model_name == "DecisionTree":
-         from python.src.models.mac import DecisionTreeModel
-         model = DecisionTreeModel(task="regression")
+        from python.src.models.mac import DecisionTreeModel
+
+        model = DecisionTreeModel(task="regression")
     elif model_name == "GradientBoosting":
-         from python.src.models.mac import GradientBoostingModel
-         model = GradientBoostingModel(task="regression")
+        from python.src.models.mac import GradientBoostingModel
+
+        model = GradientBoostingModel(task="regression")
     elif model_name == "XGBoost":
-         from python.src.models.mac import XGBoostModel
-         model = XGBoostModel(task="regression")
+        from python.src.models.mac import XGBoostModel
+
+        model = XGBoostModel(task="regression")
     elif model_name == "LightGBM":
-         from python.src.models.mac import LightGBMModel
-         model = LightGBMModel(task="regression")
+        from python.src.models.mac import LightGBMModel
+
+        model = LightGBMModel(task="regression")
     elif model_name == "CART":
-         from python.src.models.mac import CARTModel
-         model = CARTModel(task="regression")
+        from python.src.models.mac import CARTModel
+
+        model = CARTModel(task="regression")
     elif model_name == "ID3":
-         from python.src.models.mac import ID3Model
-         model = ID3Model(task="regression") # Will fallback to default
+        from python.src.models.mac import ID3Model
+
+        model = ID3Model(task="regression")  # Will fallback to default
     elif model_name == "C45":
-         from python.src.models.mac import C45Model
-         model = C45Model(task="regression")
+        from python.src.models.mac import C45Model
+
+        model = C45Model(task="regression")
     elif model_name == "C50":
-         from python.src.models.mac import C50Model
-         model = C50Model(task="regression")
+        from python.src.models.mac import C50Model
+
+        model = C50Model(task="regression")
     elif model_name == "CHAID":
-         from python.src.models.mac import CHAIDModel
-         model = CHAIDModel(task="regression")
+        from python.src.models.mac import CHAIDModel
+
+        model = CHAIDModel(task="regression")
     elif model_name == "DecisionStump":
-         from python.src.models.mac import DecisionStumpModel
-         model = DecisionStumpModel(task="regression")
+        from python.src.models.mac import DecisionStumpModel
+
+        model = DecisionStumpModel(task="regression")
     elif model_name == "ConditionalTree":
-         from python.src.models.mac import ConditionalDecisionTreeModel
-         model = ConditionalDecisionTreeModel(task="regression")
+        from python.src.models.mac import ConditionalDecisionTreeModel
+
+        model = ConditionalDecisionTreeModel(task="regression")
     else:
-         pytest.skip(f"Model {model_name} not implemented in test harness")
+        pytest.skip(f"Model {model_name} not implemented in test harness")
 
     model.fit(regression_data[0], regression_data[1])
     out = model(regression_data[0])
@@ -207,15 +238,15 @@ class TestClassificationModels:
             "feature_dim": 10,
             "output_dim": 1,
             "task": "classification",
-            "type": "gaussian", # for NaiveBayes (others ignore or use their own default)
-            "model_kwargs": {}
+            "type": "gaussian",  # for NaiveBayes (others ignore or use their own default)
+            "model_kwargs": {},
         }
-        
+
         # MultinomialNB fails with negative values (Gaussian random input contains negatives)
         # We need nonnegative input for MultinomialNB
         if "Multinomial" in model_name:
-             mac_dummy_input = torch.abs(mac_dummy_input)
-             
+            mac_dummy_input = torch.abs(mac_dummy_input)
+
         backbone = TimeSeriesBackbone(cfg)
         with torch.no_grad():
             out = backbone(mac_dummy_input)
@@ -239,8 +270,8 @@ class TestTreeAndBoostingModels:
             "CHAID",
             "DecisionStump",
             "ConditionalTree",
-             # M5 is special (regression only and custom), tested separately or added here?
-             # Added separately below for detailed check.
+            # M5 is special (regression only and custom), tested separately or added here?
+            # Added separately below for detailed check.
         ],
     )
     def test_tree_boosting_integration(self, model_name, mac_dummy_input):
@@ -249,17 +280,17 @@ class TestTreeAndBoostingModels:
         # but configured for regression in test?
         # TimeSeriesBackbone configures task based on cfg.
         # Let's force regression task since mac_dummy_input is float and we check regression shape.
-        
+
         cfg = {
             "name": model_name,
             "feature_dim": 10,
             "output_dim": 1,
-            "task": "regression"
+            "task": "regression",
         }
-        
+
         # ID3/C45/C50 might default to classification in trees.py if not careful.
         # trees.py implementation respects task="regression".
-        
+
         backbone = TimeSeriesBackbone(cfg)
         with torch.no_grad():
             out = backbone(mac_dummy_input)
@@ -286,7 +317,12 @@ class TestClassicalCommon:
         backbone = TimeSeriesBackbone(classical_cfg)
         X = torch.randn(100, 10)
         y = torch.randn(100, 1)
-        backbone.model.fit(X, y)
+        from python.src.models.mac.base import ClassicalModel
+
+        # Static analysis tools can sometimes misidentify nn.Module attributes as Tensors
+        # Explicitly checking the type helps resolve "Object of type 'Tensor' is not callable"
+        if isinstance(backbone.model, ClassicalModel):
+            backbone.model.fit(X, y)
         assert backbone.model._is_fitted
         out = backbone(X)
         assert out.shape == (100, 1)

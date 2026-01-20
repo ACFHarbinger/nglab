@@ -1,0 +1,59 @@
+name: Database Backup
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch: # Allow manual triggers
+
+jobs:
+  backup:
+    name: Backup PostgreSQL Database
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-16
+      
+      - name: Run backup script
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: nglab
+          POSTGRES_USER: nglab
+          POSTGRES_HOST: ${{ secrets.DB_HOST }}
+          S3_BACKUP_BUCKET: ${{ secrets.S3_BACKUP_BUCKET }}
+        run: |
+          chmod +x scripts/backup_db.sh
+          ./scripts/backup_db.sh
+      
+      - name: Verify backup
+        run: |
+          # List recent backups in S3
+          aws s3 ls s3://${{ secrets.S3_BACKUP_BUCKET }}/backups/ --recursive | tail -5
+      
+      - name: Cleanup old backups
+        env:
+          S3_BACKUP_BUCKET: ${{ secrets.S3_BACKUP_BUCKET }}
+        run: |
+          # Delete backups older than 90 days
+          aws s3 ls s3://${S3_BACKUP_BUCKET}/backups/ | \
+            awk '{print $4}' | \
+            while read file; do
+              aws s3 rm "s3://${S3_BACKUP_BUCKET}/backups/${file}" \
+                --recursive \
+                --exclude "*" \
+                --include "*" \
+                --older-than 90d || true
+            done

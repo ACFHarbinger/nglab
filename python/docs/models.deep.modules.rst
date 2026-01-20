@@ -1,0 +1,149 @@
+models.deep.modules package
+===========================
+
+Submodules
+----------
+
+models.deep.modules.activation\_function module
+-----------------------------------------------
+
+.. automodule:: models.deep.modules.activation_function
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.attention module
+------------------------------------
+
+.. automodule:: models.deep.modules.attention
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.connections module
+--------------------------------------
+
+.. automodule:: models.deep.modules.connections
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.distance\_graph\_convolution module
+-------------------------------------------------------
+
+.. automodule:: models.deep.modules.distance_graph_convolution
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.efficient\_graph\_convolution module
+--------------------------------------------------------
+
+.. automodule:: models.deep.modules.efficient_graph_convolution
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.embed module
+--------------------------------
+
+.. automodule:: models.deep.modules.embed
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.feed\_forward module
+----------------------------------------
+
+.. automodule:: models.deep.modules.feed_forward
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.gated\_graph\_convolution module
+----------------------------------------------------
+
+.. automodule:: models.deep.modules.gated_graph_convolution
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.graph\_convolution module
+---------------------------------------------
+
+.. automodule:: models.deep.modules.graph_convolution
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.hyper\_connection module
+--------------------------------------------
+
+.. automodule:: models.deep.modules.hyper_connection
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.mamba\_block module
+---------------------------------------
+
+.. automodule:: models.deep.modules.mamba_block
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.multi\_head\_attention module
+-------------------------------------------------
+
+.. automodule:: models.deep.modules.multi_head_attention
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.normalization module
+----------------------------------------
+
+.. automodule:: models.deep.modules.normalization
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.normalized\_activation\_function module
+-----------------------------------------------------------
+
+.. automodule:: models.deep.modules.normalized_activation_function
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.skip\_connection module
+-------------------------------------------
+
+.. automodule:: models.deep.modules.skip_connection
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.transform module
+------------------------------------
+
+.. automodule:: models.deep.modules.transform
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+models.deep.modules.xlstm\_block module
+---------------------------------------
+
+.. automodule:: models.deep.modules.xlstm_block
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+Module contents
+---------------
+
+.. automodule:: models.deep.modules
+   :members:
+   :show-inheritance:
+   :undoc-members:

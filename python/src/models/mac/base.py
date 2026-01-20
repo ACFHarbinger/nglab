@@ -16,6 +16,13 @@ class ClassicalModel(nn.Module, ABC):
     """
 
     def __init__(self, output_type="prediction"):
+        """
+        Initialize the Classical Model base.
+
+        Args:
+            output_type (str, optional): The type of output expected from the model.
+                Defaults to "prediction".
+        """
         super().__init__()
         self.output_type = output_type
         self.model = None  # To be initialized by subclasses
@@ -82,6 +89,11 @@ class ClassicalModel(nn.Module, ABC):
             X = X.reshape(b * s, f)
             if y is not None:
                 y = y.reshape(b * s, -1)
+
+        if self.model is None:
+            raise RuntimeError(
+                "Model has not been initialized. Ensure a subclass sets `self.model`."
+            )
 
         if y is not None:
             if y.ndim == 2 and y.shape[1] == 1:

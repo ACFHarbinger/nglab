@@ -18,6 +18,7 @@ class LSTM(nn.Module):
         output_dim,
         dropout=0.0,
         output_type="prediction",
+        apply_softmax=False,
     ):
         """
         Initialize the LSTM.
@@ -29,9 +30,11 @@ class LSTM(nn.Module):
             output_dim (int): Output dimension.
             dropout (float): Dropout probability.
             output_type (str): 'prediction' or 'embedding'.
+            apply_softmax (bool): Whether to apply softmax to output.
         """
         super().__init__()
         self.output_type = output_type
+        self.apply_softmax = apply_softmax
         self.hidden_dim = hidden_dim
         self.n_layers = n_layers
 
@@ -74,7 +77,14 @@ class LSTM(nn.Module):
         if should_return_embedding:
             return state
 
-        return self.fc(state)
+        output = self.fc(state)
+
+        if self.apply_softmax and self.output_type == "prediction":
+            import torch.nn.functional as F
+
+            output = F.softmax(output, dim=-1)
+
+        return output
 
 
 class GRU(nn.Module):

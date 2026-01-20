@@ -7,25 +7,34 @@
  * - Risk-adjusted reward functions
  */
 
+#[cfg(feature = "python")]
+use crate::errors::ArenaError;
 use crate::simulation::orderbook::{OrderBook, Side};
+use crate::simulation::risk::{RiskManager, RiskStatus};
 #[cfg(feature = "python")]
 use numpy::{PyArray2, ToPyArray};
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 #[cfg(feature = "python")]
 use pyo3::types::PyDict;
+use rand::rngs::StdRng;
+use rand::SeedableRng;
+use smallvec::SmallVec;
+#[cfg(feature = "python")]
+use tracing::info;
+use tracing::{debug, instrument};
 
 /**
  * Action space types for the agent.
  */
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ActionType {
     /** Hold current position */
-    Hold,
+    Hold = 0,
     /** Buy (long) */
-    Buy,
+    Buy = 1,
     /** Sell (short) */
-    Sell,
+    Sell = 2,
 }
 
 impl From<i32> for ActionType {
@@ -42,7 +51,16 @@ impl From<i32> for ActionType {
 /**
  * Step result returned to high-level callers (e.g., Python).
  *
- * Bundles observation, reward, and transition info.
+ * Bundles the new observation, the reward received for the action,
+ * and flags indicating if the episode has finished.
+ *
+ * # Fields
+ *
+ * * `observation` - Vector of feature values for the new state.
+ * * `reward` - Scaled reward value (e.g., risk-adjusted return).
+ * * `terminated` - True if the agent reached a terminal state (e.g., bankruptcy).
+ * * `truncated` - True if the simulation was cut short (e.g., time limit).
+ * * `info` - Additional diagnostic metadata.
  */
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct StepResult {
@@ -65,9 +83,8 @@ pub struct StepInfo {
     pub total_steps: u64,
 }
 
-/**
- * Observation buffer for high-performance zero-copy access.
- */
+/// Pre-allocated observation buffer for zero-allocation hot path.
+/// Uses a fixed-size array internally to avoid heap allocations.
 pub struct ObservationBuffer {
     data: Vec<f64>,
     shape: (usize, usize),
@@ -81,17 +98,55 @@ impl ObservationBuffer {
         }
     }
 
+    /// Update a single row of observations. Zero-copy when possible.
+    #[inline]
     pub fn update(&mut self, row: usize, values: &[f64]) {
         let start = row * self.shape.1;
         let end = start + values.len().min(self.shape.1);
         self.data[start..end].copy_from_slice(&values[..end - start]);
     }
+
+    /// Get the underlying data as a slice.
+    #[inline]
+    pub fn as_slice(&self) -> &[f64] {
+        &self.data
+    }
+
+    /// Reset buffer to zeros.
+    #[inline]
+    pub fn reset(&mut self) {
+        self.data.fill(0.0);
+    }
+
+    /// Clone data into a new Vec (for Python interop).
+    pub fn to_vec(&self) -> Vec<f64> {
+        self.data.clone()
+    }
 }
+
+/// Stack-allocated returns history (avoids heap for typical window sizes).
+type ReturnsHistory = SmallVec<[f64; 64]>;
 
 /**
  * Trading environment with Gymnasium interface.
  *
- * Wraps market simulation logic into a standard RL format.
+ * Wraps market simulation logic into a standard RL format suitable for training agents.
+ * It manages the interaction between the agent (action) and the market (order book),
+ * computing rewards and updating state variables.
+ *
+ * # Features
+ *
+ * - **Zero-Copy Observations**: Leverages `numpy` crate for efficient data transfer to Python.
+ * - **Configurable Rewards**: Supports various reward schemes (PnL, Sharpe Ratio, etc.).
+ * - **Market Simulation**: Integrated with `OrderBook` for realistic execution.
+ *
+ * # Fields
+ *
+ * * `orderbook` - The central limit order book managing market liquidity.
+ * * `position` - Current net position (positive for long, negative = short).
+ * * `cash` - Available cash balance for trading.
+ * * `portfolio_value` - Total account equity (Cash + Mark-to-Market Position).
+ * * `step_count` - Current time step in the episode.
  */
 #[cfg_attr(feature = "python", pyclass)]
 pub struct TradingEnv {
@@ -113,8 +168,8 @@ pub struct TradingEnv {
     lookback: usize,
     /** Number of features per timestep */
     num_features: usize,
-    /** Returns history for Sharpe calculation */
-    returns: Vec<f64>,
+    /** Returns history for Sharpe calculation (stack-allocated for small windows) */
+    returns: ReturnsHistory,
     /** Previous portfolio value for return calculation */
     prev_portfolio_value: f64,
     /** Maximum steps before truncation */
@@ -123,6 +178,12 @@ pub struct TradingEnv {
     total_steps: u64,
     /** Rerun logger for visualization */
     logger: crate::utils::visualizer::RerunLogger,
+    /** Pre-allocated observation buffer */
+    obs_buffer: ObservationBuffer,
+    /** Random number generator for reproducibility */
+    rng: StdRng,
+    /** Risk manager for monitoring and enforcing risk limits */
+    risk_manager: RiskManager,
 }
 
 // =========================================================================
@@ -133,13 +194,14 @@ pub struct TradingEnv {
 #[pymethods]
 impl TradingEnv {
     #[new]
-    #[pyo3(signature = (initial_capital=10000.0, transaction_cost=0.001, lookback=30, max_steps=1000, enable_logging=true))]
+    #[pyo3(signature = (initial_capital=10000.0, transaction_cost=0.001, lookback=30, max_steps=1000, enable_logging=true, seed=None))]
     pub fn new_py(
         initial_capital: f64,
         transaction_cost: f64,
         lookback: usize,
         max_steps: usize,
         enable_logging: bool,
+        seed: Option<u64>,
     ) -> Self {
         Self::new(
             initial_capital,
@@ -147,6 +209,7 @@ impl TradingEnv {
             lookback,
             max_steps,
             enable_logging,
+            seed,
         )
     }
 
@@ -158,37 +221,38 @@ impl TradingEnv {
 
     /** Reset the environment */
     #[pyo3(signature = (seed=None, options=None))]
+    #[instrument(skip(self, py), fields(step = self.total_steps))]
     pub fn reset<'py>(
         &mut self,
         py: Python<'py>,
         seed: Option<u64>,
-        options: Option<PyObject>,
-    ) -> (Bound<'py, PyArray2<f64>>, PyObject) {
+        options: Option<Py<PyAny>>,
+    ) -> PyResult<(Bound<'py, PyArray2<f64>>, Py<PyAny>)> {
         if let Some(s) = seed {
-            // TODO: Seed RNG
+            info!("Resetting environment with seed: {}", s);
+            self.set_seed(s);
+        } else {
+            info!("Resetting environment with existing seed");
         }
         self.reset_rs();
 
-        let obs = self.get_observation(py);
+        let obs = self.get_observation(py)?;
         let info = PyDict::new(py).into();
-        (obs, info)
+        Ok((obs, info))
     }
 
     /** Take a step in the environment */
+    #[instrument(skip(self, py), fields(step = self.total_steps, action = action))]
     pub fn step<'py>(
         &mut self,
         py: Python<'py>,
         action: i32,
-    ) -> (Bound<'py, PyArray2<f64>>, f64, bool, bool, PyObject) {
+    ) -> PyResult<(Bound<'py, PyArray2<f64>>, f64, bool, bool, Py<PyAny>)> {
         let action_type = ActionType::from(action);
         let lookback = self.lookback;
         let num_features = self.num_features;
 
-        // Run simulation logic without GIL
-        // Using Python::detach (allow_threads is deprecated) if possible, but simplest fix is allow_threads if it works
-        // or just run synchronously since execution is fast.
-        // For now, let's just run it directly to avoid thread issues/deprecation warinings if allow_threads is deprecated.
-        // Actually, let's keep it simple.
+        debug!("Executing action: {:?}", action_type);
 
         let trade_cost = self.execute_action(action_type);
         self.current_step += 1;
@@ -198,6 +262,9 @@ impl TradingEnv {
         let returns = (portfolio_value - self.prev_portfolio_value) / self.prev_portfolio_value;
         self.returns.push(returns);
         self.prev_portfolio_value = portfolio_value;
+
+        // Update risk manager
+        self.risk_manager.update(portfolio_value);
 
         let reward = self.calculate_reward(returns, trade_cost);
         let terminated =
@@ -219,32 +286,30 @@ impl TradingEnv {
 
         // Build info dict
         let dict = PyDict::new(py);
-        dict.set_item("portfolio_value", step_info.portfolio_value)
-            .unwrap();
-        dict.set_item("position", step_info.position).unwrap();
-        dict.set_item("cash", step_info.cash).unwrap();
-        dict.set_item("sharpe_ratio", step_info.sharpe_ratio)
-            .unwrap();
-        dict.set_item("total_steps", step_info.total_steps).unwrap();
+        dict.set_item("portfolio_value", step_info.portfolio_value)?;
+        dict.set_item("position", step_info.position)?;
+        dict.set_item("cash", step_info.cash)?;
+        dict.set_item("sharpe_ratio", step_info.sharpe_ratio)?;
+        dict.set_item("total_steps", step_info.total_steps)?;
         let info = dict.into();
 
         // Create numpy array
         let obs_array = ndarray::Array2::from_shape_vec((lookback, num_features), obs_data)
-            .expect("Invalid shape");
+            .map_err(|e| ArenaError::DataLoading(format!("Invalid observation shape: {}", e)))?;
         let obs = obs_array.to_pyarray(py);
 
-        (obs, reward, terminated, truncated, info)
+        Ok((obs, reward, terminated, truncated, info))
     }
 
     /** Get current observation as numpy array */
-    pub fn get_observation<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
+    pub fn get_observation<'py>(&mut self, py: Python<'py>) -> PyResult<Bound<'py, PyArray2<f64>>> {
         let obs_data = self.generate_observation_data();
 
         // Reshape to (lookback, features)
         let array = ndarray::Array2::from_shape_vec((self.lookback, self.num_features), obs_data)
-            .expect("Invalid shape");
+            .map_err(|e| ArenaError::DataLoading(format!("Invalid shape: {}", e)))?;
 
-        array.to_pyarray(py)
+        Ok(array.to_pyarray(py))
     }
 }
 
@@ -253,13 +318,35 @@ impl TradingEnv {
 // =========================================================================
 
 impl TradingEnv {
+    /**
+     * Create a new trading environment.
+     *
+     * # Arguments
+     *
+     * * `initial_capital` - Starting cash balance in USDC.
+     * * `transaction_cost` - Taker fee rate (e.g., 0.001 for 0.1%).
+     * * `lookback` - Number of historical ticks to include in observations.
+     * * `max_steps` - Maximum duration of a single episode.
+     * * `enable_logging` - Whether to stream telemetry to Rerun.
+     */
     pub fn new(
         initial_capital: f64,
         transaction_cost: f64,
         lookback: usize,
         max_steps: usize,
         enable_logging: bool,
+        seed: Option<u64>,
     ) -> Self {
+        let num_features = 6; // price, return, volume, imbalance, position, cash
+        let rng = match seed {
+            Some(s) => StdRng::seed_from_u64(s),
+            None => {
+                // Use rand::rng() to generate a random seed (rand 0.9 API)
+                use rand::Rng;
+                let random_seed = rand::rng().random::<u64>();
+                StdRng::seed_from_u64(random_seed)
+            }
+        };
         TradingEnv {
             orderbook: OrderBook::new(),
             prices: Vec::new(),
@@ -269,12 +356,15 @@ impl TradingEnv {
             initial_capital,
             transaction_cost,
             lookback,
-            num_features: 6, // price, return, volume, imbalance, position, cash
-            returns: Vec::new(),
+            num_features,
+            returns: SmallVec::new(),
             prev_portfolio_value: initial_capital,
             max_steps,
             total_steps: 0,
             logger: crate::utils::visualizer::RerunLogger::new(enable_logging),
+            obs_buffer: ObservationBuffer::new(num_features, lookback),
+            rng,
+            risk_manager: RiskManager::with_defaults(initial_capital),
         }
     }
 
@@ -302,13 +392,17 @@ impl TradingEnv {
      *
      * Returns the initial observation vector.
      */
+    #[instrument(skip(self))]
     pub fn reset_rs(&mut self) -> Vec<f64> {
+        debug!("Resetting environment (Rust)");
         self.current_step = self.lookback;
         self.position = 0.0;
         self.cash = self.initial_capital;
         self.returns.clear();
         self.prev_portfolio_value = self.initial_capital;
         self.orderbook.clear();
+        self.risk_manager.reset(self.initial_capital);
+        self.total_steps = 0;
 
         self.generate_observation_data()
     }
@@ -339,7 +433,12 @@ impl TradingEnv {
         &self.orderbook
     }
 
+    pub fn risk_status(&self) -> RiskStatus {
+        self.risk_manager.status().clone()
+    }
+
     /** Pure Rust step function (no Python dependency) */
+    #[instrument(skip(self), fields(step = self.total_steps))]
     pub fn step_rs(&mut self, action: i32) -> (Vec<f64>, f64, bool, bool, StepInfo) {
         let action_type = ActionType::from(action);
 
@@ -355,6 +454,9 @@ impl TradingEnv {
         let returns = (portfolio_value - self.prev_portfolio_value) / self.prev_portfolio_value;
         self.returns.push(returns);
         self.prev_portfolio_value = portfolio_value;
+
+        // Update risk manager
+        self.risk_manager.update(portfolio_value);
 
         // Risk-adjusted reward (Sharpe-like)
         let reward = self.calculate_reward(returns, trade_cost);
@@ -384,8 +486,8 @@ impl TradingEnv {
     }
 
     /** Internal method to generate observation data (pure Rust, no GIL) */
-    fn generate_observation_data(&self) -> Vec<f64> {
-        let mut obs = vec![0.0f64; self.lookback * self.num_features];
+    fn generate_observation_data(&mut self) -> Vec<f64> {
+        self.obs_buffer.reset();
 
         for i in 0..self.lookback {
             let idx = self
@@ -401,16 +503,18 @@ impl TradingEnv {
                     0.0
                 };
 
-                let row_start = i * self.num_features;
-                obs[row_start] = price / self.prices[0]; // Normalized price?
-                obs[row_start + 1] = returns; // Returns
-                obs[row_start + 2] = 0.0; // Volume (placeholder)
-                obs[row_start + 3] = self.orderbook.imbalance(); // Order book imbalance
-                obs[row_start + 4] = self.position / self.initial_capital; // Normalized position
-                obs[row_start + 5] = self.cash / self.initial_capital; // Normalized cash
+                let row_data = [
+                    price / self.prices[0],               // Normalized price
+                    returns,                              // Returns
+                    0.0,                                  // Volume (placeholder)
+                    self.orderbook.imbalance(),           // Order book imbalance
+                    self.position / self.initial_capital, // Normalized position
+                    self.cash / self.initial_capital,     // Normalized cash
+                ];
+                self.obs_buffer.update(i, &row_data);
             }
         }
-        obs
+        self.obs_buffer.to_vec()
     }
 
     /** Get current price */
@@ -514,6 +618,17 @@ impl TradingEnv {
             0.0
         }
     }
+
+    /**
+     * Set the random seed for reproducibility.
+     *
+     * # Arguments
+     *
+     * * `seed` - Random seed value.
+     */
+    pub fn set_seed(&mut self, seed: u64) {
+        self.rng = StdRng::seed_from_u64(seed);
+    }
 }
 
 #[cfg(test)]
@@ -522,7 +637,7 @@ mod tests {
 
     #[test]
     fn test_env_creation() {
-        let env = TradingEnv::new(10000.0, 0.001, 30, 1000, true);
+        let env = TradingEnv::new(10000.0, 0.001, 30, 1000, true, Some(42));
         assert_eq!(env.portfolio_value(), 10000.0);
         assert_eq!(env.observation_shape(), (30, 6));
     }

@@ -421,6 +421,16 @@ results/
 /target
 /build
 
+# Added by documentation generation
+python/docs/_build
+rust/docs/nglab
+rust/docs/search.index
+rust/docs/static.files
+rust/docs/tauri_app
+rust/docs/tauri_app_lib
+rust/docs/trait.impl
+rust/docs/type.impl
+
 # Added by simulator
 /**/*.rrd
 
@@ -436,3 +446,4 @@ android/build/intermediates/ktLint/
 
 # Local directories
 model_weights/
+results_verify/

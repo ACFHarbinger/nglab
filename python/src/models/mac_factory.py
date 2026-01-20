@@ -105,11 +105,11 @@ MAC_MODEL_NAMES = [
 def create_mac_model(model_name: str, cfg: dict):
     """
     Factory function to create classical machine learning models.
-    
+
     Args:
         model_name: Name of the model to create.
         cfg: Configuration dictionary.
-        
+
     Returns:
         Instantiated model or None if not a MAC model.
     """
@@ -125,7 +125,8 @@ def create_mac_model(model_name: str, cfg: dict):
         )
     elif model_name == "LARS":
         return LARSModel(
-            n_nonzero_coefs=cfg.get("n_nonzero_coefs", 500), **cfg.get("model_kwargs", {})
+            n_nonzero_coefs=cfg.get("n_nonzero_coefs", 500),
+            **cfg.get("model_kwargs", {}),
         )
     elif model_name == "ElasticNet":
         return ElasticNetModel(
@@ -149,6 +150,7 @@ def create_mac_model(model_name: str, cfg: dict):
         )
     elif model_name == "ID3":
         from .mac.trees import ID3Model
+
         return ID3Model(
             task=cfg.get("task", "classification"), **cfg.get("model_kwargs", {})
         )
@@ -268,5 +270,5 @@ def create_mac_model(model_name: str, cfg: dict):
             n_neighbors=cfg.get("n_neighbors", 5),
             **cfg.get("model_kwargs", {}),
         )
-    
+
     return None

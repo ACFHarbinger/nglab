@@ -8,15 +8,18 @@ and handling gradient clipping.
 import math
 import os
 import time
+from typing import Any, Dict, List, Tuple, cast
 
 import torch
 from tqdm import tqdm
-from utils.functions import move_to
-from utils.log_utils import log_timeseries_values
-from utils.model_utils import get_inner_model
+from python.src.utils.functions.functions import move_to
+from python.src.utils.functions.model_utils import get_inner_model
+from python.src.utils.logging.log_utils import log_epoch, log_timeseries_values
 
 
-def rollout(model, dataset, opts):
+def rollout(
+    model: torch.nn.Module, dataset: torch.utils.data.Dataset[Any], opts: Dict[str, Any]
+) -> torch.Tensor:
     """
     Perform evaluation rollout on a dataset.
 
@@ -28,38 +31,36 @@ def rollout(model, dataset, opts):
     Returns:
         torch.Tensor: Concatenated results from the rollout.
     """
-    # Put in greedy evaluation mode!
-    # set_decode_type(model, "greedy")
     model.eval()
 
-    def eval_model_bat(bat):
+    def eval_model_bat(bat: Dict[str, torch.Tensor]) -> torch.Tensor:
         """
         Evaluate a single batch.
         """
         with torch.no_grad():
-            cost, _ = model(move_to(bat, opts["device"]))
+            cost, _ = cast(
+                Tuple[torch.Tensor, Any], model(move_to(bat, opts["device"]))
+            )
         return cost.data.cpu()
 
-    return torch.cat(
-        [
-            eval_model_bat(bat)
-            for bat in tqdm(
-                torch.utils.data.DataLoader(
-                    dataset, batch_size=opts["eval_batch_size"], pin_memory=True
-                ),
-                disable=opts["no_progress_bar"],
-            )
-        ],
-        0,
+    dataloader = torch.utils.data.DataLoader(
+        dataset, batch_size=opts["eval_batch_size"], pin_memory=True
     )
 
+    results = []
+    for bat in tqdm(dataloader, disable=opts["no_progress_bar"]):
+        results.append(eval_model_bat(bat))
 
-def clip_grad_norms(param_groups, max_norm=math.inf):
+    return torch.cat(results, 0)
+
+
+def clip_grad_norms(
+    param_groups: Any, max_norm: float = math.inf
+) -> Tuple[List[float], List[float]]:
     """
     Clips the norms for all param groups to max_norm and returns gradient norms before clipping
-    :param optimizer:
+    :param param_groups:
     :param max_norm:
-    :param gradient_norms_log:
     :return: grad_norms, clipped_grad_norms: list with (clipped) gradient norms per group
     """
     grad_norms = [
@@ -69,7 +70,7 @@ def clip_grad_norms(param_groups, max_norm=math.inf):
                 max_norm if max_norm > 0 else math.inf
             ),  # Inf so no clipping but still call to calc
             norm_type=2,
-        )
+        ).item()
         for group in param_groups
     ]
     grad_norms_clipped = (
@@ -79,8 +80,15 @@ def clip_grad_norms(param_groups, max_norm=math.inf):
 
 
 def train_epoch(
-    model, optimizer, baseline, lr_scheduler, epoch, dataset, tb_logger, opts
-):
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    baseline: Any,
+    lr_scheduler: Any,
+    epoch: int,
+    dataset: torch.utils.data.Dataset[Any],
+    tb_logger: Any,
+    opts: Dict[str, Any],
+) -> None:
     """
     Train the model for one epoch.
     """
@@ -97,9 +105,10 @@ def train_epoch(
     # Put model in train mode and setup dataloader
     step = epoch * opts["batch_size"]
     model.train()
-    training_dataloader = training_dataloader = torch.utils.data.DataLoader(
-        dataset, batch_size=opts["batch_size"]
+    training_dataloader = torch.utils.data.DataLoader(
+        dataset, batch_size=opts["batch_size"], shuffle=True
     )
+
     for batch_id, batch in enumerate(
         tqdm(training_dataloader, disable=opts["no_progress_bar"])
     ):
@@ -109,11 +118,7 @@ def train_epoch(
         step += 1
 
     epoch_duration = time.time() - start_time
-    print(
-        "Finished epoch {}, took {} s".format(
-            epoch, time.strftime("%H:%M:%S", time.gmtime(epoch_duration))
-        )
-    )
+    log_epoch(epoch, epoch_duration, optimizer, opts)
     if is_cuda:
         torch.cuda.empty_cache()
 
@@ -137,8 +142,16 @@ def train_epoch(
 
 
 def train_batch(
-    model, optimizer, baseline, epoch, batch_id, batch, step, tb_logger, opts
-):
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    baseline: Any,
+    epoch: int,
+    batch_id: int,
+    batch: Dict[str, torch.Tensor],
+    step: int,
+    tb_logger: Any,
+    opts: Dict[str, Any],
+) -> None:
     """
     Train the model on a single batch.
     """
@@ -147,12 +160,14 @@ def train_batch(
     y = batch["Labels"]
 
     # Compute output and loss
-    output = model(x)
-    loss = baseline.loss(output, y)
+    # Cast model output to Tensor to avoid Any issues in strict mode
+    output = cast(torch.Tensor, model(x))
+    # Use MAE (L1 Loss) as requested for Polymarket
+    loss = torch.nn.functional.l1_loss(output, y)
 
     # Perform backward pass and optimization step
     optimizer.zero_grad()
-    loss.backward()
+    loss.backward()  # type: ignore[no-untyped-call]
 
     # Clip gradient norms and get (clipped) gradient norms for logging
     grad_norms = clip_grad_norms(optimizer.param_groups, opts["max_grad_norm"])
@@ -161,5 +176,5 @@ def train_batch(
     # Logging
     if step % int(opts["log_step"]) == 0:
         log_timeseries_values(
-            loss, grad_norms, epoch, batch_id, step, output, tb_logger, opts
+            loss.item(), grad_norms, epoch, batch_id, step, output, tb_logger, opts
         )

@@ -26,7 +26,7 @@ const outcomeColors = [
   { bg: "bg-orange-600", bgHover: "hover:bg-orange-500", bgLight: "bg-orange-600/10", text: "text-orange-400", border: "border-orange-500" },
 ];
 
-export function TradingFormWidget({ symbol, currentPrice, outcomes, livePrices }: TradingFormProps) {
+export function TradingFormWidget({ currentPrice, outcomes, livePrices }: TradingFormProps) {
   // Default to Yes/No if no outcomes provided
   const marketOutcomes = useMemo(() => {
     if (outcomes && outcomes.length > 0) return outcomes;

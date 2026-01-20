@@ -7,7 +7,7 @@
  * Run with: `cargo bench`
  */
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 
 // Note: We need to import from the crate
 // For now, we'll benchmark with inline implementations
@@ -20,6 +20,7 @@ fn benchmark_orderbook_operations(c: &mut Criterion) {
     use std::collections::VecDeque;
 
     #[derive(Clone)]
+    #[allow(dead_code)]
     struct SimpleOrder {
         price: i64,
         quantity: f64,
@@ -36,7 +37,7 @@ fn benchmark_orderbook_operations(c: &mut Criterion) {
                 };
                 bids.entry(price).or_default().push_back(order);
             }
-            black_box(bids)
+            std::hint::black_box(bids)
         })
     });
 
@@ -55,7 +56,7 @@ fn benchmark_orderbook_operations(c: &mut Criterion) {
         b.iter(|| {
             let mut asks_clone = asks.clone();
             let mut filled = 0.0;
-            let mut remaining = 500.0;
+            let mut remaining: f64 = 500.0;
 
             for (&_price, orders) in asks_clone.iter_mut() {
                 while let Some(order) = orders.front_mut() {
@@ -74,7 +75,7 @@ fn benchmark_orderbook_operations(c: &mut Criterion) {
                     break;
                 }
             }
-            black_box(filled)
+            std::hint::black_box(filled)
         })
     });
 }
@@ -113,9 +114,9 @@ fn benchmark_simulation_step(c: &mut Criterion) {
 
                 let portfolio_value = cash + position * price;
                 total_reward += returns;
-                black_box(portfolio_value);
+                std::hint::black_box(portfolio_value);
             }
-            black_box(total_reward)
+            std::hint::black_box(total_reward)
         })
     });
 }

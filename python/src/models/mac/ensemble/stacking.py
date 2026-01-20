@@ -12,20 +12,21 @@ class StackingModel(ClassicalModel):
     Requires 'estimators' list of (name, estimator) tuples in kwargs,
     or defaults to simple Linear+Tree stack.
     """
+
     def __init__(self, task="regression", **kwargs):
         super().__init__()
-        
+
         if "estimators" not in kwargs:
             if task == "regression":
                 kwargs["estimators"] = [
-                    ('lr', LinearRegression()),
-                    ('tree', DecisionTreeRegressor(max_depth=5))
+                    ("lr", LinearRegression()),
+                    ("tree", DecisionTreeRegressor(max_depth=5)),
                 ]
                 kwargs.setdefault("final_estimator", LinearRegression())
             else:
                 kwargs["estimators"] = [
-                    ('lr', LogisticRegression()),
-                    ('tree', DecisionTreeClassifier(max_depth=5))
+                    ("lr", LogisticRegression()),
+                    ("tree", DecisionTreeClassifier(max_depth=5)),
                 ]
                 kwargs.setdefault("final_estimator", LogisticRegression())
 

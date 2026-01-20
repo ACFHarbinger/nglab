@@ -3,7 +3,7 @@ use nglab::simulation::gym::TradingEnv;
 #[test]
 fn test_gym_full_episode() {
     // 1. Setup Environment
-    let mut env = TradingEnv::new(100_000.0, 0.001, 5, 100, false);
+    let mut env = TradingEnv::new(100_000.0, 0.001, 5, 100, false, None);
 
     // 2. Load Price Data (Simple sine wave pattern)
     let prices: Vec<f64> = (0..20).map(|i| 100.0 + (i as f64).sin() * 10.0).collect();
@@ -67,7 +67,7 @@ fn test_gym_full_episode() {
 
 #[test]
 fn test_gym_observation_integrity() {
-    let mut env = TradingEnv::new(10_000.0, 0.0, 2, 10, false); // Lookback 2
+    let mut env = TradingEnv::new(10_000.0, 0.0, 2, 10, false, None); // Lookback 2
     let prices = vec![100.0, 101.0, 102.0, 103.0, 104.0];
     env.load_prices(prices);
 

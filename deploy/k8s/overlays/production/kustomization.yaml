@@ -1,0 +1,39 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: nglab-prod
+
+resources:
+  - ../../base
+
+namePrefix: prod-
+
+patches:
+  - path: deployment-patch.yaml
+
+configMapGenerator:
+  - name: nglab-config
+    behavior: merge
+    literals:
+      - NGLAB_ENV=production
+      - NGLAB_LOG_LEVEL=WARNING
+      - NGLAB_MODEL_STORAGE=s3
+
+secretGenerator:
+  - name: nglab-secrets
+    behavior: merge
+    literals:
+      - POSTGRES_PASSWORD=REPLACE_WITH_REAL_PASSWORD
+      - GRAFANA_PASSWORD=REPLACE_WITH_REAL_PASSWORD
+
+images:
+  - name: nglab/api
+    newName: your-registry.com/nglab/api
+    newTag: v1.0.0
+  - name: nglab/api-gpu
+    newName: your-registry.com/nglab/api-gpu
+    newTag: v1.0.0
+
+replicas:
+  - name: nglab-api
+    count: 4

@@ -1,0 +1,27 @@
+[environment]
+name = "development"
+log_level = "debug"
+debug = true
+
+[rust]
+arena_tick_rate_ms = 100
+max_order_book_depth = 1000
+enable_metrics = true
+
+[python]
+model_checkpoint_dir = "./model_weights"
+wandb_mode = "offline"
+device = "cpu"
+
+[tauri]
+window_width = 1280
+window_height = 720
+enable_devtools = true
+
+[database]
+url = "sqlite://data/nglab_dev.db"
+pool_size = 5
+
+[api]
+polymarket_api_key = "${POLYMARKET_API_KEY}"
+rate_limit_per_minute = 60

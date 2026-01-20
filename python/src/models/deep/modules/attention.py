@@ -7,7 +7,7 @@ from math import sqrt
 import numpy as np
 import torch
 from torch import nn
-from python.src.utils.masking import ProbMask, TriangularCausalMask
+from python.src.utils.functions.masking import ProbMask, TriangularCausalMask
 
 
 # Adapted from the Time-Series-Library (https://github.com/thuml/Time-Series-Library/blob/main/layers/SelfAttention_Family.py)

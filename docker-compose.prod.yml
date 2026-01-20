@@ -1,0 +1,352 @@
+version: '3.8'
+
+# Production Docker Compose for NGLab
+# Usage: docker compose -f docker-compose.prod.yml up -d
+# Includes: API service (scaled), PostgreSQL, Redis, Prometheus, Grafana, Jaeger
+
+services:
+  # =============================================================================
+  # Core Services
+  # =============================================================================
+
+  nglab-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        - PYTHON_VERSION=3.11
+        - RUST_VERSION=1.83
+    image: nglab/api:${NGLAB_VERSION:-latest}
+    ports:
+      - "8000:8000"
+    environment:
+      - NGLAB_ENV=production
+      - NGLAB_LOG_LEVEL=${NGLAB_LOG_LEVEL:-INFO}
+      - NGLAB_DB_HOST=pgbouncer
+      - NGLAB_DB_PORT=6432
+      - NGLAB_DB_NAME=${POSTGRES_DB:-nglab}
+      - NGLAB_DB_USER=${POSTGRES_USER:-nglab}
+      - NGLAB_DB_PASSWORD=${POSTGRES_PASSWORD}
+      - NGLAB_REDIS_HOST=redis
+      - NGLAB_REDIS_PORT=6379
+      - NGLAB_MODEL_STORAGE=${NGLAB_MODEL_STORAGE:-local}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - S3_BUCKET=${S3_BUCKET:-nglab-models}
+      - GCS_BUCKET=${GCS_BUCKET:-}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/secrets/gcp-credentials.json
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+      - OTEL_SERVICE_NAME=nglab-api
+      - PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus
+    volumes:
+      - ./logs:/app/logs
+      - ./models:/app/models
+      - model-cache:/app/.cache
+      - ./secrets:/app/secrets:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: ${API_REPLICAS:-2}
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - nglab-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  nglab-api-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    image: nglab/api-gpu:${NGLAB_VERSION:-latest}
+    ports:
+      - "8001:8000"
+    environment:
+      - NGLAB_ENV=production
+      - NGLAB_LOG_LEVEL=${NGLAB_LOG_LEVEL:-INFO}
+      - NGLAB_DB_HOST=postgres
+      - NGLAB_DB_PORT=5432
+      - NGLAB_DB_NAME=${POSTGRES_DB:-nglab}
+      - NGLAB_DB_USER=${POSTGRES_USER:-nglab}
+      - NGLAB_DB_PASSWORD=${POSTGRES_PASSWORD}
+      - NGLAB_REDIS_HOST=redis
+      - NGLAB_REDIS_PORT=6379
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+      - TORCH_CUDA_ARCH_LIST=${TORCH_CUDA_ARCH_LIST:-7.0;7.5;8.0;8.6;9.0}
+    volumes:
+      - ./logs:/app/logs
+      - ./models:/app/models
+      - model-cache:/app/.cache
+    depends_on:
+      - postgres
+      - redis
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${GPU_COUNT:-1}
+              capabilities: [ gpu ]
+    networks:
+      - nglab-network
+    profiles:
+      - gpu
+
+  # =============================================================================
+  # Data Services
+  # =============================================================================
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-nglab}
+      - POSTGRES_USER=${POSTGRES_USER:-nglab}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nglab} -d ${POSTGRES_DB:-nglab}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nglab-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  postgres-replica:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-nglab}
+      - POSTGRES_USER=${POSTGRES_USER:-nglab}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nglab-network
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          memory: 512M
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER:-nglab}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-nglab}
+      - MAX_CLIENT_CONN=1000
+      - DEFAULT_POOL_SIZE=20
+      - MIN_POOL_SIZE=5
+      - POOL_MODE=transaction
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nglab-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nglab-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    environment:
+      - DATA_SOURCE_NAME=postgresql://nglab:${POSTGRES_PASSWORD}@postgres:5432/nglab?sslmode=disable
+    ports:
+      - "9187:9187"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nglab-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+
+  # =============================================================================
+  # Monitoring Stack
+  # =============================================================================
+
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - nglab-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:?GRAFANA_PASSWORD is required}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=${GRAFANA_ROOT_URL:-http://localhost:3000}
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - nglab-network
+
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    ports:
+      - "9093:9093"
+    networks:
+      - nglab-network
+
+  # =============================================================================
+  # Tracing
+  # =============================================================================
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - SPAN_STORAGE_TYPE=badger
+      - BADGER_EPHEMERAL=false
+      - BADGER_DIRECTORY_VALUE=/badger/data
+      - BADGER_DIRECTORY_KEY=/badger/key
+    volumes:
+      - jaeger-data:/badger
+    ports:
+      - "16686:16686" # UI
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+      - "14268:14268" # Jaeger HTTP
+    networks:
+      - nglab-network
+
+  # =============================================================================
+  # Load Balancer / Reverse Proxy
+  # =============================================================================
+
+  nginx:
+    image: nginx:1.25-alpine
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./deploy/ssl:/etc/nginx/ssl:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - nglab-api
+    healthcheck:
+      test: [ "CMD", "nginx", "-t" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - nglab-network
+    profiles:
+      - production
+
+# =============================================================================
+# Networks & Volumes
+# =============================================================================
+
+networks:
+  nglab-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  postgres-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:
+  alertmanager-data:
+  jaeger-data:
+  model-cache:

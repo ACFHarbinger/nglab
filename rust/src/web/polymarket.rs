@@ -498,15 +498,43 @@ impl WebScraper for PolymarketScraper {
         }
 
         // Fetch data for all options
-        let mut all_histories = HashMap::new();
+        //let mut all_histories: HashMap<String, Vec<(u64, f64)>> = HashMap::new();
+        //let mut all_timestamps: Vec<u64> = Vec::new();
+
+        use futures_util::stream::{self, StreamExt};
+
+        // Fetch data for all options concurrently
+        // Rate limit: 10 concurrent requests
+        const CONCURRENT_REQUESTS: usize = 10;
+
+        let token_ids = self.token_ids.clone();
+        let futures = token_ids.into_iter().map(|token_id| {
+            let scraper = self;
+            async move {
+                let history = scraper.fetch_history(&token_id).await?;
+                Ok::<(String, Vec<HistoryItem>), ArenaError>((token_id, history))
+            }
+        });
+
+        let mut stream = stream::iter(futures).buffer_unordered(CONCURRENT_REQUESTS);
+
+        let mut all_histories: HashMap<String, Vec<HistoryItem>> = HashMap::new();
         let mut all_timestamps = Vec::new();
 
-        for token_id in &self.token_ids {
-            let history = self.fetch_history(token_id).await?;
-            for item in &history {
-                all_timestamps.push(item.t);
+        while let Some(result) = stream.next().await {
+            match result {
+                Ok((token_id, history)) => {
+                    for item in &history {
+                        all_timestamps.push(item.t);
+                    }
+                    all_histories.insert(token_id, history);
+                }
+                Err(e) => {
+                    eprintln!("Failed to fetch history: {}", e);
+                    // For CSV download, we might want to return error or skip
+                    return Err(e);
+                }
             }
-            all_histories.insert(token_id.clone(), history);
         }
 
         all_timestamps.sort_unstable();

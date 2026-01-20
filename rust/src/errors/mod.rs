@@ -44,6 +44,19 @@ pub enum ArenaError {
 
     #[error("Network error: {0}")]
     Network(#[from] reqwest::Error),
+
+    #[error("Python error: {0}")]
+    Python(String),
+}
+
+#[cfg(feature = "python")]
+use pyo3::{exceptions::PyRuntimeError, PyErr};
+
+#[cfg(feature = "python")]
+impl From<ArenaError> for PyErr {
+    fn from(err: ArenaError) -> PyErr {
+        PyRuntimeError::new_err(err.to_string())
+    }
 }
 
 /**

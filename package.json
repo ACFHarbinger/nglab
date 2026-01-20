@@ -5,7 +5,9 @@
         "dev": "npm run dev --prefix typescript",
         "build": "npm run build --prefix typescript",
         "tauri": "npm run tauri --prefix typescript",
-        "install:all": "npm install --prefix typescript"
+        "install:all": "npm install --prefix typescript",
+        "lint": "npm run lint --prefix typescript",
+        "test": "npm run test --prefix typescript"
     },
     "workspaces": [
         "typescript"

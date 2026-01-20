@@ -1,0 +1,221 @@
+# NGLab Helm Chart Values
+# Override these values for your environment
+
+# Global settings
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+# API Server Configuration
+api:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: nglab/api
+    tag: latest
+    pullPolicy: Always
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: api.nglab.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: nglab-tls
+        hosts:
+          - api.nglab.example.com
+
+  # Health checks
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  readinessProbe:
+    httpGet:
+      path: /health/ready
+      port: http
+    initialDelaySeconds: 10
+    periodSeconds: 5
+
+# GPU API Server Configuration
+apiGpu:
+  enabled: false
+  replicaCount: 1
+  image:
+    repository: nglab/api-gpu
+    tag: latest
+    pullPolicy: Always
+
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 4Gi
+      nvidia.com/gpu: 1
+    limits:
+      cpu: 4000m
+      memory: 16Gi
+      nvidia.com/gpu: 1
+
+  nodeSelector:
+    accelerator: nvidia-gpu
+
+  tolerations:
+    - key: nvidia.com/gpu
+      operator: Exists
+      effect: NoSchedule
+
+# Environment Configuration
+env:
+  NGLAB_ENV: production
+  NGLAB_LOG_LEVEL: INFO
+  NGLAB_MODEL_STORAGE: s3
+  OTEL_SERVICE_NAME: nglab-api
+
+# Secrets (use external secrets manager in production)
+secrets:
+  # Set to false to use external secrets
+  create: true
+  postgresPassword: ""
+  awsAccessKeyId: ""
+  awsSecretAccessKey: ""
+  grafanaPassword: ""
+
+# Model Storage Configuration
+modelStorage:
+  type: s3  # s3, gcs, or local
+  s3:
+    bucket: nglab-models
+    region: us-east-1
+    prefix: models/
+  gcs:
+    bucket: ""
+    prefix: models/
+  local:
+    path: /app/models
+    persistence:
+      enabled: true
+      size: 50Gi
+      storageClass: ""
+
+# PostgreSQL Configuration
+postgresql:
+  enabled: true
+  auth:
+    database: nglab
+    username: nglab
+    existingSecret: ""
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+
+# Redis Configuration
+redis:
+  enabled: true
+  architecture: standalone
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+
+# Monitoring Configuration
+prometheus:
+  enabled: true
+  server:
+    retention: 15d
+    persistentVolume:
+      enabled: true
+      size: 50Gi
+
+grafana:
+  enabled: true
+  adminPassword: ""
+  persistence:
+    enabled: true
+    size: 10Gi
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: default
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+
+# Jaeger Tracing
+jaeger:
+  enabled: true
+  storage:
+    type: badger
+  collector:
+    service:
+      otlp:
+        grpc:
+          enabled: true
+        http:
+          enabled: true
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod Security
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# Network Policies
+networkPolicy:
+  enabled: true
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1

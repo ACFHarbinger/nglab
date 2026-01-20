@@ -1,3 +1,15 @@
+"""
+Probabilistic Models Package.
+
+Contains implementations of generative and probabilistic models such as:
+- TimeGAN (Generative Adversarial Networks)
+- Normalizing Flows
+- Boltzmann Machines (RBM, DBN)
+- Hopfield Networks
+- Markov Chains
+- Denoising Diffusion Probabilistic Models (DDPM)
+"""
+
 from .gan import TimeGANGenerator, TimeGANDiscriminator
 from .flow import NormalizingFlow
 from .boltzmann import BoltzmannMachine

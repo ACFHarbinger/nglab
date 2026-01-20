@@ -17,20 +17,13 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v1
+        uses: astral-sh/setup-uv@v5
         with:
           version: "latest"
           enable-cache: true
 
-      - name: Cache Python dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/uv
-            python/.venv
-          key: ${{ runner.os }}-python-${{ hashFiles('**/pyproject.toml', '**/uv.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-python-
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies
         run: uv sync --dev
@@ -70,21 +63,6 @@ jobs:
         with:
           components: rustfmt, clippy
 
-      - name: Cache Rust dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-            rust/target/
-            typescript/src-tauri/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
-
       - name: Cargo Check
         run: cd rust && cargo check --all-features
 
@@ -108,10 +86,14 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-          cache-dependency-path: typescript/package-lock.json
+          # FIXED: Pointing to root where package-lock.json actually resides
+          cache-dependency-path: package-lock.json
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: Type Check & Build
-        run: npm run build
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test

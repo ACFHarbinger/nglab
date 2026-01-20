@@ -10,4 +10,5 @@ class CHAIDModel(DecisionTreeModel):
     sklearn doesn't support Chi-square splits natively.
     This is a placeholder wrapper that uses the standard DecisionTreeModel.
     """
+
     pass

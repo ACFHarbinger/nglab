@@ -1,5 +1,6 @@
 from sklearn.cluster import DBSCAN
 
+
 class DBSCANAlgorithm:
     def __init__(self, eps=0.5, min_samples=5, **kwargs):
         self.model = DBSCAN(eps=eps, min_samples=min_samples, **kwargs)

@@ -1,8 +1,9 @@
 import unittest
+from typing import cast
 
 from tensordict import TensorDict
 
-from python.src.agents.env_wrapper import TradingEnvWrapper
+from python.src.env.env_wrapper import TradingEnvWrapper
 from python.src.env.trading_env import TradingEnv
 
 
@@ -28,9 +29,13 @@ class TestTorchRLAgent(unittest.TestCase):
 
         # TorchRL GymWrapper typically puts resulting state in 'next'
         self.assertTrue("next" in next_td.keys())
-        self.assertTrue("reward" in next_td["next"].keys())
+
+        # Explicitly cast to TensorDict for type checking
+        next_state = cast(TensorDict, next_td["next"])
+
+        self.assertTrue("reward" in next_state.keys())
         self.assertTrue(
-            "done" in next_td["next"].keys() or "terminated" in next_td["next"].keys()
+            "done" in next_state.keys() or "terminated" in next_state.keys()
         )
 
 

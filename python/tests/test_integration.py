@@ -140,9 +140,7 @@ def test_multiple_environments():
     except ImportError:
         pytest.skip("nglab module not built")
 
-    envs = [
-        nglab.TradingEnv(initial_capital=10000.0, lookback=50) for _ in range(3)
-    ]
+    envs = [nglab.TradingEnv(initial_capital=10000.0, lookback=50) for _ in range(3)]
 
     # Reset all environments
     observations = [env.reset(seed=i)[0] for i, env in enumerate(envs)]

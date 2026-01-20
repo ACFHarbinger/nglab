@@ -1,5 +1,6 @@
 from sklearn.mixture import GaussianMixture
 
+
 class GMMAlgorithm:
     def __init__(self, n_components=1, **kwargs):
         self.model = GaussianMixture(n_components=n_components, **kwargs)

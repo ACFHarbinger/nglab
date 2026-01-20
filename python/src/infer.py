@@ -12,8 +12,8 @@ import torch
 # Add src to path so we can import modules
 sys.path.append(str(Path(__file__).parent))
 
-from models.time_series import TimeSeriesBackbone
-from utils.model_versioning import ModelMetadata, load_model_with_metadata
+from python.src.models.time_series import TimeSeriesBackbone
+from python.src.utils.io.model_versioning import ModelMetadata, load_model_with_metadata
 
 
 def main():

@@ -24,13 +24,14 @@ use tauri::Manager;
  */
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // Initialize TradingEnv with default parameters
-    let env = TradingEnv::new(10000.0, 0.001, 30, 1000, false);
+    // Initialize TradingEnv with default parameters and fixed seed for reproducibility
+    let env = TradingEnv::new(10000.0, 0.001, 30, 1000, false, Some(42));
 
     let state = ArenaState {
         env: Mutex::new(env),
         running: Mutex::new(false),
         ws_running: Arc::new(AtomicBool::new(false)),
+        debug_mode: Arc::new(AtomicBool::new(false)),
     };
 
     tauri::Builder::default()
@@ -77,7 +78,11 @@ pub fn run() {
             commands::integrations::search_polymarket_markets,
             commands::integrations::get_open_polymarket_markets,
             commands::integrations::get_public_polymarket_markets,
-            commands::integrations::search_public_polymarket_markets
+            commands::integrations::search_public_polymarket_markets,
+            commands::health::health_check,
+            commands::health::get_system_info,
+            commands::health::set_debug_mode,
+            commands::health::get_memory_usage
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

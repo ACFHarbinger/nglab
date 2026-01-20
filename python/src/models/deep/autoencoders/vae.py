@@ -109,6 +109,7 @@ class VAE(nn.Module):
             **(encoder_kwargs or {}),
         }
         from python.src.models.time_series import TimeSeriesBackbone
+
         self.encoder = TimeSeriesBackbone(encoder_cfg)
 
         # Project embeddings to latent distribution parameters

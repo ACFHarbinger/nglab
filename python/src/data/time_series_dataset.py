@@ -51,7 +51,6 @@ class TimeSeriesDataset(Dataset):
             )
 
         # Extract target values
-        import numpy as np
         values = df[target_column].astype(float).to_numpy()
 
         # Split train/val

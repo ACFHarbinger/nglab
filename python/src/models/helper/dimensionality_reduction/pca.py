@@ -1,5 +1,6 @@
 from sklearn.decomposition import PCA
 
+
 class PCAAlgorithm:
     def __init__(self, n_components=None, **kwargs):
         self.model = PCA(n_components=n_components, **kwargs)

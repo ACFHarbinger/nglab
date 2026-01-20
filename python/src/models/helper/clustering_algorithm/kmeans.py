@@ -1,5 +1,6 @@
 from sklearn.cluster import KMeans
 
+
 class KMeansAlgorithm:
     def __init__(self, n_clusters=8, **kwargs):
         self.model = KMeans(n_clusters=n_clusters, **kwargs)

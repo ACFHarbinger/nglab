@@ -75,10 +75,8 @@ describe("VaultTab", () => {
 
         // Click the eye button next to it.
         // It's in the same container.
-        const toggleBtn = screen.getAllByRole("button")[1]; // Refresh btn is 0. Lock is 1. No wait.
-        // Header: Refresh(0), Lock(1).
-        // Card: Toggle(2), Delete(3).
-        // It's risky index based.
+        // Header: Refresh(0), Lock(1). Card: Toggle(2), Delete(3).
+        // It's risky index-based, so using selector instead.
 
         // Let's use a more robust way.
         // We can click the button that contains the Eye icon.

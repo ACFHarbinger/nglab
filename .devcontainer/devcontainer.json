@@ -1,0 +1,30 @@
+{
+    "name": "NGLab Development",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+    "features": {
+        "ghcr.io/devcontainers/features/rust:1": {
+            "version": "latest"
+        },
+        "ghcr.io/devcontainers/features/python:1": {
+            "version": "latest"
+        },
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "latest"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "rust-lang.rust-analyzer",
+                "charliermarsh.ruff",
+                "ms-python.python",
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "tamasfe.even-better-toml",
+                "serayuzgur.crates"
+            ]
+        }
+    },
+    "postCreateCommand": "just setup",
+    "remoteUser": "vscode"
+}

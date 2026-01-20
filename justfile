@@ -199,9 +199,18 @@ audit:
 
 # Generate documentation
 docs:
-    @echo "📚 Generating documentation..."
-    cargo doc --no-deps --open
-    cd python && pdoc --html --output-dir docs python.src
+    @echo "📚 Generating consolidated documentation..."
+    @mkdir -p docs/rust docs/python
+    cargo doc --no-deps
+    cd python && pdoc --html --output-dir ../docs/python python.src
+    @echo "✅ Documentation generated in docs/ (Rust: target/doc, Python: docs/python)"
+
+# Generate mock data for the simulation
+seed-data assets="BTC,ETH,SOL" days="7":
+    @echo "🌱 Generating mock trading data for {{assets}}..."
+    mkdir -p assets/data
+    cd python && uv run python ../script/seed_data.py --assets {{assets}} --days {{days}} --output ../assets/data/
+    @echo "✅ Mock data generated in assets/data/"
 
 # Check code quality (lint + test)
 check: lint test

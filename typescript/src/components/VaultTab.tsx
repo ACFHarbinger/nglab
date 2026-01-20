@@ -21,12 +21,6 @@ interface VaultSummary {
     created_at: string;
 }
 
-interface VaultEntry {
-    id: number;
-    label: string;
-    value: string;
-    created_at: string;
-}
 
 const VaultTab: React.FC = () => {
     const [isUnlocked, setIsUnlocked] = useState(false);
@@ -62,7 +56,7 @@ const VaultTab: React.FC = () => {
             if (response.success) {
                 setSummaries(response.data || []);
             }
-        } catch (err) {
+        } catch {
             setError("Failed to fetch entries");
         }
     };
@@ -80,7 +74,7 @@ const VaultTab: React.FC = () => {
             } else {
                 setError(response.message);
             }
-        } catch (err) {
+        } catch {
             setError("Failed to unlock vault");
         } finally {
             setIsLoading(false);
@@ -112,7 +106,7 @@ const VaultTab: React.FC = () => {
             } else {
                 setError(response.message);
             }
-        } catch (err) {
+        } catch {
             setError("Failed to add secret");
         } finally {
             setIsLoading(false);
@@ -138,7 +132,7 @@ const VaultTab: React.FC = () => {
             } else {
                 setError(response.message || "Decryption failed. Vault might be locked.");
             }
-        } catch (err) {
+        } catch {
             setError("Failed to retrieve secret");
         }
     };
@@ -153,7 +147,7 @@ const VaultTab: React.FC = () => {
                 delete newDecrypted[id];
                 setDecryptedValues(newDecrypted);
             }
-        } catch (err) {
+        } catch {
             setError("Failed to delete secret");
         }
     };

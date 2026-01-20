@@ -3,6 +3,7 @@
  */
 
 pub mod auth;
+pub mod health;
 pub mod inference;
 pub mod integrations;
 pub mod moon;

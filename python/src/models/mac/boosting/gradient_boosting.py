@@ -15,4 +15,5 @@ class GradientBoostingModel(ClassicalModel):
 
 class GBRTModel(GradientBoostingModel):
     """Gradient Boosted Regression Trees - Alias for GradientBoostingModel."""
+
     pass

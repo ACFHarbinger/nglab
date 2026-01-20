@@ -1,2051 +1,631 @@
-# NGLab Codebase Improvements & Roadmap
+# NGLab Improvement Plan - Phase 7+
 
-> **Version:** 1.0
-> **Date:** 2026-01-16
-> **Status:** Draft
-> **Purpose:** Comprehensive analysis and actionable improvements for the NGLab trading bot platform
-
----
-
-## Table of Contents
-
-1. [Executive Summary](#executive-summary)
-2. [Current State Assessment](#current-state-assessment)
-3. [Critical Improvements (P0)](#critical-improvements-p0)
-4. [High Priority Improvements (P1)](#high-priority-improvements-p1)
-5. [Medium Priority Improvements (P2)](#medium-priority-improvements-p2)
-6. [Long-term Enhancements (P3)](#long-term-enhancements-p3)
-7. [Technical Debt](#technical-debt)
-8. [Performance Optimization Opportunities](#performance-optimization-opportunities)
-9. [Security Hardening](#security-hardening)
-10. [Documentation Improvements](#documentation-improvements)
-11. [Implementation Roadmap](#implementation-roadmap)
+This document outlines the next phase of improvements for NGLab, building upon the completed Phases 1-6. Each section includes actionable items with complexity and impact ratings.
 
 ---
 
 ## Executive Summary
 
-NGLab is a sophisticated multimodal deep reinforcement learning platform for financial trading with a well-designed three-tier architecture (Rust simulation engine, Python ML training, TypeScript/Tauri UI). The project demonstrates strong architectural foundations and professional development practices, but requires focused improvements in testing coverage, production readiness, and operational observability before large-scale deployment.
+NGLab has successfully completed 6 phases of development, resulting in a production-grade multimodal deep reinforcement learning trading bot with ~48,000 lines of code. The codebase demonstrates excellent architecture across Rust, Python, and TypeScript layers with comprehensive ML capabilities, deployment infrastructure, and monitoring.
 
-### Project Maturity: **Early Production (α/β)**
+**Current State:**
+- All Priority 1-6 items from the previous plan are complete
+- Production deployment infrastructure is ready (K8s, Helm, Docker)
+- Comprehensive monitoring stack deployed (Prometheus, Grafana, Jaeger)
+- ML pipeline mature with 10+ model architectures
+- Risk management and multi-asset support complete
 
-**Strengths:**
-- ✅ Clean separation of concerns across language boundaries
-- ✅ Strong type safety (Rust + TypeScript + Python type hints)
-- ✅ Performance-conscious design (zero-copy transfers, async I/O, benchmarking)
-- ✅ Comprehensive ML infrastructure (VAE, GAN, Diffusion, RNNs, Transformers)
-- ✅ CI/CD pipeline with pre-commit hooks
-
-**Critical Gaps:**
-- ❌ No frontend testing infrastructure
-- ❌ Limited production deployment documentation
-- ❌ Minimal logging and observability
-- ❌ Incomplete error handling standardization
-- ❌ No containerization support
-
----
-
-## Current State Assessment
-
-### Code Quality Metrics
-
-| Component | LOC | Test Coverage | Documentation | CI/CD | Status |
-|-----------|-----|---------------|---------------|-------|--------|
-| Rust Core | ~2,000 | Unit tests + benchmarks | Good (rustdoc) | ✅ | Production-ready |
-| Python ML | ~1,200 | 9 test files (~30 tests) | Moderate | ✅ | Functional |
-| TypeScript UI | ~250 | None | JSDoc comments | ✅ Build only | Functional |
-| Integration | N/A | Minimal E2E | Architecture.md | Partial | Needs work |
-
-### Architecture Health: **7/10**
-
-**What's Working:**
-- Clean interfaces between Rust/Python/TypeScript layers
-- PyO3 bindings are efficient and well-structured
-- Tauri IPC event system is reliable
-- Gymnasium-compatible environment design
-
-**What Needs Attention:**
-- Error propagation across language boundaries
-- Logging consistency (different strategies per layer)
-- Configuration management for production environments
-- Health check and monitoring endpoints
+**Next Phase Focus Areas:**
+1. **Robustness & Reliability** - Error handling, defensive coding
+2. **Security & Compliance** - Security policies, audit trails
+3. **Observability Deepening** - Structured logging, debugging tools
+4. **Testing Maturation** - E2E testing, fuzzing, chaos engineering
+5. **Advanced ML Features** - Model interpretability, AutoML
+6. **Operational Excellence** - Runbooks, incident response
 
 ---
 
-## Critical Improvements (P0)
+## Priority 1: Robustness & Reliability (Critical)
 
-> **Timeline:** 2-4 weeks
-> **Impact:** Blocks production deployment
+### 1.1 Rust Error Handling Hardening
 
-### 1. Frontend Testing Infrastructure
+**File**: Multiple files in `rust/src/`
+**Status**: 34 `.unwrap()` calls identified across production code
+**Impact**: Critical - Panics in production are unacceptable
 
-**Current State:** Zero automated tests for React/Tauri frontend
-
-**Required Actions:**
-
-#### 1.1 Setup Jest/Vitest Testing Framework
-```bash
-# Install dependencies
-cd typescript
-npm install -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom happy-dom
 ```
-
-**Configuration:** [typescript/vitest.config.ts](typescript/vitest.config.ts)
-```typescript
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import path from 'path';
-
-export default defineConfig({
-  plugins: [react()],
-  test: {
-    environment: 'happy-dom',
-    globals: true,
-    setupFiles: ['./src/__tests__/setup.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html', 'lcov'],
-      exclude: ['src-tauri/**', 'node_modules/**'],
-    },
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-});
+Tasks:
+□ Replace unwrap() calls in time series models (arima.rs, prophet.rs, es.rs)
+  - Add proper Result<T, ArenaError> return types
+  - Create specific error variants for numerical failures
+□ Replace unwrap() calls in multi_asset.rs (11 instances)
+  - Add validation for asset existence
+  - Handle missing price data gracefully
+□ Replace unwrap() calls in orderbook.rs (5 instances)
+  - Add order validation errors
+  - Handle edge cases in matching engine
+□ Add #[deny(clippy::unwrap_used)] to lib.rs
+□ Create error recovery strategies for each module
+□ Write integration tests for error paths
 ```
+**Complexity**: Medium | **Impact**: Critical
 
-#### 1.2 Unit Tests for Critical Hooks
+### 1.2 Input Validation Layer
 
-**Priority Test Files:**
-- `src/hooks/__tests__/useArena.test.tsx` - Arena state management
-- `src/hooks/__tests__/usePolymarket.test.tsx` - Market data streaming
-- `src/components/__tests__/PriceChart.test.tsx` - Chart rendering
-- `src/components/__tests__/OrderBook.test.tsx` - Order book display
+**Status**: Partial validation at API boundaries
+**Impact**: High - Prevents garbage-in-garbage-out
 
-**Example Test Structure:**
-```typescript
-// src/hooks/__tests__/useArena.test.tsx
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useArena } from '../useArena';
-import { mockIPC } from '@tauri-apps/api/mocks';
-
-describe('useArena', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('should initialize with default state', () => {
-    const { result } = renderHook(() => useArena());
-    expect(result.current.isRunning).toBe(false);
-    expect(result.current.priceHistory).toEqual([]);
-  });
-
-  it('should handle arena-update events', async () => {
-    const { result } = renderHook(() => useArena());
-
-    await act(async () => {
-      // Simulate Tauri event emission
-      // Test implementation here
-    });
-
-    expect(result.current.priceHistory.length).toBeGreaterThan(0);
-  });
-});
 ```
-
-#### 1.3 E2E Testing with Playwright
-
-**Setup:**
-```bash
-npm install -D @playwright/test
-npx playwright install chromium
+Tasks:
+□ Create validation module in rust/src/validation/
+  - Price validation (positive, reasonable bounds)
+  - Quantity validation (non-negative, position limits)
+  - Asset validation (known assets, valid symbols)
+□ Add validation decorators for Python API endpoints
+□ Implement request schema validation (Pydantic v2 strict mode)
+□ Add TypeScript runtime type checking (zod integration)
+□ Create validation error response format
+□ Document validation rules in API docs
 ```
+**Complexity**: Medium | **Impact**: High
 
-**Critical E2E Scenarios:**
-- Launch Tauri app and verify UI loads
-- Start arena simulation and verify chart updates
-- Interact with Polymarket scraper
-- Test order book visualization
+### 1.3 Graceful Degradation
 
-**Target Coverage:** 80% line coverage, 100% critical path coverage
+**Status**: Basic error handling exists
+**Impact**: Medium - Maintain service during partial failures
 
-**Estimated Effort:** 3-5 days
+```
+Tasks:
+□ Implement circuit breaker for Polymarket API
+□ Add fallback data sources when primary fails
+□ Create degraded mode for model serving (return cached predictions)
+□ Implement request queuing during overload
+□ Add health check degradation levels (healthy, degraded, unhealthy)
+□ Create alert escalation for degraded state
+```
+**Complexity**: Medium | **Impact**: Medium
 
 ---
 
-### 2. Production Error Handling & Logging
+## Priority 2: Security & Compliance (Critical)
 
-**Current State:** Inconsistent error handling, minimal structured logging
+### 2.1 Security Documentation
 
-#### 2.1 Standardize Rust Error Types
+**Status**: No SECURITY.md at project root
+**Impact**: Critical - Required for responsible disclosure
 
-**Create:** [rust/src/errors.rs](rust/src/errors.rs)
-```rust
-use thiserror::Error;
-
-#[derive(Error, Debug)]
-pub enum NGLabError {
-    #[error("Order book error: {0}")]
-    OrderBook(String),
-
-    #[error("Simulation error: {0}")]
-    Simulation(String),
-
-    #[error("Market data error: {0}")]
-    MarketData(String),
-
-    #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
-
-    #[error("Serialization error: {0}")]
-    Serialization(#[from] serde_json::Error),
-
-    #[error("Python error: {0}")]
-    Python(String),
-}
-
-impl From<NGLabError> for PyErr {
-    fn from(err: NGLabError) -> PyErr {
-        PyRuntimeError::new_err(err.to_string())
-    }
-}
 ```
-
-**Action Items:**
-- Replace all `unwrap()` calls with proper error handling
-- Propagate errors using `Result<T, NGLabError>`
-- Add context to errors using `.context()` or `.with_context()`
-
-#### 2.2 Implement Structured Logging
-
-**Add Dependencies:** [rust/Cargo.toml](rust/Cargo.toml)
-```toml
-[dependencies]
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-tracing-appender = "0.2"
+Tasks:
+□ Create SECURITY.md with:
+  - Supported versions table
+  - Vulnerability reporting process
+  - Security contact email
+  - PGP key for encrypted reports
+  - Expected response timeline
+□ Create .github/SECURITY.md (GitHub recognized location)
+□ Add security policy link to README
+□ Set up security@nglab email alias
+□ Configure GitHub Security Advisories
+□ Create internal security response playbook
 ```
+**Complexity**: Low | **Impact**: Critical
 
-**Configuration:** [rust/src/logging.rs](rust/src/logging.rs)
-```rust
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
+### 2.2 Audit Trail System
 
-pub fn init_logging(log_level: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let file_appender = tracing_appender::rolling::daily("./logs", "nglab.log");
-    let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+**Status**: Basic logging exists
+**Impact**: High - Required for compliance and debugging
 
-    tracing_subscriber::registry()
-        .with(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(log_level)))
-        .with(tracing_subscriber::fmt::layer())
-        .with(tracing_subscriber::fmt::layer().json().with_writer(non_blocking))
-        .init();
-
-    Ok(())
-}
 ```
-
-**Python Logging:** [python/src/utils/logging.py](python/src/utils/logging.py)
-```python
-import logging
-import sys
-from pathlib import Path
-
-def setup_logging(level: str = "INFO", log_file: Path | None = None):
-    """Configure structured logging for Python components."""
-    handlers = [logging.StreamHandler(sys.stdout)]
-
-    if log_file:
-        log_file.parent.mkdir(parents=True, exist_ok=True)
-        handlers.append(logging.FileHandler(log_file))
-
-    logging.basicConfig(
-        level=getattr(logging, level.upper()),
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=handlers
-    )
+Tasks:
+□ Implement audit log table in PostgreSQL
+  - User actions (trades, config changes)
+  - System events (model updates, deployments)
+  - Immutable append-only design
+□ Add audit middleware to FastAPI
+□ Create audit log viewer in frontend
+□ Implement log retention policy (7 years for financial)
+□ Add audit log integrity verification (hash chain)
+□ Create compliance reports generator
 ```
+**Complexity**: High | **Impact**: High
 
-**Estimated Effort:** 4-6 days
+### 2.3 Secrets Management Enforcement
+
+**Status**: Vault integration ready but not enforced
+**Impact**: High - Prevent credential exposure
+
+```
+Tasks:
+□ Remove hardcoded credentials from archive_old_data.py
+□ Enforce environment variable usage for all secrets
+□ Add pre-commit hook to detect secrets (detect-secrets)
+□ Configure Vault auto-unsealing in production
+□ Implement secret rotation for database credentials
+□ Add API key expiration and rotation
+□ Create secrets audit report
+```
+**Complexity**: Medium | **Impact**: High
+
+### 2.4 Dependency Security
+
+**Status**: pip-audit in CI but not regular
+**Impact**: Medium - Reduce supply chain risk
+
+```
+Tasks:
+□ Add daily dependency vulnerability scan (Dependabot)
+□ Configure renovate for automated updates
+□ Add SBOM generation (Software Bill of Materials)
+□ Implement dependency pinning with hash verification
+□ Create allowed/blocked dependency list
+□ Add license compliance checking
+□ Set up security alerts channel
+```
+**Complexity**: Low | **Impact**: Medium
 
 ---
 
-### 3. Production Configuration Management
+## Priority 3: Observability Deepening (High Impact)
 
-**Current State:** Development configs mixed with production needs
+### 3.1 Structured Logging in Simulation Engine
 
-#### 3.1 Environment-Based Configuration
+**File**: `rust/src/` (currently only 25 log statements)
+**Status**: Minimal logging in core simulation
+**Impact**: High - Critical for production debugging
 
-**Create:** [config/](config/)
 ```
-config/
-├── development.toml
-├── staging.toml
-├── production.toml
-└── schema.json
+Tasks:
+□ Add tracing crate for structured logging
+□ Implement log levels:
+  - ERROR: Order failures, risk limit breaches
+  - WARN: Unusual market conditions, slow execution
+  - INFO: Trade execution, position changes
+  - DEBUG: Order book updates, price movements
+□ Add correlation ID propagation from Python
+□ Create JSON log format for aggregation
+□ Add log sampling for high-frequency events
+□ Implement log context (asset, position, step)
+□ Create log analysis dashboards in Grafana
 ```
+**Complexity**: Medium | **Impact**: High
 
-**Example:** [config/production.toml](config/production.toml)
-```toml
-[environment]
-name = "production"
-log_level = "info"
-debug = false
+### 3.2 Performance Profiling Dashboard
 
-[rust]
-arena_tick_rate_ms = 100
-max_order_book_depth = 1000
-enable_metrics = true
+**Status**: Profiling tools exist but no real-time view
+**Impact**: Medium - Faster performance debugging
 
-[python]
-model_checkpoint_dir = "/var/lib/nglab/models"
-wandb_mode = "online"
-device = "cuda"
-
-[tauri]
-window_width = 1280
-window_height = 720
-enable_devtools = false
-
-[database]
-url = "${DATABASE_URL}"  # Environment variable
-pool_size = 10
-
-[api]
-polymarket_api_key = "${POLYMARKET_API_KEY}"
-rate_limit_per_minute = 60
 ```
-
-**Configuration Loading:** [rust/src/config.rs](rust/src/config.rs)
-```rust
-use config::{Config, Environment, File};
-use serde::Deserialize;
-
-#[derive(Debug, Deserialize)]
-pub struct Settings {
-    pub environment: EnvironmentConfig,
-    pub rust: RustConfig,
-    pub python: PythonConfig,
-    pub tauri: TauriConfig,
-    pub database: DatabaseConfig,
-    pub api: ApiConfig,
-}
-
-impl Settings {
-    pub fn new(env: &str) -> Result<Self, config::ConfigError> {
-        Config::builder()
-            .add_source(File::with_name(&format!("config/{}", env)))
-            .add_source(Environment::with_prefix("NGLAB").separator("__"))
-            .build()?
-            .try_deserialize()
-    }
-}
+Tasks:
+□ Create real-time latency dashboard
+  - P50, P95, P99 for order execution
+  - Model inference time distribution
+  - Data pipeline throughput
+□ Add flame graph generation endpoint
+□ Implement continuous profiling (py-spy integration)
+□ Create performance regression alerts
+□ Add GPU utilization timeline
+□ Build bottleneck identification tool
 ```
+**Complexity**: Medium | **Impact**: Medium
 
-**Estimated Effort:** 2-3 days
+### 3.3 Business Metrics Observability
+
+**Status**: Technical metrics complete
+**Impact**: High - Understand trading performance
+
+```
+Tasks:
+□ Add trading metrics to Prometheus:
+  - Profit/Loss per asset
+  - Win rate, Sharpe ratio (rolling)
+  - Position turnover
+  - Slippage analysis
+□ Create PnL attribution dashboard
+□ Implement trade cost analysis
+□ Add model prediction accuracy tracking
+□ Create portfolio risk metrics (VaR trend)
+□ Build strategy comparison views
+```
+**Complexity**: Medium | **Impact**: High
 
 ---
 
-### 4. Health Checks & Monitoring Endpoints
+## Priority 4: Testing Maturation (High Impact)
 
-**Current State:** No health check or readiness probes
+### 4.1 End-to-End Testing Suite
 
-#### 4.1 Add Health Check Endpoints
+**Status**: Unit and integration tests exist
+**Impact**: High - Catch integration issues
 
-**Rust/Tauri:** [typescript/src-tauri/src/health.rs](typescript/src-tauri/src/health.rs)
-```rust
-use serde::{Deserialize, Serialize};
-use std::time::SystemTime;
-
-#[derive(Serialize, Deserialize)]
-pub struct HealthStatus {
-    pub status: String,
-    pub version: String,
-    pub uptime_seconds: u64,
-    pub components: ComponentHealth,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ComponentHealth {
-    pub arena: bool,
-    pub orderbook: bool,
-    pub polymarket_scraper: bool,
-    pub python_binding: bool,
-}
-
-#[tauri::command]
-pub fn health_check(state: tauri::State<ArenaState>) -> Result<HealthStatus, String> {
-    let arena_locked = state.env.try_lock().is_ok();
-
-    Ok(HealthStatus {
-        status: if arena_locked { "healthy" } else { "degraded" },
-        version: env!("CARGO_PKG_VERSION").to_string(),
-        uptime_seconds: get_uptime(),
-        components: ComponentHealth {
-            arena: arena_locked,
-            orderbook: true, // Add actual check
-            polymarket_scraper: true, // Add actual check
-            python_binding: test_python_binding(),
-        },
-    })
-}
 ```
-
-**Python Flask Endpoint (Optional):** [python/src/api/health.py](python/src/api/health.py)
-```python
-from flask import Flask, jsonify
-import psutil
-import torch
-
-app = Flask(__name__)
-
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({
-        "status": "healthy",
-        "gpu_available": torch.cuda.is_available(),
-        "cpu_percent": psutil.cpu_percent(),
-        "memory_percent": psutil.virtual_memory().percent,
-    })
-
-@app.route('/ready', methods=['GET'])
-def ready():
-    # Check if models are loaded, etc.
-    return jsonify({"ready": True})
+Tasks:
+□ Create E2E test framework (pytest + testcontainers)
+□ Implement full pipeline tests:
+  - Data ingestion → Feature engineering → Training
+  - Model deployment → Inference serving → Trade execution
+□ Add multi-service integration tests
+□ Create synthetic market scenario tests
+□ Implement regression test for trading strategies
+□ Add performance baseline tests
+□ Create chaos engineering tests (network failures)
 ```
+**Complexity**: High | **Impact**: High
 
-**Estimated Effort:** 1-2 days
+### 4.2 Fuzzing for Financial Edge Cases
+
+**Status**: No fuzzing infrastructure
+**Impact**: Medium - Find edge cases in critical code
+
+```
+Tasks:
+□ Set up cargo-fuzz for Rust code
+□ Create fuzz targets for:
+  - OrderBook matching engine
+  - Price parsing and validation
+  - Time series model inputs
+□ Add hypothesis strategies for Python
+□ Implement property-based tests for financial calculations
+□ Create corpus of edge case inputs
+□ Add fuzzing to CI (nightly runs)
+```
+**Complexity**: Medium | **Impact**: Medium
+
+### 4.3 Visual Regression Completeness
+
+**Status**: Cypress integration started
+**Impact**: Low - Catch UI regressions
+
+```
+Tasks:
+□ Add baseline screenshots for all 12 tabs
+□ Create visual tests for:
+  - Chart rendering at different timeframes
+  - Order book at various depths
+  - Risk dashboard states
+  - Error state displays
+□ Implement screenshot diff workflow
+□ Add visual approval process
+□ Create mobile/tablet responsive tests
+```
+**Complexity**: Low | **Impact**: Low
+
+### 4.4 Load and Stress Testing
+
+**Status**: Benchmarks exist but no load tests
+**Impact**: Medium - Validate production capacity
+
+```
+Tasks:
+□ Create locust load test suite
+□ Implement test scenarios:
+  - Normal trading load (100 req/s)
+  - Peak load (1000 req/s)
+  - Sustained high load (1 hour)
+□ Add WebSocket connection stress tests
+□ Test database connection pool limits
+□ Create memory leak detection tests
+□ Implement gradual load increase tests
+□ Document capacity limits and scaling triggers
+```
+**Complexity**: Medium | **Impact**: Medium
 
 ---
 
-## High Priority Improvements (P1)
+## Priority 5: Advanced ML Features (Medium Impact)
 
-> **Timeline:** 4-8 weeks
-> **Impact:** Significantly improves reliability and maintainability
+### 5.1 Model Interpretability
 
-### 5. Comprehensive API Documentation
+**Status**: SHAP wrapper exists
+**Impact**: High - Required for trading decisions
 
-**Current State:** Architecture documented, but API endpoints/interfaces not systematically covered
-
-#### 5.1 Rust Crate Documentation
-
-**Action Items:**
-- Add module-level documentation to all public modules
-- Document all public functions with examples
-- Generate docs with `cargo doc --no-deps --open`
-
-**Example:** [rust/src/simulation/gym.rs](rust/src/simulation/gym.rs:1-50)
-```rust
-//! Gymnasium-compatible reinforcement learning environment for trading simulation.
-//!
-//! # Overview
-//!
-//! The `TradingEnv` provides a standard RL interface for training trading agents.
-//! It supports both discrete and continuous action spaces with configurable
-//! observation and reward structures.
-//!
-//! # Examples
-//!
-//! ```rust
-//! use nglab::simulation::TradingEnv;
-//!
-//! let env = TradingEnv::new(initial_cash, max_position, tick_size);
-//! let obs = env.reset(None);
-//! let (next_obs, reward, done, info) = env.step(action);
-//! ```
-//!
-//! # Performance
-//!
-//! - Step time: <1ms
-//! - Memory usage: ~50KB base + order history
-//! - Zero-copy NumPy integration via PyO3
-
-/// Trading environment implementing the Gymnasium interface.
-///
-/// # Fields
-///
-/// * `orderbook` - Central limit order book for trade execution
-/// * `position` - Current asset position (can be negative for shorts)
-/// * `cash` - Available cash balance
-/// * `portfolio_value` - Total portfolio value (cash + position * price)
-#[pyclass]
-pub struct TradingEnv {
-    // ... fields
-}
 ```
-
-**Add cargo-doc-check to CI:**
-```yaml
-# .github/workflows/ci.yml
-- name: Check documentation
-  run: cargo doc --no-deps --all-features
-  env:
-    RUSTDOCFLAGS: "-D warnings"
+Tasks:
+□ Implement LIME explanations for predictions
+□ Add attention visualization for transformer models
+□ Create feature importance dashboard
+□ Implement counterfactual explanations
+□ Add model decision audit trail
+□ Create "why this trade" explanation API
+□ Build interpretability reports for compliance
 ```
+**Complexity**: High | **Impact**: High
 
-#### 5.2 Python API Reference with Sphinx
+### 5.2 AutoML Integration
 
-**Setup:**
-```bash
-cd python
-pip install sphinx sphinx-rtd-theme sphinx-autodoc-typehints
-sphinx-quickstart docs
+**Status**: Optuna HPO exists
+**Impact**: Medium - Reduce manual tuning
+
 ```
-
-**Configuration:** [python/docs/conf.py](python/docs/conf.py)
-```python
-extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
-    'sphinx_autodoc_typehints',
-]
-
-napoleon_google_docstring = True
-napoleon_include_init_with_doc = True
+Tasks:
+□ Integrate AutoGluon for automated model selection
+□ Add neural architecture search (NAS) for deep models
+□ Implement automated feature engineering (featuretools)
+□ Create model selection pipeline
+□ Add ensemble auto-construction
+□ Implement AutoML experiment tracking
+□ Create human-in-the-loop approval workflow
 ```
+**Complexity**: High | **Impact**: Medium
 
-**Generate:**
-```bash
-sphinx-apidoc -o docs/source python/src
-sphinx-build -b html docs/source docs/build
+### 5.3 Incremental Learning Completion
+
+**Status**: Foundation exists (drift detection, replay buffer)
+**Impact**: High - Required for live trading adaptation
+
 ```
-
-#### 5.3 TypeScript API Documentation
-
-**Add TSDoc comments and generate with typedoc:**
-```bash
-npm install -D typedoc
-npx typedoc --out docs/typescript src/
+Tasks:
+□ Implement incremental model updates
+  - Online gradient descent for neural networks
+  - Incremental tree updates (LightGBM)
+□ Create model version control with rollback
+□ Implement A/B testing framework
+  - Traffic splitting
+  - Statistical significance testing
+  - Automatic winner selection
+□ Add shadow mode for new models
+□ Create model performance comparison dashboard
+□ Implement automatic retraining triggers
 ```
+**Complexity**: High | **Impact**: High
 
-**Estimated Effort:** 5-7 days
+### 5.4 Multi-Modal Data Integration
+
+**Status**: News tab exists but limited integration
+**Impact**: Medium - Richer signal for predictions
+
+```
+Tasks:
+□ Implement sentiment analysis pipeline
+  - News article embedding (FinBERT)
+  - Social media sentiment (Twitter/X API)
+□ Add alternative data sources
+  - Satellite imagery (if applicable)
+  - Web traffic data
+□ Create multi-modal feature fusion
+□ Implement attention over data sources
+□ Add data source quality scoring
+□ Create data freshness monitoring
+```
+**Complexity**: High | **Impact**: Medium
 
 ---
 
-### 6. Containerization & Deployment
+## Priority 6: Operational Excellence (Medium Impact)
 
-**Current State:** No Docker support, manual deployment only
+### 6.1 Runbook Documentation
 
-#### 6.1 Multi-Stage Docker Build
+**Status**: TROUBLESHOOTING.md exists
+**Impact**: Medium - Reduce incident resolution time
 
-**Create:** [Dockerfile](Dockerfile)
-```dockerfile
-# Stage 1: Rust builder
-FROM rust:1.83-slim as rust-builder
-WORKDIR /build
-RUN apt-get update && apt-get install -y pkg-config libssl-dev
-COPY rust/ ./rust/
-WORKDIR /build/rust
-RUN cargo build --release
-
-# Stage 2: Python environment
-FROM python:3.11-slim as python-builder
-WORKDIR /build
-COPY python/ ./python/
-COPY --from=rust-builder /build/rust/target/release/libnglab.so /usr/local/lib/
-RUN pip install --no-cache-dir -r python/requirements.txt
-
-# Stage 3: Runtime
-FROM python:3.11-slim
-RUN apt-get update && apt-get install -y \
-    libgomp1 \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=rust-builder /build/rust/target/release/libnglab.so /usr/local/lib/
-COPY --from=python-builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-COPY python/src /app/src
-COPY config/ /app/config/
-
-WORKDIR /app
-ENV PYTHONPATH=/app/src
-ENV LD_LIBRARY_PATH=/usr/local/lib
-
-EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD python -c "import requests; requests.get('http://localhost:8000/health')"
-
-CMD ["python", "-m", "src.api.server"]
 ```
-
-#### 6.2 Docker Compose for Development
-
-**Create:** [docker-compose.yml](docker-compose.yml)
-```yaml
-version: '3.8'
-
-services:
-  nglab-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    environment:
-      - NGLAB_ENV=development
-      - DATABASE_URL=postgresql://postgres:password@db:5432/nglab
-    volumes:
-      - ./logs:/app/logs
-      - ./models:/app/models
-    depends_on:
-      - db
-    restart: unless-stopped
-
-  db:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: nglab
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    ports:
-      - "9090:9090"
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
-    depends_on:
-      - prometheus
-
-volumes:
-  postgres_data:
-  prometheus_data:
-  grafana_data:
+Tasks:
+□ Create runbooks for:
+  - Service restart procedures
+  - Database failover
+  - Model rollback
+  - Data pipeline recovery
+  - Alert investigation guides
+□ Add decision trees for common issues
+□ Create escalation procedures
+□ Implement runbook versioning
+□ Add runbook links to alerts
+□ Create on-call rotation guide
 ```
+**Complexity**: Low | **Impact**: Medium
 
-**Estimated Effort:** 3-4 days
+### 6.2 Incident Response Framework
+
+**Status**: AlertManager configured
+**Impact**: Medium - Structured incident handling
+
+```
+Tasks:
+□ Create incident severity definitions (SEV1-4)
+□ Implement incident tracking system
+□ Add post-mortem template
+□ Create blameless review process
+□ Implement incident metrics (MTTR, MTTD)
+□ Add incident communication templates
+□ Create incident timeline tool
+```
+**Complexity**: Medium | **Impact**: Medium
+
+### 6.3 Capacity Planning
+
+**Status**: HPA configured but no planning
+**Impact**: Medium - Proactive scaling
+
+```
+Tasks:
+□ Create capacity model based on metrics
+□ Implement usage forecasting
+□ Add cost estimation per workload
+□ Create scaling decision framework
+□ Implement resource reservation for peak
+□ Add capacity alerts (70%, 85%, 95%)
+□ Create monthly capacity report
+```
+**Complexity**: Medium | **Impact**: Medium
+
+### 6.4 Disaster Recovery
+
+**Status**: Backups configured
+**Impact**: High - Business continuity
+
+```
+Tasks:
+□ Create DR documentation
+  - RTO/RPO definitions
+  - Recovery procedures
+  - Data backup verification
+□ Implement multi-region deployment option
+□ Add backup restoration testing (monthly)
+□ Create DR drill schedule
+□ Implement database point-in-time recovery
+□ Add model checkpoint recovery procedure
+□ Create communication plan for outages
+```
+**Complexity**: High | **Impact**: High
 
 ---
 
-### 7. Performance Profiling & Optimization
+## Priority 7: Developer Experience (Lower Priority)
 
-**Current State:** Benchmarks exist but not used for optimization
+### 7.1 Contribution Guidelines
 
-#### 7.1 Continuous Benchmarking
+**Status**: No issue/PR templates
+**Impact**: Low - Easier contributions
 
-**Add to CI:** [.github/workflows/benchmark.yml](.github/workflows/benchmark.yml)
-```yaml
-name: Continuous Benchmarking
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-
-jobs:
-  benchmark:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-
-      - name: Run benchmarks
-        run: |
-          cd rust
-          cargo bench -- --save-baseline current
-
-      - name: Compare with main
-        if: github.event_name == 'pull_request'
-        run: |
-          git fetch origin main
-          git checkout origin/main
-          cargo bench -- --save-baseline main
-          git checkout -
-          cargo bench -- --baseline main
-
-      - name: Upload results
-        uses: actions/upload-artifact@v3
-        with:
-          name: benchmark-results
-          path: rust/target/criterion/
 ```
-
-#### 7.2 Python Profiling Integration
-
-**Add:** [python/src/utils/profiling.py](python/src/utils/profiling.py)
-```python
-import cProfile
-import pstats
-from functools import wraps
-from pathlib import Path
-
-def profile(output_dir: Path = Path("./profiles")):
-    """Decorator to profile function execution."""
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            profiler = cProfile.Profile()
-            profiler.enable()
-            result = func(*args, **kwargs)
-            profiler.disable()
-
-            output_dir.mkdir(exist_ok=True)
-            stats_file = output_dir / f"{func.__name__}.prof"
-            profiler.dump_stats(stats_file)
-
-            # Print summary
-            stats = pstats.Stats(profiler)
-            stats.sort_stats('cumulative')
-            stats.print_stats(20)
-
-            return result
-        return wrapper
-    return decorator
+Tasks:
+□ Create .github/ISSUE_TEMPLATE/
+  - bug_report.md
+  - feature_request.md
+  - question.md
+□ Create .github/PULL_REQUEST_TEMPLATE.md
+□ Add CONTRIBUTING.md with:
+  - Development setup
+  - Code style guide
+  - Review process
+  - Release process
+□ Create CODE_OF_CONDUCT.md
+□ Add CODEOWNERS file
+□ Create first-contributor guide
 ```
+**Complexity**: Low | **Impact**: Low
 
-**Usage:**
-```python
-from utils.profiling import profile
+### 7.2 Developer Tooling Improvements
 
-@profile()
-def train_model(config):
-    # Training code
-    pass
+**Status**: Good tooling exists
+**Impact**: Low - Faster development
+
 ```
-
-**Estimated Effort:** 2-3 days
-
----
-
-### 8. CI/CD Deployment Pipeline
-
-**Current State:** CI builds but no automated deployment
-
-#### 8.1 GitHub Actions Deployment Workflow
-
-**Create:** [.github/workflows/deploy.yml](.github/workflows/deploy.yml)
-```yaml
-name: Deploy
-
-on:
-  push:
-    tags:
-      - 'v*'
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Deploy to staging
-        if: github.ref == 'refs/heads/main'
-        run: |
-          # Add deployment script here
-          echo "Deploying to staging..."
-
-      - name: Deploy to production
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          # Add production deployment script
-          echo "Deploying to production..."
+Tasks:
+□ Add VSCode workspace settings
+□ Create recommended extensions list
+□ Add debug launch configurations
+□ Create test coverage visualization
+□ Implement hot reload for Python development
+□ Add profiling shortcuts
+□ Create snippet library for common patterns
 ```
+**Complexity**: Low | **Impact**: Low
 
-**Estimated Effort:** 2-3 days
+### 7.3 Documentation Improvements
 
----
+**Status**: Good documentation exists
+**Impact**: Low - Better onboarding
 
-## Medium Priority Improvements (P2)
-
-> **Timeline:** 2-3 months
-> **Impact:** Enhances developer experience and code maintainability
-
-### 9. Type Safety Improvements
-
-#### 9.1 Python Type Stubs for Rust Bindings
-
-**Generate stubs for the `nglab` Rust module:**
-
-**Create:** [python/src/nglab.pyi](python/src/nglab.pyi)
-```python
-"""Type stubs for the nglab Rust module."""
-
-from typing import Any, Literal, TypedDict
-import numpy as np
-import numpy.typing as npt
-
-class TradingEnv:
-    """Gymnasium-compatible trading environment."""
-
-    def __init__(
-        self,
-        initial_cash: float,
-        max_position: int,
-        tick_size: float,
-    ) -> None: ...
-
-    def reset(self, seed: int | None = None) -> npt.NDArray[np.float64]: ...
-
-    def step(
-        self, action: int | npt.NDArray[np.float64]
-    ) -> tuple[npt.NDArray[np.float64], float, bool, dict[str, Any]]: ...
-
-    def render(self, mode: Literal["human", "rgb_array"] = "human") -> None | npt.NDArray[np.uint8]: ...
-
-    @property
-    def action_space(self) -> Any: ...
-
-    @property
-    def observation_space(self) -> Any: ...
-
-class OrderBook:
-    """Central limit order book."""
-
-    def __init__(self, tick_size: float) -> None: ...
-
-    def add_limit_order(
-        self, side: Literal["buy", "sell"], price: float, quantity: int
-    ) -> str: ...
-
-    def add_market_order(
-        self, side: Literal["buy", "sell"], quantity: int
-    ) -> list[Trade]: ...
-
-    def cancel_order(self, order_id: str) -> bool: ...
-
-    def get_best_bid(self) -> float | None: ...
-
-    def get_best_ask(self) -> float | None: ...
-
-    def get_mid_price(self) -> float | None: ...
-
-class Trade(TypedDict):
-    price: float
-    quantity: int
-    timestamp: int
-    buyer_id: str
-    seller_id: str
-
-class PolymarketArena:
-    """Polymarket prediction market simulation."""
-
-    def __init__(self, initial_liquidity: float) -> None: ...
-
-    def buy_yes_shares(self, amount: float) -> float: ...
-
-    def buy_no_shares(self, amount: float) -> float: ...
-
-    def get_yes_price(self) -> float: ...
-
-    def get_no_price(self) -> float: ...
 ```
-
-#### 9.2 Mypy Strict Mode
-
-**Update:** [python/pyproject.toml](python/pyproject.toml)
-```toml
-[tool.mypy]
-python_version = "3.11"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_any_generics = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-
-[[tool.mypy.overrides]]
-module = [
-    "nglab.*",  # Rust bindings
-    "torch.*",
-    "tensordict.*",
-]
-ignore_missing_imports = true
+Tasks:
+□ Create quick-start tutorial (5 min)
+□ Add video walkthrough
+□ Create architecture decision records (ADR)
+□ Improve API reference with examples
+□ Add cookbook for common tasks
+□ Create deployment checklist
+□ Add performance tuning guide
 ```
-
-**Estimated Effort:** 3-4 days
-
----
-
-### 10. Database Integration for Trade History
-
-**Current State:** In-memory only, no persistence
-
-#### 10.1 PostgreSQL Schema
-
-**Create:** [migrations/001_initial_schema.sql](migrations/001_initial_schema.sql)
-```sql
--- Trade history
-CREATE TABLE trades (
-    id BIGSERIAL PRIMARY KEY,
-    timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    symbol VARCHAR(20) NOT NULL,
-    side VARCHAR(4) NOT NULL CHECK (side IN ('buy', 'sell')),
-    price NUMERIC(20, 8) NOT NULL,
-    quantity NUMERIC(20, 8) NOT NULL,
-    value NUMERIC(20, 8) NOT NULL,
-    order_id UUID NOT NULL,
-    agent_id VARCHAR(50),
-    metadata JSONB
-);
-
-CREATE INDEX idx_trades_timestamp ON trades(timestamp DESC);
-CREATE INDEX idx_trades_symbol ON trades(symbol);
-CREATE INDEX idx_trades_agent_id ON trades(agent_id);
-
--- Portfolio snapshots
-CREATE TABLE portfolio_snapshots (
-    id BIGSERIAL PRIMARY KEY,
-    timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    agent_id VARCHAR(50) NOT NULL,
-    cash NUMERIC(20, 8) NOT NULL,
-    position NUMERIC(20, 8) NOT NULL,
-    portfolio_value NUMERIC(20, 8) NOT NULL,
-    sharpe_ratio NUMERIC(10, 4),
-    max_drawdown NUMERIC(10, 4),
-    total_return NUMERIC(10, 4)
-);
-
-CREATE INDEX idx_portfolio_timestamp ON portfolio_snapshots(timestamp DESC);
-CREATE INDEX idx_portfolio_agent_id ON portfolio_snapshots(agent_id);
-
--- Model checkpoints
-CREATE TABLE model_checkpoints (
-    id BIGSERIAL PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    model_name VARCHAR(100) NOT NULL,
-    version VARCHAR(50) NOT NULL,
-    architecture TEXT NOT NULL,
-    hyperparameters JSONB NOT NULL,
-    metrics JSONB NOT NULL,
-    checkpoint_path TEXT NOT NULL,
-    git_commit VARCHAR(40),
-    UNIQUE(model_name, version)
-);
-
--- Market data
-CREATE TABLE market_data (
-    id BIGSERIAL PRIMARY KEY,
-    timestamp TIMESTAMPTZ NOT NULL,
-    symbol VARCHAR(20) NOT NULL,
-    source VARCHAR(50) NOT NULL,
-    bid NUMERIC(20, 8),
-    ask NUMERIC(20, 8),
-    last NUMERIC(20, 8),
-    volume NUMERIC(20, 8),
-    metadata JSONB
-);
-
-CREATE INDEX idx_market_data_symbol_timestamp ON market_data(symbol, timestamp DESC);
-
--- Hypertables for TimescaleDB (optional)
--- SELECT create_hypertable('trades', 'timestamp');
--- SELECT create_hypertable('portfolio_snapshots', 'timestamp');
--- SELECT create_hypertable('market_data', 'timestamp');
-```
-
-#### 10.2 SQLAlchemy Models
-
-**Create:** [python/src/db/models.py](python/src/db/models.py)
-```python
-from datetime import datetime
-from sqlalchemy import (
-    Column, Integer, String, Numeric, DateTime, JSON, Index, CheckConstraint
-)
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.ext.declarative import declarative_base
-
-Base = declarative_base()
-
-class Trade(Base):
-    __tablename__ = "trades"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    timestamp = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
-    symbol = Column(String(20), nullable=False)
-    side = Column(String(4), nullable=False)
-    price = Column(Numeric(20, 8), nullable=False)
-    quantity = Column(Numeric(20, 8), nullable=False)
-    value = Column(Numeric(20, 8), nullable=False)
-    order_id = Column(UUID(as_uuid=True), nullable=False)
-    agent_id = Column(String(50))
-    metadata = Column(JSONB)
-
-    __table_args__ = (
-        CheckConstraint("side IN ('buy', 'sell')", name="check_side"),
-        Index("idx_trades_timestamp", "timestamp", postgresql_using="btree"),
-        Index("idx_trades_symbol", "symbol"),
-    )
-
-class PortfolioSnapshot(Base):
-    __tablename__ = "portfolio_snapshots"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    timestamp = Column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
-    agent_id = Column(String(50), nullable=False)
-    cash = Column(Numeric(20, 8), nullable=False)
-    position = Column(Numeric(20, 8), nullable=False)
-    portfolio_value = Column(Numeric(20, 8), nullable=False)
-    sharpe_ratio = Column(Numeric(10, 4))
-    max_drawdown = Column(Numeric(10, 4))
-    total_return = Column(Numeric(10, 4))
-```
-
-**Estimated Effort:** 4-5 days
-
----
-
-### 11. Metrics & Observability
-
-**Current State:** No metrics collection
-
-#### 11.1 Prometheus Metrics Exporter
-
-**Rust:** [rust/src/metrics.rs](rust/src/metrics.rs)
-```rust
-use prometheus::{
-    Counter, Histogram, HistogramOpts, IntGauge, Registry, TextEncoder,
-};
-use std::sync::Arc;
-
-pub struct Metrics {
-    pub orders_total: Counter,
-    pub trades_total: Counter,
-    pub step_duration: Histogram,
-    pub portfolio_value: IntGauge,
-    pub orderbook_depth: IntGauge,
-}
-
-impl Metrics {
-    pub fn new(registry: &Registry) -> Result<Self, Box<dyn std::error::Error>> {
-        let orders_total = Counter::new("nglab_orders_total", "Total orders submitted")?;
-        registry.register(Box::new(orders_total.clone()))?;
-
-        let trades_total = Counter::new("nglab_trades_total", "Total trades executed")?;
-        registry.register(Box::new(trades_total.clone()))?;
-
-        let step_duration = Histogram::with_opts(
-            HistogramOpts::new("nglab_step_duration_seconds", "Step execution time")
-                .buckets(vec![0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1])
-        )?;
-        registry.register(Box::new(step_duration.clone()))?;
-
-        let portfolio_value = IntGauge::new("nglab_portfolio_value", "Current portfolio value")?;
-        registry.register(Box::new(portfolio_value.clone()))?;
-
-        let orderbook_depth = IntGauge::new("nglab_orderbook_depth", "Order book depth")?;
-        registry.register(Box::new(orderbook_depth.clone()))?;
-
-        Ok(Self {
-            orders_total,
-            trades_total,
-            step_duration,
-            portfolio_value,
-            orderbook_depth,
-        })
-    }
-}
-```
-
-#### 11.2 Grafana Dashboard
-
-**Create:** [monitoring/grafana/dashboards/nglab.json](monitoring/grafana/dashboards/nglab.json)
-```json
-{
-  "dashboard": {
-    "title": "NGLab Trading Metrics",
-    "panels": [
-      {
-        "title": "Portfolio Value",
-        "targets": [
-          {
-            "expr": "nglab_portfolio_value"
-          }
-        ],
-        "type": "graph"
-      },
-      {
-        "title": "Trades Per Second",
-        "targets": [
-          {
-            "expr": "rate(nglab_trades_total[1m])"
-          }
-        ],
-        "type": "graph"
-      },
-      {
-        "title": "Step Duration (p99)",
-        "targets": [
-          {
-            "expr": "histogram_quantile(0.99, nglab_step_duration_seconds_bucket)"
-          }
-        ],
-        "type": "graph"
-      }
-    ]
-  }
-}
-```
-
-**Estimated Effort:** 3-4 days
-
----
-
-### 12. Model Registry & Versioning
-
-**Current State:** No systematic model versioning
-
-#### 12.1 MLflow Integration
-
-**Setup:** [python/src/tracking/mlflow_registry.py](python/src/tracking/mlflow_registry.py)
-```python
-import mlflow
-from pathlib import Path
-from typing import Dict, Any
-
-class ModelRegistry:
-    """MLflow-based model versioning and registry."""
-
-    def __init__(self, tracking_uri: str = "sqlite:///mlflow.db"):
-        mlflow.set_tracking_uri(tracking_uri)
-
-    def log_model(
-        self,
-        model: Any,
-        artifact_path: str,
-        registered_model_name: str,
-        metrics: Dict[str, float],
-        hyperparameters: Dict[str, Any],
-        tags: Dict[str, str] | None = None,
-    ):
-        """Log model with metrics and hyperparameters."""
-        with mlflow.start_run():
-            # Log hyperparameters
-            mlflow.log_params(hyperparameters)
-
-            # Log metrics
-            mlflow.log_metrics(metrics)
-
-            # Log tags
-            if tags:
-                mlflow.set_tags(tags)
-
-            # Log model
-            mlflow.pytorch.log_model(
-                model,
-                artifact_path=artifact_path,
-                registered_model_name=registered_model_name,
-            )
-
-    def load_model(self, model_name: str, version: int | str = "latest"):
-        """Load a registered model."""
-        model_uri = f"models:/{model_name}/{version}"
-        return mlflow.pytorch.load_model(model_uri)
-
-    def transition_model_stage(
-        self, model_name: str, version: int, stage: str
-    ):
-        """Transition model to a different stage (e.g., staging, production)."""
-        client = mlflow.tracking.MlflowClient()
-        client.transition_model_version_stage(
-            name=model_name,
-            version=version,
-            stage=stage,
-        )
-```
-
-**Estimated Effort:** 2-3 days
-
----
-
-## Long-term Enhancements (P3)
-
-> **Timeline:** 3-6 months
-> **Impact:** Competitive advantages and advanced capabilities
-
-### 13. Distributed Training Infrastructure
-
-**Goal:** Scale training across multiple GPUs/nodes
-
-#### 13.1 PyTorch DDP (Distributed Data Parallel)
-
-**Update:** [python/src/pipeline/distributed_train.py](python/src/pipeline/distributed_train.py)
-```python
-import torch
-import torch.distributed as dist
-from torch.nn.parallel import DistributedDataParallel as DDP
-import os
-
-def setup_distributed():
-    """Initialize distributed training."""
-    dist.init_process_group(backend="nccl")
-    local_rank = int(os.environ["LOCAL_RANK"])
-    torch.cuda.set_device(local_rank)
-    return local_rank
-
-def cleanup_distributed():
-    """Clean up distributed training."""
-    dist.destroy_process_group()
-
-def train_distributed(model, dataloader, optimizer, epochs):
-    """Distributed training loop."""
-    local_rank = setup_distributed()
-
-    model = model.to(local_rank)
-    model = DDP(model, device_ids=[local_rank])
-
-    for epoch in range(epochs):
-        for batch in dataloader:
-            # Training step
-            pass
-
-    cleanup_distributed()
-```
-
-**Launch:**
-```bash
-torchrun --nproc_per_node=4 python/src/pipeline/distributed_train.py
-```
-
-#### 13.2 Ray Tune for Hyperparameter Optimization
-
-**Integration:** [python/src/pipeline/ray_tune.py](python/src/pipeline/ray_tune.py)
-```python
-from ray import tune
-from ray.tune.schedulers import ASHAScheduler
-from ray.tune.search.optuna import OptunaSearch
-
-def train_function(config):
-    """Training function for Ray Tune."""
-    # Model training code
-    pass
-
-def run_hyperparameter_search():
-    """Run distributed hyperparameter search."""
-    search_space = {
-        "lr": tune.loguniform(1e-5, 1e-1),
-        "batch_size": tune.choice([16, 32, 64, 128]),
-        "hidden_dim": tune.choice([64, 128, 256, 512]),
-    }
-
-    scheduler = ASHAScheduler(
-        metric="loss",
-        mode="min",
-        max_t=100,
-        grace_period=10,
-    )
-
-    search_alg = OptunaSearch()
-
-    analysis = tune.run(
-        train_function,
-        config=search_space,
-        scheduler=scheduler,
-        search_alg=search_alg,
-        num_samples=50,
-        resources_per_trial={"cpu": 4, "gpu": 1},
-    )
-
-    return analysis.best_config
-```
-
-**Estimated Effort:** 1-2 weeks
-
----
-
-### 14. Real-Time Model Serving
-
-**Goal:** Deploy trained models as production APIs
-
-#### 14.1 FastAPI Model Endpoint
-
-**Create:** [python/src/api/inference.py](python/src/api/inference.py)
-```python
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import torch
-import numpy as np
-from typing import List
-
-app = FastAPI(title="NGLab Model Serving")
-
-class PredictionRequest(BaseModel):
-    """Input for model prediction."""
-    observations: List[List[float]]
-    temperature: float = 1.0
-
-class PredictionResponse(BaseModel):
-    """Model prediction output."""
-    actions: List[int]
-    probabilities: List[List[float]]
-    latency_ms: float
-
-@app.post("/predict", response_model=PredictionResponse)
-async def predict(request: PredictionRequest):
-    """Generate predictions from trained model."""
-    try:
-        # Load model (cached)
-        model = get_model()
-
-        # Prepare input
-        obs_tensor = torch.tensor(request.observations, dtype=torch.float32)
-
-        # Inference
-        with torch.no_grad():
-            start = time.time()
-            logits = model(obs_tensor)
-            probs = torch.softmax(logits / request.temperature, dim=-1)
-            actions = torch.argmax(logits, dim=-1)
-            latency = (time.time() - start) * 1000
-
-        return PredictionResponse(
-            actions=actions.tolist(),
-            probabilities=probs.tolist(),
-            latency_ms=latency,
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy", "model_loaded": model_loaded()}
-```
-
-**Launch:**
-```bash
-uvicorn src.api.inference:app --host 0.0.0.0 --port 8000 --workers 4
-```
-
-**Estimated Effort:** 4-5 days
-
----
-
-### 15. Advanced Backtesting Framework
-
-**Goal:** Historical simulation with realistic market conditions
-
-#### 15.1 Event-Driven Backtesting Engine
-
-**Create:** [python/src/backtesting/engine.py](python/src/backtesting/engine.py)
-```python
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Protocol, List
-import pandas as pd
-
-@dataclass
-class MarketEvent:
-    """Market data update event."""
-    timestamp: datetime
-    symbol: str
-    bid: float
-    ask: float
-    volume: float
-
-class Strategy(Protocol):
-    """Trading strategy interface."""
-
-    def on_market_data(self, event: MarketEvent) -> List[Order]:
-        """React to market data."""
-        ...
-
-    def on_fill(self, fill: Fill) -> None:
-        """React to order fills."""
-        ...
-
-class BacktestEngine:
-    """Event-driven backtesting engine."""
-
-    def __init__(
-        self,
-        strategy: Strategy,
-        initial_capital: float,
-        commission: float = 0.001,
-    ):
-        self.strategy = strategy
-        self.capital = initial_capital
-        self.commission = commission
-        self.portfolio = Portfolio()
-        self.events: List[MarketEvent] = []
-
-    def load_data(self, data: pd.DataFrame):
-        """Load historical market data."""
-        self.events = [
-            MarketEvent(
-                timestamp=row.Index,
-                symbol=row.symbol,
-                bid=row.bid,
-                ask=row.ask,
-                volume=row.volume,
-            )
-            for row in data.itertuples()
-        ]
-
-    def run(self) -> BacktestResults:
-        """Execute backtest."""
-        for event in self.events:
-            # Process market event
-            orders = self.strategy.on_market_data(event)
-
-            # Execute orders
-            for order in orders:
-                fill = self.execute_order(order, event)
-                if fill:
-                    self.strategy.on_fill(fill)
-
-        return self.calculate_results()
-
-    def calculate_results(self) -> BacktestResults:
-        """Calculate backtest metrics."""
-        return BacktestResults(
-            total_return=self.portfolio.total_return,
-            sharpe_ratio=self.portfolio.sharpe_ratio,
-            max_drawdown=self.portfolio.max_drawdown,
-            win_rate=self.portfolio.win_rate,
-            trades=self.portfolio.trades,
-        )
-```
-
-**Estimated Effort:** 1 week
-
----
-
-### 16. Live Trading Integration
-
-**Goal:** Connect to real exchanges for paper/live trading
-
-#### 16.1 Exchange Connector Interface
-
-**Create:** [python/src/exchange/connector.py](python/src/exchange/connector.py)
-```python
-from abc import ABC, abstractmethod
-from typing import List, Optional
-import ccxt
-
-class ExchangeConnector(ABC):
-    """Abstract base class for exchange connections."""
-
-    @abstractmethod
-    def place_order(self, symbol: str, side: str, amount: float, price: Optional[float] = None):
-        """Place order on exchange."""
-        pass
-
-    @abstractmethod
-    def cancel_order(self, order_id: str):
-        """Cancel existing order."""
-        pass
-
-    @abstractmethod
-    def get_balance(self) -> dict:
-        """Get account balance."""
-        pass
-
-    @abstractmethod
-    def get_orderbook(self, symbol: str, depth: int = 20) -> dict:
-        """Get order book snapshot."""
-        pass
-
-class BinanceConnector(ExchangeConnector):
-    """Binance exchange connector using CCXT."""
-
-    def __init__(self, api_key: str, api_secret: str, testnet: bool = True):
-        self.exchange = ccxt.binance({
-            'apiKey': api_key,
-            'secret': api_secret,
-            'enableRateLimit': True,
-            'options': {
-                'defaultType': 'future' if testnet else 'spot',
-            }
-        })
-
-        if testnet:
-            self.exchange.set_sandbox_mode(True)
-
-    def place_order(self, symbol: str, side: str, amount: float, price: Optional[float] = None):
-        """Place order on Binance."""
-        order_type = 'limit' if price else 'market'
-        return self.exchange.create_order(
-            symbol=symbol,
-            type=order_type,
-            side=side,
-            amount=amount,
-            price=price,
-        )
-
-    # Implement other methods...
-```
-
-**Estimated Effort:** 1-2 weeks
-
----
-
-## Technical Debt
-
-### 17. Code Quality Improvements
-
-| Issue | Location | Priority | Effort |
-|-------|----------|----------|--------|
-| Remove `unwrap()` calls | [rust/src/**/*.rs](rust/src/) | High | 2 days |
-| Add missing docstrings | [python/src/models/*.py](python/src/models/) | Medium | 3 days |
-| Standardize error messages | All | Medium | 2 days |
-| Remove commented code | All | Low | 1 day |
-| Fix clippy warnings | [rust/](rust/) | Medium | 1 day |
-| Fix mypy type errors | [python/](python/) | Medium | 2 days |
-
-### 18. Dependency Updates
-
-**Action:** Regular dependency audits and updates
-
-**Create:** [.github/workflows/dependency-update.yml](.github/workflows/dependency-update.yml)
-```yaml
-name: Dependency Updates
-
-on:
-  schedule:
-    - cron: '0 0 * * 0'  # Weekly on Sunday
-  workflow_dispatch:
-
-jobs:
-  update-rust:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Update Rust dependencies
-        run: |
-          cd rust
-          cargo update
-          cargo audit
-      - name: Create PR
-        uses: peter-evans/create-pull-request@v5
-        with:
-          title: "[Automated] Update Rust dependencies"
-          branch: deps/rust-updates
-
-  update-python:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-      - name: Update Python dependencies
-        run: |
-          cd python
-          pip install pip-tools
-          pip-compile --upgrade requirements.txt
-      - name: Create PR
-        uses: peter-evans/create-pull-request@v5
-        with:
-          title: "[Automated] Update Python dependencies"
-          branch: deps/python-updates
-```
-
----
-
-## Performance Optimization Opportunities
-
-### 19. Rust Performance
-
-#### 19.1 SIMD Optimizations
-
-**Target:** Order book matching algorithm
-
-**Before:** [rust/src/simulation/orderbook.rs:150-200](rust/src/simulation/orderbook.rs:150-200)
-```rust
-// Standard iteration
-for (price, orders) in &self.bids {
-    // Process orders
-}
-```
-
-**After (using SIMD):**
-```rust
-use std::simd::{f64x4, SimdFloat};
-
-fn calculate_vwap_simd(prices: &[f64], volumes: &[f64]) -> f64 {
-    let mut total_value = f64x4::splat(0.0);
-    let mut total_volume = f64x4::splat(0.0);
-
-    for chunk in prices.chunks_exact(4).zip(volumes.chunks_exact(4)) {
-        let p = f64x4::from_slice(chunk.0);
-        let v = f64x4::from_slice(chunk.1);
-        total_value += p * v;
-        total_volume += v;
-    }
-
-    total_value.reduce_sum() / total_volume.reduce_sum()
-}
-```
-
-**Expected Improvement:** 2-4x for vectorizable operations
-
-#### 19.2 Arena Allocation
-
-**Use bump allocator for short-lived objects:**
-
-```rust
-use bumpalo::Bump;
-
-pub struct TradingEnv {
-    arena: Bump,
-    // ... other fields
-}
-
-impl TradingEnv {
-    pub fn step(&mut self, action: Action) -> StepResult {
-        // Allocate temporary objects in arena
-        let temp_data = self.arena.alloc(vec![0.0; 100]);
-
-        // Process...
-
-        // Arena is cleared at end of step
-        self.arena.reset();
-    }
-}
-```
-
-**Expected Improvement:** Reduced GC pressure, 10-20% faster
-
-### 20. Python Performance
-
-#### 20.1 Numba JIT Compilation
-
-**Target:** Feature engineering functions
-
-```python
-from numba import jit
-import numpy as np
-
-@jit(nopython=True)
-def calculate_technical_indicators(prices: np.ndarray) -> np.ndarray:
-    """Calculate indicators with JIT compilation."""
-    n = len(prices)
-    sma = np.zeros(n)
-    ema = np.zeros(n)
-
-    # SMA
-    for i in range(20, n):
-        sma[i] = np.mean(prices[i-20:i])
-
-    # EMA
-    alpha = 2.0 / 21.0
-    ema[0] = prices[0]
-    for i in range(1, n):
-        ema[i] = alpha * prices[i] + (1 - alpha) * ema[i-1]
-
-    return np.column_stack([sma, ema])
-```
-
-**Expected Improvement:** 10-100x for numerical code
-
-#### 20.2 PyTorch Compilation (torch.compile)
-
-**Update:** [python/src/pipeline/vae_module.py](python/src/pipeline/vae_module.py)
-```python
-import torch
-
-class VAEModule(LightningModule):
-    def __init__(self, config):
-        super().__init__()
-        self.model = VAE(config)
-
-        # Compile model for faster execution
-        if torch.__version__ >= "2.0.0":
-            self.model = torch.compile(self.model, mode="reduce-overhead")
-```
-
-**Expected Improvement:** 20-50% training speedup
-
----
-
-## Security Hardening
-
-### 21. API Key Management
-
-**Current State:** Keys in environment variables (good) but no rotation
-
-#### 21.1 Secrets Management
-
-**Use HashiCorp Vault or AWS Secrets Manager:**
-
-**Create:** [python/src/utils/secrets.py](python/src/utils/secrets.py)
-```python
-import hvac
-import os
-from typing import Dict
-
-class SecretsManager:
-    """Manage secrets using HashiCorp Vault."""
-
-    def __init__(self):
-        self.client = hvac.Client(url=os.getenv("VAULT_ADDR"))
-        self.client.token = os.getenv("VAULT_TOKEN")
-
-    def get_secret(self, path: str) -> Dict[str, str]:
-        """Retrieve secret from Vault."""
-        response = self.client.secrets.kv.v2.read_secret_version(path=path)
-        return response['data']['data']
-
-    def rotate_api_key(self, exchange: str):
-        """Rotate API key for exchange."""
-        # Generate new key
-        new_key = self.generate_api_key(exchange)
-
-        # Update in Vault
-        self.client.secrets.kv.v2.create_or_update_secret(
-            path=f"nglab/{exchange}",
-            secret={"api_key": new_key},
-        )
-```
-
-### 22. Input Validation
-
-**Add Pydantic validation for all API inputs:**
-
-```python
-from pydantic import BaseModel, Field, validator
-
-class OrderRequest(BaseModel):
-    """Validated order request."""
-
-    symbol: str = Field(..., regex=r'^[A-Z]{2,10}$')
-    side: Literal['buy', 'sell']
-    quantity: float = Field(..., gt=0, le=1000000)
-    price: Optional[float] = Field(None, gt=0)
-
-    @validator('quantity')
-    def validate_quantity(cls, v):
-        if v <= 0:
-            raise ValueError('Quantity must be positive')
-        return v
-```
-
-### 23. Rate Limiting
-
-**Add rate limiting to API endpoints:**
-
-```python
-from fastapi import FastAPI
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-
-limiter = Limiter(key_func=get_remote_address)
-app = FastAPI()
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
-@app.post("/predict")
-@limiter.limit("10/minute")
-async def predict(request: Request, data: PredictionRequest):
-    # Prediction logic
-    pass
-```
-
----
-
-## Documentation Improvements
-
-### 24. Interactive Tutorials
-
-**Create Jupyter notebooks:**
-
-**Structure:**
-```
-docs/tutorials/
-├── 01_getting_started.ipynb
-├── 02_training_your_first_model.ipynb
-├── 03_custom_trading_strategies.ipynb
-├── 04_hyperparameter_tuning.ipynb
-├── 05_production_deployment.ipynb
-└── 06_advanced_features.ipynb
-```
-
-### 25. API Reference
-
-**Auto-generate from code:**
-
-```bash
-# Rust
-cargo doc --no-deps --open
-
-# Python
-sphinx-apidoc -o docs/source python/src
-sphinx-build -b html docs/source docs/build
-
-# TypeScript
-typedoc --out docs/typescript src/
-```
-
-### 26. Architecture Decision Records (ADRs)
-
-**Create:** [docs/adr/](docs/adr/)
-```
-docs/adr/
-├── 0001-use-rust-for-simulation.md
-├── 0002-pytorch-as-ml-framework.md
-├── 0003-tauri-for-desktop-app.md
-├── 0004-gymnasium-compatible-interface.md
-└── template.md
-```
-
-**Template:** [docs/adr/template.md](docs/adr/template.md)
-```markdown
-# ADR-XXXX: [Title]
-
-## Status
-[Proposed | Accepted | Deprecated | Superseded]
-
-## Context
-[What is the issue that we're seeing that is motivating this decision or change?]
-
-## Decision
-[What is the change that we're proposing and/or doing?]
-
-## Consequences
-[What becomes easier or more difficult to do because of this change?]
-
-## Alternatives Considered
-[What other options did we evaluate?]
-```
+**Complexity**: Low | **Impact**: Low
 
 ---
 
 ## Implementation Roadmap
 
-### Phase 1: Foundation (Weeks 1-4)
+### Phase 7: Robustness & Security (Weeks 1-3)
+- [ ] Rust error handling hardening (1.1)
+- [ ] SECURITY.md creation (2.1)
+- [ ] Secrets management enforcement (2.3)
+- [ ] Contribution guidelines (7.1)
 
-**Critical Path:**
-1. ✅ Frontend testing infrastructure (Week 1)
-2. ✅ Error handling & logging (Week 2)
-3. ✅ Configuration management (Week 3)
-4. ✅ Health checks & monitoring (Week 4)
+### Phase 8: Observability & Testing (Weeks 4-6)
+- [ ] Structured logging in simulation engine (3.1)
+- [ ] Business metrics observability (3.3)
+- [ ] E2E testing suite (4.1)
+- [ ] Fuzzing infrastructure (4.2)
 
-**Success Criteria:**
-- 80% test coverage on frontend hooks
-- Zero unwrap() calls in production paths
-- Structured logging operational
-- Health check endpoints responding
+### Phase 9: ML Advancement (Weeks 7-9)
+- [ ] Model interpretability (5.1)
+- [ ] Incremental learning completion (5.3)
+- [ ] A/B testing framework
 
----
+### Phase 10: Operational Excellence (Weeks 10-12)
+- [ ] Runbook documentation (6.1)
+- [ ] Incident response framework (6.2)
+- [ ] Disaster recovery (6.4)
 
-### Phase 2: Production Readiness (Weeks 5-12)
-
-**Parallel Tracks:**
-
-**Track A: Documentation (Weeks 5-7)**
-- API documentation complete
-- Interactive tutorials published
-- Architecture decision records started
-
-**Track B: Infrastructure (Weeks 5-8)**
-- Docker containerization
-- CI/CD deployment pipeline
-- Database integration
-
-**Track C: Observability (Weeks 9-12)**
-- Prometheus metrics
-- Grafana dashboards
-- Distributed tracing
-
-**Success Criteria:**
-- Docker build under 5 minutes
-- Automated deployments to staging
-- Real-time metrics dashboard
-- Complete API documentation
+### Phase 11: Advanced Features (Weeks 13-16)
+- [ ] AutoML integration (5.2)
+- [ ] Multi-modal data integration (5.4)
+- [ ] Capacity planning (6.3)
 
 ---
 
-### Phase 3: Advanced Features (Weeks 13-24)
+## Quick Wins (< 1 day each)
 
-**Major Initiatives:**
+These improvements can be implemented quickly with high value:
 
-**Distributed Training (Weeks 13-16)**
-- PyTorch DDP setup
-- Ray Tune integration
-- Multi-GPU benchmarks
-
-**Model Serving (Weeks 17-20)**
-- FastAPI inference endpoints
-- Model registry (MLflow)
-- A/B testing framework
-
-**Production Trading (Weeks 21-24)**
-- Backtesting engine
-- Exchange connectors
-- Risk management system
-
-**Success Criteria:**
-- 4x training speedup on 4 GPUs
-- <10ms inference latency (p99)
-- Backtest 1M ticks in <1 minute
-- Paper trading operational
+1. **Create SECURITY.md** - Essential for responsible disclosure
+2. **Add .github/ISSUE_TEMPLATE/** - Better issue quality
+3. **Remove hardcoded password in archive_old_data.py** - Security fix
+4. **Add #[deny(clippy::unwrap_used)]** - Catch future unwrap additions
+5. **Create CONTRIBUTING.md** - Faster contributor onboarding
+6. **Add detect-secrets pre-commit hook** - Prevent credential leaks
+7. **Create CODE_OF_CONDUCT.md** - Community standards
+8. **Add Dependabot configuration** - Automated security updates
+9. **Create .github/CODEOWNERS** - Clear ownership
+10. **Add VSCode workspace settings** - Consistent development
 
 ---
 
-### Phase 4: Optimization & Scale (Months 7-12)
+## Metrics for Success
 
-**Performance:**
-- SIMD optimizations
-- Profile-guided optimization
-- Memory pool allocations
-
-**Scale:**
-- Kubernetes deployment
-- Auto-scaling policies
-- Multi-region setup
-
-**Advanced ML:**
-- Multi-agent learning
-- Meta-learning for strategy adaptation
-- Ensemble models
-
----
-
-## Metrics & KPIs
-
-### Code Quality Targets
+Track these metrics to measure improvement progress:
 
 | Metric | Current | Target |
 |--------|---------|--------|
-| Test Coverage (Python) | ~60% | >80% |
-| Test Coverage (TypeScript) | 0% | >70% |
-| Clippy Warnings | ~10 | 0 |
-| Mypy Errors | Unknown | 0 (strict mode) |
-| Documentation Coverage | 60% | >90% |
-
-### Performance Targets
-
-| Metric | Current | Target |
-|--------|---------|--------|
-| Order Book Matching | ~50K ops/s | >100K ops/s |
-| Env Step Time | <1ms | <0.5ms |
-| Model Inference (p99) | Unknown | <10ms |
-| Training Throughput | Baseline | 4x on 4 GPUs |
-
-### Reliability Targets
-
-| Metric | Target |
-|--------|--------|
-| API Uptime | 99.9% |
-| Error Rate | <0.1% |
-| P99 Latency | <100ms |
-| Mean Time to Recovery | <5 min |
+| Rust unwrap() calls | 34 | 0 |
+| Security scan findings | Unknown | 0 critical |
+| E2E test coverage | 0% | 80% paths |
+| Log density (Rust) | 25 | 200+ |
+| MTTR (incidents) | N/A | <30 min |
+| Audit trail coverage | 0% | 100% trades |
+| Model interpretability | Partial | Full SHAP/LIME |
+| DR drill frequency | Never | Quarterly |
+| Documentation pages | Good | +20 pages |
 
 ---
 
-## Resource Requirements
+## Appendix: File References
 
-### Development Team
+### Key Files to Modify
 
-**Phase 1-2 (16 weeks):**
-- 1 Senior Backend Engineer (Rust/Python)
-- 1 Frontend Engineer (TypeScript/React)
-- 1 DevOps Engineer (part-time, 50%)
-- 1 ML Engineer (part-time, 25%)
+| Improvement | Primary Files |
+|-------------|---------------|
+| Error Handling | [arima.rs](rust/src/moon/arima.rs), [prophet.rs](rust/src/moon/prophet.rs), [multi_asset.rs](rust/src/simulation/multi_asset.rs) |
+| Security Policy | SECURITY.md (new), .github/SECURITY.md (new) |
+| Audit Trail | python/src/utils/audit.py (new), monitoring/grafana/audit.json (new) |
+| Structured Logging | rust/src/lib.rs, rust/Cargo.toml (add tracing) |
+| E2E Tests | python/tests/e2e/ (new directory) |
+| Fuzzing | rust/fuzz/ (new directory), python/tests/fuzz/ (new) |
+| Interpretability | python/src/models/interpretability/ (new) |
+| A/B Testing | python/src/pipeline/ab_testing.py (new) |
+| Runbooks | docs/runbooks/ (new directory) |
+| DR | docs/disaster-recovery/ (new directory) |
 
-**Phase 3-4 (40 weeks):**
-- Add 1 ML Engineer (full-time)
-- Add 1 QA Engineer (part-time, 50%)
+### Completed Phases Reference
 
-### Infrastructure Costs (Estimated)
-
-**Development/Staging:**
-- CI/CD runners: $100/month
-- Cloud compute: $200/month
-- Database: $50/month
-- Monitoring: $50/month
-
-**Production:**
-- Compute (4x GPU instances): $2,000/month
-- Database (managed PostgreSQL): $200/month
-- Monitoring & Logging: $150/month
-- Data storage: $100/month
-
-**Total Year 1:** ~$35,000
+| Phase | Status | Key Deliverables |
+|-------|--------|------------------|
+| P1 | ✅ Complete | RNG seeding, DataLoader, GPU tests |
+| P2 | ✅ Complete | Prophet completion, vectorized envs |
+| P3 | ✅ Complete | Production deployment, GPU optimization |
+| P4 | ✅ Complete | Multi-asset, advanced orders, risk management |
+| P5 | ✅ Complete | Feature engineering, online learning, portfolio optimization |
+| P6 | ✅ Complete | Horizontal scaling, database optimization, alerting |
 
 ---
 
-## Risks & Mitigations
-
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| PyO3 version incompatibility | High | Low | Pin versions, comprehensive tests |
-| Performance regression | Medium | Medium | Continuous benchmarking in CI |
-| Model overfitting | High | High | Cross-validation, out-of-sample testing |
-| Exchange API changes | Medium | Medium | Abstraction layer, adapter pattern |
-| Security breach | High | Low | Security audits, penetration testing |
-| Data quality issues | High | Medium | Data validation, anomaly detection |
-
----
-
-## Conclusion
-
-NGLab has a solid architectural foundation and demonstrates strong engineering practices. The improvements outlined in this document will transform it from an early-stage prototype into a production-ready trading platform.
-
-**Immediate Priorities:**
-1. Frontend testing (P0)
-2. Production error handling (P0)
-3. Configuration management (P0)
-4. API documentation (P1)
-5. Containerization (P1)
-
-**Success Timeline:**
-- **Month 3:** Production-ready core platform
-- **Month 6:** Advanced ML features operational
-- **Month 12:** Scalable, distributed system with live trading capabilities
-
-**Next Steps:**
-1. Review and prioritize improvements with stakeholders
-2. Create detailed technical specifications for P0 items
-3. Set up project tracking (GitHub Projects/Jira)
-4. Begin Phase 1 implementation
-
----
-
-**Document Version:** 1.0
-**Last Updated:** 2026-01-16
-**Maintainer:** Development Team
-**Review Cycle:** Quarterly
-
-For questions or contributions, please refer to [CONTRIBUTING.md](CONTRIBUTING.md).
+*Last Updated: 2026-01-19*
+*Author: Claude Code*
+*Version: 2.0 (Phase 7+ Planning)*

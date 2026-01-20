@@ -671,9 +671,8 @@ function AnalysisTab({
           marginBottom: 100,
           events: {
             load: function () {
-              const chart = this;
               setTimeout(() => {
-                chart.reflow();
+                this.reflow();
               }, 100);
             },
           },

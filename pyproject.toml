@@ -3,7 +3,7 @@ name = "nglab"
 version = "0.1.0"
 description = "A Multimodal Deep Reinforcement Learning bot to assist you in all your gambling (stock market) needs"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11, <3.13"
 dependencies = [
     "gymnasium>=1.2.3",
     "hydra-core>=1.3.2",
@@ -36,6 +36,27 @@ dependencies = [
     "statsmodels>=0.14.6",
     "umap-learn>=0.5.11",
     "keyring>=25.7.0",
+    "flask>=3.0.0",
+    "psutil>=5.9.0",
+    "mlflow>=2.10.2",
+    "ray>=2.53.0",
+    "seaborn>=0.12.1",
+    "deap>=1.4.3",
+    "configspace>=1.2.2",
+    "loguru>=0.7.3",
+    "distributed>=2026.1.1",
+    "transformers>=4.57.6",
+    "feedparser>=6.0.12",
+    "redis>=7.1.0",
+    "opentelemetry-api>=1.27.0",
+    "opentelemetry-sdk>=1.27.0",
+    "opentelemetry-instrumentation-fastapi>=0.48b0",
+    "opentelemetry-exporter-otlp>=1.27.0",
+    "asyncpg>=0.31.0",
+    "boto3>=1.42.30",
+    "google>=3.0.0",
+    "google-cloud-storage>=3.8.0",
+    "google-cloud-storage-control>=1.9.0",
 ]
 
 [build-system]
@@ -49,24 +70,42 @@ bindings = "pyo3"
 manifest-path = "rust/Cargo.toml"
 
 [tool.basedpyright]
-typeCheckingMode = "basic"
-include = ["python", "environment"]
+typeCheckingMode = "standard"
+include = ["python", "environment", "nglab"]
+extraPaths = ["typings"]
 reportUnusedImport = "warning"
+reportMissingTypeStubs = "warning"
 
 # Create an override for __init__.py files
 ignore = ["**/__init__.py"]
 
+[tool.mutmut]
+paths_to_mutate = "python/src/"
+runner = "python -m pytest"
+tests_dir = "python/tests/"
+
 [dependency-groups]
 dev = [
+    "asyncpg-stubs>=0.31.1",
     "black>=25.12.0",
+    "hypothesis>=6.150.2",
     "mypy>=1.19.1",
+    "pandas-stubs>=2.3.3.260113",
     "pip-audit>=2.10.0",
     "pre-commit>=4.5.1",
+    "pyright>=1.1.408",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "ruff>=0.14.13",
     "secretstorage>=3.5.0",
     "sphinx>=9.0.4",
+]
+
+[project.optional-dependencies]
+cloud = [
+    "boto3>=1.34.0",
+    "google-cloud-storage>=2.14.0",
+    "zstandard>=0.22.0",
 ]
 
 [tool.black]
@@ -91,6 +130,7 @@ extend-exclude = '''
 line-length = 88
 target-version = "py311"
 include = ["*.py", "*.pyi"]
+extraPaths = ["./typings"]
 exclude = ["typescript", "rust", "android", "build", "node_modules", ".venv"]
 
 [tool.ruff.lint]
@@ -102,13 +142,48 @@ fixable = ["ALL"]
 known-first-party = ["python", "nglab"]
 
 [tool.mypy]
-python_version = "3.10"
-warn_return_any = false
+python_version = "3.11"
+strict = true
+warn_return_any = true
 warn_unused_configs = true
-ignore_missing_imports = true
-check_untyped_defs = false
-disallow_untyped_defs = false
+disallow_untyped_defs = true
+disallow_any_generics = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
 explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = [
+    "nglab.*",
+    "torch.*",
+    "tensordict.*",
+    "torchrl.*",
+    "pytorch_lightning.*",
+    "hydra.*",
+    "omegaconf.*",
+    "numpy.*",
+    "pandas.*",
+    "scipy.*",
+    "sklearn.*",
+    "matplotlib.*",
+    "yfinance.*",
+    "statsmodels.*",
+    "umap.*",
+    "flask.*",
+    "psutil.*",
+    "tqdm.*",
+    "rich.*",
+    "wandb.*",
+    "xgboost.*",
+    "lightgbm.*",
+    "mlflow",
+    "mlflow.*",
+    "ray.*",
+    "optuna.*",
+    "opentelemetry.*",
+]
+ignore_missing_imports = true
 
 # =================================================================
 # PYTEST CONFIGURATION (from pytest.ini)
@@ -156,6 +231,7 @@ markers = [
     "policies: marks tests for simulation policies",
     "model: marks tests for classical machine learning models",
     "data: marks tests for data processing",
+    "gpu: marks tests requiring GPU/CUDA",
     "skip: skip this test",
     "skipif: skip this test if condition is true",
     "xfail: expected to fail",
