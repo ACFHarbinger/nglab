@@ -86,12 +86,15 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
-        .run(|app_handle, event| match event {
-            tauri::RunEvent::ExitRequested { .. } => {
-                if let Ok(mut running) = app_handle.state::<ArenaState>().running.lock() {
-                    *running = false;
+        .run(|app_handle, event| {
+            #[allow(clippy::single_match)]
+            match event {
+                tauri::RunEvent::ExitRequested { .. } => {
+                    if let Ok(mut running) = app_handle.state::<ArenaState>().running.lock() {
+                        *running = false;
+                    }
                 }
+                _ => {}
             }
-            _ => {}
         });
 }

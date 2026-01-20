@@ -74,17 +74,15 @@ pub fn simulate(params: ArimaParams) -> Result<ArimaResult, String> {
 
     // Generate white noise (epsilon)
     let mut eps = vec![0.0; n];
-    for t in 0..n {
+    for item in eps.iter_mut().take(n) {
         let z: f64 = StandardNormal.sample(&mut rng);
-        eps[t] = z * params.sigma;
+        *item = z * params.sigma;
     }
 
     // Generate ARMA process
     let mut x = vec![0.0; n];
     // Copy initial series
-    for t in 0..initial_series.len() {
-        x[t] = initial_series[t];
-    }
+    x[..initial_series.len()].copy_from_slice(&initial_series[..]);
 
     let start_idx = initial_series.len();
 

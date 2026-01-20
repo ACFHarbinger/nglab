@@ -91,6 +91,7 @@ impl Order {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn new_advanced(
         id: u64,
         price: f64,
@@ -319,6 +320,7 @@ impl OrderBook {
     }
 
     /** Submit an advanced order (Stop, OCO, Iceberg) */
+    #[allow(clippy::too_many_arguments)]
     pub fn submit_advanced_order(
         &mut self,
         price: f64,
@@ -704,10 +706,8 @@ impl OrderBook {
                                             level.add_order(maker_order);
                                         }
                                     }
-                                } else {
-                                    if let Some(front) = level.orders.front_mut() {
-                                        front.filled = maker_order.filled;
-                                    }
+                                } else if let Some(front) = level.orders.front_mut() {
+                                    front.filled = maker_order.filled;
                                 }
                             }
                         }

@@ -242,6 +242,7 @@ impl TradingEnv {
     }
 
     /** Take a step in the environment */
+    #[allow(clippy::type_complexity)]
     #[instrument(skip(self, py), fields(step = self.total_steps, action = action))]
     pub fn step<'py>(
         &mut self,

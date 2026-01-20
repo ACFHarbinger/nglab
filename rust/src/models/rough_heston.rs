@@ -78,8 +78,8 @@ fn percentile(values: &[f64], p: f64) -> f64 {
  * @param params Rough Heston model and simulation settings.
  */
 pub fn simulate(params: RoughHestonParams) -> Result<RoughHestonResult, String> {
-    let steps = params.steps.max(16).min(512);
-    let paths = params.paths.max(100).min(10_000);
+    let steps = params.steps.clamp(16, 512);
+    let paths = params.paths.clamp(100, 10_000);
     let hurst = clamp_f64(params.hurst, 0.01, 0.49);
     let rho = clamp_f64(params.rho, -0.99, 0.99);
 

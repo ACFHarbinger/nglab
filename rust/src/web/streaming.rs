@@ -104,7 +104,7 @@ pub async fn stream_polymarket_prices_loop<F>(
             tokio::spawn(async move {
                 while ping_running.load(Ordering::SeqCst) {
                     tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
-                    if let Err(_) = ping_tx.send(Message::Text("PING".into())).await {
+                    if (ping_tx.send(Message::Text("PING".into())).await).is_err() {
                         break;
                     }
                 }

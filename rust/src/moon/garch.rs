@@ -35,6 +35,7 @@ pub struct GarchResult {
  *
  * @param params Garch model and simulation parameters.
  */
+#[allow(clippy::needless_range_loop, clippy::manual_memcpy)]
 pub fn simulate(params: GarchParams) -> Result<GarchResult, String> {
     let mut rng = if let Some(s) = params.seed {
         use rand::SeedableRng;

@@ -14,12 +14,8 @@ pub fn get_memory_usage() -> Option<MemoryStats> {
     // Refresh only the current process to keep it fast
     sys.refresh_all();
 
-    if let Some(process) = sys.process(pid) {
-        Some(MemoryStats {
-            rss: process.memory(),
-            vms: process.virtual_memory(),
-        })
-    } else {
-        None
-    }
+    sys.process(pid).map(|process| MemoryStats {
+        rss: process.memory(),
+        vms: process.virtual_memory(),
+    })
 }

@@ -25,6 +25,7 @@ pub enum Frequency {
 }
 
 impl Frequency {
+    #[allow(clippy::wrong_self_convention)]
     fn to_interval(&self) -> (&'static str, i64) {
         match self {
             Frequency::Minutely => ("1m", 1),

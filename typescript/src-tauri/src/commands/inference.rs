@@ -39,6 +39,7 @@ pub async fn list_csv_columns(csv_path: String) -> Result<Vec<String>, String> {
  * Trains a supervised learning model from CSV data.
  */
 #[tauri::command]
+#[allow(clippy::too_many_arguments)]
 pub async fn train_model(
     csv_path: String,
     target_column: String,

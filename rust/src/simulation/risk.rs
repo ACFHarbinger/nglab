@@ -204,7 +204,7 @@ impl RiskManager {
 
         // Daily loss contribution (0-30 points)
         let daily_ratio = (-self.status.daily_pnl) / self.config.daily_loss_limit;
-        score += (daily_ratio * 30.0).min(30.0).max(0.0);
+        score += (daily_ratio * 30.0).clamp(0.0, 30.0);
 
         // VaR contribution (0-30 points)
         let var_ratio = self.status.current_var / self.config.var_limit;

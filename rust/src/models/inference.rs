@@ -23,13 +23,11 @@ pub fn list_trained_models() -> Result<Vec<String>, String> {
 
     let mut models = Vec::new();
     if let Ok(entries) = std::fs::read_dir(path) {
-        for entry in entries {
-            if let Ok(entry) = entry {
-                let path = entry.path();
-                if path.extension().map_or(false, |ext| ext == "pt") {
-                    if let Some(name) = path.file_stem().and_then(|s| s.to_str()) {
-                        models.push(name.to_string());
-                    }
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().is_some_and(|ext| ext == "pt") {
+                if let Some(name) = path.file_stem().and_then(|s| s.to_str()) {
+                    models.push(name.to_string());
                 }
             }
         }
@@ -212,18 +210,16 @@ where
 
     // Use a blocking thread since Stdout reading is blocking
     let result = tokio::task::spawn_blocking(move || {
-        for line in reader.lines() {
-            if let Ok(line) = line {
-                if let Ok(progress) = serde_json::from_str::<TrainingProgress>(&line) {
-                    on_progress(progress.clone());
+        for line in reader.lines().map_while(Result::ok) {
+            if let Ok(progress) = serde_json::from_str::<TrainingProgress>(&line) {
+                on_progress(progress.clone());
 
-                    if progress.msg_type == "complete" {
-                        final_model_path = progress.model_path;
-                    } else if progress.msg_type == "error" {
-                        return Err(progress
-                            .message
-                            .unwrap_or_else(|| "Training error".to_string()));
-                    }
+                if progress.msg_type == "complete" {
+                    final_model_path = progress.model_path;
+                } else if progress.msg_type == "error" {
+                    return Err(progress
+                        .message
+                        .unwrap_or_else(|| "Training error".to_string()));
                 }
             }
         }

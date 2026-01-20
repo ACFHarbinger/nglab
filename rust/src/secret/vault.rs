@@ -89,7 +89,7 @@ impl VaultManager {
     pub fn open_connection(&self, key: &str) -> SqlResult<Connection> {
         let conn = Connection::open(&self.db_path)?;
         // SQLCipher encryption key
-        conn.pragma_update(None, "key", &key)?;
+        conn.pragma_update(None, "key", key)?;
         Ok(conn)
     }
 

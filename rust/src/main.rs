@@ -318,7 +318,7 @@ fn ui(f: &mut Frame, app: &App) {
                 .borders(Borders::ALL),
         )
         .data(
-            &app.price_history
+            app.price_history
                 .iter()
                 .map(|v| (v * 10.0) as u64)
                 .collect::<Vec<_>>(),

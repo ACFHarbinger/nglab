@@ -47,6 +47,7 @@ pub struct HoltWintersResult {
  *
  * @param params Model parameters and optional historical data.
  */
+#[allow(clippy::needless_range_loop)]
 pub fn simulate(params: HoltWintersParams) -> Result<HoltWintersResult, String> {
     let seed = if let Some(s) = params.seed {
         s
@@ -73,7 +74,7 @@ pub fn simulate(params: HoltWintersParams) -> Result<HoltWintersResult, String> 
                 return Err("Data length must be at least 2 for trend initialization".to_string());
             }
         }
-        initialize_from_data(&data, m, params.seasonal_type)?
+        initialize_from_data(data, m, params.seasonal_type)?
     } else {
         // Default warm-up state if no data provided
         let initial_l = 100.0;
@@ -217,6 +218,7 @@ pub fn simulate(params: HoltWintersParams) -> Result<HoltWintersResult, String> 
 }
 
 // Simple heuristic initialization
+#[allow(clippy::needless_range_loop)]
 fn initialize_from_data(
     data: &[f64],
     m: usize,

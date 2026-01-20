@@ -261,6 +261,7 @@ impl MultiAssetEnv {
     }
 
     // Actions: List of integers (one per asset)
+    #[allow(clippy::type_complexity)]
     pub fn step<'py>(
         &mut self,
         py: Python<'py>,
