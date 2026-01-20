@@ -49,6 +49,9 @@ RUN pip install uv
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
 
+# Since maturin needs the manifest at rust/Cargo.toml, the rust folder must exist.
+COPY rust/ ./rust/
+
 # Install production dependencies globally
 # We use the system python to avoid venv overhead in the final image
 RUN uv pip install --system --no-cache .
