@@ -10,7 +10,7 @@ import sys
 import time
 from pathlib import Path
 
-import ConfigSpace as CS
+import ConfigSpace as CS  # noqa: N817
 import numpy as np
 from loguru import logger
 
@@ -97,7 +97,9 @@ class DifferentialEvolutionHyperbandBase:
             self.cs.seed(self._original_seed)
             self.dimensions = len(list(self.cs.values()))
         elif dimensions is None or not isinstance(dimensions, (int, np.integer)):
-            assert "Need to specify `dimensions` as an int when `cs` is not available/specified!"
+            raise ValueError(
+                "Need to specify `dimensions` as an int when `cs` is not available/specified!"
+            )
         else:
             self.dimensions = dimensions
         self.f = f

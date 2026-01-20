@@ -27,7 +27,7 @@ class SMACrossoverStrategy(BaseStrategy):
                     print(f"Failed to buy: {e}")
             elif price < self.last_price:
                 # Price went down, sell Yes if we have it
-                yes, _no = self.engine.get_position(market_id)
+                yes, _ = self.engine.get_position(market_id)
                 if yes >= self.amount_to_buy:
                     self.engine.sell_yes(market_id, self.amount_to_buy)
 

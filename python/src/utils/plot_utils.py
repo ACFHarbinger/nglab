@@ -37,7 +37,7 @@ def draw_graph(distance_matrix):
     plt.show()
 
 
-def plot_linechart(
+def plot_linechart(  # noqa: PLR0913, PLR0915
     output_dest,
     graph_log,
     plot_func,
@@ -116,7 +116,7 @@ def plot_linechart(
             else:
                 plot_func(*to_plot, linestyle=line, marker=mark)
 
-            for id, (x, y) in enumerate(
+            for _idx, (x, y) in enumerate(
                 zip(
                     next(zip(*lg, strict=False)),
                     list(zip(*lg, strict=False))[5],
@@ -278,7 +278,7 @@ def plot_tsp(xy, tour, ax1):
     ax1.set_title(f"{len(tour)} nodes, total length {lengths[-1]:.2f}")
 
 
-def discrete_cmap(N, base_cmap=None):
+def discrete_cmap(N, base_cmap=None):  # noqa: N803
     """
     Create an N-bin discrete colormap from the specified input map.
 
@@ -298,17 +298,21 @@ def discrete_cmap(N, base_cmap=None):
     return base.from_list(cmap_name, color_list, N)
 
 
-def plot_vehicle_routes(
+def plot_vehicle_routes(  # noqa: PLR0913
     data,
     route,
     ax1,
     markersize=5,
+    route_color="blue",
+    depot_color="red",
+    customer_color="green",
+    title="Vehicle Routes",
     visualize_demands=False,
     demand_scale=1,
     round_demand=False,
 ):
     """
-    Plot the vehicle routes on matplotlib axis ax1.
+    Plot vehicle routing problem routes. on matplotlib axis ax1.
 
     Args:
         data (dict): Dictionary with 'depot', 'loc', 'demand'.
@@ -407,7 +411,7 @@ def plot_vehicle_routes(
 
 
 @compose_dirpath
-def plot_attention_maps_wrapper(
+def plot_attention_maps_wrapper(  # noqa: PLR0913, PLR0915
     dir_path,
     attention_dict,
     model_name,
@@ -508,7 +512,7 @@ def plot_attention_maps_wrapper(
     except Exception:
         raise Exception(
             "directories to save attention maps do not exist and could not be created"
-        )
+        ) from None
 
     # Dynamically set figure size based on map_size
     base_vertexsize = 0.5

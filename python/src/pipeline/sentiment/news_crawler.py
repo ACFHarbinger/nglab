@@ -4,7 +4,7 @@ News Crawler for Financial Sentiment Analysis.
 Fetches data from financial news RSS feeds and websites.
 """
 
-from typing import Any
+from typing import Any, ClassVar
 
 import feedparser
 
@@ -14,7 +14,7 @@ class NewsCrawler:
     Crawler for financial news feeds.
     """
 
-    DEFAULT_FEEDS = [
+    DEFAULT_FEEDS: ClassVar[list[str]] = [
         "https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC",  # S&P 500
         "https://www.marketwatch.com/rss/topstories",
         "https://search.cnbc.com/rs/search/view.xml?partnerId=2000&keywords=finance",

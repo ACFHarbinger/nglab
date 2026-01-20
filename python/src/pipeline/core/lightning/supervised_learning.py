@@ -223,6 +223,8 @@ def train_from_csv(
     # Training loop
     best_val_loss = float("inf")
     best_model_state = None
+    avg_train_loss = 0.0
+    avg_val_loss = 0.0
 
     for epoch in range(epochs):
         # Train

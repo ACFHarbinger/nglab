@@ -5,7 +5,7 @@ This module provides the standard synchronous DE algorithm, supporting various
 mutation and crossover strategies for global optimization of hyperparameters.
 """
 
-import ConfigSpace as CS
+import ConfigSpace as CS  # noqa: N817
 import numpy as np
 from distributed import Client
 

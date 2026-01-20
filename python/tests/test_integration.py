@@ -93,7 +93,7 @@ def test_trading_env_episode():
         pytest.skip("nglab module not built")
 
     env = nglab.TradingEnv(initial_capital=10000.0, lookback=50)
-    obs, info = env.reset(seed=123)
+    _, _ = env.reset(seed=123)
 
     total_reward = 0.0
     steps = 0

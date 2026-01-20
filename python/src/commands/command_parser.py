@@ -22,7 +22,7 @@ class ConfigsParser(argparse.ArgumentParser):
         sys.exit(2)
 
 
-from python.src.commands.registry import get_parser
+
 
 
 def process_arguments():
@@ -32,6 +32,8 @@ def process_arguments():
     Returns:
         tuple: (command, arguments_dict)
     """
+    from python.src.commands.registry import get_parser
+
     parser = get_parser()
     command, args = parser.parse_process_args()
 

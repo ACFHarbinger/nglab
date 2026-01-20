@@ -9,7 +9,7 @@ during training.
 import copy
 
 import torch
-import torch.nn.functional as F
+import torch.nn.functional as F  # noqa: N812
 from scipy.stats import ttest_rel
 from torch.utils.data import Dataset
 from utils.ARP_HADRL.train import get_inner_model, rollout
@@ -111,12 +111,12 @@ class WarmupBaseline(Baseline):
             return self.baseline.eval(x, c)
         if self.alpha == 0:
             return self.warmup_baseline.eval(x, c)
-        v, l = self.baseline.eval(x, c)
-        vw, lw = self.warmup_baseline.eval(x, c)
+        v, loss = self.baseline.eval(x, c)
+        vw, loss_w = self.warmup_baseline.eval(x, c)
         # Return convex combination of baseline and of loss
         return (
             self.alpha * v + (1 - self.alpha) * vw,
-            self.alpha * l + (1 - self.alpha) * lw,
+            self.alpha * loss + (1 - self.alpha) * loss_w,
         )
 
     def epoch_callback(self, model, epoch):

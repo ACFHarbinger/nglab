@@ -7,7 +7,7 @@ ARG PYTHON_VERSION=3.11
 ARG RUST_VERSION=1.83
 
 # =============================================================================
-# Stage 1: Rust Builder
+# Stage 1: Rust Builder (Optional/Used for pure Rust artifacts)
 # =============================================================================
 FROM rust:${RUST_VERSION}-slim-bookworm AS rust-builder
 
@@ -25,22 +25,24 @@ COPY rust/ ./rust/
 WORKDIR /build/rust
 
 # Build release with optimizations
-# We remove --locked to allow Cargo to handle stale lockfiles in the build environment
 ENV CARGO_INCREMENTAL=0
 ENV RUSTFLAGS="-C target-cpu=native -C opt-level=3"
 RUN cargo build --release
 
 # =============================================================================
-# Stage 2: Python Builder
+# Stage 2: Python Builder (Where compilation actually happens)
 # =============================================================================
 FROM python:${PYTHON_VERSION}-slim-bookworm AS python-builder
 
 WORKDIR /app
 
-# Install build dependencies
+# IMPORTANT: You must install pkg-config and libssl-dev HERE.
+# Maturin needs these to compile the Rust extension into a Python wheel.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
+    pkg-config \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv for fast dependency resolution
@@ -53,11 +55,10 @@ COPY pyproject.toml uv.lock README.md ./
 COPY rust/ ./rust/
 
 # 3. Copy the Python package source 
-# This is often required for maturin to verify the module name or package structure
 COPY nglab/ ./nglab/
 
 # 4. Install production dependencies globally
-# Maturin will now find README.md and the source code it needs
+# This command triggers the Rust compilation, which now has access to pkg-config/libssl
 RUN uv pip install --system --no-cache .
 
 # =============================================================================
@@ -74,17 +75,15 @@ LABEL org.opencontainers.image.description="Nothing Gambles Like A Bot (NGLAB) P
 
 # Create non-privileged user
 RUN groupadd --gid 1000 nglab && \
-    useradd --uid 1000 --gid nglab --shell /bin/bash --create-home nglab
+    useradd --uid 1000 --gid 1000 --shell /bin/bash --create-home nglab
 
 WORKDIR /app
 
-# Install runtime dependencies
-# [linux/amd64 python-builder 3/8] 
+# In runtime, we ONLY need the library, not the headers (-dev)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
+    libssl3 \
     curl \
-    pkg-config \
-    libssl-dev \
+    tini \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Python packages from builder
@@ -118,6 +117,6 @@ USER nglab
 # Expose API port
 EXPOSE 8000
 
-# Use tini as init system for proper signal handling
+# Use tini as init system
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-m", "api.main"]

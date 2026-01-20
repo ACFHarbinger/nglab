@@ -42,7 +42,7 @@ class Policy(ABC):
         """
         return self.act(observation)
 
-    def reset(self):
+    def reset(self):  # noqa: B027
         """
         Optional reset method for stateful policies.
         """

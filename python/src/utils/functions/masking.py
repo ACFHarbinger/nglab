@@ -11,7 +11,7 @@ class TriangularCausalMask:
     Triangular causal mask for sequence processing.
     """
 
-    def __init__(self, B, L, device="cpu"):
+    def __init__(self, B, L, device="cpu"):  # noqa: N803
         """
         Initialize the mask.
 
@@ -37,7 +37,7 @@ class ProbMask:
     Probabilistic mask for Informer-style attention.
     """
 
-    def __init__(self, B, H, L, index, scores, device="cpu"):
+    def __init__(self, B, H, L, index, scores, device="cpu"):  # noqa: N803
         """
         Initialize the mask.
         """

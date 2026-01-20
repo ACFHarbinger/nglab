@@ -154,7 +154,7 @@ class S3Backend(CloudStorageBackend):
             except ImportError:
                 raise ImportError(
                     "boto3 is required for S3 backend. Install with: pip install boto3"
-                )
+                ) from None
         return self._client
 
     def _get_full_key(self, remote_key: str) -> str:
@@ -320,7 +320,7 @@ class GCSBackend(CloudStorageBackend):
                 raise ImportError(
                     "google-cloud-storage is required for GCS backend. "
                     "Install with: pip install google-cloud-storage"
-                )
+                ) from None
         return self._bucket
 
     def _get_blob_name(self, remote_key: str) -> str:

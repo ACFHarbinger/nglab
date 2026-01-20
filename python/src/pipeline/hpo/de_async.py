@@ -296,7 +296,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
                     trial, float(fidelity or 0)
                 )
                 # evaluating a single trial population for the i-th individual
-                de_traj, de_runtime, de_history, fitnesses, costs = self.eval_pop(
+                de_traj, de_runtime, de_history, fitnesses, _ = self.eval_pop(
                     trial.reshape(1, self.dimensions),
                     np.array([trial_id]),
                     fidelity=fidelity,

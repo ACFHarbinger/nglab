@@ -350,7 +350,7 @@ class GPUBenchmark:
             torch.cuda.empty_cache()
             torch.cuda.reset_peak_memory_stats()
 
-        def train_step():
+        def train_step(optimizer, scaler):
             optimizer.zero_grad()
             if mixed_precision and scaler is not None:
                 with torch.autocast(device_type="cuda", dtype=torch.float16):
@@ -367,7 +367,7 @@ class GPUBenchmark:
 
         # Warmup
         for _ in range(warmup_iterations):
-            train_step()
+            train_step(optimizer, scaler)
 
         if torch.cuda.is_available():
             torch.cuda.synchronize()
@@ -383,7 +383,7 @@ class GPUBenchmark:
                 end = torch.cuda.Event(enable_timing=True)
 
                 start.record()
-                train_step()
+                train_step(optimizer, scaler)
                 end.record()
 
                 torch.cuda.synchronize()
@@ -395,7 +395,7 @@ class GPUBenchmark:
                 import time
 
                 start = time.perf_counter()
-                train_step()
+                train_step(optimizer, scaler)
                 times.append((time.perf_counter() - start) * 1000)
 
         times_tensor = torch.tensor(times)

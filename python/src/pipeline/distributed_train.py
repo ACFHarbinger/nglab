@@ -5,7 +5,7 @@ from typing import Any
 
 import torch
 import torch.distributed as dist
-from torch.nn.parallel import DistributedDataParallel as DDP
+from torch.nn.parallel import DistributedDataParallel as DDP  # noqa: N817
 from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm
 
@@ -26,7 +26,7 @@ def setup_distributed() -> int:
 
     dist.init_process_group(backend="nccl" if torch.cuda.is_available() else "gloo")
 
-    local_rank = int(os.environ.get("LOCAL_RANK", 0))
+    local_rank = int(os.environ.get("LOCAL_RANK", "0"))
     if torch.cuda.is_available():
         torch.cuda.set_device(local_rank)
 
@@ -85,7 +85,7 @@ class DistributedTrainer:
         )
 
         for _batch_idx, (data, target) in enumerate(loader):
-            data, target = data.to(self.device), target.to(self.device)
+            data, target = data.to(self.device), target.to(self.device)  # noqa: PLW2901
 
             self.optimizer.zero_grad()
             output = self.model(data)

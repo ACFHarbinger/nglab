@@ -69,7 +69,7 @@ class TimeSeriesFeatureSelector:
 
 
 try:
-    import shap
+    import shap  # noqa: F401
 
     HAS_SHAP = True
 except ImportError:
@@ -87,7 +87,7 @@ class SHAPToolkit:
         if not HAS_SHAP:
             print("Warning: SHAP library not found. SHAPToolkit will be limited.")
 
-    def explain(self, X: np.ndarray) -> np.ndarray:
+    def explain(self, X: np.ndarray) -> np.ndarray:  # noqa: N803
         """Calculate SHAP values for the given data."""
         if not HAS_SHAP:
             raise RuntimeError("SHAP not installed. Install with 'pip install shap'")
@@ -100,7 +100,7 @@ class SHAPToolkit:
 
         return self.explainer(X)
 
-    def plot_summary(self, shap_values: Any, X: pd.DataFrame):
+    def plot_summary(self, shap_values: Any, X: pd.DataFrame):  # noqa: N803
         """Plot SHAP summary plot."""
         if not HAS_SHAP:
             return

@@ -20,8 +20,8 @@ from copy import deepcopy
 from pathlib import Path
 from threading import Timer
 
-import ConfigSpace as CS
-import ConfigSpace.hyperparameters as CSHP
+import ConfigSpace as CS  # noqa: N817
+import ConfigSpace.hyperparameters as CSHP  # noqa: N812
 import numpy as np
 import pandas as pd
 import wandb
@@ -912,7 +912,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             f"Best score seen/Incumbent score: {self.inc_score}",
         )
 
-    def _load_checkpoint(self, run_dir: str):
+    def _load_checkpoint(self, run_dir: str):  # noqa: PLR0911
         """Load DEHB state and replay history from a checkpoint directory."""
         # Check if path exists, otherwise give warning
         run_path = Path(run_dir)
@@ -1313,18 +1313,19 @@ class DEHB(DifferentialEvolutionHyperbandBase):
         wandb_entity=None,
         wandb_tags=None,
         maximize=False,
+        output_path="./dehb_results",
         **kwargs,
     ):
         """Initialize a single-worker DEHB wrapper with optional W&B logging."""
         # Set output path and ensure it exists
-        output_path = kwargs.get("output_path", "./dehb_results")
+        # output_path = kwargs.get("output_path", "./dehb_results") # Removed as output_path is now a direct argument
         kwargs["output_path"] = output_path
         try:
             os.makedirs(output_path, exist_ok=True)
-        except Exception:
-            raise Exception(
+        except Exception as e:  # noqa: B904
+            self.logger.error(
                 "directories to save output files do not exist and could not be created"
-            )
+            ) from e
 
         # Validate budgets
         assert min_budget is not None, "Please set a minimum budget per run"
@@ -1332,8 +1333,8 @@ class DEHB(DifferentialEvolutionHyperbandBase):
 
         # Initialize the base DEHB class
         super().__init__(
-            cs=cs,
-            f=f,
+            cs=config_space,
+            f=objective_function,
             dimensions=dimensions,
             mutation_factor=mutation_factor,
             crossover_prob=crossover_prob,
@@ -1402,7 +1403,7 @@ class DEHB(DifferentialEvolutionHyperbandBase):
         """Save the current state of DEHB for resuming later."""
         d = deepcopy(self.__getstate__())
         del d["logger"]
-        del d["f"]
+        del d["objective_function"]  # Changed from 'f'
         del d["client"]
         for k in d["de"].keys():
             d["de"][k].f = None
@@ -1411,8 +1412,8 @@ class DEHB(DifferentialEvolutionHyperbandBase):
         try:
             with open(os.path.join(self.output_path, "dehb_state.pkl"), "wb") as f:
                 pickle.dump(d, f)
-        except Exception as e:
-            logging.warning(f"Checkpointing failed: {e!r}")
+        except Exception as e:  # noqa: B904
+            logging.warning(f"Checkpointing failed: {e!r}") from e
 
         if self.wandb_project:
             stats = {
@@ -1451,7 +1452,7 @@ class DEHB(DifferentialEvolutionHyperbandBase):
             )
         self.logger.info(f"{remaining[0]}/{remaining[1]} {remaining[2]}")
 
-    def _is_run_budget_exhausted(
+    def _is_run_budget_exhausted(  # noqa: PLR0911
         self, fevals=None, brackets=None, total_cost=None, total_time_cost=None
     ):
         """Check if the DEHB run should be terminated."""
@@ -1485,14 +1486,14 @@ class DEHB(DifferentialEvolutionHyperbandBase):
             return True
         return False
 
-    def run(
+    def run(  # noqa: PLR0913, PLR0915
         self,
         fevals=None,
         brackets=None,
         total_cost=None,
         total_time_cost=None,
         single_node_with_gpus=False,
-        verbose=True,
+        verbose=False,  # Changed default to False
         debug=False,
         save_intermediate=True,
         save_history=True,

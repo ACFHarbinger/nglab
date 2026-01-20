@@ -10,6 +10,7 @@ Features:
 import asyncio
 import hashlib
 import json
+import os
 import time
 from contextlib import asynccontextmanager
 from typing import Any
@@ -35,7 +36,7 @@ from python.src.utils.functions.functions import load_model
 tracer = trace.get_tracer(__name__)
 
 # Ray Serve Imports
-import os
+
 
 try:
     from ray import serve as ray_serve
@@ -186,7 +187,7 @@ class BatchInferenceHandler:
 
 def get_model(model_path: str | None = None) -> torch.nn.Module:
     """Singleton model loader with caching."""
-    global _MODEL, _OPTS
+    global _MODEL, _OPTS  # noqa: PLW0603
 
     default_path = "outputs/model_last.pt"
     target_path = model_path or default_path
@@ -267,7 +268,7 @@ batch_handler = BatchInferenceHandler(get_model)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    global _REDIS
+    global _REDIS  # noqa: PLW0603
     await batch_handler.start()
     try:
         _REDIS = redis.from_url(
@@ -359,7 +360,7 @@ async def predict(request: PredictionRequest) -> PredictionResponse:
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 if __name__ == "__main__":

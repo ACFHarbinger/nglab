@@ -28,7 +28,7 @@ class BlackScholesPolicy(Policy):
         self.risk_free_rate = self.cfg.get("risk_free_rate", 0.05)
         self.volatility = self.cfg.get("volatility", 0.2)
 
-    def _black_scholes_call(self, S, K, T, r, sigma):
+    def _black_scholes_call(self, S, K, T, r, sigma):  # noqa: N803
         """
         Calculate the Black-Scholes call price.
         """
