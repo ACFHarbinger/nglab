@@ -3,10 +3,11 @@ Recurrent Neural Network (RNN) implementations (LSTM, GRU).
 """
 
 
+from typing import cast
+
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
-from typing import cast
 
 
 class LSTM(nn.Module):

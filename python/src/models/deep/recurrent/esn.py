@@ -6,7 +6,6 @@ import torch
 from torch import nn
 
 
-
 class EchoStateNetwork(nn.Module):
     """
     Echo State Network (ESN).

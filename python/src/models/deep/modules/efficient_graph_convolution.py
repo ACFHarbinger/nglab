@@ -1,16 +1,24 @@
 """Optimized Graph Convolution implementation with multiple aggregators."""
 
 from collections.abc import Iterable
+from typing import Any, cast
 
 import torch
 from torch import Tensor
-from typing import Any, cast, Sized
 from torch.nn import Linear, Parameter
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.conv.gcn_conv import gcn_norm
 from torch_geometric.nn.inits import glorot, zeros
-from torch_geometric.typing import Adj, OptTensor, SparseTensor, torch_sparse
 from torch_geometric.utils import add_remaining_self_loops, scatter
+
+# Handle optional SparseTensor
+try:
+    from torch_geometric.typing import Adj, OptTensor, SparseTensor, torch_sparse
+except ImportError:
+    Adj = Any
+    OptTensor = Any
+    SparseTensor = Any
+    torch_sparse = Any
 
 
 # Adapted from https://github.com/shyam196/egc
@@ -23,8 +31,8 @@ class EfficientGraphConvolution(MessagePassing):
     Supports multi-head weights and basis functions for efficiency.
     """
 
-    _cached_edge_index: tuple[Tensor, OptTensor] | None
-    _cached_adj_t: SparseTensor | None
+    _cached_edge_index: tuple[Any, Any] | None
+    _cached_adj_t: Any | None
 
     def __init__(  # noqa: PLR0913
         self,
@@ -91,7 +99,7 @@ class EfficientGraphConvolution(MessagePassing):
         self._cached_adj_t = None
         self._cached_edge_index = None
 
-    def forward(self, x: Tensor, edge_index: Adj) -> Tensor:  # noqa: PLR0915
+    def forward(self, x: Tensor, edge_index: Any) -> Tensor:  # noqa: PLR0915
         """
         Forward pass for Efficient Graph Convolution.
 
@@ -115,7 +123,7 @@ class EfficientGraphConvolution(MessagePassing):
                         add_self_loops=self.add_self_loops,
                     )
                     if self.cached:
-                        self._cached_edge_index = (edge_index, symnorm_weight)
+                        self._cached_edge_index = (cast(Tensor, edge_index), symnorm_weight)
                 else:
                     edge_index, symnorm_weight = cache
 
@@ -203,12 +211,14 @@ class EfficientGraphConvolution(MessagePassing):
         self,
         inputs: Tensor,
         index: Tensor,
+        ptr: OptTensor = None,
         dim_size: int | None = None,
-        symnorm_weight: OptTensor = None,
+        **kwargs: Any,
     ) -> Tensor:
         """
         Aggregates messages from neighbors using multiple aggregators.
         """
+        symnorm_weight = kwargs.get("symnorm_weight")
         aggregated = []
         inputs = inputs.permute(1, 0, 2)
         for aggregator in self.aggregators:
@@ -243,21 +253,24 @@ class EfficientGraphConvolution(MessagePassing):
 
         return torch.stack(aggregated, dim=1)
 
-    def message_and_aggregate(self, adj_t: SparseTensor, x: Tensor) -> Tensor:
+    def message_and_aggregate(self, edge_index: Any, **kwargs: Any) -> Tensor:
         """
         Performs message passing and aggregation in a single step for sparse tensors.
         """
+        x = kwargs.get("x")
+        if x is None:
+             raise ValueError("x must be passed to message_and_aggregate")
         aggregated = []
         if len(self.aggregators) > 1 and "symnorm" in self.aggregators:
-            adj_t_nonorm = adj_t.set_value(None)
+            adj_t_nonorm = edge_index.set_value(None)
         else:
             # No normalization is calculated in forward if symnorm isn't one
             # of the aggregators
-            adj_t_nonorm = adj_t
+            adj_t_nonorm = edge_index
 
         for aggregator in self.aggregators:
             if aggregator == "symnorm":
-                correct_adj = adj_t
+                correct_adj = edge_index
                 agg = "sum"
             else:
                 correct_adj = adj_t_nonorm

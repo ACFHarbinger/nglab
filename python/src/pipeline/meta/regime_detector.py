@@ -5,11 +5,12 @@ Detects different market conditions (volatile, trending, ranging) to trigger
 model adaptation.
 """
 
+from typing import Any
+
 import numpy as np
 import torch
-from sklearn.cluster import KMeans
-from typing import Any, Dict
 from numpy.typing import NDArray
+from sklearn.cluster import KMeans
 
 
 class RegimeDetector:
@@ -104,7 +105,7 @@ class RegimeDetector:
 
     def partition_by_regime(
         self, prices: NDArray[Any], data: torch.Tensor
-    ) -> Dict[int, torch.Tensor]:
+    ) -> dict[int, torch.Tensor]:
         """
         Partition data by detected regimes.
 
@@ -124,7 +125,7 @@ class RegimeDetector:
 
         regimes = self.kmeans.predict(features)
 
-        partitions: Dict[int, torch.Tensor] = {}
+        partitions: dict[int, torch.Tensor] = {}
         for regime_id in range(self.n_regimes):
             mask = regimes == regime_id
             partitions[regime_id] = data[mask]

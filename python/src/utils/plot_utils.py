@@ -242,7 +242,7 @@ def discrete_cmap(n: int, base_cmap: str | Any | None = None) -> Any:
     return base.from_list(cmap_name, color_list, n)
 
 
-def plot_vehicle_routes(  # noqa: PLR0913
+def plot_vehicle_routes(  # noqa: PLR0913, PLR0915
     data: dict[str, torch.Tensor],
     route: torch.Tensor,
     ax1: matplotlib.axes.Axes,

@@ -2,9 +2,10 @@
 Radial Basis Function (RBF) Network.
 """
 
+from typing import cast
+
 import torch
 from torch import nn
-from typing import cast
 
 
 class RBF(nn.Module):

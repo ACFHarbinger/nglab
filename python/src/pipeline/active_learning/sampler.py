@@ -6,6 +6,7 @@ from an unlabelled pool based on uncertainty scores.
 """
 
 from typing import Any
+
 import numpy as np
 import torch
 

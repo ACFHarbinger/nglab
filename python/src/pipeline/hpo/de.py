@@ -274,7 +274,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         mutant = r1 + self.mutation_factor * diff / 2
         return cast(np.ndarray[Any, Any], mutant)
 
-    def mutation(
+    def mutation(  # noqa: PLR0915
         self,
         current: np.ndarray[Any, Any] | None = None,
         best: np.ndarray[Any, Any] | None = None,

@@ -6,11 +6,11 @@ serving as the primary interface between agents and the market simulator.
 """
 
 from typing import Any
-from numpy.typing import NDArray
 
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
+from numpy.typing import NDArray
 
 
 class TradingEnv(gym.Env[NDArray[Any], NDArray[Any]]):
@@ -18,7 +18,7 @@ class TradingEnv(gym.Env[NDArray[Any], NDArray[Any]]):
     A placeholder Trading Environment following Gymnasium API.
     """
 
-    metadata: dict[str, Any] = {"render_modes": ["human"]}
+    metadata: dict[str, Any] = {"render_modes": ["human"]}  # noqa: RUF012
 
     def __init__(self, lookback: int = 30, max_steps: int = 1000, feature_dim: int = 12) -> None:
         """

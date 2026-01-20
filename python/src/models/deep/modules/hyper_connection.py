@@ -1,6 +1,7 @@
 """Static and Dynamic Hyper-Network connections."""
 
 from typing import Any, cast
+
 import torch
 from torch import nn
 

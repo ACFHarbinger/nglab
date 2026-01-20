@@ -1,5 +1,3 @@
-from numpy.typing import NDArray
-
 """
 Asynchronous Differential Evolution (AsyncDE).
 
@@ -11,6 +9,7 @@ for parallel hyperparameter optimization where evaluation times vary.
 from typing import Any, cast
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .de import DifferentialEvolution
 
@@ -223,7 +222,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
             ages.append(float(self.max_age))
         return traj, runtime, history, np.array(fitnesses), np.array(ages)
 
-    def mutation(
+    def mutation(  # noqa: PLR0915
         self,
         current: np.ndarray[Any, Any] | None = None,
         best: np.ndarray[Any, Any] | None = None,
@@ -321,7 +320,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
 
         return mutants
 
-    def evolve_generation(self, fidelity: float | None = None, best: np.ndarray[Any, Any] | None = None, alt_pop: list[Any] | np.ndarray[Any, Any] | None = None, **kwargs: Any) -> tuple[list[Any], list[Any], list[Any]]:
+    def evolve_generation(self, fidelity: float | None = None, best: np.ndarray[Any, Any] | None = None, alt_pop: list[Any] | np.ndarray[Any, Any] | None = None, **kwargs: Any) -> tuple[list[Any], list[Any], list[Any]]:  # noqa: PLR0915
         """Performs a complete DE evolution, mutation -> crossover -> selection"""
         traj: list[Any] = []
         runtime: list[Any] = []

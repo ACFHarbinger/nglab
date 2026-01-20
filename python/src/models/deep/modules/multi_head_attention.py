@@ -1,10 +1,10 @@
 """Multi-Head Attention mechanism for transformer architectures."""
 
 import math
+from typing import cast
 
 import torch
 from torch import nn
-from typing import cast
 
 
 class MultiHeadAttention(nn.Module):

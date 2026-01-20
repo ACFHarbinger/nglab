@@ -1,10 +1,10 @@
 """Standard Feed-Forward Network (FFN) implementation."""
 
 import math
+from typing import cast
 
 import torch
 from torch import nn
-from typing import cast
 
 
 class FeedForward(nn.Module):

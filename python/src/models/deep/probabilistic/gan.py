@@ -4,6 +4,7 @@ Time Series GAN Networks (Generator and Discriminator).
 
 
 from typing import cast
+
 import torch
 from torch import nn
 

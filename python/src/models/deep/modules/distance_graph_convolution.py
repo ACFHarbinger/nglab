@@ -1,8 +1,8 @@
 """Graph Convolutional layer with distance-aware edge weighting."""
 
 import math
-
 from typing import cast
+
 import torch
 from torch import nn
 from torch_geometric.utils import scatter

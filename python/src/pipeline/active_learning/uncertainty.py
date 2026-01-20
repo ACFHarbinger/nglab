@@ -5,9 +5,10 @@ This module provides tools to estimate predictive uncertainty, which can be
 used to sample the most informative data points for training.
 """
 
+from typing import cast
+
 import torch
 from torch import nn
-from typing import cast
 
 
 def pinball_loss(

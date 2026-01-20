@@ -483,7 +483,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             return False
         return True
 
-    def _get_promotion_candidate(self, low_fidelity: float, high_fidelity: float, n_configs: int) -> tuple[np.ndarray[Any, Any], int]:
+    def _get_promotion_candidate(self, low_fidelity: float, high_fidelity: float, n_configs: int) -> tuple[np.ndarray[Any, Any], int]:  # noqa: PLR0915
         """Manages the population to be promoted from the lower to the higher fidelity.
 
         This is triggered or in action only during the first full HB bracket, which is equivalent
@@ -1589,7 +1589,7 @@ class DEHB(DifferentialEvolutionHyperband):
             return True
         return False
 
-    def run(  # type: ignore[override]
+    def run(  # type: ignore[override] # noqa: PLR0913
         self,
         fevals: int | None = None,
         brackets: int | None = None,

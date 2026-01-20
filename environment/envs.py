@@ -50,7 +50,7 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
     """
 
     # metadata must be a dictionary, matching gym.Env
-    metadata: dict[str, Any] = {"render_modes": ["human"]}
+    metadata: dict[str, Any] = {"render_modes": ["human"]}  # noqa: RUF012
 
     def __init__(  # noqa: PLR0913
         self,
@@ -282,7 +282,7 @@ class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
     Polymarket Arena - Python wrapper for Rust RL trading environment
     """
 
-    metadata: dict[str, Any] = {"render_modes": ["human"]}
+    metadata: dict[str, Any] = {"render_modes": ["human"]}  # noqa: RUF012
 
     def __init__(
         self,

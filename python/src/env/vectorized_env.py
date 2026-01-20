@@ -48,7 +48,7 @@ class VectorizedTradingEnv:
 
         # Create individual environments
         self.envs: list[Any] = []
-        for i in range(num_envs):
+        for _i in range(num_envs):
             # Use cast to Any to avoid unbound error in some type checkers
             env_cls: Any = nglab.TradingEnv
             env = env_cls(

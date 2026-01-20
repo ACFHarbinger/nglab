@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 from typing import Any, cast
 
-import ConfigSpace as CS
+import ConfigSpace
 import numpy as np
 import optuna
 import pytorch_lightning as pl
@@ -133,7 +133,7 @@ def run_dehb_search(
     )
 
     def dehb_objective(
-        config: np.ndarray[Any, Any] | CS.Configuration,
+        config: np.ndarray[Any, Any] | ConfigSpace.Configuration,
         fidelity: float,
         **kwargs: Any,
     ) -> dict[str, Any]:

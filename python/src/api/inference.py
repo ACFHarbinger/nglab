@@ -149,7 +149,7 @@ class BatchInferenceHandler:
     ) -> None:
         """Process a batch of requests."""
         with tracer.start_as_current_span("process_batch") as span:
-            requests, futures = zip(*batch) if batch else ((), ())
+            requests, futures = zip(*batch, strict=True) if batch else ((), ())
             span.set_attribute("batch.size", len(requests))
 
             try:

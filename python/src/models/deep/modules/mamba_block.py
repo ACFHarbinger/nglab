@@ -3,7 +3,7 @@ Mamba Block implementation for state-space model layers.
 """
 
 import math
-from typing import Any, cast
+from typing import cast
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -54,9 +54,9 @@ class MambaBlock(nn.Module):
         self.dt_proj = nn.Linear(self.dt_rank, self.d_inner, bias=True)
 
         # 4. S4D (Structured State Space) Parameters
-        # A_log is learnable, initializing the state transition matrix A
-        A = torch.arange(1, d_state + 1, dtype=torch.float32).repeat(self.d_inner, 1)
-        self.A_log = nn.Parameter(torch.log(A))
+        # a_mat is learnable, initializing the state transition matrix a
+        a_init = torch.arange(1, d_state + 1, dtype=torch.float32).repeat(self.d_inner, 1)
+        self.A_log = nn.Parameter(torch.log(a_init))
         self.D = nn.Parameter(torch.ones(self.d_inner))
 
         # 5. Output Projection
@@ -66,10 +66,10 @@ class MambaBlock(nn.Module):
         self,
         u: torch.Tensor,
         delta: torch.Tensor,
-        A: torch.Tensor,
-        B: torch.Tensor,
-        C: torch.Tensor,
-    ) -> torch.Tensor:  # noqa: N803
+        a: torch.Tensor,
+        b: torch.Tensor,
+        c: torch.Tensor,
+    ) -> torch.Tensor:
         """
         A simplified sequential implementation of the SSM equation:
         h_t = A_t * h_{t-1} + B_t * x_t
@@ -78,13 +78,13 @@ class MambaBlock(nn.Module):
         Note: Production Mamba uses a hardware-aware parallel scan here.
         """
         batch_size, seq_len, d_inner = u.shape
-        d_state = A.shape[-1]
+        d_state = a.shape[-1]
 
         # Discretize A (continuous -> discrete) using Zero-Order Hold (ZOH)
         # delta shape: (batch, seq, d_inner)
         # A shape: (d_inner, d_state) -> broadcast to (batch, seq, d_inner, d_state)
-        delta_A = torch.exp(torch.einsum("b l d, d n -> b l d n", delta, A))
-        delta_B = torch.einsum("b l d, b l n -> b l d n", delta, B)
+        delta_a = torch.exp(torch.einsum("b l d, d n -> b l d n", delta, a))
+        delta_b = torch.einsum("b l d, b l n -> b l d n", delta, b)
 
         # Initial state
         h = torch.zeros(batch_size, d_inner, d_state, device=u.device)
@@ -92,11 +92,11 @@ class MambaBlock(nn.Module):
 
         # Sequential scan (The loop that replaces O(L^2) attention)
         for t in range(seq_len):
-            # h_t = A_bar * h_{t-1} + B_bar * u_t
-            h = delta_A[:, t] * h + delta_B[:, t] * u[:, t].unsqueeze(-1)
+            # h_t = a_bar * h_{t-1} + b_bar * u_t
+            h = delta_a[:, t] * h + delta_b[:, t] * u[:, t].unsqueeze(-1)
 
-            # y_t = C_t * h_t
-            y = torch.einsum("b d n, b n -> b d", h, C[:, t])
+            # y_t = c_t * h_t
+            y = torch.einsum("b d n, b n -> b d", h, c[:, t])
             ys.append(y)
 
         return torch.stack(ys, dim=1)
@@ -121,13 +121,13 @@ class MambaBlock(nn.Module):
         # Derive discrete parameters from the input (data-dependent)
         x_dbl = self.x_proj(x_branch)  # (B, L, dt_rank + 2*d_state)
 
-        (delta, B, C) = x_dbl.split([self.dt_rank, self.d_state, self.d_state], dim=-1)
+        (delta, b, c) = x_dbl.split([self.dt_rank, self.d_state, self.d_state], dim=-1)
 
         delta = F.softplus(self.dt_proj(delta))  # Softplus ensures positive time-step
-        A = -torch.exp(self.A_log)  # Keep A negative for stability
+        a = -torch.exp(self.A_log)  # Keep a negative for stability
 
         # Run the SSM
-        y = self.parallel_scan_dummy(x_branch, delta, A, B, C)
+        y = self.parallel_scan_dummy(x_branch, delta, a, b, c)
 
         # Residual connection + Gating
         y = y + x_branch * self.D

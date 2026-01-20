@@ -3,10 +3,11 @@ Extreme Learning Machine (ELM) implementation.
 """
 
 
+from typing import Any
+
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
-from typing import Any
 
 
 class ELM(nn.Module):

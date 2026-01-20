@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, cast
 from python.src.storage.base import ModelMetadata, ModelStorage, StorageConfig
 
 if TYPE_CHECKING:
-    from google.cloud import storage
+    pass
 
 
 class GCSStorage(ModelStorage):

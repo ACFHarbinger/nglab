@@ -53,7 +53,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         self.selector: Any = None
         self.feature_names: list[str] = []
 
-    def fit(self, X: pd.DataFrame | np.ndarray[Any, Any], y: Any = None) -> "FeaturePipeline":
+    def fit(self, x: pd.DataFrame | np.ndarray[Any, Any], y: Any = None) -> "FeaturePipeline":
         """
         Fit the pipeline components (e.g., scalers) on historical data.
 
@@ -61,7 +61,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
             X: Input DataFrame with 'close', 'high', 'low', 'volume' columns.
         """
         # 1. Generate features temporarily to fit scaler
-        features = self._generate_features(X)
+        features = self._generate_features(x)
 
         # 2. Fit Scaler
         if self.scaler_type == "standard":
@@ -137,11 +137,11 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X: pd.DataFrame | np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:  # noqa: N803
+    def transform(self, x: pd.DataFrame | np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         """
         Transform new data into model inputs.
         """
-        features = self._generate_features(X)
+        features = self._generate_features(x)
 
         # Handle recent NaNs (fill with 0 or forward fill)
         # For production inference, we usually have a buffer history.
@@ -163,22 +163,22 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
 
     def _generate_features(
         self,
-        X: pd.DataFrame | np.ndarray[Any, Any],  # noqa: N803
+        x: pd.DataFrame | np.ndarray[Any, Any],
     ) -> pd.DataFrame:
         """
         Internal method to generate raw features using GPU acceleration.
         """
         # Ensure DataFrame
-        if isinstance(X, np.ndarray):
+        if isinstance(x, np.ndarray):
             # Assume single column 'close' if 1D, else specific order
-            if X.ndim == 1:
-                df = pd.DataFrame({"close": X})
+            if x.ndim == 1:
+                df = pd.DataFrame({"close": x})
             else:
                 # Minimal expected columns
                 cols = ["close", "volume", "high", "low", "open"]
-                df = pd.DataFrame(X, columns=cols[: X.shape[1]])
+                df = pd.DataFrame(x, columns=cols[: x.shape[1]])
         else:
-            df = X.copy()
+            df = x.copy()
 
         # Initialize GPU Engineer on demand (to avoid serialization issues)
         if self.gpu_engineer is None:
