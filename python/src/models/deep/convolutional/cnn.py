@@ -6,6 +6,7 @@ Inspired by "S&P 500 Stock's Movement Prediction using CNN".
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
+from typing import Optional
 
 
 class RollingWindowCNN(nn.Module):
@@ -16,8 +17,13 @@ class RollingWindowCNN(nn.Module):
     """
 
     def __init__(
-        self, input_dim, output_dim, seq_len=30, hidden_dim=64, output_type="prediction"
-    ):
+        self,
+        input_dim: int,
+        output_dim: int,
+        seq_len: int = 30,
+        hidden_dim: int = 64,
+        output_type: str = "prediction",
+    ) -> None:
         """
         Initialize the CNN.
 
@@ -65,7 +71,7 @@ class RollingWindowCNN(nn.Module):
         self.fc1 = nn.Linear(flat_dim, hidden_dim)
         self.fc2 = nn.Linear(hidden_dim, output_dim)
 
-    def forward(self, x, return_embedding=None):
+    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None) -> torch.Tensor:
         """
         Forward pass.
         x: (Batch, Seq_Len, Features)

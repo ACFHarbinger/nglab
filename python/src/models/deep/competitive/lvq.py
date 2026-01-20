@@ -6,6 +6,7 @@ This module implements the LVQ algorithm, a prototype-based classification model
 
 import torch
 from torch import nn
+from typing import Any, List, Optional, Union
 
 
 class LVQ(nn.Module):
@@ -18,11 +19,11 @@ class LVQ(nn.Module):
 
     def __init__(
         self,
-        input_dim,
-        num_classes,
-        prototypes_per_class=1,
-        output_type="prediction",
-    ):
+        input_dim: int,
+        num_classes: int,
+        prototypes_per_class: int = 1,
+        output_type: str = "prediction",
+    ) -> None:
         """
         Initialize the LVQ model.
 
@@ -50,7 +51,7 @@ class LVQ(nn.Module):
             torch.arange(num_classes).repeat_interleave(prototypes_per_class),
         )
 
-    def forward(self, x, return_embedding=False):
+    def forward(self, x: torch.Tensor, return_embedding: bool = False) -> torch.Tensor:
         """
         Forward pass finds the nearest prototype.
         In inference, this performs classification.
@@ -90,15 +91,15 @@ class LVQ(nn.Module):
             else:
                 class_logits.append(torch.full((x.shape[0],), -1e9, device=device))
 
-        class_logits = torch.stack(class_logits, dim=1)
+        class_logits_tensor = torch.stack(class_logits, dim=1)
 
         # For prediction, we return indices
         if self.output_type == "prediction":
-            return torch.argmax(class_logits, dim=1, keepdim=True).float()
+            return torch.argmax(class_logits_tensor, dim=1, keepdim=True).float()
 
-        return class_logits
+        return class_logits_tensor
 
-    def training_step(self, x, y):
+    def training_step(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         """
         LVQ specific training step (LVQ1 rule).
         This updates prototypes manually as LVQ is non-gradient based primarily.

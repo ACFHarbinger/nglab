@@ -8,8 +8,7 @@ for parallel hyperparameter optimization where evaluation times vary.
 """
 
 import numpy as np
-import numpy as np
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union, cast
 from numpy.typing import NDArray
 
 from .de import DifferentialEvolution
@@ -142,7 +141,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
         If alt_pop is None or a list/array of None, sample from own population
         Else sample from the specified alternate population
         """
-        population: Optional[np.ndarray] = None
+        population: Optional[np.ndarray[Any, Any]] = None
         if isinstance(alt_pop, list) or isinstance(alt_pop, np.ndarray):
             idx = [
                 indv is None for indv in alt_pop
@@ -177,31 +176,30 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
             population = np.concatenate((population, new_pop))
 
         selection = self.rng.choice(np.arange(len(population)), size, replace=False)
-        return population[selection]
+        return cast(np.ndarray[Any, Any], population[selection])
 
-    def eval_pop(self, population: Optional[Union[List[Any], np.ndarray]] = None, population_ids: Optional[Union[List[Any], np.ndarray]] = None, fidelity: Optional[float] = None, **kwargs: Any) -> Tuple[List[Any], List[Any], List[Any], np.ndarray, np.ndarray]:
+    def eval_pop(self, population: Optional[np.ndarray[Any, Any]] = None, population_ids: Optional[np.ndarray[Any, Any]] = None, fidelity: Optional[float] = None, **kwargs: Any) -> Tuple[List[float], List[float], List[Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
         """Evaluate a population and return fitness, runtime, and history."""
         pop = self.population if population is None else population
         pop_ids = self.population_ids if population_ids is None else population_ids
-        
+
         if pop is None:
             raise ValueError("Population is not initialized")
         if pop_ids is None:
             raise ValueError("Population IDs are not initialized")
-            
+
+        assert self.pop_size is not None
         pop_size = self.pop_size if population is None else len(pop)
-        if pop_size is None:
-             pop_size = len(pop)
-             
-        traj = []
-        runtime = []
-        history = []
-        fitnesses = []
-        costs = []
-        ages = []
+
+        traj: List[float] = []
+        runtime: List[float] = []
+        history: List[Any] = []
+        fitnesses: List[float] = []
+        costs: List[float] = []
+        ages: List[float] = []
         for i in range(pop_size):
             res = self.f_objective(pop[i], fidelity, **kwargs)
-            fitness, cost = res["fitness"], res["cost"]
+            fitness, cost = float(res["fitness"]), float(res["cost"])
             info = res["info"] if "info" in res else dict()
             if population is None:
                 assert self.fitness is not None
@@ -213,74 +211,96 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
             self.config_repository.tell_result(
                 int(pop_ids[i]), float(fidelity or 0), fitness, cost, info
             )
-            traj.append(self.inc_score)
+            traj.append(float(self.inc_score))
             runtime.append(cost)
             history.append(
-                (pop[i].tolist(), float(fitness), float(fidelity or 0), info)
+                (pop[i].tolist(), fitness, float(fidelity or 0), info)
             )
             fitnesses.append(fitness)
             costs.append(cost)
-            ages.append(self.max_age)
+            assert self.max_age is not None
+            ages.append(float(self.max_age))
         return traj, runtime, history, np.array(fitnesses), np.array(ages)
 
-    def mutation(self, current: Optional[np.ndarray[Any, Any]] = None, best: Optional[np.ndarray[Any, Any]] = None, alt_pop: Optional[Union[List[Any], np.ndarray[Any, Any]]] = None) -> np.ndarray[Any, Any]:
+    def mutation(
+        self,
+        current: Optional[np.ndarray[Any, Any]] = None,
+        best: Optional[np.ndarray[Any, Any]] = None,
+        alt_pop: Optional[Union[List[Any], np.ndarray[Any, Any]]] = None,
+    ) -> np.ndarray[Any, Any]:
         """Performs DE mutation"""
         if self.mutation_strategy == "rand1":
-            r1, r2, r3 = self._sample_population(
-                size=3, alt_pop=alt_pop, target=current
-            )
+            selection = self._sample_population(size=3, alt_pop=alt_pop, target=current)
+            r1, r2, r3 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1]), cast(np.ndarray[Any, Any], selection[2])
             mutant = self.mutation_rand1(r1, r2, r3)
 
         elif self.mutation_strategy == "rand2":
-            r1, r2, r3, r4, r5 = self._sample_population(
-                size=5, alt_pop=alt_pop, target=current
+            selection = self._sample_population(size=5, alt_pop=alt_pop, target=current)
+            r1, r2, r3, r4, r5 = (
+                cast(np.ndarray[Any, Any], selection[0]),
+                cast(np.ndarray[Any, Any], selection[1]),
+                cast(np.ndarray[Any, Any], selection[2]),
+                cast(np.ndarray[Any, Any], selection[3]),
+                cast(np.ndarray[Any, Any], selection[4]),
             )
             mutant = self.mutation_rand2(r1, r2, r3, r4, r5)
 
         elif self.mutation_strategy == "rand2dir":
-            r1, r2, r3 = self._sample_population(
-                size=3, alt_pop=alt_pop, target=current
-            )
+            selection = self._sample_population(size=3, alt_pop=alt_pop, target=current)
+            r1, r2, r3 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1]), cast(np.ndarray[Any, Any], selection[2])
             mutant = self.mutation_rand2dir(r1, r2, r3)
 
         elif self.mutation_strategy == "best1":
-            r1, r2 = self._sample_population(size=2, alt_pop=alt_pop, target=current)
+            selection = self._sample_population(size=2, alt_pop=alt_pop, target=current)
+            r1, r2 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1])
             if best is None:
-                assert self.fitness is not None and self.population is not None
+                assert self.population is not None
+                assert self.fitness is not None
                 best = self.population[np.argmin(self.fitness)]
+            assert best is not None
             mutant = self.mutation_rand1(best, r1, r2)
 
         elif self.mutation_strategy == "best2":
-            r1, r2, r3, r4 = self._sample_population(
-                size=4, alt_pop=alt_pop, target=current
+            selection = self._sample_population(size=4, alt_pop=alt_pop, target=current)
+            r1, r2, r3, r4 = (
+                cast(np.ndarray[Any, Any], selection[0]),
+                cast(np.ndarray[Any, Any], selection[1]),
+                cast(np.ndarray[Any, Any], selection[2]),
+                cast(np.ndarray[Any, Any], selection[3]),
             )
             if best is None:
-                assert self.fitness is not None and self.population is not None
+                assert self.population is not None
+                assert self.fitness is not None
                 best = self.population[np.argmin(self.fitness)]
+            assert best is not None
             mutant = self.mutation_rand2(best, r1, r2, r3, r4)
 
         elif self.mutation_strategy == "currenttobest1":
-            r1, r2 = self._sample_population(size=2, alt_pop=alt_pop, target=current)
+            selection = self._sample_population(size=2, alt_pop=alt_pop, target=current)
+            r1, r2 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1])
             if best is None:
-                assert self.fitness is not None and self.population is not None
+                assert self.population is not None
+                assert self.fitness is not None
                 best = self.population[np.argmin(self.fitness)]
+            assert current is not None
+            assert best is not None
             mutant = self.mutation_currenttobest1(current, best, r1, r2)
 
         elif self.mutation_strategy == "randtobest1":
-            r1, r2, r3 = self._sample_population(
-                size=3, alt_pop=alt_pop, target=current
-            )
+            selection = self._sample_population(size=3, alt_pop=alt_pop, target=current)
+            r1, r2, r3 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1]), cast(np.ndarray[Any, Any], selection[2])
             if best is None:
-                assert self.fitness is not None and self.population is not None
+                assert self.population is not None
+                assert self.fitness is not None
                 best = self.population[np.argmin(self.fitness)]
+            assert best is not None
             mutant = self.mutation_currenttobest1(r1, best, r2, r3)
-        
         else:
-             raise ValueError(f"Unknown mutation strategy: {self.mutation_strategy}")
+            raise ValueError(f"Unknown mutation strategy: {self.mutation_strategy}")
 
         return mutant
 
-    def sample_mutants(self, size: int, population: Optional[Union[List[Any], np.ndarray]] = None) -> np.ndarray:
+    def sample_mutants(self, size: int, population: Optional[Union[List[Any], np.ndarray[Any, Any]]] = None) -> np.ndarray[Any, Any]:
         """Samples 'size' mutants from the population"""
         if population is None:
             population = self.population
@@ -288,13 +308,13 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
         if population is None:
             raise ValueError("Population is not initialized")
 
-        if self.dimensions is None:
-             raise ValueError("Dimensions not set")
+        assert self.dimensions is not None
         mutants = self.rng.uniform(low=0.0, high=1.0, size=(size, self.dimensions))
         for i in range(size):
-            j = self.rng.choice(np.arange(len(population)))
+            j = int(self.rng.choice(np.arange(len(population))))
+            current = population[j]
             mutant = self.mutation(
-                current=population[j], best=self.inc_config, alt_pop=population
+                current=current, best=self.inc_config, alt_pop=population
             )
             mutants[i] = self.boundary_check(mutant)
 
@@ -302,9 +322,9 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
 
     def evolve_generation(self, fidelity: Optional[float] = None, best: Optional[np.ndarray[Any, Any]] = None, alt_pop: Optional[Union[List[Any], np.ndarray[Any, Any]]] = None, **kwargs: Any) -> Tuple[List[Any], List[Any], List[Any]]:
         """Performs a complete DE evolution, mutation -> crossover -> selection"""
-        traj = []
-        runtime = []
-        history = []
+        traj: List[Any] = []
+        runtime: List[Any] = []
+        history: List[Any] = []
 
         if self.pop_size is None:
              raise ValueError("Population size must be set before evolution")
@@ -325,11 +345,11 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
                 )
                 trials.append(trial)
                 trial_ids.append(trial_id)
-            # selection takes place on a separate trial population only after
             # one iteration through the population has taken place
             trials_arr = np.array(trials)
+            trial_ids_arr = np.array(trial_ids)
             traj, runtime, history = self.selection(
-                trials_arr, trial_ids, fidelity, **kwargs
+                trials_arr, trial_ids_arr, fidelity, **kwargs
             )
             return traj, runtime, history
 
@@ -395,7 +415,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
 
         return traj, runtime, history
 
-    def run(self, generations=1, verbose=False, fidelity=None, reset=True, **kwargs):
+    def run(self, generations: int = 1, verbose: bool = False, fidelity: Optional[float] = None, reset: bool = True, **kwargs: Any) -> Tuple[np.ndarray[Any, Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
         """Run asynchronous DE for the specified generations."""
         # checking if a run exists
         if not hasattr(self, "traj") or reset:

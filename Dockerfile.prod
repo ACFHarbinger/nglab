@@ -1,51 +1,46 @@
 # =============================================================================
 # NGLab Production Dockerfile
-# Multi-stage build for optimized production image
+# Optimized for GitHub Actions / Low Disk Space Environments
 # =============================================================================
 
 ARG PYTHON_VERSION=3.11
 ARG RUST_VERSION=1.83
 
 # =============================================================================
-# Stage 1: Build Stage (Combined Rust & Python Build)
+# Stage 1: Builder
 # =============================================================================
 FROM python:${PYTHON_VERSION}-slim-bookworm AS builder
 
 WORKDIR /app
 
-# 1. Install system build dependencies and Rust toolchain
-# We consolidate this to ensure the builder layer remains as small as possible
+# 1. Install build tools, Rust, and GUI headers (required for workspace compilation)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     pkg-config \
     libssl-dev \
+    libglib2.0-dev \
+    libgtk-3-dev \
+    libwebkit2gtk-4.1-dev \
     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     && rm -rf /var/lib/apt/lists/*
 
-# Add cargo to the path for the build session
 ENV PATH="/root/.cargo/bin:${PATH}"
 ENV CARGO_INCREMENTAL=0
 ENV RUSTFLAGS="-C target-cpu=native -C opt-level=3"
 
-# 2. Install uv
+# 2. Build the application
 RUN pip install --no-cache-dir uv
-
-# 3. Copy source code
 COPY pyproject.toml uv.lock README.md ./
 COPY rust/ ./rust/
 COPY nglab/ ./nglab/
 
-# 4. Build and install the package
-# OPTIMIZATION: We explicitly point to the CPU index. 
-# We also manually remove nvidia-* dependencies that some ML libs pull in by default
-# to prevent the "No Space Left on Device" error during the COPY phase.
+# 3. Aggressive Space Optimization
 RUN uv pip install --system --no-cache \
     --index-url https://download.pytorch.org/whl/cpu \
     --extra-index-url https://pypi.org/simple \
     . \
     && find /usr/local/lib/python3.11/site-packages -name "nvidia*" -type d -exec rm -rf {} + \
-    && find /usr/local/lib/python3.11/site-packages -name "libcu*" -exec rm -rf {} + \
     && rm -rf /root/.cargo /root/.rustup /tmp/*
 
 # =============================================================================
@@ -53,52 +48,37 @@ RUN uv pip install --system --no-cache \
 # =============================================================================
 FROM python:${PYTHON_VERSION}-slim-bookworm AS runtime
 
-ARG NGLAB_VERSION=0.1.0
-ENV VERSION=${NGLAB_VERSION}
-
-LABEL org.opencontainers.image.version=${NGLAB_VERSION}
-LABEL org.opencontainers.image.description="Nothing Gambles Like A Bot (NGLAB) Production Image"
-
-# Create non-privileged user
 RUN groupadd --gid 1000 nglab && \
     useradd --uid 1000 --gid nglab --shell /bin/bash --create-home nglab
 
 WORKDIR /app
 
-# 5. Install ONLY essential runtime libraries
+# Final image ONLY needs shared libraries, not dev headers
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl3 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libwebkit2gtk-4.1-0 \
     libgomp1 \
     curl \
     tini \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && rm -rf /var/lib/apt/lists/* && apt-get clean
 
-# 6. Copy the compiled Python site-packages from the builder stage
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# 7. Copy application logic and configurations
 COPY --chown=nglab:nglab python/src ./src
 COPY --chown=nglab:nglab python/conf ./conf
 
-# Setup directory permissions
 RUN mkdir -p /app/logs /app/models /app/.cache /tmp/prometheus && \
     chown -R nglab:nglab /app /tmp/prometheus
 
-# Environment variables
-ENV PYTHONPATH=/app/src
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV NGLAB_ENV=production
-ENV PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+ENV PYTHONPATH=/app/src \
+    PYTHONUNBUFFERED=1 \
+    NGLAB_ENV=production \
+    PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus
 
 USER nglab
 EXPOSE 8000
-
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-m", "api.main"]

@@ -7,7 +7,9 @@ and training hyperparameters across different pipeline tasks.
 
 import os
 from pathlib import Path
-from typing import Any
+import numpy as np
+import ConfigSpace as CS
+from typing import Any, Dict, Union, cast
 
 import optuna
 import pytorch_lightning as pl
@@ -130,13 +132,21 @@ def run_dehb_search(
         f"Starting DEHB Search. Budget: {fevals} evals, Fidelity: [{min_fidelity}, {max_fidelity}]."
     )
 
-    def dehb_objective(config, fidelity, **kwargs):
+    def dehb_objective(
+        config: Union[np.ndarray[Any, Any], CS.Configuration],
+        fidelity: float,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
         # Update opts with config
-        score = optimize_model(config, opts, fidelity=fidelity)
+        score = optimize_model(
+            cast(dict[str, Any], config if isinstance(config, dict) else dict(config)),
+            opts,
+            fidelity=float(fidelity),
+        )
         return {
             "fitness": score,
-            "cost": fidelity,  # Use fidelity as cost proxy
-            "info": {"fidelity": fidelity},
+            "cost": float(fidelity),  # Use fidelity as cost proxy
+            "info": {"fidelity": float(fidelity)},
         }
 
     # Initialize DEHB

@@ -16,7 +16,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # We will define the lowercase IMAGE_NAME dynamically in the jobs
 
 jobs:
   # ==========================================================================
@@ -31,6 +31,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # CRITICAL: Convert repository name to lowercase to satisfy Docker requirements
+      - name: Prepare Image Name
+        id: prep
+        run: |
+          echo "image_name=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Free Disk Space
         run: |
@@ -55,7 +61,7 @@ jobs:
           file: Dockerfile.prod
           platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-amd64
+          tags: ${{ env.REGISTRY }}/${{ steps.prep.outputs.image_name }}:latest-amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -68,6 +74,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # CRITICAL: Convert repository name to lowercase
+      - name: Prepare Image Name
+        id: prep
+        run: |
+          echo "image_name=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Free Disk Space
         run: |
@@ -95,7 +107,7 @@ jobs:
           file: Dockerfile.prod
           platforms: linux/arm64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-arm64
+          tags: ${{ env.REGISTRY }}/${{ steps.prep.outputs.image_name }}:latest-arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -107,6 +119,12 @@ jobs:
     permissions:
       packages: write
     steps:
+      # CRITICAL: Convert repository name to lowercase
+      - name: Prepare Image Name
+        id: prep
+        run: |
+          echo "image_name=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -116,9 +134,9 @@ jobs:
 
       - name: Create manifest
         run: |
-          docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-amd64 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-arm64
+          docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ steps.prep.outputs.image_name }}:latest \
+            ${{ env.REGISTRY }}/${{ steps.prep.outputs.image_name }}:latest-amd64 \
+            ${{ env.REGISTRY }}/${{ steps.prep.outputs.image_name }}:latest-arm64
 
   deploy-production:
     name: Deploy to Production
@@ -135,8 +153,11 @@ jobs:
           echo "${{ secrets.KUBECONFIG_PROD }}" > ~/.kube/config
       - name: Deploy with Helm
         run: |
+          # Ensure we use lowercase here as well
+          IMAGE_NAME_LC=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
           helm upgrade --install nglab-prod ./deploy/helm/nglab \
             --namespace nglab-prod --create-namespace \
+            --set image.repository=${{ env.REGISTRY }}/$IMAGE_NAME_LC \
             --set image.tag=latest \
             --values ./deploy/helm/nglab/values.yaml \
             --wait --timeout=10m

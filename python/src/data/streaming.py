@@ -18,7 +18,7 @@ from torch.utils.data import IterableDataset, get_worker_info
 logger = logging.getLogger(__name__)
 
 
-class StreamingFinancialDataset(IterableDataset):
+class StreamingFinancialDataset(IterableDataset[dict[str, Any]]):
     """
     Iterable Dataset for streaming large financial datasets from CSV/Parquet files.
 
@@ -37,8 +37,8 @@ class StreamingFinancialDataset(IterableDataset):
         shuffle_buffer_size: int = 0,
         transform: Any | None = None,
         file_format: str = "csv",
-        **reader_kwargs,
-    ):
+        **reader_kwargs: Any,
+    ) -> None:
         """
         Initialize StreamingFinancialDataset.
 
@@ -97,7 +97,7 @@ class StreamingFinancialDataset(IterableDataset):
         # If we have a huge shuffle buffer, we would add to buffer here.
         # For simplicity, we iterate rows.
         for _, row in chunk.iterrows():
-            item = row.to_dict()  # Or convert to Tensor directly if faster
+            item = cast(dict[str, Any], row.to_dict())  # Or convert to Tensor directly if faster
             # Simple numeric conversion could happen here
             if self.transform:
                 item = self.transform(item)
@@ -133,14 +133,14 @@ class StreamingFinancialDataset(IterableDataset):
         # Shuffle buffer state
         buffer: list[dict[str, Any]] = []
 
-        def iterator_logic():
+        def iterator_logic() -> Iterator[dict[str, Any]]:
             dataset_iter = self._get_iterator()
 
             for chunk in dataset_iter:
                 # Naive shuffling: Accumulate a buffer
                 if self.shuffle_buffer_size > 0:
                     for _, row in chunk.iterrows():
-                        item = row.to_dict()
+                        item = cast(dict[str, Any], row.to_dict())
                         if self.transform:
                             item = self.transform(item)
 

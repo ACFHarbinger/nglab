@@ -12,6 +12,7 @@ from typing import Any
 
 import torch
 from torch.utils.data import DataLoader, Dataset
+from typing import Any, Dict, List, Optional, Union
 
 
 class CUDAPrefetcher:
@@ -30,10 +31,10 @@ class CUDAPrefetcher:
 
     def __init__(
         self,
-        dataloader: DataLoader,
+        dataloader: Union[DataLoader[Any], "_IteratorWrapper"],
         device: torch.device | str = "cuda",
         prefetch_count: int = 2,
-    ):
+    ) -> None:
         """
         Initialize the CUDA prefetcher.
 
@@ -49,10 +50,10 @@ class CUDAPrefetcher:
         # Create CUDA stream for async transfer
         self.stream = torch.cuda.Stream(device=self.device)
 
-        self._iterator: Iterator | None = None
-        self._prefetched: list = []
+        self._iterator: Iterator[Any] | None = None
+        self._prefetched: List[Any] = []
 
-    def __iter__(self):
+    def __iter__(self) -> "CUDAPrefetcher":
         """Initialize iterator and start prefetching."""
         self._iterator = iter(self.dataloader)
         self._prefetched = []
@@ -63,7 +64,7 @@ class CUDAPrefetcher:
 
         return self
 
-    def __next__(self):
+    def __next__(self) -> Any:
         """Get next batch from prefetch queue."""
         if not self._prefetched:
             raise StopIteration
@@ -77,7 +78,7 @@ class CUDAPrefetcher:
 
         return batch
 
-    def _prefetch_next(self):
+    def _prefetch_next(self) -> None:
         """Prefetch next batch to GPU asynchronously."""
         if self._iterator is None:
             return
@@ -102,7 +103,7 @@ class CUDAPrefetcher:
             return type(data)(self._to_device(v) for v in data)
         return data
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return length of underlying dataloader."""
         return len(self.dataloader)
 
@@ -124,10 +125,10 @@ class BackgroundPrefetcher:
 
     def __init__(
         self,
-        dataloader: DataLoader,
+        dataloader: DataLoader[Any],
         prefetch_count: int = 4,
         timeout: float = 60.0,
-    ):
+    ) -> None:
         """
         Initialize the background prefetcher.
 
@@ -140,12 +141,12 @@ class BackgroundPrefetcher:
         self.prefetch_count = prefetch_count
         self.timeout = timeout
 
-        self._queue: queue.Queue = queue.Queue(maxsize=prefetch_count)
+        self._queue: queue.Queue[Any] = queue.Queue(maxsize=prefetch_count)
         self._thread: threading.Thread | None = None
         self._stop_event = threading.Event()
         self._exception: Exception | None = None
 
-    def __iter__(self):
+    def __iter__(self) -> "BackgroundPrefetcher":
         """Start background thread and return iterator."""
         self._stop_event.clear()
         self._exception = None
@@ -156,7 +157,7 @@ class BackgroundPrefetcher:
 
         return self
 
-    def __next__(self):
+    def __next__(self) -> Any:
         """Get next batch from prefetch queue."""
         # Check for exceptions from background thread
         if self._exception is not None:
@@ -176,7 +177,7 @@ class BackgroundPrefetcher:
 
         return item
 
-    def _prefetch_worker(self):
+    def _prefetch_worker(self) -> None:
         """Background worker that loads batches into the queue."""
         try:
             for batch in self.dataloader:
@@ -190,18 +191,18 @@ class BackgroundPrefetcher:
             self._exception = e
             self._queue.put(StopIteration)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return length of underlying dataloader."""
         return len(self.dataloader)
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Cleanup background thread."""
         self._stop_event.set()
         if self._thread is not None and self._thread.is_alive():
             self._thread.join(timeout=1.0)
 
 
-class PrefetchDataLoader(DataLoader):
+class PrefetchDataLoader(DataLoader[Any]):
     """
     DataLoader with built-in CUDA prefetching.
 
@@ -223,7 +224,7 @@ class PrefetchDataLoader(DataLoader):
 
     def __init__(  # noqa: PLR0913
         self,
-        dataset: Dataset,
+        dataset: Dataset[Any],
         batch_size: int = 1,
         shuffle: bool = False,
         num_workers: int = 0,
@@ -231,8 +232,8 @@ class PrefetchDataLoader(DataLoader):
         device: str | None = None,
         prefetch_factor: int = 2,
         persistent_workers: bool = True,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize the prefetching DataLoader.
 
@@ -268,7 +269,7 @@ class PrefetchDataLoader(DataLoader):
         self.device = torch.device(device) if device else None
         self._prefetcher: CUDAPrefetcher | None = None
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:  # type: ignore[override]
         """Return iterator with optional CUDA prefetching."""
         if self.device is not None and self.device.type == "cuda":
             # Use CUDA prefetcher
@@ -285,26 +286,26 @@ class PrefetchDataLoader(DataLoader):
 class _IteratorWrapper:
     """Wrapper to make an iterator look like a DataLoader for CUDAPrefetcher."""
 
-    def __init__(self, iterator: Iterator, length: int):
+    def __init__(self, iterator: Iterator[Any], length: int) -> None:
         self._iterator = iterator
         self._length = length
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         return self._iterator
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self._length
 
 
 def create_optimized_dataloader(  # noqa: PLR0913
-    dataset: Dataset,
+    dataset: Dataset[Any],
     batch_size: int = 32,
     num_workers: int | None = None,
     device: str = "cuda",
     shuffle: bool = True,
     drop_last: bool = True,
-    **kwargs,
-) -> DataLoader:
+    **kwargs: Any,
+) -> DataLoader[Any]:
     """
     Create an optimized DataLoader with best practices for GPU training.
 
@@ -352,10 +353,10 @@ def create_optimized_dataloader(  # noqa: PLR0913
 
 
 def benchmark_dataloader(
-    dataloader: DataLoader,
+    dataloader: DataLoader[Any],
     num_batches: int = 100,
     warmup_batches: int = 10,
-) -> dict:
+) -> Dict[str, Any]:
     """
     Benchmark DataLoader throughput.
 

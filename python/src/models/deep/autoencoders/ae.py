@@ -2,7 +2,9 @@
 AutoEncoder (AE) implementation.
 """
 
+import torch
 from torch import nn
+from typing import Any, List, Optional
 
 
 class AutoEncoder(nn.Module):
@@ -10,13 +12,13 @@ class AutoEncoder(nn.Module):
     Standard AutoEncoder (AE).
     """
 
-    def __init__(self, input_dim, hidden_dims, latent_dim, output_type="prediction"):
+    def __init__(self, input_dim: int, hidden_dims: List[int], latent_dim: int, output_type: str = "prediction") -> None:
         """Initialize AutoEncoder."""
         super().__init__()
         self.output_type = output_type
 
         # Encoder
-        encoder_layers = []
+        encoder_layers: List[nn.Module] = []
         last_dim = input_dim
         for h_dim in hidden_dims:
             encoder_layers.append(nn.Linear(last_dim, h_dim))
@@ -26,7 +28,7 @@ class AutoEncoder(nn.Module):
         self.encoder = nn.Sequential(*encoder_layers)
 
         # Decoder
-        decoder_layers = []
+        decoder_layers: List[nn.Module] = []
         last_dim = latent_dim
         for h_dim in reversed(hidden_dims):
             decoder_layers.append(nn.Linear(last_dim, h_dim))
@@ -35,15 +37,15 @@ class AutoEncoder(nn.Module):
         decoder_layers.append(nn.Linear(last_dim, input_dim))
         self.decoder = nn.Sequential(*decoder_layers)
 
-    def encode(self, x):
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
         """Encode input to latent space."""
         return self.encoder(x)
 
-    def decode(self, z):
+    def decode(self, z: torch.Tensor) -> torch.Tensor:
         """Decode latent vector to input space."""
         return self.decoder(z)
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
         """Forward pass."""
         # Handle sequence
         if x.dim() == 3:

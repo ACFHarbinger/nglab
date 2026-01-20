@@ -51,23 +51,23 @@ class DifferentialEvolutionHyperbandBase:
 
     def __init__(  # noqa: PLR0913
         self,
-        cs=None,
-        f=None,
-        dimensions=None,
-        mutation_factor=None,
-        crossover_prob=None,
-        strategy=None,
-        min_fidelity=None,
-        max_fidelity=None,
-        eta=None,
-        min_clip=None,
-        max_clip=None,
-        seed=None,
-        boundary_fix_type="random",
-        max_age=np.inf,
-        resume=False,
-        **kwargs,
-    ):
+        cs: CS.ConfigurationSpace | None = None,
+        f: Any | None = None,
+        dimensions: int | None = None,
+        mutation_factor: float | None = None,
+        crossover_prob: float | None = None,
+        strategy: str | None = None,
+        min_fidelity: float | None = None,
+        max_fidelity: float | None = None,
+        eta: float | None = None,
+        min_clip: int | None = None,
+        max_clip: int | None = None,
+        seed: int | np.random.Generator | None = None,
+        boundary_fix_type: str = "random",
+        max_age: float = np.inf,
+        resume: bool = False,
+        **kwargs: Any,
+    ) -> None:
         """Initialize the DEHB base optimizer state and configuration."""
         # Check for deprecated parameters
         if "max_budget" in kwargs or "min_budget" in kwargs:
@@ -127,7 +127,7 @@ class DifferentialEvolutionHyperbandBase:
         # Hyperband related variables
         self.min_fidelity = min_fidelity
         self.max_fidelity = max_fidelity
-        if self.max_fidelity is None or self.max_fidelity <= self.min_fidelity:
+        if self.max_fidelity is None or self.min_fidelity is None or self.max_fidelity <= self.min_fidelity:
             self.logger.error(
                 "Only (Max Fidelity > Min Fidelity) is supported for DEHB."
             )
@@ -149,15 +149,15 @@ class DifferentialEvolutionHyperbandBase:
         self.de_params.update({"output_path": self.output_path})
 
         # Global trackers
-        self.population = None
-        self.fitness = None
+        self.population: np.ndarray[Any, Any] | None = None
+        self.fitness: np.ndarray[Any, Any] | None = None
         self.inc_score = np.inf
-        self.inc_config = None
-        self.history = []
+        self.inc_config: np.ndarray[Any, Any] | None = None
+        self.history: list[Any] = []
 
-    def _setup_logger(self, resume, kwargs):
+    def _setup_logger(self, resume: bool, kwargs: dict[str, Any]) -> None:
         """Sets up the logger."""
-        log_level = kwargs["log_level"] if "log_level" in kwargs else "WARNING"
+        log_level: str = kwargs["log_level"] if "log_level" in kwargs else "WARNING"
         _logger_props["level"] = log_level
         logger.configure(handlers=[{"sink": sys.stdout, "level": log_level}])
         self.output_path = (
@@ -170,18 +170,22 @@ class DifferentialEvolutionHyperbandBase:
         self.log_filename = f"{self.output_path}/dehb.log"
         self.logger.add(
             self.log_filename,
-            **_logger_props,
+            format=str(_logger_props["format"]),
+            level=str(_logger_props["level"]),
+            mode=str(_logger_props.get("mode", "w")),
         )
 
-    def _pre_compute_fidelity_spacing(self):
+    def _pre_compute_fidelity_spacing(self) -> None:
         """Precompute fidelity levels and bracket sizes for Hyperband."""
         self.max_SH_iter = 0
-        self.fidelities = []
+        self.fidelities: list[float] | np.ndarray[Any, Any] = []
+        self.ns: list[int] | np.ndarray[Any, Any] = []
+        self.rungs: list[float] | np.ndarray[Any, Any] = []
         if (
             self.min_fidelity is not None
             and self.max_fidelity is not None
             and self.eta is not None
-            and self.eta > 0
+            and self.eta > 1
         ):
             self.max_SH_iter = (
                 -int(np.log(self.min_fidelity / self.max_fidelity) / np.log(self.eta))
@@ -191,8 +195,17 @@ class DifferentialEvolutionHyperbandBase:
                 self.eta,
                 -np.linspace(start=self.max_SH_iter - 1, stop=0, num=self.max_SH_iter),
             )
+            self.ns = np.array(
+                [
+                    max(int((self.max_SH_iter / (s + 1)) * self.eta**s), 1)
+                    for s in range(self.max_SH_iter)
+                ]
+            )
+            self.rungs = -np.linspace(
+                start=self.max_SH_iter - 1, stop=0, num=self.max_SH_iter
+            )
 
-    def reset(self, *, reset_seeds: bool = True):
+    def reset(self, *, reset_seeds: bool = True) -> None:
         """Reset optimization state, trackers, and RNG."""
         self.inc_score = np.inf
         self.inc_config = None
@@ -207,7 +220,7 @@ class DifferentialEvolutionHyperbandBase:
             self.rng = np.random.default_rng(self._original_seed)
         self.logger.info("\n\nRESET at {}\n\n".format(time.strftime("%x %X %Z")))
 
-    def _init_population(self):
+    def _init_population(self) -> np.ndarray[Any, Any] | list[np.ndarray[Any, Any]]:
         """Initialize the DEHB population; implemented in subclasses."""
         raise NotImplementedError("Redefine!")
 
@@ -235,22 +248,23 @@ class DifferentialEvolutionHyperbandBase:
         # number of configurations in that bracket
         n0 = int(np.floor((self.max_SH_iter) / (s + 1)) * self.eta**s)
         ns = [max(int(n0 * (self.eta ** (-i))), 1) for i in range(s + 1)]
+        ns_arr: np.ndarray[Any, Any] = np.array(ns)
         if self.min_clip is not None and self.max_clip is not None:
-            ns = np.clip(ns, a_min=self.min_clip, a_max=self.max_clip)
+            ns_arr = np.clip(ns_arr, a_min=self.min_clip, a_max=self.max_clip)
         elif self.min_clip is not None:
-            ns = np.clip(ns, a_min=self.min_clip, a_max=np.max(ns))
+            ns_arr = np.clip(ns_arr, a_min=self.min_clip, a_max=np.max(ns_arr))
 
-        return np.array(ns), np.array(fidelities)
+        return ns_arr, np.array(fidelities)
 
-    def vector_to_configspace(self, vector: np.ndarray) -> CS.Configuration:
+    def vector_to_configspace(self, vector: np.ndarray[Any, Any]) -> CS.Configuration:
         """Converts vector to CS configuration; must be implemented in subclasses."""
         raise NotImplementedError("Redefine!")
 
-    def configspace_to_vector(self, config: CS.Configuration) -> np.ndarray:
+    def configspace_to_vector(self, config: CS.Configuration) -> np.ndarray[Any, Any]:
         """Converts CS configuration to vector; must be implemented in subclasses."""
         raise NotImplementedError("Redefine!")
 
-    def get_incumbents(self) -> tuple[dict | CS.Configuration | None, float]:
+    def get_incumbents(self) -> tuple[dict[str, Any] | CS.Configuration | np.ndarray[Any, Any] | None, float]:
         """Retrieve current incumbent configuration and score.
 
         Returns:
@@ -262,10 +276,10 @@ class DifferentialEvolutionHyperbandBase:
             return self.vector_to_configspace(self.inc_config), self.inc_score
         return self.inc_config, self.inc_score
 
-    def _f_objective(self):
+    def _f_objective(self, job_info: dict[str, Any]) -> dict[str, Any]:
         """Evaluate the objective; implemented in subclasses."""
         raise NotImplementedError("The function needs to be defined in the sub class.")
 
-    def run(self):
+    def run(self, **kwargs: Any) -> Any:
         """Run optimization; implemented in subclasses."""
         raise NotImplementedError("The function needs to be defined in the sub class.")

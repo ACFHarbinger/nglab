@@ -4,6 +4,7 @@ Capsule Network Layer.
 
 import torch
 from torch import nn
+from typing import Optional
 
 
 class CapsuleLayer(nn.Module):
@@ -11,7 +12,7 @@ class CapsuleLayer(nn.Module):
     Simplified Capsule Layer (CN).
     """
 
-    def __init__(self, in_caps, in_dim, out_caps, out_dim, output_type="embedding"):
+    def __init__(self, in_caps: int, in_dim: int, out_caps: int, out_dim: int, output_type: str = "embedding") -> None:
         """
         Initialize Capsule Layer.
         """
@@ -24,7 +25,7 @@ class CapsuleLayer(nn.Module):
 
         self.W = nn.Parameter(torch.randn(out_caps, in_caps, out_dim, in_dim) * 0.1)
 
-    def squash(self, x, dim=-1):
+    def squash(self, x: torch.Tensor, dim: int = -1) -> torch.Tensor:
         """
         Squash activation function.
         Scales vector length to [0, 1].
@@ -33,7 +34,7 @@ class CapsuleLayer(nn.Module):
         scale = norm_sq / (1 + norm_sq) / (torch.sqrt(norm_sq) + 1e-8)
         return scale * x
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
         """
         Forward pass.
         x: (Batch, Seq, In_Caps, In_Dim) or (Batch, In_Caps, In_Dim)
@@ -50,7 +51,7 @@ class CapsuleLayer(nn.Module):
             return res[:, -1, :, :]
         return res
 
-    def _process(self, x):
+    def _process(self, x: torch.Tensor) -> torch.Tensor:
         # x: (Batch, In_Caps, In_Dim)
         x = x.unsqueeze(1).unsqueeze(4)
         u_hat = torch.matmul(self.W, x)

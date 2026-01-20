@@ -4,6 +4,7 @@ Self-Organizing Map (SOM) implementation.
 
 import torch
 from torch import nn
+from typing import Optional, Tuple
 
 
 class KohonenMap(nn.Module):
@@ -11,7 +12,7 @@ class KohonenMap(nn.Module):
     Kohonen Self-Organizing Map (SOM).
     """
 
-    def __init__(self, input_dim, grid_size=(10, 10), output_type="embedding"):
+    def __init__(self, input_dim: int, grid_size: Tuple[int, int] = (10, 10), output_type: str = "embedding") -> None:
         """Initialize SOM."""
         super().__init__()
         self.input_dim = input_dim
@@ -21,7 +22,7 @@ class KohonenMap(nn.Module):
 
         self.weights = nn.Parameter(torch.rand(self.num_neurons, input_dim))
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
         """Forward pass - find BMU."""
         if x.dim() == 3:
             b, s, f = x.shape
@@ -39,7 +40,7 @@ class KohonenMap(nn.Module):
             return emb[:, -1, :]
         return emb
 
-    def _find_bmu(self, x):
+    def _find_bmu(self, x: torch.Tensor) -> torch.Tensor:
         diff = x.unsqueeze(1) - self.weights.unsqueeze(0)
         dist_sq = torch.sum(diff**2, dim=2)
         return torch.argmin(dist_sq, dim=1)

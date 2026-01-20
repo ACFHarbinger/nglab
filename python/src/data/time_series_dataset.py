@@ -11,7 +11,7 @@ import torch
 from torch.utils.data import Dataset
 
 
-class TimeSeriesDataset(Dataset):
+class TimeSeriesDataset(Dataset[dict[str, torch.Tensor]]):
     """
     Dataset for time series forecasting with sliding windows.
 
@@ -34,7 +34,7 @@ class TimeSeriesDataset(Dataset):
         train: bool = True,
         train_ratio: float = 0.8,
         normalize: Literal["minmax", "zscore"] | None = "minmax",
-        stats: dict | None = None,
+        stats: dict[str, float] | None = None,
     ):
         super().__init__()
         self.seq_len = seq_len
@@ -86,11 +86,11 @@ class TimeSeriesDataset(Dataset):
 
         self.data = torch.tensor(values, dtype=torch.float32)
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Number of sliding window samples."""
         return max(0, len(self.data) - self.seq_len - self.pred_len + 1)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> dict[str, torch.Tensor]:
         """
         Get a sample.
 
@@ -104,12 +104,12 @@ class TimeSeriesDataset(Dataset):
 
         return {"observation": x, "target": y}
 
-    def get_columns(self) -> list:
+    def get_columns(self) -> list[str]:
         """Return available column names from CSV (class method)."""
         return []  # Not implemented as instance method
 
     @staticmethod
-    def list_columns(csv_path: str) -> list:
+    def list_columns(csv_path: str) -> list[str]:
         """
         List available columns in a CSV file.
 

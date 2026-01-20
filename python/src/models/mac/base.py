@@ -7,6 +7,7 @@ from abc import ABC
 import numpy as np
 import torch
 from torch import nn
+from typing import Any, Mapping
 
 
 class ClassicalModel(nn.Module, ABC):
@@ -15,7 +16,7 @@ class ClassicalModel(nn.Module, ABC):
     Wraps scikit-learn/XGBoost/LightGBM models to be used within NGLab.
     """
 
-    def __init__(self, output_type="prediction"):
+    def __init__(self, output_type: str = "prediction") -> None:
         """
         Initialize the Classical Model base.
 
@@ -47,6 +48,7 @@ class ClassicalModel(nn.Module, ABC):
 
         # Handle sequence data (Batch, Seq, Feat) -> (Batch * Seq, Feat) or use last step
         is_seq = x_np.ndim == 3
+        b, s = 0, 0
         if is_seq:
             b, s, f = x_np.shape
             # For classical models, we often just want the last step or flattened
@@ -110,9 +112,10 @@ class ClassicalModel(nn.Module, ABC):
             sd["_classical_model"] = self.model
         return sd
 
-    def load_state_dict(self, state_dict, strict=True):
+    def load_state_dict(self, state_dict: Mapping[str, Any], strict: bool = True, assign: bool = False):
         """Override to load the classical model state."""
-        if "_classical_model" in state_dict:
-            self.model = state_dict.pop("_classical_model")
+        state_dict_copy = dict(state_dict)
+        if "_classical_model" in state_dict_copy:
+            self.model = state_dict_copy.pop("_classical_model")
             self._is_fitted = True
-        return super().load_state_dict(state_dict, strict)
+        return super().load_state_dict(state_dict_copy, strict=strict, assign=assign)

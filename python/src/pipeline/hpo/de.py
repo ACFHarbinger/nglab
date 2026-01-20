@@ -7,10 +7,11 @@ mutation and crossover strategies for global optimization of hyperparameters.
 
 import ConfigSpace as CS  # noqa: N817
 import numpy as np
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from distributed import Client
 
 from .de_base import DifferentialEvolutionBase
+from .dehb_config_repo import ConfigRepository
 
 
 # Adapted from https://github.com/automl/DEHB/blob/master/src/dehb/optimizers/de.py
@@ -38,21 +39,23 @@ class DifferentialEvolution(DifferentialEvolutionBase):
 
     def __init__(  # noqa: PLR0913
         self,
-        cs: Optional[Any] = None,
+        cs: Optional[CS.ConfigurationSpace] = None,
         f: Optional[Any] = None,
         dimensions: Optional[int] = None,
-        pop_size: int = 20,
-        max_age: float = np.inf,
+        pop_size: Optional[int] = None,
+        max_age: Optional[float] = None,
         mutation_factor: Optional[float] = None,
         crossover_prob: Optional[float] = None,
-        strategy: str = "rand1_bin",
+        strategy: Optional[str] = None,
         encoding: bool = False,
-        dim_map: Optional[Dict[str, Any]] = None,
+        dim_map: Optional[Dict[Any, Any]] = None,
         seed: Optional[Union[int, np.random.Generator]] = None,
-        config_repository: Optional[Any] = None,
+        config_repository: Optional[ConfigRepository] = None,
+        boundary_fix_type: str = "random",
         **kwargs: Any,
     ) -> None:
         """Initialize a synchronous DE optimizer with optional encoding support."""
+        self.client: Optional[Client] = None
         super().__init__(
             cs=cs,
             f=f,
@@ -66,35 +69,35 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             config_repository=config_repository,
             **kwargs,
         )
-        if self.strategy is not None:
-            self.mutation_strategy = self.strategy.split("_")[0]
-            self.crossover_strategy = self.strategy.split("_")[1]
-        else:
-            self.mutation_strategy = self.crossover_strategy = None
+        self.strategy = strategy
         self.encoding = encoding
         self.dim_map = dim_map
+        self.traj: List[float] = []
+        self.runtime: List[float] = []
+        self.history: List[Any] = []
+        self._min_pop_size: int = 1
         self._set_min_pop_size()
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict[str, Any]:
         """Allows the object to picklable while having Dask client as a class attribute."""
         d = dict(self.__dict__)
         d["client"] = None  # hack to allow Dask client to be a class attribute
         d["logger"] = None  # hack to allow logger object to be a class attribute
         return d
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Ensures a clean kill of the Dask client and frees up a port."""
-        if hasattr(self, "client") and isinstance(self.client, Client):
+        if hasattr(self, "client") and self.client is not None:
             self.client.close()
 
-    def reset(self, *, reset_seeds: bool = True):
+    def reset(self, *, reset_seeds: bool = True) -> None:
         """Reset run trackers and incumbents for a fresh DE run."""
         super().reset(reset_seeds=reset_seeds)
         self.traj = []
         self.runtime = []
         self.history = []
 
-    def _set_min_pop_size(self):
+    def _set_min_pop_size(self) -> int:
         """Set minimum population size based on mutation strategy needs."""
         if self.mutation_strategy in ["rand1", "rand2dir", "randtobest1"]:
             self._min_pop_size = 3
@@ -109,7 +112,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
 
         return self._min_pop_size
 
-    def map_to_original(self, vector: np.ndarray) -> np.ndarray:
+    def map_to_original(self, vector: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         """Map an encoded vector to original dimensions using the dimension map."""
         assert self.dim_map is not None
         dimensions = len(self.dim_map.keys())
@@ -118,7 +121,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             new_vector[i] = np.max(np.array(vector)[self.dim_map[i]])
         return new_vector
 
-    def f_objective(self, x: Union[np.ndarray, CS.Configuration], fidelity: Optional[float] = None, **kwargs: Any) -> Dict[str, Any]:
+    def f_objective(self, x: Union[np.ndarray[Any, Any], CS.Configuration], fidelity: Optional[float] = None, **kwargs: Any) -> Dict[str, Any]:
         """Evaluate the objective for a given config or vector."""
         if self.f is None:
             raise NotImplementedError("An objective function needs to be passed.")
@@ -131,7 +134,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             if not isinstance(x, CS.Configuration):
                 # converts [0, 1] vector to a CS object
                 assert isinstance(x, np.ndarray)
-                config = self.vector_to_configspace(x)
+                config: Union[np.ndarray[Any, Any], CS.Configuration] = self.vector_to_configspace(x)
             else:
                 config = x
         else:
@@ -161,35 +164,40 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         self.fitness = np.array([np.inf for i in range(self.pop_size)])
         self.age = np.array([self.max_age] * self.pop_size)
 
-        traj = []
-        runtime = []
-        history = []
+        traj: List[float] = []
+        runtime: List[float] = []
+        history: List[Any] = []
 
         if not eval:
             return traj, runtime, history
 
+        assert self.population is not None
+        assert self.population_ids is not None
+        assert self.fitness is not None
         for i in range(self.pop_size):
             config = self.population[i]
             config_id = self.population_ids[i]
             res = self.f_objective(config, fidelity, **kwargs)
-            self.fitness[i], cost = res["fitness"], res["cost"]
-            info = res["info"] if "info" in res else dict()
-            if self.fitness[i] < self.inc_score:
-                self.inc_score = self.fitness[i]
+            f_val = float(res["fitness"])
+            c_val = float(res["cost"])
+            self.fitness[i] = f_val
+            info: Dict[str, Any] = res["info"] if "info" in res else dict()
+            if f_val < self.inc_score:
+                self.inc_score = f_val
                 self.inc_config = config
-                self.inc_id = config_id
+                self.inc_id = int(config_id)
             self.config_repository.tell_result(
-                config_id, float(fidelity or 0), res["fitness"], res["cost"], info
+                int(config_id), float(fidelity or 0), f_val, c_val, info
             )
-            traj.append(self.inc_score)
-            runtime.append(cost)
+            traj.append(float(self.inc_score))
+            runtime.append(c_val)
             history.append(
-                (config.tolist(), float(self.fitness[i]), float(fidelity or 0), info)
+                (config.tolist(), f_val, float(fidelity or 0), info)
             )
 
         return traj, runtime, history
 
-    def eval_pop(self, population=None, population_ids=None, fidelity=None, **kwargs):
+    def eval_pop(self, population: Optional[np.ndarray[Any, Any]] = None, population_ids: Optional[np.ndarray[Any, Any]] = None, fidelity: Optional[float] = None, **kwargs: Any) -> Tuple[List[float], List[float], List[Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
         """Evaluates a population
 
         If population=None, the current population's fitness will be evaluated
@@ -197,147 +205,209 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         """
         pop = self.population if population is None else population
         pop_ids = self.population_ids if population_ids is None else population_ids
-        pop_size = self.pop_size if population is None else len(pop)
+        assert pop is not None
+        assert pop_ids is not None
         traj = []
         runtime = []
         history = []
+        if population is None:
+            assert self.pop_size is not None
+            pop_size = self.pop_size
+        else:
+            pop_size = len(pop)
+
         fitnesses = []
         costs = []
         ages = []
         for i in range(pop_size):
             res = self.f_objective(pop[i], fidelity, **kwargs)
-            fitness, cost = res["fitness"], res["cost"]
-            info = res["info"] if "info" in res else dict()
-            if population is None:
-                self.fitness[i] = fitness
-            if fitness <= self.inc_score:
-                self.inc_score = fitness
-                self.inc_config = pop[i]
-                self.inc_id = pop_ids[i]
-            self.config_repository.tell_result(pop_ids[i], float(fidelity or 0), info)
-            traj.append(self.inc_score)
-            runtime.append(cost)
-            history.append(
-                (pop[i].tolist(), float(fitness), float(fidelity or 0), info)
-            )
-            fitnesses.append(fitness)
-            costs.append(cost)
+            f_val = float(res["fitness"])
+            c_val = float(res["cost"])
+            fitnesses.append(f_val)
+            costs.append(c_val)
             ages.append(self.max_age)
+            info: Dict[str, Any] = res["info"] if "info" in res else dict()
+            if f_val < self.inc_score:
+                self.inc_score = f_val
+                self.inc_config = pop[i]
+                self.inc_id = int(pop_ids[i])
+            self.config_repository.tell_result(
+                int(pop_ids[i]), float(fidelity or 0), f_val, c_val, info
+            )
+            traj.append(float(self.inc_score))
+            runtime.append(c_val)
+            history.append(
+                (pop[i].tolist(), f_val, float(fidelity or 0), info)
+            )
         if population is None:
             self.fitness = np.array(fitnesses)
-            return traj, runtime, history
-        else:
-            return traj, runtime, history, np.array(fitnesses), np.array(ages)
+            self.age = np.array(ages)
+        return traj, runtime, history, np.array(fitnesses), np.array(ages)
 
-    def mutation_rand1(self, r1, r2, r3):
+    def mutation_rand1(self, r1: np.ndarray[Any, Any], r2: np.ndarray[Any, Any], r3: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         """Performs the 'rand1' type of DE mutation"""
+        assert self.mutation_factor is not None
         diff = r2 - r3
         mutant = r1 + self.mutation_factor * diff
-        return mutant
+        return cast(np.ndarray[Any, Any], mutant)
 
-    def mutation_rand2(self, r1, r2, r3, r4, r5):
+    def mutation_rand2(self, r1: np.ndarray[Any, Any], r2: np.ndarray[Any, Any], r3: np.ndarray[Any, Any], r4: np.ndarray[Any, Any], r5: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         """Performs the 'rand2' type of DE mutation"""
+        assert self.mutation_factor is not None
         diff1 = r2 - r3
         diff2 = r4 - r5
         mutant = r1 + self.mutation_factor * diff1 + self.mutation_factor * diff2
-        return mutant
+        return cast(np.ndarray[Any, Any], mutant)
 
-    def mutation_currenttobest1(self, current, best, r1, r2):
+    def mutation_currenttobest1(self, current: np.ndarray[Any, Any], best: np.ndarray[Any, Any], r1: np.ndarray[Any, Any], r2: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         """Perform the current-to-best/1 mutation variant."""
+        assert self.mutation_factor is not None
         diff1 = best - current
         diff2 = r1 - r2
         mutant = current + self.mutation_factor * diff1 + self.mutation_factor * diff2
-        return mutant
+        return cast(np.ndarray[Any, Any], mutant)
 
-    def mutation_rand2dir(self, r1, r2, r3):
+    def mutation_rand2dir(self, r1: np.ndarray[Any, Any], r2: np.ndarray[Any, Any], r3: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         """Perform the rand/2 directional mutation variant."""
+        assert self.mutation_factor is not None
         diff = r1 - r2 - r3
         mutant = r1 + self.mutation_factor * diff / 2
-        return mutant
+        return cast(np.ndarray[Any, Any], mutant)
 
-    def mutation(self, current=None, best=None, alt_pop=None):
+    def mutation(
+        self,
+        current: Optional[np.ndarray[Any, Any]] = None,
+        best: Optional[np.ndarray[Any, Any]] = None,
+        alt_pop: Optional[Union[List[Any], np.ndarray[Any, Any]]] = None,
+    ) -> np.ndarray[Any, Any]:
         """Performs DE mutation"""
         if self.mutation_strategy == "rand1":
-            r1, r2, r3 = self.sample_population(size=3, alt_pop=alt_pop)
+            selection = self.sample_population(size=3, alt_pop=alt_pop)
+            r1, r2, r3 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1]), cast(np.ndarray[Any, Any], selection[2])
             mutant = self.mutation_rand1(r1, r2, r3)
 
         elif self.mutation_strategy == "rand2":
-            r1, r2, r3, r4, r5 = self.sample_population(size=5, alt_pop=alt_pop)
+            selection = self.sample_population(size=5, alt_pop=alt_pop)
+            r1, r2, r3, r4, r5 = (
+                cast(np.ndarray[Any, Any], selection[0]),
+                cast(np.ndarray[Any, Any], selection[1]),
+                cast(np.ndarray[Any, Any], selection[2]),
+                cast(np.ndarray[Any, Any], selection[3]),
+                cast(np.ndarray[Any, Any], selection[4]),
+            )
             mutant = self.mutation_rand2(r1, r2, r3, r4, r5)
 
         elif self.mutation_strategy == "rand2dir":
-            r1, r2, r3 = self.sample_population(size=3, alt_pop=alt_pop)
+            selection = self.sample_population(size=3, alt_pop=alt_pop)
+            r1, r2, r3 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1]), cast(np.ndarray[Any, Any], selection[2])
             mutant = self.mutation_rand2dir(r1, r2, r3)
 
         elif self.mutation_strategy == "best1":
-            r1, r2 = self.sample_population(size=2, alt_pop=alt_pop)
+            selection = self.sample_population(size=2, alt_pop=alt_pop)
+            r1, r2 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1])
             if best is None:
+                assert self.population is not None
+                assert self.fitness is not None
                 best = self.population[np.argmin(self.fitness)]
+            assert best is not None
             mutant = self.mutation_rand1(best, r1, r2)
 
         elif self.mutation_strategy == "best2":
-            r1, r2, r3, r4 = self.sample_population(size=4, alt_pop=alt_pop)
+            selection = self.sample_population(size=4, alt_pop=alt_pop)
+            r1, r2, r3, r4 = (
+                cast(np.ndarray[Any, Any], selection[0]),
+                cast(np.ndarray[Any, Any], selection[1]),
+                cast(np.ndarray[Any, Any], selection[2]),
+                cast(np.ndarray[Any, Any], selection[3]),
+            )
             if best is None:
+                assert self.population is not None
+                assert self.fitness is not None
                 best = self.population[np.argmin(self.fitness)]
+            assert best is not None
             mutant = self.mutation_rand2(best, r1, r2, r3, r4)
 
         elif self.mutation_strategy == "currenttobest1":
-            r1, r2 = self.sample_population(size=2, alt_pop=alt_pop)
+            selection = self.sample_population(size=2, alt_pop=alt_pop)
+            r1, r2 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1])
             if best is None:
+                assert self.population is not None
+                assert self.fitness is not None
                 best = self.population[np.argmin(self.fitness)]
+            assert current is not None
+            assert best is not None
             mutant = self.mutation_currenttobest1(current, best, r1, r2)
 
         elif self.mutation_strategy == "randtobest1":
-            r1, r2, r3 = self.sample_population(size=3, alt_pop=alt_pop)
+            selection = self.sample_population(size=3, alt_pop=alt_pop)
+            r1, r2, r3 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1]), cast(np.ndarray[Any, Any], selection[2])
             if best is None:
+                assert self.population is not None
+                assert self.fitness is not None
                 best = self.population[np.argmin(self.fitness)]
+            assert best is not None
             mutant = self.mutation_currenttobest1(r1, best, r2, r3)
+        else:
+            raise ValueError(f"Unknown mutation strategy: {self.mutation_strategy}")
 
         return mutant
 
-    def crossover_bin(self, target, mutant):
+    def crossover_bin(self, target: np.ndarray[Any, Any], mutant: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         """Performs the binomial crossover of DE"""
+        assert self.dimensions is not None
+        assert self.crossover_prob is not None
         cross_points = self.rng.random(self.dimensions) < self.crossover_prob
         if not np.any(cross_points):
             cross_points[self.rng.integers(0, self.dimensions)] = True
         offspring = np.where(cross_points, mutant, target)
         return offspring
 
-    def crossover_exp(self, target, mutant):
+    def crossover_exp(self, target: np.ndarray[Any, Any], mutant: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         """Performs the exponential crossover of DE"""
-        n = self.rng.integers(0, self.dimensions)
+        assert self.dimensions is not None
+        assert self.crossover_prob is not None
+        n = int(self.rng.integers(0, self.dimensions))
         L = 0
-        while (self.rng.random() < self.crossover_prob) and L < self.dimensions:
+        while (float(self.rng.random()) < self.crossover_prob) and L < self.dimensions:
             idx = (n + L) % self.dimensions
             target[idx] = mutant[idx]
             L = L + 1
         return target
 
-    def crossover(self, target, mutant):
+    def crossover(self, target: np.ndarray[Any, Any], mutant: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         """Performs DE crossover"""
         if self.crossover_strategy == "bin":
             offspring = self.crossover_bin(target, mutant)
         elif self.crossover_strategy == "exp":
             offspring = self.crossover_exp(target, mutant)
+        else:
+            raise ValueError(f"Unknown crossover strategy: {self.crossover_strategy}")
         return offspring
 
-    def selection(self, trials, trial_ids, fidelity=None, **kwargs):
+    def selection(
+        self, trials: np.ndarray[Any, Any], trial_ids: np.ndarray[Any, Any], fidelity: Optional[float] = None, **kwargs: Any
+    ) -> Tuple[List[float], List[float], List[Any]]:
         """Carries out a parent-offspring competition given a set of trial population"""
         traj = []
         runtime = []
         history = []
+        assert self.fitness is not None
+        assert self.population is not None
+        assert self.population_ids is not None
+        assert self.age is not None
         for i in range(len(trials)):
             # evaluation of the newly created individuals
             res = self.f_objective(trials[i], fidelity, **kwargs)
-            fitness, cost = res["fitness"], res["cost"]
+            fitness = float(res["fitness"])
+            cost = float(res["cost"])
             info = res["info"] if "info" in res else dict()
             # log result to config repo
             self.config_repository.tell_result(
-                trial_ids[i], float(fidelity or 0), fitness, cost, info
+                int(trial_ids[i]), float(fidelity or 0), fitness, cost, info
             )
             # selection -- competition between parent[i] -- child[i]
             ## equality is important for landscape exploration
-            if fitness <= self.fitness[i]:
+            if fitness <= float(self.fitness[i]):
                 self.population[i] = trials[i]
                 self.population_ids[i] = trial_ids[i]
                 self.fitness[i] = fitness
@@ -347,21 +417,23 @@ class DifferentialEvolution(DifferentialEvolutionBase):
                 # decreasing age by 1 of parent who is better than offspring/trial
                 self.age[i] -= 1
             # updation of global incumbent for trajectory
-            if self.fitness[i] < self.inc_score:
-                self.inc_score = self.fitness[i]
+            if float(self.fitness[i]) < self.inc_score:
+                self.inc_score = float(self.fitness[i])
                 self.inc_config = self.population[i]
-                self.inc_id = self.population[i]
-            traj.append(self.inc_score)
+                self.inc_id = int(self.population_ids[i])
+            traj.append(float(self.inc_score))
             runtime.append(cost)
             history.append(
-                (trials[i].tolist(), float(fitness), float(fidelity or 0), info)
+                (trials[i].tolist(), fitness, float(fidelity or 0), info)
             )
         return traj, runtime, history
 
-    def evolve_generation(self, fidelity=None, best=None, alt_pop=None, **kwargs):
+    def evolve_generation(self, fidelity: Optional[float] = None, best: Optional[np.ndarray[Any, Any]] = None, alt_pop: Optional[np.ndarray[Any, Any]] = None, **kwargs: Any) -> Tuple[List[float], List[float], List[Any]]:
         """Performs a complete DE evolution: mutation -> crossover -> selection"""
         trials = []
         trial_ids = []
+        assert self.population is not None
+        assert self.pop_size is not None
         for j in range(self.pop_size):
             target = self.population[j]
             donor = self.mutation(current=target, best=best, alt_pop=alt_pop)
@@ -372,29 +444,30 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             )
             trials.append(trial)
             trial_ids.append(trial_id)
-        trials = np.array(trials)
-        trial_ids = np.array(trial_ids)
-        traj, runtime, history = self.selection(trials, trial_ids, fidelity, **kwargs)
+        trials_arr = np.array(trials)
+        trial_ids_arr = np.array(trial_ids)
+        traj, runtime, history = self.selection(trials_arr, trial_ids_arr, fidelity, **kwargs)
         return traj, runtime, history
 
-    def sample_mutants(self, size, population=None):
+    def sample_mutants(self, size: int, population: Optional[np.ndarray[Any, Any]] = None) -> np.ndarray[Any, Any]:
         """Generates 'size' mutants from the population using rand1"""
         if population is None:
             population = self.population
         elif len(population) < 3:
+            assert self.population is not None
             population = np.vstack((self.population, population))
 
+        assert population is not None
         old_strategy = self.mutation_strategy
         self.mutation_strategy = "rand1"
-        mutants = self.rng.uniform(low=0.0, high=1.0, size=(size, self.dimensions))
+        mutants = self.rng.uniform(low=0.0, high=1.0, size=(size, self.dimensions or 0))
         for i in range(size):
             mutant = self.mutation(current=None, best=None, alt_pop=population)
             mutants[i] = self.boundary_check(mutant)
         self.mutation_strategy = old_strategy
-
         return mutants
 
-    def run(self, generations=1, verbose=False, fidelity=None, reset=True, **kwargs):
+    def run(self, generations: int = 1, verbose: bool = False, fidelity: Optional[float] = None, reset: bool = True, **kwargs: Any) -> Tuple[np.ndarray[Any, Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
         """Run DE for a fixed number of generations and return trackers."""
         # checking if a run exists
         if not hasattr(self, "traj") or reset:

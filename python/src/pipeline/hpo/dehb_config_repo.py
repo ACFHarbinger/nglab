@@ -29,7 +29,7 @@ class ConfigItem:
     """
 
     config_id: int
-    config: np.ndarray
+    config: np.ndarray[Any, Any]
     results: dict[float, ResultItem]
 
 
@@ -60,16 +60,16 @@ class ConfigRepository:
     def reset(self) -> None:
         """Resets the config repository, clearing all collected configurations and results."""
         self.configs = []
-        self.initial_configs = []
+        self.initial_configs: list[ConfigItem] = []
 
-    def announce_config(self, config: np.ndarray, fidelity=None) -> int:
+    def announce_config(self, config: np.ndarray[Any, Any], fidelity: float | None = None) -> int:
         """Announces a new configuration with the respective fidelity it should be evaluated on.
 
         The configuration is then added to the list of so far seen configurations and the ID of the
         configuration is returned.
 
         Args:
-            config (np.ndarray): New configuration
+            config (np.ndarray[Any, Any]): New configuration
             fidelity (float, optional): Fidelity on which `config` is evaluated or None.
                                         Defaults to None.
 
@@ -85,11 +85,11 @@ class ConfigRepository:
         self.configs.append(config_item)
         return config_id
 
-    def announce_population(self, population: np.ndarray, fidelity=None) -> np.ndarray:
+    def announce_population(self, population: np.ndarray[Any, Any], fidelity: float | None = None) -> np.ndarray[Any, Any]:
         """Announce population, retrieving ids for the population.
 
         Args:
-            population (np.ndarray): Population to announce
+            population (np.ndarray[Any, Any]): Population to announce
             fidelity (float, optional): Fidelity on which pop is evaluated or None.
                                         Defaults to None.
 
@@ -102,7 +102,7 @@ class ConfigRepository:
             population_ids.append(conf_id)
         return np.array(population_ids)
 
-    def announce_fidelity(self, config_id: int, fidelity: float):
+    def announce_fidelity(self, config_id: int, fidelity: float) -> None:
         """Announce the evaluation of a new fidelity for a given config.
 
         This function may only be used if the config already exists in the repository.
@@ -118,14 +118,11 @@ class ConfigRepository:
         except IndexError as e:
             raise IndexError("Config with the given ID can not be found.") from e
 
-        result_item = {
-            fidelity: ResultItem(np.inf, -1, {}),
-        }
-        config_item.results[fidelity] = result_item
+        config_item.results[fidelity] = ResultItem(np.inf, -1, {})
 
     def tell_result(
-        self, config_id: int, fidelity: float, score: float, cost: float, info: dict
-    ):
+        self, config_id: int, fidelity: float, score: float, cost: float, info: dict[Any, Any]
+    ) -> None:
         """Logs the achieved performance, cost etc. of a specific configuration-fidelity pair.
 
         Args:
@@ -149,7 +146,7 @@ class ConfigRepository:
             config_item.results[fidelity].cost = cost
             config_item.results[fidelity].info = info
 
-    def get(self, config_id: int) -> np.ndarray:
+    def get(self, config_id: int) -> np.ndarray[Any, Any]:
         """Get the configuration with the given ID.
 
         Args:
@@ -164,7 +161,7 @@ class ConfigRepository:
             raise IndexError("Config with the given ID can not be found.") from e
         return config_item.config
 
-    def serialize_configs(self, configs) -> list:
+    def serialize_configs(self, configs: list[ConfigItem]) -> list[dict[str, Any]]:
         """Returns the configurations in logging format.
 
         Args:
@@ -173,14 +170,14 @@ class ConfigRepository:
         Returns:
             Configs in logging format
         """
-        serialized_data = []
+        serialized_data: list[dict[str, Any]] = []
         for config in configs:
             serialized_config = asdict(config)
             serialized_config["config"] = serialized_config["config"].tolist()
             serialized_data.append(serialized_config)
         return serialized_data
 
-    def save_state(self, save_path: Path):
+    def save_state(self, save_path: Path) -> None:
         """Saves the current state to `save_path`.
 
         Args:
@@ -190,6 +187,6 @@ class ConfigRepository:
             serialized_data = self.serialize_configs(self.configs)
             json.dump(serialized_data, f, indent=2)
 
-    def get_serialized_initial_configs(self):
+    def get_serialized_initial_configs(self) -> list[dict[str, Any]]:
         """Returns the initial configs in a format, that can be JSON serialized."""
         return self.serialize_configs(self.initial_configs)

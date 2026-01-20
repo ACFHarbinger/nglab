@@ -8,6 +8,7 @@ from typing import Literal
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
+from typing import Any, cast, Literal
 
 
 class ScaledDotProductAttention(nn.Module):
@@ -139,7 +140,7 @@ class MultiHeadAttention(nn.Module):
         output = self.out_linear(attn_output)
         output = self.dropout(output)
 
-        return output
+        return cast(torch.Tensor, output)
 
 
 class AttentionBlock(nn.Module):
@@ -217,6 +218,8 @@ class AttentionNetwork(nn.Module):
         max_seq_len: Maximum sequence length (for positional encoding)
         output_type: 'prediction' returns final output, 'embedding' returns features
     """
+
+    positional_encoding: torch.Tensor
 
     def __init__(  # noqa: PLR0913
         self,
@@ -334,10 +337,10 @@ class AttentionNetwork(nn.Module):
         out = self.output_projection(x)
 
         if return_sequence:
-            return out
+            return cast(torch.Tensor, out)
         else:
             # Return last timestep
-            return out[:, -1, :]
+            return cast(torch.Tensor, out[:, -1, :])
 
     def create_causal_mask(self, seq_len: int, device: torch.device) -> torch.Tensor:
         """

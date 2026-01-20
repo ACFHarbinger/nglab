@@ -9,7 +9,7 @@ Successive Halving (SH) brackets within the DEHB algorithm. It manages:
 """
 
 import numpy as np
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Tuple
 
 
 # Adapted from https://github.com/automl/DEHB/blob/master/src/dehb/utils/bracket_manager.py
@@ -21,21 +21,21 @@ class SynchronousHalvingBracketManager:
     completion, and promotion to higher fidelities in a synchronous manner.
 
     Args:
-        n_configs (np.ndarray): Number of configurations per rung.
-        fidelities (np.ndarray): Fidelity levels for each rung.
+        n_configs (np.ndarray[Any, Any]): Number of configurations per rung.
+        fidelities (np.ndarray[Any, Any]): Fidelity levels for each rung.
         bracket_id (int, optional): Identifier for this bracket.
     """
 
     def __init__(
         self,
-        n_configs: np.ndarray,
-        fidelities: np.ndarray,
+        n_configs: np.ndarray[Any, Any],
+        fidelities: np.ndarray[Any, Any],
         bracket_id: Optional[int] = None,
     ) -> None:
         """Initialize the bracket state for synchronous successive halving."""
         assert len(n_configs) == len(fidelities)
-        self.n_configs: np.ndarray = n_configs
-        self.fidelities: np.ndarray = fidelities
+        self.n_configs: np.ndarray[Any, Any] = n_configs
+        self.fidelities: np.ndarray[Any, Any] = fidelities
         self.bracket_id: Optional[int] = bracket_id
         self.sh_bracket: Dict[float, int] = {}
         self._sh_bracket: Dict[float, int] = {}
@@ -158,7 +158,7 @@ class SynchronousHalvingBracketManager:
             [self._is_rung_waiting(i) for i, _ in enumerate(self.fidelities)]
         ))
 
-    def reset_waiting_jobs(self):
+    def reset_waiting_jobs(self) -> None:
         """Resets all waiting jobs and updates the current_rung pointer accordingly."""
         for i, fidelity in enumerate(self.fidelities):
             pending = self.sh_bracket[fidelity]
@@ -171,7 +171,7 @@ class SynchronousHalvingBracketManager:
             # reset waiting jobs
             self.sh_bracket[fidelity] += waiting
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return a formatted table of bracket status per fidelity."""
         cell_width = 10
         cell = f"{{:^{cell_width}}}"

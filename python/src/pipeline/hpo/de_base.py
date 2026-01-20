@@ -12,7 +12,7 @@ import ConfigSpace as CS  # noqa: N817
 import ConfigSpace.util as CSU  # noqa: N812
 import numpy as np
 from numpy.typing import NDArray
-from typing import Optional, List, Any, Union
+from typing import Optional, List, Any, Union, cast
 
 from .dehb_config_repo import ConfigRepository
 
@@ -45,7 +45,7 @@ class DifferentialEvolutionBase:
         f: Optional[Any] = None,
         dimensions: Optional[int] = None,
         pop_size: Optional[int] = None,
-        max_age: Optional[int] = None,
+        max_age: Optional[float] = None,
         mutation_factor: Optional[float] = None,
         crossover_prob: Optional[float] = None,
         strategy: Optional[str] = None,
@@ -68,21 +68,20 @@ class DifferentialEvolutionBase:
         # Benchmark related variables
         self.cs = cs
         self.f = f
+        self.dimensions: Optional[int] = dimensions
         if dimensions is None and self.cs is not None:
-            self.dimensions = len(list(self.cs.values()))
-        else:
-            self.dimensions = dimensions
+             self.dimensions = len(self.cs.get_hyperparameters())
 
         # DE related variables
         self.pop_size = pop_size
         self.max_age = max_age
         self.mutation_factor = mutation_factor
         self.crossover_prob = crossover_prob
+        self.mutation_strategy: Optional[str] = None
+        self.crossover_strategy: Optional[str] = None
         if strategy is not None:
             self.mutation_strategy = strategy.split("_")[0]
             self.crossover_strategy = strategy.split("_")[1]
-        else:
-            self.mutation_strategy = self.crossover_strategy = None
         self.fix_type = boundary_fix_type
 
         # Miscellaneous
@@ -106,16 +105,16 @@ class DifferentialEvolutionBase:
 
         # Global trackers
         self.inc_score: float = np.inf
-        self.inc_config: Optional[np.ndarray] = None
+        self.inc_config: Optional[np.ndarray[Any, Any]] = None
         self.inc_id: int = -1
-        self.population: Optional[np.ndarray] = None
-        self.population_ids: Optional[np.ndarray] = None
-        self.fitness: Optional[np.ndarray] = None
-        self.age: Optional[np.ndarray] = None
+        self.population: Optional[np.ndarray[Any, Any]] = None
+        self.population_ids: Optional[np.ndarray[Any, Any]] = None
+        self.fitness: Optional[np.ndarray[Any, Any]] = None
+        self.age: Optional[np.ndarray[Any, Any]] = None
         self.history: List[Any] = []
         self.reset()
 
-    def reset(self, *, reset_seeds: bool = True):
+    def reset(self, *, reset_seeds: bool = True) -> None:
         """Reset populations, incumbents, and RNG state for a fresh run."""
         self.inc_score = np.inf
         self.inc_config = None
@@ -132,7 +131,7 @@ class DifferentialEvolutionBase:
 
         self.history = []
 
-    def _shuffle_pop(self):
+    def _shuffle_pop(self) -> None:
         """Shuffle population members and keep fitness/age aligned."""
         assert self.population is not None
         assert self.fitness is not None
@@ -143,7 +142,7 @@ class DifferentialEvolutionBase:
         self.fitness = self.fitness[pop_order]
         self.age = self.age[pop_order]
 
-    def _sort_pop(self):
+    def _sort_pop(self) -> None:
         """Sort population by fitness with randomized tie-breaking."""
         assert self.fitness is not None
         assert self.population is not None
@@ -154,7 +153,7 @@ class DifferentialEvolutionBase:
         self.fitness = self.fitness[pop_order]
         self.age = self.age[pop_order]
 
-    def _set_min_pop_size(self):
+    def _set_min_pop_size(self) -> int:
         """Set minimum population size based on mutation strategy needs."""
         if self.mutation_strategy in ["rand1", "rand2dir", "randtobest1"]:
             self._min_pop_size = 3
@@ -228,9 +227,9 @@ class DifferentialEvolutionBase:
         selection = self.rng.choice(
             np.arange(len(target_pop_arr)), size, replace=False
         )
-        return target_pop_arr[selection]
+        return cast(NDArray[np.float64], target_pop_arr[selection])
 
-    def boundary_check(self, vector: np.ndarray) -> np.ndarray:
+    def boundary_check(self, vector: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
         """
         Checks whether each of the dimensions of the input vector are within [0, 1].
         If not, values of those dimensions are replaced with the type of fix selected.
@@ -257,7 +256,7 @@ class DifferentialEvolutionBase:
             vector[violations] = np.clip(vector[violations], a_min=0, a_max=1)
         return vector
 
-    def vector_to_configspace(self, vector: np.ndarray) -> CS.Configuration:
+    def vector_to_configspace(self, vector: np.ndarray[Any, Any]) -> CS.Configuration:
         """Converts numpy array to CS object
 
         Works when self.cs is a CS object and the input vector is in the domain [0, 1].
@@ -281,12 +280,9 @@ class DifferentialEvolutionBase:
             else:  # handles UniformFloatHyperparameter & UniformIntegerHyperparameter
                 # rescaling continuous values
                 if getattr(hyper, "log", False):
-                    # type: ignore[attr-defined]
                     log_range = np.log(hyper.upper) - np.log(hyper.lower)
-                    # type: ignore[attr-defined]
                     param_value = np.exp(np.log(hyper.lower) + vector[i] * log_range)
                 else:
-                    # type: ignore[attr-defined]
                     param_value = hyper.lower + (hyper.upper - hyper.lower) * vector[i]
                 if isinstance(hyper, CS.UniformIntegerHyperparameter):
                     param_value = int(
@@ -297,10 +293,10 @@ class DifferentialEvolutionBase:
             new_config[hyper.name] = param_value
         # the mapping from unit hypercube to the actual config space may lead to illegal
         # configurations based on conditions defined, which need to be deactivated/removed
-        new_config = CSU.deactivate_inactive_hyperparameters(
+        active_config = CSU.deactivate_inactive_hyperparameters(
             configuration=new_config, configuration_space=self.cs
         )
-        return new_config
+        return active_config
 
     def configspace_to_vector(self, config: CS.Configuration) -> NDArray[np.float64]:
         """Converts CS object to numpy array scaled to [0,1]
@@ -332,7 +328,6 @@ class DifferentialEvolutionBase:
                 bounds = (hyper.lower, hyper.upper)
                 param_value = config[name]
                 if getattr(hyper, "log", False):
-                    # type: ignore[attr-defined]
                     vector[i] = float(np.log(param_value / bounds[0]) / np.log(
                         bounds[1] / bounds[0]
                     ))

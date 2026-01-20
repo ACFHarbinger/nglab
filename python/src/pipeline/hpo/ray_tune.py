@@ -51,7 +51,7 @@ def train_func(config: dict[str, Any], opts: dict[str, Any]) -> None:
     train_loader = opts["train_loader_factory"]()
     val_loader = opts["val_loader_factory"]()
 
-    trainer.fit(model, train_dataloader=train_loader, val_dataloaders=val_loader)
+    trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
 
 def run_hpo_search(

@@ -2,6 +2,8 @@
 Classical Machine Learning Model Factory.
 """
 
+from typing import Any, Dict, Optional
+from .mac.base import ClassicalModel
 from .mac import (
     AdaBoostModel,
     AODEModel,
@@ -101,7 +103,7 @@ MAC_MODEL_NAMES = [
 ]
 
 
-def create_mac_model(model_name: str, cfg: dict):  # noqa: PLR0911
+def create_mac_model(model_name: str, cfg: Dict[str, Any]) -> Optional[ClassicalModel]:  # noqa: PLR0911
     """
     Factory function to create classical machine learning models.
 
