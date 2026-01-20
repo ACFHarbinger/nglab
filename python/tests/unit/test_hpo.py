@@ -40,7 +40,7 @@ def test_de_run_sphere(hpo_config_space, hpo_config_repo, dummy_objective):
     
     # Run for a few generations
     generations = 5
-    traj, runtime, history = de.run(generations=generations)
+    traj, runtime, _history = de.run(generations=generations)
     
     # Check output structure
     assert isinstance(traj, np.ndarray)

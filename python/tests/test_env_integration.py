@@ -131,7 +131,7 @@ class TestDataConsistency:
             
         # Verify
         np.testing.assert_array_equal(obs1, obs2)
-        for o1, o2 in zip(obs_seq1, obs_seq2):
+        for o1, o2 in zip(obs_seq1, obs_seq2, strict=False):
             np.testing.assert_array_equal(o1, o2)
 
 
@@ -144,7 +144,7 @@ class TestSystemStability:
         
         env = TradingEnv(max_steps=50)
         
-        for i in range(10):
+        for _i in range(10):
             env.reset()
             done = False
             steps = 0

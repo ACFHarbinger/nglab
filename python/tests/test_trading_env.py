@@ -84,7 +84,7 @@ class TestTradingEnvReset:
             trading_env.step(1)  # Buy action
 
         # Reset
-        obs, info = trading_env.reset()
+        _obs, _info = trading_env.reset()
 
         # In Python fallback mode, check state
         if trading_env._rust_env is None:
@@ -122,7 +122,7 @@ class TestTradingEnvStep:
             initial_position = trading_env.position
             initial_cash = trading_env.cash
 
-            obs, reward, terminated, truncated, info = trading_env.step(0)
+            _obs, reward, terminated, truncated, info = trading_env.step(0)
 
             assert trading_env.position == initial_position
             assert trading_env.cash == initial_cash
@@ -139,7 +139,7 @@ class TestTradingEnvStep:
             initial_cash = trading_env.cash
             initial_position = trading_env.position
 
-            obs, reward, terminated, truncated, info = trading_env.step(1)
+            _obs, _reward, _terminated, _truncated, _info = trading_env.step(1)
 
             # Position should increase (if we had enough cash)
             # Cash should decrease (trade + fees)
@@ -225,7 +225,7 @@ class TestTradingEnvStep:
             env.cash = 0.0
             env.position = 0.0
 
-            _, _, terminated, _, _ = env.step(0)
+            _, _, _terminated, _, _ = env.step(0)
 
             # Should not terminate immediately (happens on next step)
             # This tests the condition is checked

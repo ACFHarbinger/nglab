@@ -1,4 +1,4 @@
-import ConfigSpace as CS
+import ConfigSpace as CS  # noqa: N817
 import pytest
 
 from python.src.pipeline.hpo.dehb_config_repo import ConfigRepository

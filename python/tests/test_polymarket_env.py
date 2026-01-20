@@ -108,7 +108,7 @@ class TestPolymarketEnvReset:
         polymarket_env.step(action)
 
         # Reset
-        obs, _ = polymarket_env.reset()
+        _obs, _ = polymarket_env.reset()
 
         # Check positions are cleared (using Python fallback)
         if polymarket_env._arena is None:
@@ -170,7 +170,7 @@ class TestPolymarketEnvActions:
             # Collateral should decrease
             assert polymarket_env._collateral < initial_collateral
             # Position should increase
-            yes_pos, no_pos = polymarket_env._positions.get(market_id, (0.0, 0.0))
+            yes_pos, _no_pos = polymarket_env._positions.get(market_id, (0.0, 0.0))
             assert yes_pos > 0.0
 
     def test_buy_no_action(self, polymarket_env):
@@ -187,7 +187,7 @@ class TestPolymarketEnvActions:
             # Collateral should decrease
             assert polymarket_env._collateral < initial_collateral
             # Position should increase
-            yes_pos, no_pos = polymarket_env._positions.get(market_id, (0.0, 0.0))
+            _yes_pos, no_pos = polymarket_env._positions.get(market_id, (0.0, 0.0))
             assert no_pos > 0.0
 
     def test_sell_yes_action(self, polymarket_env):
@@ -250,7 +250,6 @@ class TestPolymarketEnvActions:
         env.reset()
 
         if env._arena is None:
-            initial_collateral = env._collateral
 
             # Try to buy with insufficient collateral
             # Amount = 0.01 * 10.0 = 0.1, cost = 0.1 * 0.5 * 1.5 = 0.075
@@ -496,7 +495,7 @@ class TestPolymarketEnvMultiMarket:
         # Different action for each market
         action = np.array([1, 2, 0])  # Buy Yes, Buy No, Hold
 
-        obs, reward, terminated, truncated, info = polymarket_env.step(action)
+        obs, reward, _terminated, _truncated, _info = polymarket_env.step(action)
 
         assert isinstance(obs, np.ndarray)
         assert isinstance(reward, (int, float))
@@ -511,10 +510,10 @@ class TestPolymarketEnvMultiMarket:
             polymarket_env.step(action)
 
             # Check positions
-            yes_0, no_0 = polymarket_env._positions.get(
+            yes_0, _no_0 = polymarket_env._positions.get(
                 polymarket_env.market_ids[0], (0.0, 0.0)
             )
-            yes_1, no_1 = polymarket_env._positions.get(
+            _yes_1, no_1 = polymarket_env._positions.get(
                 polymarket_env.market_ids[1], (0.0, 0.0)
             )
 

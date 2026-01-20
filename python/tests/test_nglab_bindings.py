@@ -210,7 +210,7 @@ class TestTradingEnvRust:
         rust_trading_env.reset()
 
         for action in [0, 1, 2]:  # Hold, Buy, Sell
-            obs, reward, terminated, truncated, info = rust_trading_env.step(action)
+            obs, _reward, terminated, truncated, _info = rust_trading_env.step(action)
 
             assert isinstance(obs, np.ndarray)
             assert not np.isnan(obs).any()
@@ -259,7 +259,7 @@ class TestTradingEnvRust:
 
         while steps < 200 and not (terminated or truncated):
             action = np.random.choice([0, 1, 2])
-            obs, reward, terminated, truncated, info = rust_trading_env.step(action)
+            obs, _reward, terminated, truncated, _info = rust_trading_env.step(action)
             steps += 1
 
         # Should complete within 200 steps
