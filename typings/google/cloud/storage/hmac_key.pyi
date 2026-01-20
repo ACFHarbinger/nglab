@@ -95,6 +95,7 @@ class HMACKeyMetadata:
     @state.setter
     def state(self, value):  # -> None:
         ...
+
     @property
     def time_created(self):  # -> datetime | None:
         """Retrieve the timestamp at which the HMAC key was created.

@@ -4,11 +4,11 @@ MAML (Model-Agnostic Meta-Learning) Wrapper for Trading Strategies.
 Enables rapid adaptation to changing market conditions with few gradient steps.
 """
 
-import torch
-import torch.nn as nn
-from torch.optim import Adam
-from typing import List, Tuple, Optional
 import copy
+
+import torch
+from torch import nn
+from torch.optim import Adam
 
 
 class MAMLWrapper(nn.Module):
@@ -80,7 +80,7 @@ class MAMLWrapper(nn.Module):
 
     def meta_train_step(
         self,
-        task_batch: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]],
+        task_batch: list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]],
     ) -> float:
         """
         Perform one meta-training step across a batch of tasks.
@@ -109,7 +109,7 @@ class MAMLWrapper(nn.Module):
         self,
         support_x: torch.Tensor,
         support_y: torch.Tensor,
-        num_steps: Optional[int] = None,
+        num_steps: int | None = None,
     ) -> nn.Module:
         """
         Fast adaptation to new market regime.
@@ -138,7 +138,7 @@ class MAMLWrapper(nn.Module):
 
 def create_task_from_regime_data(
     regime_data: torch.Tensor, support_size: int = 50, query_size: int = 50
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     Split regime data into support and query sets for MAML.
 

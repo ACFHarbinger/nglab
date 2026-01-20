@@ -3,9 +3,7 @@ AWS S3 storage backend for models.
 """
 
 import json
-from datetime import datetime, timezone
-from io import BytesIO
-from typing import Optional
+from datetime import UTC, datetime
 
 from python.src.storage.base import ModelMetadata, ModelStorage, StorageConfig
 
@@ -63,14 +61,14 @@ class S3Storage(ModelStorage):
 
     def _generate_version(self) -> str:
         """Generate a new version string."""
-        return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        return datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
 
     def save(
         self,
         model_data: bytes,
         name: str,
-        version: Optional[str] = None,
-        metadata: Optional[dict] = None,
+        version: str | None = None,
+        metadata: dict | None = None,
     ) -> str:
         """Save model to S3."""
         if version is None:
@@ -99,7 +97,7 @@ class S3Storage(ModelStorage):
             version=version,
             checksum=self.compute_checksum(model_data),
             size_bytes=len(model_data),
-            created_at=datetime.now(timezone.utc).isoformat(),
+            created_at=datetime.now(UTC).isoformat(),
             **(metadata or {}),
         )
         self.client.put_object(
@@ -127,7 +125,7 @@ class S3Storage(ModelStorage):
 
         return f"s3://{self._bucket}/{model_key}"
 
-    def load(self, name: str, version: Optional[str] = None) -> bytes:
+    def load(self, name: str, version: str | None = None) -> bytes:
         """Load model from S3."""
         if version is None:
             version = self._get_latest_version(name)
@@ -158,7 +156,7 @@ class S3Storage(ModelStorage):
 
         return data
 
-    def exists(self, name: str, version: Optional[str] = None) -> bool:
+    def exists(self, name: str, version: str | None = None) -> bool:
         """Check if model exists in S3."""
         try:
             if version is None:
@@ -178,7 +176,7 @@ class S3Storage(ModelStorage):
         except Exception:
             return False
 
-    def delete(self, name: str, version: Optional[str] = None) -> bool:
+    def delete(self, name: str, version: str | None = None) -> bool:
         """Delete model from S3."""
         try:
             if version is None:
@@ -237,7 +235,7 @@ class S3Storage(ModelStorage):
                 versions.append(version)
         return sorted(versions, reverse=True)
 
-    def get_metadata(self, name: str, version: Optional[str] = None) -> ModelMetadata:
+    def get_metadata(self, name: str, version: str | None = None) -> ModelMetadata:
         """Get metadata for a model from S3."""
         if version is None:
             version = self._get_latest_version(name)
@@ -256,7 +254,7 @@ class S3Storage(ModelStorage):
                 f"Metadata for '{name}' version '{version}' not found: {e}"
             )
 
-    def _get_latest_version(self, name: str) -> Optional[str]:
+    def _get_latest_version(self, name: str) -> str | None:
         """Get the latest version string for a model."""
         try:
             response = self.client.get_object(

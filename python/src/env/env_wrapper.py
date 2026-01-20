@@ -6,9 +6,10 @@ handling TensorDict mapping and spec inference.
 """
 
 import gymnasium as gym
+from torchrl.envs import GymWrapper
+
 from .trading_env import TradingEnv
 from .vectorized_env import make_vec_env
-from torchrl.envs import GymWrapper
 
 
 class TradingEnvWrapper(GymWrapper):

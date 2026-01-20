@@ -3,8 +3,8 @@ Google Cloud Storage backend for models.
 """
 
 import json
-from datetime import datetime, timezone
-from typing import Optional, TYPE_CHECKING
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 
 from python.src.storage.base import ModelMetadata, ModelStorage, StorageConfig
 
@@ -61,14 +61,14 @@ class GCSStorage(ModelStorage):
 
     def _generate_version(self) -> str:
         """Generate a new version string."""
-        return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        return datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
 
     def save(
         self,
         model_data: bytes,
         name: str,
-        version: Optional[str] = None,
-        metadata: Optional[dict] = None,
+        version: str | None = None,
+        metadata: dict | None = None,
     ) -> str:
         """Save model to GCS."""
         if version is None:
@@ -95,7 +95,7 @@ class GCSStorage(ModelStorage):
             version=version,
             checksum=self.compute_checksum(model_data),
             size_bytes=len(model_data),
-            created_at=datetime.now(timezone.utc).isoformat(),
+            created_at=datetime.now(UTC).isoformat(),
             **(metadata or {}),
         )
         meta_blob = self.bucket.blob(self._metadata_path(name, version))
@@ -121,7 +121,7 @@ class GCSStorage(ModelStorage):
 
         return f"gs://{self._bucket_name}/{self._model_path(name, version)}"
 
-    def load(self, name: str, version: Optional[str] = None) -> bytes:
+    def load(self, name: str, version: str | None = None) -> bytes:
         """Load model from GCS."""
         if version is None:
             version = self._get_latest_version(name)
@@ -150,7 +150,7 @@ class GCSStorage(ModelStorage):
 
         return data
 
-    def exists(self, name: str, version: Optional[str] = None) -> bool:
+    def exists(self, name: str, version: str | None = None) -> bool:
         """Check if model exists in GCS."""
         if version is None:
             # Check if any version exists
@@ -161,7 +161,7 @@ class GCSStorage(ModelStorage):
             blob = self.bucket.blob(self._model_path(name, version))
             return blob.exists()
 
-    def delete(self, name: str, version: Optional[str] = None) -> bool:
+    def delete(self, name: str, version: str | None = None) -> bool:
         """Delete model from GCS."""
         try:
             if version is None:
@@ -211,7 +211,7 @@ class GCSStorage(ModelStorage):
                 versions.append(version)
         return sorted(versions, reverse=True)
 
-    def get_metadata(self, name: str, version: Optional[str] = None) -> ModelMetadata:
+    def get_metadata(self, name: str, version: str | None = None) -> ModelMetadata:
         """Get metadata for a model from GCS."""
         if version is None:
             version = self._get_latest_version(name)
@@ -227,7 +227,7 @@ class GCSStorage(ModelStorage):
         data = json.loads(blob.download_as_text())
         return ModelMetadata(**data)
 
-    def _get_latest_version(self, name: str) -> Optional[str]:
+    def _get_latest_version(self, name: str) -> str | None:
         """Get the latest version string for a model."""
         blob = self.bucket.blob(self._latest_path(name))
         if blob.exists():

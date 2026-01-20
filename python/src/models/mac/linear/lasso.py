@@ -1,6 +1,7 @@
 """Lasso Regression Model."""
 
 from sklearn.linear_model import Lasso
+
 from ..base import ClassicalModel
 
 

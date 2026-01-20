@@ -1,6 +1,7 @@
 """AdaBoost Model."""
 
 from sklearn.ensemble import AdaBoostClassifier, AdaBoostRegressor
+
 from ..base import ClassicalModel
 
 

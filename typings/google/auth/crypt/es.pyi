@@ -33,6 +33,7 @@ class _ESAttributes:
         cls, key: Union[ec.EllipticCurvePublicKey, ec.EllipticCurvePrivateKey]
     ):  # -> Self:
         ...
+
     @classmethod
     def from_curve(cls, curve: ec.EllipticCurve):  # -> Self:
         ...

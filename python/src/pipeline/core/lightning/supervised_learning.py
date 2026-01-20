@@ -10,7 +10,6 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import torch
 import torch.nn.functional as F
@@ -85,7 +84,7 @@ class ProgressCallback:
         self.total_epochs = total_epochs
 
     def on_epoch_end(
-        self, epoch: int, train_loss: float, val_loss: Optional[float] = None
+        self, epoch: int, train_loss: float, val_loss: float | None = None
     ):
         """Emit progress JSON to stdout."""
         progress = {
@@ -109,8 +108,8 @@ def train_from_csv(
     seq_len: int = 30,
     pred_len: int = 1,
     train_split: float = 0.8,
-    model_params: Optional[dict] = None,
-    output_path: Optional[str] = None,
+    model_params: dict | None = None,
+    output_path: str | None = None,
 ):
     """
     Train a supervised model from CSV data.
@@ -134,9 +133,10 @@ def train_from_csv(
     # Add src to path
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+    from utils.model_versioning import ModelMetadata, save_model_with_metadata
+
     from data.time_series_dataset import TimeSeriesDataset
     from models.time_series import TimeSeriesBackbone
-    from utils.model_versioning import ModelMetadata, save_model_with_metadata
 
     # Create datasets
     train_dataset = TimeSeriesDataset(

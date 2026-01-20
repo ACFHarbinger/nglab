@@ -4,9 +4,9 @@ Functional utilities for model loading and tensor manipulation.
 
 import json
 import os
-import torch
+from typing import Any, cast
 
-from typing import Any, Dict, Optional, Tuple, Union, cast
+import torch
 
 
 def torch_load_cpu(load_path: str) -> Any:
@@ -16,7 +16,7 @@ def torch_load_cpu(load_path: str) -> Any:
     )  # Load on CPU
 
 
-def move_to(var: Any, device: Union[torch.device, str]) -> Any:
+def move_to(var: Any, device: torch.device | str) -> Any:
     """
     Recursively move tensors in a dictionary to a device.
     """
@@ -27,12 +27,12 @@ def move_to(var: Any, device: Union[torch.device, str]) -> Any:
     return var
 
 
-def load_args(filename: str) -> Dict[str, Any]:
+def load_args(filename: str) -> dict[str, Any]:
     """
     Load arguments from a JSON file with backwards compatibility.
     """
     with open(filename) as f:
-        args = cast(Dict[str, Any], json.load(f))
+        args = cast(dict[str, Any], json.load(f))
 
     # Backwards compatibility
     if "data_distribution" not in args:
@@ -46,7 +46,7 @@ def load_args(filename: str) -> Dict[str, Any]:
 
 def _load_model_file(
     load_path: str, model: torch.nn.Module
-) -> Tuple[torch.nn.Module, Optional[Dict[str, Any]]]:
+) -> tuple[torch.nn.Module, dict[str, Any] | None]:
     """
     Loads model parameters from a file.
 
@@ -67,12 +67,11 @@ def _load_model_file(
     if isinstance(load_data, dict):
         load_optimizer_state_dict = load_data.get("optimizer", None)
         load_model_state_dict = load_data.get("model", load_data)
+    # If it's a model instance, get its state dict
+    elif hasattr(load_data, "state_dict"):
+        load_model_state_dict = load_data.state_dict()
     else:
-        # If it's a model instance, get its state dict
-        if hasattr(load_data, "state_dict"):
-            load_model_state_dict = load_data.state_dict()
-        else:
-            load_model_state_dict = load_data
+        load_model_state_dict = load_data
 
     state_dict = model.state_dict()
     state_dict.update(load_model_state_dict)
@@ -81,8 +80,8 @@ def _load_model_file(
 
 
 def load_model(
-    path: str, epoch: Optional[int] = None
-) -> Tuple[torch.nn.Module, Dict[str, Any]]:
+    path: str, epoch: int | None = None
+) -> tuple[torch.nn.Module, dict[str, Any]]:
     """
     Load a model and its configuration from a directory or specific file.
 

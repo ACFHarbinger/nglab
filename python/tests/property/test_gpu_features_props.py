@@ -1,9 +1,11 @@
-import pytest
-import torch
 import numpy as np
 import pandas as pd
-from hypothesis import given, settings, HealthCheck, strategies as st
+import pytest
+import torch
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 from hypothesis.extra.numpy import arrays
+
 from python.src.utils.functions.gpu_features import GPUFeatureEngineer
 
 # Strategy for generating valid price series

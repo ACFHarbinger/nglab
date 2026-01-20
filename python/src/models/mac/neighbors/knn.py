@@ -1,6 +1,7 @@
 """k-Nearest Neighbors Model."""
 
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+
 from ..base import ClassicalModel
 
 

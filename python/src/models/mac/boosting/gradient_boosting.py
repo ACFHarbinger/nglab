@@ -1,6 +1,7 @@
 """Gradient Boosting Model."""
 
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor
+
 from ..base import ClassicalModel
 
 

@@ -8,10 +8,9 @@ and computes performance metrics like Sharpe Ratio and Max Drawdown.
 import argparse
 
 import numpy as np
-from stable_baselines3 import PPO, SAC
 from core.train_sac import ContinuousActionWrapper
-
 from environment import TradingEnv
+from stable_baselines3 import PPO, SAC
 
 
 def calculate_metrics(portfolio_values: list) -> dict:

@@ -3,6 +3,7 @@ xLSTM Model wrapping xLSTMBlocks.
 """
 
 from torch import nn
+
 from python.src.models.deep.modules.xlstm_block import xLSTMBlock
 
 
@@ -44,9 +45,8 @@ class xLSTM(nn.Module):
         if isinstance(cell_type, str):
             cell_types = [cell_type] * n_layers
         else:
-            assert len(cell_type) == n_layers, (
-                "cell_type list length must match n_layers"
-            )
+            msg = "cell_type list length must match n_layers"
+            assert len(cell_type) == n_layers, msg
             cell_types = cell_type
 
         # We can implement stacking manually or use a loop

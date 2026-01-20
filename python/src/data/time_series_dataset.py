@@ -4,7 +4,7 @@ Time Series Dataset for sliding window training.
 Loads CSV data and creates (X, Y) pairs for supervised learning.
 """
 
-from typing import Literal, Optional
+from typing import Literal
 
 import pandas as pd
 import torch
@@ -33,8 +33,8 @@ class TimeSeriesDataset(Dataset):
         pred_len: int = 1,
         train: bool = True,
         train_ratio: float = 0.8,
-        normalize: Optional[Literal["minmax", "zscore"]] = "minmax",
-        stats: Optional[dict] = None,
+        normalize: Literal["minmax", "zscore"] | None = "minmax",
+        stats: dict | None = None,
     ):
         super().__init__()
         self.seq_len = seq_len

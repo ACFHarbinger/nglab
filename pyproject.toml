@@ -112,33 +112,77 @@ cloud = [
 line-length = 88
 target-version = ['py311']
 include = '\.pyi?$'
+# Synchronized excludes with Ruff
 extend-exclude = '''
 /(
-    \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
+    typescript
+  | rust
+  | android
   | build
   | dist
+  | node_modules
+  | \.venv
+  | \.git
+  | \.mypy_cache
+  | typings
 )/
 '''
 
 [tool.ruff]
+# Core alignment with Black
 line-length = 88
 target-version = "py311"
+src = ["python/src"]
+
+# Ensure Ruff targets the same files as Black
 include = ["*.py", "*.pyi"]
-exclude = ["typescript", "rust", "android", "build", "node_modules", ".venv"]
+exclude = [
+    "typescript",
+    "rust",
+    "android",
+    "build",
+    "dist",
+    "node_modules",
+    ".venv",
+    ".git",
+    "typings",
+]
 
 [tool.ruff.lint]
-select = ["E", "F", "B", "I", "N", "UP", "PL", "RUF"]
-ignore = ["E501"] # Line too long (handled by black)
+select = [
+    "E",   # pycodestyle errors
+    "F",   # Pyflakes
+    "B",   # flake8-bugbear
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "PL",  # Pylint
+    "RUF", # Ruff-specific rules
+]
+ignore = [
+    "E501",    # Line length (handled by formatter)
+    "N806",    # Allow uppercase variables (X, Y matrices in ML)
+    "PLR2004", # Allow magic values (common in OR/Optimization constants)
+    "PLC0415", # Allow function-level imports (necessary for conditional CUDA imports)
+    "PLR0912", # Allow many branches (complex RL environments)
+    "COM812",  # Conflict with formatter
+    "ISC001",  # Conflict with formatter
+]
 fixable = ["ALL"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["python", "nglab"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+[tool.ruff.format]
+# Strictly match Black's stable formatting
+quote-style = "double"
+indent-style = "space"
+# Setting skip-magic-trailing-comma to false aligns with Black's behavior
+skip-magic-trailing-comma = false
+line-ending = "auto"
+# Black doesn't format code in docstrings by default, so we disable it here to stop the conflict
+docstring-code-format = false
 
 [tool.mypy]
 python_version = "3.11"

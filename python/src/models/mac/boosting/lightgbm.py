@@ -1,6 +1,7 @@
 """LightGBM Model."""
 
 import lightgbm as lgb
+
 from ..base import ClassicalModel
 
 

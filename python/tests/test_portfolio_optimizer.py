@@ -1,5 +1,6 @@
-import pytest
 import numpy as np
+import pytest
+
 from python.src.models.portfolio.portfolio_optimizer import PortfolioOptimizer
 
 

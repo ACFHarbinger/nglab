@@ -7,7 +7,8 @@ GPU computation, reducing GPU idle time.
 
 import queue
 import threading
-from typing import Any, Callable, Iterator, Optional
+from collections.abc import Iterator
+from typing import Any
 
 import torch
 from torch.utils.data import DataLoader, Dataset
@@ -48,7 +49,7 @@ class CUDAPrefetcher:
         # Create CUDA stream for async transfer
         self.stream = torch.cuda.Stream(device=self.device)
 
-        self._iterator: Optional[Iterator] = None
+        self._iterator: Iterator | None = None
         self._prefetched: list = []
 
     def __iter__(self):
@@ -140,9 +141,9 @@ class BackgroundPrefetcher:
         self.timeout = timeout
 
         self._queue: queue.Queue = queue.Queue(maxsize=prefetch_count)
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
         self._stop_event = threading.Event()
-        self._exception: Optional[Exception] = None
+        self._exception: Exception | None = None
 
     def __iter__(self):
         """Start background thread and return iterator."""
@@ -227,7 +228,7 @@ class PrefetchDataLoader(DataLoader):
         shuffle: bool = False,
         num_workers: int = 0,
         pin_memory: bool = True,
-        device: Optional[str] = None,
+        device: str | None = None,
         prefetch_factor: int = 2,
         persistent_workers: bool = True,
         **kwargs,
@@ -265,7 +266,7 @@ class PrefetchDataLoader(DataLoader):
         )
 
         self.device = torch.device(device) if device else None
-        self._prefetcher: Optional[CUDAPrefetcher] = None
+        self._prefetcher: CUDAPrefetcher | None = None
 
     def __iter__(self):
         """Return iterator with optional CUDA prefetching."""
@@ -298,7 +299,7 @@ class _IteratorWrapper:
 def create_optimized_dataloader(
     dataset: Dataset,
     batch_size: int = 32,
-    num_workers: Optional[int] = None,
+    num_workers: int | None = None,
     device: str = "cuda",
     shuffle: bool = True,
     drop_last: bool = True,

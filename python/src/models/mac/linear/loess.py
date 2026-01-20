@@ -2,6 +2,7 @@
 
 import numpy as np
 import torch
+
 from ..base import ClassicalModel
 
 try:
@@ -59,7 +60,12 @@ class LOESSModel(ClassicalModel):
 
         from scipy.interpolate import interp1d
 
-        f = interp1d(res[:, 0], res[:, 1], bounds_error=False, fill_value="extrapolate")  # pyright: ignore[reportArgumentType]
+        f = interp1d(
+            res[:, 0],
+            res[:, 1],
+            bounds_error=False,
+            fill_value="extrapolate",
+        )  # pyright: ignore[reportArgumentType]
 
         out = f(X_np[:, 0])
         if out.ndim == 1:

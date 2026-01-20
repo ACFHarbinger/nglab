@@ -1,16 +1,15 @@
 import cProfile
-import pstats
 import io
+import logging
+import os
+import pstats
+import time
+from collections.abc import Callable
 from functools import wraps
 from pathlib import Path
-import logging
+from typing import Any, TypeVar, cast
 
-import time
 import psutil
-import os
-from typing import Any, Callable, TypeVar, cast
-import logging
-
 
 logger = logging.getLogger(__name__)
 

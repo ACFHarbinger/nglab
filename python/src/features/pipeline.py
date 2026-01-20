@@ -5,13 +5,14 @@ Provides a robust, serializable pipeline for transforming raw market data
 into model-ready features, leveraging GPU acceleration where possible.
 """
 
-from typing import List, Optional, Union, Dict, Any
+from typing import Any
+
 import joblib
 import numpy as np
 import pandas as pd
 import torch
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import StandardScaler, RobustScaler
+from sklearn.preprocessing import RobustScaler, StandardScaler
 
 from python.src.utils.functions.gpu_features import GPUFeatureEngineer
 
@@ -32,10 +33,10 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         lookback: int = 30,
         feature_set: str = "standard",
         scaler_type: str = "robust",
-        gpu_device: Optional[str] = None,
+        gpu_device: str | None = None,
         selection_threshold: float = 0.0,
         selection_method: str = "variance",  # "variance", "mi", "rfecv"
-        selection_params: Optional[Dict[str, Any]] = None,
+        selection_params: dict[str, Any] | None = None,
     ):
         self.lookback = lookback
         self.feature_set = feature_set
@@ -49,9 +50,9 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         self.gpu_engineer = None
         self.scaler = None
         self.selector = None
-        self.feature_names: List[str] = []
+        self.feature_names: list[str] = []
 
-    def fit(self, X: Union[pd.DataFrame, np.ndarray], y=None):
+    def fit(self, X: pd.DataFrame | np.ndarray, y=None):
         """
         Fit the pipeline components (e.g., scalers) on historical data.
 
@@ -91,7 +92,6 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
             ).index.tolist()
 
             # Create a simple PassThrough selector that just picks columns
-            from sklearn.feature_selection import SelectFromModel
             from sklearn.ensemble import RandomForestRegressor
 
             # We use SelectFromModel with a dummy if needed, but easier to just use a custom one
@@ -105,8 +105,9 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
                 features_clean, y if y is not None else features_clean.iloc[:, 0]
             )
         elif self.selection_method == "rfecv":
-            from python.src.utils.feature_selection import TimeSeriesFeatureSelector
             from sklearn.ensemble import RandomForestRegressor
+
+            from python.src.utils.feature_selection import TimeSeriesFeatureSelector
 
             estimator = self.selection_params.get(
                 "estimator", RandomForestRegressor(n_estimators=10, n_jobs=-1)
@@ -136,7 +137,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
 
         return self
 
-    def transform(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
+    def transform(self, X: pd.DataFrame | np.ndarray) -> np.ndarray:
         """
         Transform new data into model inputs.
         """
@@ -160,7 +161,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
 
         return scaled
 
-    def _generate_features(self, X: Union[pd.DataFrame, np.ndarray]) -> pd.DataFrame:
+    def _generate_features(self, X: pd.DataFrame | np.ndarray) -> pd.DataFrame:
         """
         Internal method to generate raw features using GPU acceleration.
         """

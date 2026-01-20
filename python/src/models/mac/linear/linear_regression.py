@@ -1,6 +1,7 @@
 """Linear Regression Model."""
 
 from sklearn.linear_model import LinearRegression
+
 from ..base import ClassicalModel
 
 

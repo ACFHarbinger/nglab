@@ -3,7 +3,7 @@ Strategy interface and base class for backtesting.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 
 @runtime_checkable
@@ -24,7 +24,7 @@ class BaseStrategy(ABC):
 
     def __init__(self, name: str = "BaseStrategy"):
         self.name = name
-        self.engine: Optional[Any] = None
+        self.engine: Any | None = None
 
     def set_engine(self, engine: Any) -> None:
         """Link the strategy to the backtest engine."""

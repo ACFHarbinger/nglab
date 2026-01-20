@@ -4,18 +4,17 @@ Provides S3 and GCS backends for storing model checkpoints with
 automatic compression, versioning, and fallback support.
 """
 
-import io
 import logging
 import os
 import tempfile
-import zstandard as zstd
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import torch
+import zstandard as zstd
 
 logger = logging.getLogger(__name__)
 
@@ -36,16 +35,16 @@ class CloudStorageConfig:
     prefix: str = "models"
     compression_level: int = 3
     enable_versioning: bool = True
-    fallback_local_path: Optional[str] = None
+    fallback_local_path: str | None = None
 
     # AWS specific
     aws_region: str = "us-east-1"
-    aws_access_key_id: Optional[str] = None
-    aws_secret_access_key: Optional[str] = None
+    aws_access_key_id: str | None = None
+    aws_secret_access_key: str | None = None
 
     # GCS specific
-    gcs_project: Optional[str] = None
-    gcs_credentials_path: Optional[str] = None
+    gcs_project: str | None = None
+    gcs_credentials_path: str | None = None
 
 
 class CloudStorageBackend(ABC):
@@ -130,7 +129,7 @@ class S3Backend(CloudStorageBackend):
             config: Cloud storage configuration.
         """
         self.config = config
-        self._client: Optional[Any] = None
+        self._client: Any | None = None
 
     @property
     def client(self) -> Any:
@@ -295,8 +294,8 @@ class GCSBackend(CloudStorageBackend):
     def __init__(self, config: CloudStorageConfig):
         """Initialize GCS backend."""
         self.config = config
-        self._client: Optional[Any] = None
-        self._bucket: Optional[Any] = None
+        self._client: Any | None = None
+        self._bucket: Any | None = None
 
     @property
     def bucket(self) -> Any:
@@ -466,10 +465,10 @@ class CloudCheckpointManager:
         model: torch.nn.Module,
         model_type: str,
         version: str,
-        optimizer: Optional[torch.optim.Optimizer] = None,
-        scheduler: Optional[Any] = None,
-        metrics: Optional[dict[str, float]] = None,
-        extra_data: Optional[dict[str, Any]] = None,
+        optimizer: torch.optim.Optimizer | None = None,
+        scheduler: Any | None = None,
+        metrics: dict[str, float] | None = None,
+        extra_data: dict[str, Any] | None = None,
     ) -> str:
         """Save model checkpoint to cloud storage.
 
@@ -527,9 +526,9 @@ class CloudCheckpointManager:
         model: torch.nn.Module,
         model_type: str,
         version: str,
-        optimizer: Optional[torch.optim.Optimizer] = None,
-        scheduler: Optional[Any] = None,
-        map_location: Optional[str] = None,
+        optimizer: torch.optim.Optimizer | None = None,
+        scheduler: Any | None = None,
+        map_location: str | None = None,
     ) -> dict[str, Any]:
         """Load model checkpoint from cloud storage.
 

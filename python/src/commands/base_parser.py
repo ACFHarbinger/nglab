@@ -4,7 +4,7 @@ Base parser utilities for the modular CLI.
 
 import argparse
 import sys
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 
 class ConfigsParser(argparse.ArgumentParser):
@@ -19,8 +19,8 @@ class ConfigsParser(argparse.ArgumentParser):
         sys.exit(2)
 
     def parse_process_args(
-        self, args: Optional[List[str]] = None
-    ) -> Tuple[str, Dict[str, Any]]:
+        self, args: list[str] | None = None
+    ) -> tuple[str, dict[str, Any]]:
         """
         Parses arguments and returns the command and options dictionary.
         """

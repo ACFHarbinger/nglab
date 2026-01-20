@@ -4,6 +4,6 @@ from .neighbors.knn import kNNModel
 from .neighbors.lwl import LWLModel
 
 __all__ = [
-    "kNNModel",
     "LWLModel",
+    "kNNModel",
 ]

@@ -9,7 +9,7 @@ This module provides tools for:
 
 import argparse
 import os
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 import loss_landscapes
 import matplotlib
@@ -63,7 +63,7 @@ class MyModelWrapper(nn.Module):
 
 def load_model_instance(
     model_path: str, device: torch.device
-) -> Tuple[nn.Module, Dict[str, Any]]:
+) -> tuple[nn.Module, dict[str, Any]]:
     """
     Loads a model for visualization using the project's standard loading utility.
 
@@ -151,7 +151,7 @@ def plot_weight_trajectories(checkpoint_dir: str, output_file: str) -> None:
 
 
 def log_weight_distributions(
-    model: nn.Module, epoch: int, log_dir: str, writer: Optional[SummaryWriter] = None
+    model: nn.Module, epoch: int, log_dir: str, writer: SummaryWriter | None = None
 ) -> None:
     """
     Logs histograms of model weight distributions to TensorBoard.
@@ -206,7 +206,7 @@ def plot_logit_lens(
         try:
             # We follow the forward pass logic
             if hasattr(model, "enc_embedding"):
-                curr = getattr(model, "enc_embedding")(x_batch, x_mark)
+                curr = model.enc_embedding(x_batch, x_mark)
             else:
                 curr = x_batch
 
@@ -214,14 +214,14 @@ def plot_logit_lens(
             layer_outputs.append(curr)  # Layer 0: Embedding
 
             # Encoder layers
-            encoder = getattr(model, "encoder")
+            encoder = model.encoder
             if hasattr(encoder, "attn_layers"):
                 for attn_layer in encoder.attn_layers:
                     curr, _ = attn_layer(curr)
                     layer_outputs.append(curr)
 
             # Final projection of each layer output
-            projection = getattr(model, "projection")
+            projection = model.projection
             preds = []
             for out in layer_outputs:
                 p = projection(out)
@@ -264,7 +264,7 @@ def mae_loss_fn(m: Any, x_batch: torch.Tensor, target: torch.Tensor) -> float:
 
 def plot_loss_landscape(
     model: nn.Module,
-    opts: Dict[str, Any],
+    opts: dict[str, Any],
     output_dir: str,
     epoch: int = 0,
     seq_len: int = 30,
@@ -324,7 +324,7 @@ def plot_loss_landscape(
 
 
 def visualize_epoch(
-    model: nn.Module, opts: Dict[str, Any], epoch: int, tb_logger: Optional[Any] = None
+    model: nn.Module, opts: dict[str, Any], epoch: int, tb_logger: Any | None = None
 ) -> None:
     """
     Main entry point for visualization during training.

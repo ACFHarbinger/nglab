@@ -19,16 +19,14 @@ import time
 from copy import deepcopy
 from pathlib import Path
 from threading import Timer
-from typing import List, Tuple, Union
 
 import ConfigSpace as CS
 import ConfigSpace.hyperparameters as CSHP
 import numpy as np
 import pandas as pd
+import wandb
 from distributed import Client
 from loguru import logger
-
-import wandb
 
 from .de_async import AsyncDifferentialEvolution
 from .dehb_base import DifferentialEvolutionHyperbandBase
@@ -246,7 +244,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         return run_info
 
     def _create_cuda_visible_devices(
-        self, available_gpus: List[int], start_id: int
+        self, available_gpus: list[int], start_id: int
     ) -> str:
         """Generates a string to set the CUDA_VISIBLE_DEVICES environment variable.
 
@@ -278,7 +276,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         except KeyError as e:
             print(
                 "Unable to find valid GPU devices. "
-                f"Environment variable {str(e)} not visible!"
+                f"Environment variable {e!s} not visible!"
             )
             self.available_gpus = []
         self.gpu_usage = dict()
@@ -679,7 +677,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
                 break
         return job_info
 
-    def ask(self, n_configs: int = 1) -> Union[dict, List[dict]]:
+    def ask(self, n_configs: int = 1) -> dict | list[dict]:
         """Get the next configuration to run from the optimizer.
 
         The retrieved configuration can then be evaluated by the user.
@@ -1005,7 +1003,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             self._save_state()
 
     def tell(
-        self, job_info: Union[dict, List[dict]], result: dict, replay: bool = False
+        self, job_info: dict | list[dict], result: dict, replay: bool = False
     ) -> None:
         """Feed a result back to the optimizer.
 
@@ -1093,10 +1091,8 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             ),
         )
 
-        if (
-            self.save_freq == "step"
-            or (self.save_freq == "incumbent" and inc_changed)
-            and not replay
+        if self.save_freq == "step" or (
+            (self.save_freq == "incumbent" and inc_changed) and not replay
         ):
             self.save()
 
@@ -1108,7 +1104,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         total_cost=None,
         single_node_with_gpus=False,
         **kwargs,
-    ) -> Tuple[np.array, np.array, np.array]:
+    ) -> tuple[np.array, np.array, np.array]:
         """Main interface to run optimization by DEHB.
 
         This function waits on workers and if a worker is free, asks for a configuration and a
@@ -1225,10 +1221,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
                 else:
                     if self.n_workers > 1 or isinstance(self.client, Client):
                         self.logger.debug(
-                            "{}/{} worker(s) available.".format(
-                                self._get_worker_count() - len(self.futures),
-                                self._get_worker_count(),
-                            )
+                            f"{self._get_worker_count() - len(self.futures)}/{self._get_worker_count()} worker(s) available."
                         )
                     # Ask for new job_info
                     job_info = self.ask()
@@ -1242,10 +1235,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         # end of while
         time_taken = time.time() - self.start
         self.logger.info(
-            "End of optimisation! Total duration: {}; Total fevals: {}\n".format(
-                time_taken,
-                len(self.traj),
-            )
+            f"End of optimisation! Total duration: {time_taken}; Total fevals: {len(self.traj)}\n"
         )
         self.logger.info(f"Incumbent score: {self.inc_score}")
         self.logger.info("Incumbent config: ")
@@ -1422,7 +1412,7 @@ class DEHB(DifferentialEvolutionHyperbandBase):
             with open(os.path.join(self.output_path, "dehb_state.pkl"), "wb") as f:
                 pickle.dump(d, f)
         except Exception as e:
-            logging.warning(f"Checkpointing failed: {repr(e)}")
+            logging.warning(f"Checkpointing failed: {e!r}")
 
         if self.wandb_project:
             stats = {
@@ -1491,9 +1481,8 @@ class DEHB(DifferentialEvolutionHyperbandBase):
                 and self.runtime[-1] - self.start >= total_time_cost
             ):
                 return True
-        else:
-            if self.current_total_steps >= total_cost:
-                return True
+        elif self.current_total_steps >= total_cost:
+            return True
         return False
 
     def run(

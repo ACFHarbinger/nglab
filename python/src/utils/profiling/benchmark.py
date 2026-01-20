@@ -7,15 +7,14 @@ across different configurations and hardware.
 
 import gc
 import json
-import os
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 import torch
-import torch.nn as nn
-from torch.utils.data import DataLoader, TensorDataset
+from torch import nn
 
 
 @dataclass
@@ -56,13 +55,13 @@ class BenchmarkResult:
     cuda_version: str = ""
 
     # Extra metrics
-    extra: Dict[str, Any] = field(default_factory=dict)
+    extra: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return asdict(self)
 
-    def to_json(self, path: Optional[str] = None) -> str:
+    def to_json(self, path: str | None = None) -> str:
         """Export to JSON."""
         data = self.to_dict()
         if path:
@@ -91,7 +90,7 @@ class GPUBenchmark:
         self.device = device
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.results: List[BenchmarkResult] = []
+        self.results: list[BenchmarkResult] = []
 
         # Collect hardware info
         self._hardware_info = self._get_hardware_info()
@@ -114,12 +113,12 @@ class GPUBenchmark:
     def run_inference(
         self,
         input_shape: tuple,
-        batch_sizes: List[int] = [1, 8, 32, 64],
+        batch_sizes: list[int] = [1, 8, 32, 64],
         num_iterations: int = 100,
         warmup_iterations: int = 10,
         dtype: torch.dtype = torch.float32,
         mixed_precision: bool = False,
-    ) -> List[BenchmarkResult]:
+    ) -> list[BenchmarkResult]:
         """
         Run inference benchmarks across different batch sizes.
 
@@ -261,12 +260,12 @@ class GPUBenchmark:
         target_shape: tuple,
         loss_fn: Callable,
         optimizer_class: type = torch.optim.Adam,
-        batch_sizes: List[int] = [8, 32, 64],
+        batch_sizes: list[int] = [8, 32, 64],
         num_iterations: int = 50,
         warmup_iterations: int = 5,
         dtype: torch.dtype = torch.float32,
         mixed_precision: bool = False,
-    ) -> List[BenchmarkResult]:
+    ) -> list[BenchmarkResult]:
         """
         Run training benchmarks across different batch sizes.
 
@@ -431,7 +430,7 @@ class GPUBenchmark:
             **self._hardware_info,
         )
 
-    def save_results(self, filename: Optional[str] = None) -> str:
+    def save_results(self, filename: str | None = None) -> str:
         """Save all benchmark results to JSON file."""
         if filename is None:
             filename = f"benchmark_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -448,7 +447,7 @@ class GPUBenchmark:
 
         return str(path)
 
-    def compare_with_baseline(self, baseline_path: str) -> Dict[str, float]:
+    def compare_with_baseline(self, baseline_path: str) -> dict[str, float]:
         """
         Compare current results with a baseline.
 
@@ -458,7 +457,7 @@ class GPUBenchmark:
         Returns:
             Dictionary with percentage changes
         """
-        with open(baseline_path, "r") as f:
+        with open(baseline_path) as f:
             baseline = json.load(f)
 
         baseline_results = {r["name"]: r for r in baseline["results"]}
@@ -486,9 +485,9 @@ def run_inference_benchmark(
     model: nn.Module,
     input_shape: tuple,
     device: str = "cuda",
-    batch_sizes: List[int] = [1, 8, 32, 64],
+    batch_sizes: list[int] = [1, 8, 32, 64],
     **kwargs,
-) -> List[BenchmarkResult]:
+) -> list[BenchmarkResult]:
     """Convenience function for running inference benchmarks."""
     benchmark = GPUBenchmark(model, device=device)
     return benchmark.run_inference(input_shape, batch_sizes=batch_sizes, **kwargs)
@@ -500,9 +499,9 @@ def run_training_benchmark(
     target_shape: tuple,
     loss_fn: Callable,
     device: str = "cuda",
-    batch_sizes: List[int] = [8, 32, 64],
+    batch_sizes: list[int] = [8, 32, 64],
     **kwargs,
-) -> List[BenchmarkResult]:
+) -> list[BenchmarkResult]:
     """Convenience function for running training benchmarks."""
     benchmark = GPUBenchmark(model, device=device)
     return benchmark.run_training(

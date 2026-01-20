@@ -2,14 +2,14 @@
 Workflow for generating and visualizing reward landscapes.
 """
 
-import loss_landscapes
+from typing import Any
+
 import loss_landscapes
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torch import nn
 
-from typing import Any
 from python.src.env.trading_env import TradingEnv
 
 

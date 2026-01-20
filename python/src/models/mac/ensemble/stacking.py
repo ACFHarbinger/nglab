@@ -2,7 +2,8 @@
 
 from sklearn.ensemble import StackingClassifier, StackingRegressor
 from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+
 from ..base import ClassicalModel
 
 

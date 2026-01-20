@@ -7,9 +7,9 @@ work correctly on CUDA devices.
 
 import pytest
 import torch
-import torch.nn as nn
+from torch import nn
 
-from python.src.utils.mixed_precision import MixedPrecisionTrainer, MixedPrecisionConfig
+from python.src.utils.mixed_precision import MixedPrecisionConfig, MixedPrecisionTrainer
 from python.src.utils.profiling.gpu_optimization import MemoryPool
 
 

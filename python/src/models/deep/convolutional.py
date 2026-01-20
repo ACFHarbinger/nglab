@@ -4,19 +4,19 @@ Convolutional Neural Network (CNN) Variants Access Module.
 Exports CNNs, DeepConvNet, DeconvNets, ResNets, and Capsule Networks.
 """
 
-from .convolutional.cnn import RollingWindowCNN
-from .convolutional.dcn import DeepConvNet
-from .convolutional.deconv import DeconvNet, AutoDeconvNet
-from .convolutional.dcign import DCIGN
-from .convolutional.resnet import DeepResNet
 from .convolutional.capsule import CapsuleLayer
+from .convolutional.cnn import RollingWindowCNN
+from .convolutional.dcign import DCIGN
+from .convolutional.dcn import DeepConvNet
+from .convolutional.deconv import AutoDeconvNet, DeconvNet
+from .convolutional.resnet import DeepResNet
 
 __all__ = [
-    "RollingWindowCNN",
-    "DeepConvNet",
-    "DeconvNet",
-    "AutoDeconvNet",
     "DCIGN",
-    "DeepResNet",
+    "AutoDeconvNet",
     "CapsuleLayer",
+    "DeconvNet",
+    "DeepConvNet",
+    "DeepResNet",
+    "RollingWindowCNN",
 ]

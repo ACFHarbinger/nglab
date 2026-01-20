@@ -91,7 +91,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
             "random",
             "worst",
             "deferred",
-        ], "{} is not a valid choice for type of DE".format(self.async_strategy)
+        ], f"{self.async_strategy} is not a valid choice for type of DE"
 
     def _add_random_population(self, pop_size, population=None, fitness=[], age=[]):
         """Adds random individuals to the population"""
@@ -357,9 +357,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
         for i in range(generations):
             if verbose:
                 print(
-                    "Generation {:<2}/{:<2} -- {:<0.7}".format(
-                        i + 1, generations, self.inc_score
-                    )
+                    f"Generation {i + 1:<2}/{generations:<2} -- {self.inc_score:<0.7}"
                 )
             traj, runtime, history = self.evolve_generation(
                 fidelity=fidelity, best=self.inc_config, **kwargs

@@ -6,12 +6,11 @@ used to sample the most informative data points for training.
 """
 
 import torch
-import torch.nn as nn
-from typing import Dict, List
+from torch import nn
 
 
 def pinball_loss(
-    pred: torch.Tensor, target: torch.Tensor, quantiles: List[float]
+    pred: torch.Tensor, target: torch.Tensor, quantiles: list[float]
 ) -> torch.Tensor:
     """
     Computes the pinball loss for quantile regression.
@@ -35,7 +34,7 @@ class QuantileHead(nn.Module):
     Outputs multiple quantiles for uncertainty estimation.
     """
 
-    def __init__(self, input_dim: int, quantiles: List[float]):
+    def __init__(self, input_dim: int, quantiles: list[float]):
         super().__init__()
         self.quantiles = quantiles
         self.head = nn.Linear(input_dim, len(quantiles))
@@ -46,7 +45,7 @@ class QuantileHead(nn.Module):
 
 def mc_dropout_predict(
     model: nn.Module, x: torch.Tensor, n_samples: int = 10
-) -> Dict[str, torch.Tensor]:
+) -> dict[str, torch.Tensor]:
     """
     Perform Monte Carlo Dropout prediction.
 

@@ -6,10 +6,10 @@ Implementations of competitive learning algorithms including:
 - Learning Vector Quantization (LVQ)
 """
 
-from .som import KohonenMap
 from .lvq import LVQ
+from .som import KohonenMap
 
 __all__ = [
-    "KohonenMap",
     "LVQ",
+    "KohonenMap",
 ]

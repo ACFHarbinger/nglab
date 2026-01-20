@@ -5,12 +5,12 @@ Enables running multiple TradingEnv instances in parallel for faster
 training with algorithms that support batched environments (PPO, SAC, etc.).
 """
 
-from typing import List, Optional, Tuple, Union
+import multiprocessing as mp
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+
+import gymnasium as gym
 import numpy as np
 from numpy.typing import NDArray
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-import multiprocessing as mp
-import gymnasium as gym
 
 try:
     import nglab
@@ -44,7 +44,7 @@ class VectorizedTradingEnv:
         transaction_cost: float = 0.001,
         lookback: int = 30,
         max_steps: int = 1000,
-        seed: Optional[int] = None,
+        seed: int | None = None,
         use_multiprocessing: bool = False,
     ):
         if not HAS_NGLAB:
@@ -59,7 +59,7 @@ class VectorizedTradingEnv:
         self.use_multiprocessing = use_multiprocessing
 
         # Create individual environments
-        self.envs: List[nglab.TradingEnv] = []
+        self.envs: list[nglab.TradingEnv] = []
         for i in range(num_envs):
             env_seed = seed + i if seed is not None else None
             env = nglab.TradingEnv(
@@ -114,9 +114,9 @@ class VectorizedTradingEnv:
 
     def reset(
         self,
-        seed: Optional[int] = None,
-        options: Optional[dict] = None,
-    ) -> Tuple[NDArray[np.float64], dict]:
+        seed: int | None = None,
+        options: dict | None = None,
+    ) -> tuple[NDArray[np.float64], dict]:
         """
         Reset all environments.
 
@@ -141,8 +141,8 @@ class VectorizedTradingEnv:
 
     def step(
         self,
-        actions: Union[NDArray[np.int64], List[int]],
-    ) -> Tuple[
+        actions: NDArray[np.int64] | list[int],
+    ) -> tuple[
         NDArray[np.float64],
         NDArray[np.float64],
         NDArray[np.bool_],
@@ -182,9 +182,8 @@ class VectorizedTradingEnv:
 
             actions = np.array(actions).flatten()
 
-        assert len(actions) == self.num_envs, (
-            f"Expected {self.num_envs} actions, got {len(actions)}"
-        )
+        msg = f"Expected {self.num_envs} actions, got {len(actions)}"
+        assert len(actions) == self.num_envs, msg
 
         # Execute steps in parallel
         results = []
@@ -206,7 +205,7 @@ class VectorizedTradingEnv:
 
         return observations, rewards, terminated, truncated, infos
 
-    def step_async(self, actions: Union[NDArray[np.int64], List[int]]) -> None:
+    def step_async(self, actions: NDArray[np.int64] | list[int]) -> None:
         """
         Start asynchronous step execution.
 
@@ -220,7 +219,7 @@ class VectorizedTradingEnv:
 
     def step_wait(
         self,
-    ) -> Tuple[
+    ) -> tuple[
         NDArray[np.float64],
         NDArray[np.float64],
         NDArray[np.bool_],
@@ -244,7 +243,7 @@ class VectorizedTradingEnv:
 
         return observations, rewards, terminated, truncated, infos
 
-    def load_prices(self, prices: Union[List[float], NDArray[np.float64]]) -> None:
+    def load_prices(self, prices: list[float] | NDArray[np.float64]) -> None:
         """
         Load price data into all environments.
 
@@ -284,7 +283,7 @@ class SubprocVecEnv:
         transaction_cost: float = 0.001,
         lookback: int = 30,
         max_steps: int = 1000,
-        seed: Optional[int] = None,
+        seed: int | None = None,
     ):
         self.num_envs = num_envs
         self.closed = False
@@ -321,9 +320,9 @@ class SubprocVecEnv:
 
     def reset(
         self,
-        seed: Optional[int] = None,
-        options: Optional[dict] = None,
-    ) -> Tuple[NDArray[np.float64], dict]:
+        seed: int | None = None,
+        options: dict | None = None,
+    ) -> tuple[NDArray[np.float64], dict]:
         for i, pipe in enumerate(self.parent_pipes):
             env_seed = (seed + i) if seed is not None else None
             pipe.send(("reset", {"seed": env_seed, "options": options}))
@@ -337,8 +336,8 @@ class SubprocVecEnv:
 
     def step(
         self,
-        actions: Union[NDArray[np.int64], List[int]],
-    ) -> Tuple[
+        actions: NDArray[np.int64] | list[int],
+    ) -> tuple[
         NDArray[np.float64],
         NDArray[np.float64],
         NDArray[np.bool_],
@@ -381,7 +380,7 @@ def _worker(
     transaction_cost: float,
     lookback: int,
     max_steps: int,
-    seed: Optional[int],
+    seed: int | None,
 ) -> None:
     """Worker process for SubprocVecEnv."""
     import nglab
@@ -413,9 +412,9 @@ def make_vec_env(
     transaction_cost: float = 0.001,
     lookback: int = 30,
     max_steps: int = 1000,
-    seed: Optional[int] = None,
+    seed: int | None = None,
     use_subproc: bool = False,
-) -> Union[VectorizedTradingEnv, SubprocVecEnv]:
+) -> VectorizedTradingEnv | SubprocVecEnv:
     """
     Factory function to create vectorized environments.
 

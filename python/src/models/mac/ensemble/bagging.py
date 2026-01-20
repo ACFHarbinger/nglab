@@ -1,6 +1,7 @@
 """Bagging Model."""
 
 from sklearn.ensemble import BaggingClassifier, BaggingRegressor
+
 from ..base import ClassicalModel
 
 

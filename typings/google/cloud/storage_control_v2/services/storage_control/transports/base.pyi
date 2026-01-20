@@ -12,7 +12,8 @@ from google.protobuf import empty_pb2
 from google.cloud.storage_control_v2.types import storage_control
 
 DEFAULT_CLIENT_INFO = ...
-if hasattr(DEFAULT_CLIENT_INFO, "protobuf_runtime_version"): ...
+if hasattr(DEFAULT_CLIENT_INFO, "protobuf_runtime_version"):
+    ...
 
 class StorageControlTransport(abc.ABC):
     """Abstract transport class for StorageControl."""
@@ -62,6 +63,7 @@ class StorageControlTransport(abc.ABC):
     @property
     def host(self):  # -> str:
         ...
+
     def close(self):
         """Closes resources associated with the transport.
 

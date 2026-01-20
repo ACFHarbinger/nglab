@@ -6,13 +6,14 @@ GPU utilization and reduce memory usage while maintaining model accuracy.
 """
 
 import os
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Optional, Tuple
+from typing import Any
 
 import torch
-import torch.nn as nn
+from torch import nn
 from torch.cuda.amp import GradScaler, autocast
 
 
@@ -89,14 +90,14 @@ class MixedPrecisionTrainer:
         self,
         model: nn.Module,
         optimizer: torch.optim.Optimizer,
-        config: Optional[MixedPrecisionConfig] = None,
+        config: MixedPrecisionConfig | None = None,
     ):
         self.model = model
         self.optimizer = optimizer
         self.config = config or MixedPrecisionConfig()
 
         # Initialize GradScaler for FP16 mixed precision
-        self._scaler: Optional[GradScaler] = None
+        self._scaler: GradScaler | None = None
         if self.config.use_amp and self.config.precision == "16-mixed":
             self._scaler = GradScaler(
                 init_scale=self.config.init_scale,
@@ -132,7 +133,7 @@ class MixedPrecisionTrainer:
         forward_fn: Callable[[nn.Module, Any], torch.Tensor],
         loss_fn: Callable[[torch.Tensor, Any], torch.Tensor],
         accumulation_steps: int = 1,
-    ) -> Tuple[torch.Tensor, float]:
+    ) -> tuple[torch.Tensor, float]:
         """
         Execute a single training step with mixed precision.
 
@@ -159,7 +160,7 @@ class MixedPrecisionTrainer:
 
         return loss, loss.item() * accumulation_steps
 
-    def step(self, clip_grad_norm: Optional[float] = None) -> None:
+    def step(self, clip_grad_norm: float | None = None) -> None:
         """
         Execute optimizer step with gradient unscaling and optional clipping.
 

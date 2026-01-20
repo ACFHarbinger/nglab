@@ -2,7 +2,6 @@
 Simple SMA Crossover strategy for backtest verification.
 """
 
-from typing import Optional
 from python.src.backtesting.strategy import BaseStrategy
 
 
@@ -14,7 +13,7 @@ class SMACrossoverStrategy(BaseStrategy):
     def __init__(self, amount_to_buy: float = 10.0):
         super().__init__("SMACrossover")
         self.amount_to_buy = amount_to_buy
-        self.last_price: Optional[float] = None
+        self.last_price: float | None = None
 
     def on_market_data(self, market_id: str, price: float, timestamp: int) -> None:
         if self.engine is None:

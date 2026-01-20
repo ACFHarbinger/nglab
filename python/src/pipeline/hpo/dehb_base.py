@@ -9,7 +9,6 @@ algorithm for efficient hyperparameter tuning with multi-fidelity support.
 import sys
 import time
 from pathlib import Path
-from typing import Optional, Tuple, Union
 
 import ConfigSpace as CS
 import numpy as np
@@ -208,7 +207,7 @@ class DifferentialEvolutionHyperbandBase:
         """Initialize the DEHB population; implemented in subclasses."""
         raise NotImplementedError("Redefine!")
 
-    def _get_next_iteration(self, iteration: int) -> Tuple[np.array, np.array]:
+    def _get_next_iteration(self, iteration: int) -> tuple[np.array, np.array]:
         """Computes the Successive Halving spacing.
 
         Given the iteration index, computes the fidelity spacing to be used and
@@ -238,7 +237,7 @@ class DifferentialEvolutionHyperbandBase:
 
         return ns, fidelities
 
-    def get_incumbents(self) -> Tuple[Optional[Union[dict, CS.Configuration]], float]:
+    def get_incumbents(self) -> tuple[dict | CS.Configuration | None, float]:
         """Retrieve current incumbent configuration and score.
 
         Returns:

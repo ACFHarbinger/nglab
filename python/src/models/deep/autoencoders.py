@@ -11,9 +11,9 @@ from .autoencoders.stacked_ae import StackedAutoEncoder
 from .autoencoders.vae import VAE
 
 __all__ = [
+    "VAE",
     "AutoEncoder",
     "DenoisingAE",
     "SparseAE",
     "StackedAutoEncoder",
-    "VAE",
 ]

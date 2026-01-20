@@ -3,7 +3,8 @@ Verification script for Ensemble Models.
 """
 
 import torch
-from python.src.models.ensemble import EnsembleModel, create_ensemble_from_configs
+
+from python.src.models.ensemble import create_ensemble_from_configs
 
 
 def verify_ensemble():

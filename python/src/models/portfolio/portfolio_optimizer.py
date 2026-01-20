@@ -2,11 +2,12 @@
 Portfolio Optimization algorithms for multi-asset management.
 """
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
-from typing import List, Optional, Dict, Any
+from scipy.cluster.hierarchy import leaves_list, linkage
 from scipy.optimize import minimize
-from scipy.cluster.hierarchy import linkage, leaves_list
 from scipy.spatial.distance import squareform
 
 
@@ -20,8 +21,8 @@ class PortfolioOptimizer:
         expected_returns: np.ndarray,
         covariance_matrix: np.ndarray,
         risk_aversion: float = 1.0,
-        target_return: Optional[float] = None,
-        constraints: Optional[List[Dict[str, Any]]] = None,
+        target_return: float | None = None,
+        constraints: list[dict[str, Any]] | None = None,
     ) -> np.ndarray:
         """
         Markowitz Mean-Variance Optimization.
@@ -96,8 +97,8 @@ class PortfolioOptimizer:
 
     @staticmethod
     def _bisect(
-        indices: List[int], cov: np.ndarray, weights: pd.Series
-    ) -> List[List[int]]:
+        indices: list[int], cov: np.ndarray, weights: pd.Series
+    ) -> list[list[int]]:
         if len(indices) <= 1:
             return []
 
@@ -120,7 +121,7 @@ class PortfolioOptimizer:
         return [left, right]
 
     @staticmethod
-    def _get_cluster_var(cov: np.ndarray, indices: List[int]) -> float:
+    def _get_cluster_var(cov: np.ndarray, indices: list[int]) -> float:
         cluster_cov = cov[np.ix_(indices, indices)]
         # Inverse variance weights within cluster
         w = 1.0 / np.diag(cluster_cov)

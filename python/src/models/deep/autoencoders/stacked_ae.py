@@ -3,6 +3,7 @@ Stacked AutoEncoder (StackedAE) implementation.
 """
 
 from torch import nn
+
 from .ae import AutoEncoder
 
 

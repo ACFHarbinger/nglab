@@ -9,18 +9,17 @@ Provides detailed GPU performance analysis including:
 """
 
 import os
+from collections.abc import Callable
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Optional
 
 import torch
-import torch.nn as nn
+from torch import nn
 from torch.profiler import (
     ProfilerActivity,
     profile,
-    record_function,
     schedule,
     tensorboard_trace_handler,
 )
@@ -78,8 +77,8 @@ class ProfilingResult:
     peak_memory_mb: float
     avg_memory_mb: float
     top_operations: list = field(default_factory=list)
-    chrome_trace_path: Optional[str] = None
-    tensorboard_dir: Optional[str] = None
+    chrome_trace_path: str | None = None
+    tensorboard_dir: str | None = None
 
 
 class CUDAProfiler:
@@ -95,11 +94,11 @@ class CUDAProfiler:
         result = profiler.get_results()
     """
 
-    def __init__(self, config: Optional[ProfilerConfig] = None):
+    def __init__(self, config: ProfilerConfig | None = None):
         self.config = config or ProfilerConfig()
-        self._profiler: Optional[profile] = None
+        self._profiler: profile | None = None
         self._step_count = 0
-        self._results: Optional[ProfilingResult] = None
+        self._results: ProfilingResult | None = None
 
         # Create output directory
         Path(self.config.output_dir).mkdir(parents=True, exist_ok=True)
@@ -205,7 +204,7 @@ class CUDAProfiler:
             top_operations=top_ops,
         )
 
-    def get_results(self) -> Optional[ProfilingResult]:
+    def get_results(self) -> ProfilingResult | None:
         """Get profiling results."""
         return self._results
 
@@ -232,7 +231,7 @@ class CUDAProfiler:
         print("=" * 60 + "\n")
 
 
-def get_gpu_memory_stats(device: int = 0) -> Optional[GPUMemoryStats]:
+def get_gpu_memory_stats(device: int = 0) -> GPUMemoryStats | None:
     """
     Get current GPU memory statistics.
 

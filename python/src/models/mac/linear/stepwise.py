@@ -2,8 +2,9 @@
 
 import numpy as np
 import torch
-from sklearn.linear_model import LinearRegression
 from sklearn.feature_selection import SequentialFeatureSelector
+from sklearn.linear_model import LinearRegression
+
 from ..base import ClassicalModel
 
 

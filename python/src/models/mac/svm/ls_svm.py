@@ -1,6 +1,7 @@
 """LS-SVM Model."""
 
 from sklearn.kernel_ridge import KernelRidge
+
 from ..base import ClassicalModel
 
 

@@ -4,12 +4,11 @@ Base classes for model storage backends.
 Defines the abstract interface that all storage backends must implement.
 """
 
+import hashlib
+import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, BinaryIO, Iterator, Optional
-import hashlib
-import os
 
 
 @dataclass
@@ -26,13 +25,13 @@ class StorageConfig:
     s3_bucket: str = ""
     s3_prefix: str = "models/"
     s3_region: str = "us-east-1"
-    aws_access_key_id: Optional[str] = None
-    aws_secret_access_key: Optional[str] = None
+    aws_access_key_id: str | None = None
+    aws_secret_access_key: str | None = None
 
     # GCS settings
     gcs_bucket: str = ""
     gcs_prefix: str = "models/"
-    gcs_credentials_path: Optional[str] = None
+    gcs_credentials_path: str | None = None
 
     # Common settings
     compression: str = "zstd"  # none, gzip, zstd
@@ -95,8 +94,8 @@ class ModelStorage(ABC):
         self,
         model_data: bytes,
         name: str,
-        version: Optional[str] = None,
-        metadata: Optional[dict] = None,
+        version: str | None = None,
+        metadata: dict | None = None,
     ) -> str:
         """
         Save model data to storage.
@@ -116,7 +115,7 @@ class ModelStorage(ABC):
     def load(
         self,
         name: str,
-        version: Optional[str] = None,
+        version: str | None = None,
     ) -> bytes:
         """
         Load model data from storage.
@@ -131,12 +130,12 @@ class ModelStorage(ABC):
         pass
 
     @abstractmethod
-    def exists(self, name: str, version: Optional[str] = None) -> bool:
+    def exists(self, name: str, version: str | None = None) -> bool:
         """Check if a model exists in storage."""
         pass
 
     @abstractmethod
-    def delete(self, name: str, version: Optional[str] = None) -> bool:
+    def delete(self, name: str, version: str | None = None) -> bool:
         """Delete a model from storage."""
         pass
 
@@ -151,7 +150,7 @@ class ModelStorage(ABC):
         pass
 
     @abstractmethod
-    def get_metadata(self, name: str, version: Optional[str] = None) -> ModelMetadata:
+    def get_metadata(self, name: str, version: str | None = None) -> ModelMetadata:
         """Get metadata for a model."""
         pass
 
@@ -159,8 +158,8 @@ class ModelStorage(ABC):
         self,
         file_path: Path,
         name: str,
-        version: Optional[str] = None,
-        metadata: Optional[dict] = None,
+        version: str | None = None,
+        metadata: dict | None = None,
     ) -> str:
         """Save model from file path."""
         with open(file_path, "rb") as f:
@@ -170,7 +169,7 @@ class ModelStorage(ABC):
         self,
         name: str,
         output_path: Path,
-        version: Optional[str] = None,
+        version: str | None = None,
     ) -> Path:
         """Load model to a file path."""
         data = self.load(name, version)
@@ -196,7 +195,7 @@ class ModelStorage(ABC):
             f.write(data)
         return cache_path
 
-    def _load_from_cache(self, name: str, version: str) -> Optional[bytes]:
+    def _load_from_cache(self, name: str, version: str) -> bytes | None:
         """Load model data from local cache if available."""
         cache_path = self._get_cache_path(name, version)
         if cache_path.exists():

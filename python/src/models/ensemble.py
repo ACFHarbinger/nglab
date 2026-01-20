@@ -8,9 +8,10 @@ Combines multiple models using various strategies:
 - Stacking (meta-learner)
 """
 
+from typing import Literal
+
 import torch
-import torch.nn as nn
-from typing import List, Optional, Literal
+from torch import nn
 
 from .time_series import TimeSeriesBackbone
 
@@ -24,10 +25,10 @@ class EnsembleModel(nn.Module):
 
     def __init__(
         self,
-        models: List[nn.Module],
+        models: list[nn.Module],
         strategy: Literal["average", "weighted", "voting", "stacking"] = "average",
-        weights: Optional[List[float]] = None,
-        meta_learner: Optional[nn.Module] = None,
+        weights: list[float] | None = None,
+        meta_learner: nn.Module | None = None,
     ):
         """
         Initialize ensemble.
@@ -122,9 +123,9 @@ class EnsembleModel(nn.Module):
 
 
 def create_ensemble_from_configs(
-    configs: List[dict],
+    configs: list[dict],
     strategy: str = "average",
-    weights: Optional[List[float]] = None,
+    weights: list[float] | None = None,
 ) -> EnsembleModel:
     """
     Factory function to create an ensemble from a list of model configs.

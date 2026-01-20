@@ -10,23 +10,23 @@ Contains implementations of generative and probabilistic models such as:
 - Denoising Diffusion Probabilistic Models (DDPM)
 """
 
-from .gan import TimeGANGenerator, TimeGANDiscriminator
-from .flow import NormalizingFlow
 from .boltzmann import BoltzmannMachine
-from .rbm import RBM
 from .dbn import DeepBeliefNetwork
+from .diffusion_unet import DiffusionUNet1D
+from .flow import NormalizingFlow
+from .gan import TimeGANDiscriminator, TimeGANGenerator
 from .hopfield import HopfieldNetwork
 from .markov_chain import MarkovChain
-from .diffusion_unet import DiffusionUNet1D
+from .rbm import RBM
 
 __all__ = [
-    "TimeGANGenerator",
-    "TimeGANDiscriminator",
-    "NormalizingFlow",
-    "BoltzmannMachine",
     "RBM",
+    "BoltzmannMachine",
     "DeepBeliefNetwork",
+    "DiffusionUNet1D",
     "HopfieldNetwork",
     "MarkovChain",
-    "DiffusionUNet1D",
+    "NormalizingFlow",
+    "TimeGANDiscriminator",
+    "TimeGANGenerator",
 ]

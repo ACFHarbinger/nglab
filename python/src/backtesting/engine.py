@@ -3,9 +3,10 @@ Core backtesting engine wrapping PolymarketArena.
 """
 
 import json
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Any
 
 from nglab import PolymarketArena
+
 from .strategy import Strategy
 
 
@@ -16,9 +17,9 @@ class BacktestEngine:
 
     def __init__(self, initial_collateral: float = 10000.0, taker_fee: float = 0.001):
         self.arena = PolymarketArena(initial_collateral, taker_fee)
-        self.strategy: Optional[Strategy] = None
-        self.market_ids: List[str] = []
-        self.history: List[Dict[str, Any]] = []
+        self.strategy: Strategy | None = None
+        self.market_ids: list[str] = []
+        self.history: list[dict[str, Any]] = []
 
     def set_strategy(self, strategy: Strategy) -> None:
         """Assign a strategy to the engine."""
@@ -26,7 +27,7 @@ class BacktestEngine:
         if hasattr(strategy, "set_engine"):
             strategy.set_engine(self)
 
-    def load_data(self, markets_json: str, price_histories: Dict[str, str]) -> None:
+    def load_data(self, markets_json: str, price_histories: dict[str, str]) -> None:
         """
         Load market metadata and price history into the arena.
 
@@ -46,7 +47,7 @@ class BacktestEngine:
         for market_id, csv_data in price_histories.items():
             self.arena.load_price_history(market_id, csv_data)
 
-    def run(self) -> List[Dict[str, Any]]:
+    def run(self) -> list[dict[str, Any]]:
         """
         Execute the backtest loop.
         """
@@ -119,10 +120,10 @@ class BacktestEngine:
         """Merge complete sets back to collateral."""
         return self.arena.merge(market_id, amount)
 
-    def get_position(self, market_id: str) -> Tuple[float, float]:
+    def get_position(self, market_id: str) -> tuple[float, float]:
         """Get (yes, no) tokens."""
         return self.arena.get_position(market_id)
 
-    def get_price(self, market_id: str) -> Optional[float]:
+    def get_price(self, market_id: str) -> float | None:
         """Get Yes price."""
         return self.arena.get_price(market_id)

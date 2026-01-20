@@ -3,7 +3,7 @@ Utilities for model manipulation and setup.
 """
 
 import os
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 import torch
 from torch import nn
@@ -40,7 +40,7 @@ def get_inner_model(model: nn.Module) -> nn.Module:
 
 
 def setup_model(
-    name: str, general_path: str, device: torch.device, lock: Optional[Any] = None
+    name: str, general_path: str, device: torch.device, lock: Any | None = None
 ) -> nn.Module:
     """
     Setup and load a model from disk.
@@ -56,7 +56,7 @@ def setup_model(
     """
 
     def _load_model(
-        general_path: str, model_path: str, device: torch.device, lock: Optional[Any]
+        general_path: str, model_path: str, device: torch.device, lock: Any | None
     ) -> nn.Module:
         model_path = os.path.join(general_path, model_path)
         if lock is not None:

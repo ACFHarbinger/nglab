@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+
 import numpy as np
 
 
@@ -105,7 +105,7 @@ class MovingAverageDrift(DriftDetector):
         self.long_window = long_window
         self.threshold = threshold  # Z-score like threshold or absolute diff percent
 
-        self.buffer: List[float] = []
+        self.buffer: list[float] = []
 
     def reset(self):
         self.buffer = []

@@ -4,8 +4,9 @@ News Crawler for Financial Sentiment Analysis.
 Fetches data from financial news RSS feeds and websites.
 """
 
+from typing import Any
+
 import feedparser
-from typing import List, Dict, Any, Optional
 
 
 class NewsCrawler:
@@ -19,10 +20,10 @@ class NewsCrawler:
         "https://search.cnbc.com/rs/search/view.xml?partnerId=2000&keywords=finance",
     ]
 
-    def __init__(self, feeds: Optional[List[str]] = None):
+    def __init__(self, feeds: list[str] | None = None):
         self.feeds = feeds or self.DEFAULT_FEEDS
 
-    def crawl(self) -> List[Dict[str, Any]]:
+    def crawl(self) -> list[dict[str, Any]]:
         """
         Crawl RSS feeds and return a list of news items.
 
@@ -47,7 +48,7 @@ class NewsCrawler:
         return all_news
 
 
-def main_crawler(url: Optional[str] = None):
+def main_crawler(url: str | None = None):
     """Entry point for the webcrawler command."""
     feeds = [url] if url else None
     crawler = NewsCrawler(feeds)

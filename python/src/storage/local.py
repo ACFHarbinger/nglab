@@ -3,11 +3,9 @@ Local filesystem storage backend for models.
 """
 
 import json
-import os
 import shutil
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Optional
 
 from python.src.storage.base import ModelMetadata, ModelStorage, StorageConfig
 
@@ -38,14 +36,14 @@ class LocalStorage(ModelStorage):
 
     def _generate_version(self) -> str:
         """Generate a new version string."""
-        return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+        return datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
 
     def save(
         self,
         model_data: bytes,
         name: str,
-        version: Optional[str] = None,
-        metadata: Optional[dict] = None,
+        version: str | None = None,
+        metadata: dict | None = None,
     ) -> str:
         """Save model to local filesystem."""
         if version is None:
@@ -66,7 +64,7 @@ class LocalStorage(ModelStorage):
             version=version,
             checksum=self.compute_checksum(model_data),
             size_bytes=len(model_data),
-            created_at=datetime.now(timezone.utc).isoformat(),
+            created_at=datetime.now(UTC).isoformat(),
             **(metadata or {}),
         )
         with open(self._metadata_path(name, version), "w") as f:
@@ -83,7 +81,7 @@ class LocalStorage(ModelStorage):
 
         return str(model_path)
 
-    def load(self, name: str, version: Optional[str] = None) -> bytes:
+    def load(self, name: str, version: str | None = None) -> bytes:
         """Load model from local filesystem."""
         if version is None:
             version = self._get_latest_version(name)
@@ -99,13 +97,13 @@ class LocalStorage(ModelStorage):
 
         return self._decompress(compressed_data)
 
-    def exists(self, name: str, version: Optional[str] = None) -> bool:
+    def exists(self, name: str, version: str | None = None) -> bool:
         """Check if model exists."""
         if version is None:
             return self._model_dir(name).exists()
         return self._version_path(name, version).exists()
 
-    def delete(self, name: str, version: Optional[str] = None) -> bool:
+    def delete(self, name: str, version: str | None = None) -> bool:
         """Delete model from storage."""
         if version is None:
             # Delete entire model directory
@@ -146,7 +144,7 @@ class LocalStorage(ModelStorage):
             reverse=True,
         )
 
-    def get_metadata(self, name: str, version: Optional[str] = None) -> ModelMetadata:
+    def get_metadata(self, name: str, version: str | None = None) -> ModelMetadata:
         """Get metadata for a model."""
         if version is None:
             version = self._get_latest_version(name)
@@ -159,16 +157,16 @@ class LocalStorage(ModelStorage):
                 f"Metadata for '{name}' version '{version}' not found"
             )
 
-        with open(meta_path, "r") as f:
+        with open(meta_path) as f:
             data = json.load(f)
 
         return ModelMetadata(**data)
 
-    def _get_latest_version(self, name: str) -> Optional[str]:
+    def _get_latest_version(self, name: str) -> str | None:
         """Get the latest version string for a model."""
         latest_path = self._latest_path(name)
         if latest_path.exists():
-            with open(latest_path, "r") as f:
+            with open(latest_path) as f:
                 return f.read().strip()
 
         # Fallback: find most recent version file

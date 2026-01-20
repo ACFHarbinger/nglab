@@ -1,6 +1,7 @@
 """LARS Model."""
 
 from sklearn.linear_model import Lars
+
 from ..base import ClassicalModel
 
 

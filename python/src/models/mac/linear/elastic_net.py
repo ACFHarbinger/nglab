@@ -1,6 +1,7 @@
 """Elastic Net Model."""
 
 from sklearn.linear_model import ElasticNet
+
 from ..base import ClassicalModel
 
 

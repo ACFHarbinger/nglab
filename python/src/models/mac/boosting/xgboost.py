@@ -1,6 +1,7 @@
 """XGBoost Model."""
 
 import xgboost as xgb
+
 from ..base import ClassicalModel
 
 

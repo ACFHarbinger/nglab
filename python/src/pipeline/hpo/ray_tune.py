@@ -2,18 +2,19 @@
 Distributed Hyperparameter Optimization with Ray Tune and PyTorch Lightning.
 """
 
-from typing import Any, Dict, cast
+from typing import Any, cast
+
 import pytorch_lightning as pl
 from ray import tune
+from ray.train.lightning import RayDDPStrategy, RayTrainReportCallback
 from ray.tune.schedulers import ASHAScheduler
 from ray.tune.search.optuna import OptunaSearch
-from ray.train.lightning import RayTrainReportCallback, RayDDPStrategy
 
 from python.src.models.time_series import TimeSeriesBackbone
 from python.src.pipeline.core.lightning.supervised_learning import SLLightningModule
 
 
-def train_func(config: Dict[str, Any], opts: Dict[str, Any]) -> None:
+def train_func(config: dict[str, Any], opts: dict[str, Any]) -> None:
     """
     Ray Tune training function using PyTorch Lightning.
     """
@@ -54,11 +55,11 @@ def train_func(config: Dict[str, Any], opts: Dict[str, Any]) -> None:
 
 
 def run_hpo_search(
-    opts: Dict[str, Any],
+    opts: dict[str, Any],
     num_samples: int = 10,
     max_epochs: int = 10,
     gpus_per_trial: float = 0.0,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Run distributed hyperparameter search using Ray Tune.
     """
@@ -86,4 +87,4 @@ def run_hpo_search(
 
     results = tuner.fit()
     best_result = results.get_best_result(metric="val/sl_loss", mode="min")
-    return cast(Dict[str, Any], best_result.config)
+    return cast(dict[str, Any], best_result.config)

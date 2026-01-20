@@ -11,26 +11,26 @@ import asyncio
 import hashlib
 import json
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from contextlib import asynccontextmanager
+from typing import Any
 
+import redis.asyncio as redis
 import torch
 import uvicorn
-import redis.asyncio as redis
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
-from contextlib import asynccontextmanager
-
-import python.src.utils.definitions as definitions
-from python.src.utils.functions.functions import load_model
 
 # OpenTelemetry Imports
 from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.sdk.trace.sampling import ParentBased, TraceIdRatioBased
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.trace.sampling import ParentBased, TraceIdRatioBased
+from pydantic import BaseModel, Field
+
+from python.src.utils import definitions
+from python.src.utils.functions.functions import load_model
 
 tracer = trace.get_tracer(__name__)
 
@@ -47,18 +47,18 @@ except ImportError:
 
 
 # Global State
-_MODEL: Optional[torch.nn.Module] = None
-_OPTS: Optional[Dict[str, Any]] = None
-_REDIS: Optional[redis.Redis] = None
+_MODEL: torch.nn.Module | None = None
+_OPTS: dict[str, Any] | None = None
+_REDIS: redis.Redis | None = None
 
 
 class PredictionRequest(BaseModel):
     """Schema for model prediction request."""
 
-    observations: List[List[float]] = Field(
+    observations: list[list[float]] = Field(
         ..., description="Batch of observation tensors."
     )
-    model_path: Optional[str] = Field(
+    model_path: str | None = Field(
         None, description="Path to specific model checkpoint."
     )
     temperature: float = Field(1.0, ge=0.01, le=2.0)
@@ -67,7 +67,7 @@ class PredictionRequest(BaseModel):
 class PredictionResponse(BaseModel):
     """Schema for model prediction response."""
 
-    predictions: List[List[float]]
+    predictions: list[list[float]]
     model_version: str
     latency_ms: float
     cached: bool = False
@@ -98,7 +98,7 @@ class BatchInferenceHandler:
             except asyncio.CancelledError:
                 pass
 
-    async def predict(self, request: PredictionRequest) -> List[List[float]]:
+    async def predict(self, request: PredictionRequest) -> list[list[float]]:
         """Add request to queue and await result."""
         future = asyncio.get_running_loop().create_future()
         await self.queue.put((request, future))
@@ -113,7 +113,7 @@ class BatchInferenceHandler:
             try:
                 item = await asyncio.wait_for(self.queue.get(), timeout=1.0)
                 batch.append(item)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 continue
 
             # 2. Fetch remaining items up to BATCH_SIZE (non-blocking/timeout)
@@ -126,14 +126,14 @@ class BatchInferenceHandler:
                 try:
                     item = await asyncio.wait_for(self.queue.get(), timeout=timeout)
                     batch.append(item)
-                except asyncio.TimeoutError:
+                except TimeoutError:
                     break
 
             if batch:
                 await self._process_batch(batch)
 
     async def _process_batch(
-        self, batch: List[Tuple[PredictionRequest, asyncio.Future]]
+        self, batch: list[tuple[PredictionRequest, asyncio.Future]]
     ):
         """Process a batch of requests."""
         with tracer.start_as_current_span("process_batch") as span:
@@ -184,7 +184,7 @@ class BatchInferenceHandler:
                         future.set_exception(e)
 
 
-def get_model(model_path: Optional[str] = None) -> torch.nn.Module:
+def get_model(model_path: str | None = None) -> torch.nn.Module:
     """Singleton model loader with caching."""
     global _MODEL, _OPTS
 
@@ -221,7 +221,7 @@ class RayModelDeployment:
         # Load model on init to warm up the actor
         get_model()
 
-    async def __call__(self, request: PredictionRequest) -> List[List[float]]:
+    async def __call__(self, request: PredictionRequest) -> list[list[float]]:
         return await batch_handler.predict(request)
 
 
@@ -301,7 +301,7 @@ if os.getenv("NGLAB_ENABLE_TELEMETRY", "true").lower() == "true":
 
 
 @app.get("/health")
-async def health_check() -> Dict[str, Any]:
+async def health_check() -> dict[str, Any]:
     """Service health check."""
     return {
         "status": "online",

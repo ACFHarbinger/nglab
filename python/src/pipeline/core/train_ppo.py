@@ -8,12 +8,11 @@ on the Rust-backed TradingEnv using Stable-Baselines3.
 import argparse
 import os
 
+from environment import TradingEnv
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
-
-from environment import TradingEnv
 
 
 def make_env(rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000):

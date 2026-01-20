@@ -1,8 +1,9 @@
-import pandas as pd
-import numpy as np
 import argparse
 import os
 from datetime import datetime, timedelta
+
+import numpy as np
+import pandas as pd
 
 
 def generate_gbm(s0, mu, sigma, n_steps, dt):

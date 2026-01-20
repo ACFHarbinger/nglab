@@ -1,14 +1,14 @@
 """Boosting models package."""
 
-from .xgboost import XGBoostModel
-from .lightgbm import LightGBMModel
-from .gradient_boosting import GradientBoostingModel, GBRTModel
 from .adaboost import AdaBoostModel
+from .gradient_boosting import GBRTModel, GradientBoostingModel
+from .lightgbm import LightGBMModel
+from .xgboost import XGBoostModel
 
 __all__ = [
-    "XGBoostModel",
-    "LightGBMModel",
-    "GradientBoostingModel",
-    "GBRTModel",
     "AdaBoostModel",
+    "GBRTModel",
+    "GradientBoostingModel",
+    "LightGBMModel",
+    "XGBoostModel",
 ]

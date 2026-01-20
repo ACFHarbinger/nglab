@@ -1,8 +1,9 @@
 """Polynomial Regression Model."""
 
+from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression
+
 from ..base import ClassicalModel
 
 

@@ -9,16 +9,16 @@ import argparse
 import json
 import logging
 import sys
-from typing import Dict, Any, List
+from typing import Any
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger("benchmark_compare")
 
 
-def load_benchmark(path: str) -> Dict[str, Any]:
+def load_benchmark(path: str) -> dict[str, Any]:
     """Load benchmark JSON file."""
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             return json.load(f)
     except FileNotFoundError:
         logger.error(f"Benchmark file not found: {path}")
@@ -29,10 +29,10 @@ def load_benchmark(path: str) -> Dict[str, Any]:
 
 
 def compare_metrics(
-    current: Dict[str, Any],
-    baseline: Dict[str, Any],
+    current: dict[str, Any],
+    baseline: dict[str, Any],
     threshold: float = 0.10,  # 10% tolerance
-) -> List[str]:
+) -> list[str]:
     """
     Compare current metrics against baseline.
     Returns a list of regression warnings.

@@ -1,6 +1,7 @@
 """Decision Tree Model."""
 
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+
 from ..base import ClassicalModel
 
 

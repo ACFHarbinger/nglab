@@ -3,10 +3,11 @@ Association rule learning models for NGLab.
 """
 
 import torch
+
 from ..mac.base import ClassicalModel
 from .association_rule_learning.apriori import AprioriAlgorithm
-from .association_rule_learning.fpgrowth import FPGrowthAlgorithm
 from .association_rule_learning.eclat import EclatAlgorithm
+from .association_rule_learning.fpgrowth import FPGrowthAlgorithm
 
 
 class AssociationRuleModel(ClassicalModel):

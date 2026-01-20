@@ -1,6 +1,6 @@
 import psutil
-from flask import Flask, jsonify
 import torch
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 

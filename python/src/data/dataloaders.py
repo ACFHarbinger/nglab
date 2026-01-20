@@ -6,7 +6,7 @@ factory functions for creating DataLoaders with proper configuration.
 """
 
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 import pandas as pd
 import torch
@@ -42,10 +42,10 @@ class FinancialDataset(TimeSeriesDataset):
         pred_len: int = 1,
         train: bool = True,
         train_ratio: float = 0.8,
-        normalize: Optional[Literal["minmax", "zscore"]] = "minmax",
+        normalize: Literal["minmax", "zscore"] | None = "minmax",
         add_technical_indicators: bool = False,
         multi_asset: bool = False,
-        stats: Optional[dict] = None,
+        stats: dict | None = None,
     ):
         # Store additional config
         self.add_technical_indicators = add_technical_indicators
@@ -73,7 +73,7 @@ def create_dataloader(
     train_ratio: float = 0.7,
     val_ratio: float = 0.15,
     test_ratio: float = 0.15,
-    normalize: Optional[Literal["minmax", "zscore"]] = "minmax",
+    normalize: Literal["minmax", "zscore"] | None = "minmax",
     num_workers: int = 4,
     format: Literal["csv", "parquet", "hdf5"] = "csv",
     streaming: bool = False,
@@ -101,9 +101,8 @@ def create_dataloader(
         (train_loader, val_loader, test_loader)
     """
     # Validate ratios
-    assert abs(train_ratio + val_ratio + test_ratio - 1.0) < 1e-6, (
-        "Ratios must sum to 1.0"
-    )
+    is_valid_sum = abs(train_ratio + val_ratio + test_ratio - 1.0) < 1e-6
+    assert is_valid_sum, "Ratios must sum to 1.0"
 
     # For now, we'll create train/val splits using the existing train_ratio
     # and create a separate test set

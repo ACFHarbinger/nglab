@@ -1,6 +1,7 @@
 import json
 import os
-from typing import Any, Callable, Optional
+from collections.abc import Callable
+from typing import Any
 
 
 def compose_dirpath(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -19,14 +20,14 @@ def compose_dirpath(func: Callable[..., Any]) -> Callable[..., Any]:
     return wrapper
 
 
-def read_json(path: str, lock: Optional[Any] = None) -> Any:
+def read_json(path: str, lock: Any | None = None) -> Any:
     """
     Reads a JSON file, optionally with a lock.
     """
     if lock is not None:
         lock.acquire()
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             return json.load(f)
     finally:
         if lock is not None:

@@ -302,6 +302,7 @@ class IAMConfiguration(dict):
     @public_access_prevention.setter
     def public_access_prevention(self, value):  # -> None:
         ...
+
     @property
     def uniform_bucket_level_access_enabled(self):
         """If set, access checks only use bucket-level IAM policies or above.
@@ -314,6 +315,7 @@ class IAMConfiguration(dict):
     @uniform_bucket_level_access_enabled.setter
     def uniform_bucket_level_access_enabled(self, value):  # -> None:
         ...
+
     @property
     def uniform_bucket_level_access_locked_time(self):  # -> datetime:
         """Deadline for changing :attr:`uniform_bucket_level_access_enabled` from true to false.
@@ -342,6 +344,7 @@ class IAMConfiguration(dict):
     @bucket_policy_only_enabled.setter
     def bucket_policy_only_enabled(self, value):  # -> None:
         ...
+
     @property
     def bucket_policy_only_locked_time(self):  # -> datetime:
         """Deprecated alias for :attr:`uniform_bucket_level_access_locked_time`.
@@ -385,6 +388,7 @@ class Bucket(_PropertyMixin):
 
     def __repr__(self):  # -> str:
         ...
+
     @property
     def client(self):  # -> Any:
         """The client bound to this bucket."""

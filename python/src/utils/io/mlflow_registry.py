@@ -1,7 +1,8 @@
+import logging
+from typing import Any
+
 import mlflow
 from mlflow import pytorch, tracking
-from typing import Dict, Any, Optional
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +28,9 @@ class ModelRegistry:
         model: Any,
         artifact_path: str,
         registered_model_name: str,
-        metrics: Dict[str, float],
-        hyperparameters: Dict[str, Any],
-        tags: Optional[Dict[str, str]] = None,
+        metrics: dict[str, float],
+        hyperparameters: dict[str, Any],
+        tags: dict[str, str] | None = None,
     ) -> None:
         """
         Log a model with its evaluation metrics and hyperparameters.

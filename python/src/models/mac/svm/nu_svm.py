@@ -1,6 +1,7 @@
 """Nu SVM Model."""
 
 from sklearn.svm import NuSVC, NuSVR
+
 from ..base import ClassicalModel
 
 

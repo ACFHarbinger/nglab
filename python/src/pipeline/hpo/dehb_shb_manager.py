@@ -12,7 +12,7 @@ import numpy as np
 
 
 # Adapted from https://github.com/automl/DEHB/blob/master/src/dehb/utils/bracket_manager.py
-class SynchronousHalvingBracketManager(object):
+class SynchronousHalvingBracketManager:
     """
     Manages Successive Halving (SH) brackets for DEHB.
 
@@ -162,8 +162,8 @@ class SynchronousHalvingBracketManager(object):
     def __repr__(self):
         """Return a formatted table of bracket status per fidelity."""
         cell_width = 10
-        cell = "{{:^{}}}".format(cell_width)
-        fidelity_cell = "{{:^{}.2f}}".format(cell_width)
+        cell = f"{{:^{cell_width}}}"
+        fidelity_cell = f"{{:^{cell_width}.2f}}"
         header = "|{}|{}|{}|{}|".format(
             cell.format("fidelity"),
             cell.format("pending"),
@@ -176,12 +176,7 @@ class SynchronousHalvingBracketManager(object):
             pending = self.sh_bracket[fidelity]
             done = self._sh_bracket[fidelity]
             waiting = np.abs(self.n_configs[i] - pending - done)
-            entry = "|{}|{}|{}|{}|".format(
-                fidelity_cell.format(fidelity),
-                cell.format(pending),
-                cell.format(waiting),
-                cell.format(done),
-            )
+            entry = f"|{fidelity_cell.format(fidelity)}|{cell.format(pending)}|{cell.format(waiting)}|{cell.format(done)}|"
             table.append(entry)
         table.append(_hline)
         return "\n".join(table)

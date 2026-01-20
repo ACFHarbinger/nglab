@@ -7,7 +7,6 @@ model adaptation.
 
 import numpy as np
 import torch
-from typing import Optional
 from sklearn.cluster import KMeans
 
 
@@ -28,7 +27,7 @@ class RegimeDetector:
         """
         self.n_regimes = n_regimes
         self.window_size = window_size
-        self.kmeans: Optional[KMeans] = None
+        self.kmeans: KMeans | None = None
         self.regime_labels = ["Volatile", "Trending", "Ranging"][:n_regimes]
 
     def extract_features(self, prices: np.ndarray) -> np.ndarray:

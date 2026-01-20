@@ -1,14 +1,15 @@
 from datetime import datetime
+
 from sqlalchemy import (
+    BigInteger,
+    CheckConstraint,
     Column,
-    String,
-    Numeric,
     DateTime,
     Index,
-    CheckConstraint,
-    BigInteger,
+    Numeric,
+    String,
 )
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase
 
 

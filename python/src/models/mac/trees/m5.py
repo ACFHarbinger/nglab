@@ -2,8 +2,9 @@
 
 import numpy as np
 import torch
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LinearRegression
+from sklearn.tree import DecisionTreeRegressor
+
 from ..base import ClassicalModel
 
 

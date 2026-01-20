@@ -9,7 +9,8 @@ import functools
 import hashlib
 import json
 import logging
-from typing import Any, Callable, Optional, TypeVar, cast, Coroutine
+from collections.abc import Callable, Coroutine
+from typing import Any, TypeVar, cast
 
 import redis.asyncio as redis
 
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
 # Global Redis client (initialized on first use)
-_redis_client: Optional[redis.Redis] = None
+_redis_client: redis.Redis | None = None
 
 
 async def get_redis_client() -> redis.Redis:

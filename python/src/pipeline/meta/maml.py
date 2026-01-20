@@ -4,11 +4,11 @@ MAML Lightning Module for Meta-Learning Trading Strategies.
 Integrates Model-Agnostic Meta-Learning with PyTorch Lightning training loop.
 """
 
-import torch
-import torch.nn as nn
-import pytorch_lightning as pl
-from typing import List, Tuple, Optional, Any
 import copy
+
+import pytorch_lightning as pl
+import torch
+from torch import nn
 
 
 class MAMLLightningModule(pl.LightningModule):
@@ -142,7 +142,7 @@ class MAMLLightningModule(pl.LightningModule):
         self,
         support_x: torch.Tensor,
         support_y: torch.Tensor,
-        num_steps: Optional[int] = None,
+        num_steps: int | None = None,
     ) -> nn.Module:
         """
         Fast adaptation to new market regime.
@@ -203,7 +203,7 @@ class MAMLDataModule(pl.LightningDataModule):
         self.meta_batch_size = meta_batch_size
         self.num_workers = num_workers
 
-    def create_task(self, regime_data: torch.Tensor) -> Tuple:
+    def create_task(self, regime_data: torch.Tensor) -> tuple:
         """
         Create a task (support/query split) from regime data.
 

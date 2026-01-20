@@ -2,8 +2,9 @@
 Verification script for Meta-Learning and Regime Detection.
 """
 
-import torch
 import numpy as np
+import torch
+
 from python.src.models.meta_learner import MAMLWrapper
 from python.src.models.time_series import TimeSeriesBackbone
 from python.src.pipeline.meta.regime_detector import RegimeDetector

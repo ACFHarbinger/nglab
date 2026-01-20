@@ -63,9 +63,11 @@ class PasswordChallenge(ReauthChallenge):
     @property
     def name(self):  # -> Literal['PASSWORD']:
         ...
+
     @property
     def is_locally_eligible(self):  # -> Literal[True]:
         ...
+
     @_helpers.copy_docstring(ReauthChallenge)
     def obtain_challenge_input(self, unused_metadata):  # -> dict[str, str]:
         ...
@@ -76,9 +78,11 @@ class SecurityKeyChallenge(ReauthChallenge):
     @property
     def name(self):  # -> Literal['SECURITY_KEY']:
         ...
+
     @property
     def is_locally_eligible(self):  # -> Literal[True]:
         ...
+
     @_helpers.copy_docstring(ReauthChallenge)
     def obtain_challenge_input(
         self, metadata
@@ -96,9 +100,11 @@ class SamlChallenge(ReauthChallenge):
     @property
     def name(self):  # -> Literal['SAML']:
         ...
+
     @property
     def is_locally_eligible(self):  # -> Literal[True]:
         ...
+
     def obtain_challenge_input(self, metadata): ...
 
 AVAILABLE_CHALLENGES = ...

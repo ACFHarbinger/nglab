@@ -3,9 +3,9 @@ Factory function for creating storage backends.
 """
 
 from python.src.storage.base import ModelStorage, StorageConfig
+from python.src.storage.gcs import GCSStorage
 from python.src.storage.local import LocalStorage
 from python.src.storage.s3 import S3Storage
-from python.src.storage.gcs import GCSStorage
 
 
 def create_storage(config: StorageConfig | None = None) -> ModelStorage:

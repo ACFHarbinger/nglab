@@ -2,10 +2,11 @@
 Verification script for MAML Lightning Module.
 """
 
-import torch
 import pytorch_lightning as pl
+import torch
+
 from python.src.models.time_series import TimeSeriesBackbone
-from python.src.pipeline.meta.maml import MAMLLightningModule, MAMLDataModule
+from python.src.pipeline.meta.maml import MAMLDataModule, MAMLLightningModule
 
 
 def verify_maml_lightning():

@@ -18,7 +18,6 @@ from .mac import (
     GaussianNaiveBayesModel,
     GBRTModel,
     GradientBoostingModel,
-    kNNModel,
     LARSModel,
     LassoRegressionModel,
     LightGBMModel,
@@ -46,8 +45,8 @@ from .mac import (
     VotingModel,
     WeightedAverageModel,
     XGBoostModel,
+    kNNModel,
 )
-
 
 # List of MAC model names
 MAC_MODEL_NAMES = [

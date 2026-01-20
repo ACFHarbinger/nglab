@@ -1,8 +1,10 @@
-import torch
-import torch.nn as nn
-from torch.utils.data import Dataset
-from python.src.pipeline.distributed_train import train_ddp
 import logging
+
+import torch
+from torch import nn
+from torch.utils.data import Dataset
+
+from python.src.pipeline.distributed_train import train_ddp
 
 logging.basicConfig(level=logging.INFO)
 

@@ -1,6 +1,7 @@
 """Logistic Regression Model."""
 
 from sklearn.linear_model import LogisticRegression
+
 from ..base import ClassicalModel
 
 

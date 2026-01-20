@@ -7,7 +7,6 @@ and boundary handling.
 """
 
 from pathlib import Path
-from typing import List
 
 import ConfigSpace as CS
 import ConfigSpace.util as CSU
@@ -163,7 +162,7 @@ class DifferentialEvolutionBase:
         if self.configspace:
             # sample from CS s.t. conditional constraints (if any) are maintained
             population = self.cs.sample_configuration(size=pop_size)
-            if not isinstance(population, List):
+            if not isinstance(population, list):
                 population = [population]
             # the population is maintained in a list-of-vector form where each CS
             # configuration is scaled to a unit hypercube, i.e., all dimensions scaled to [0,1]

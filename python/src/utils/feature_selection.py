@@ -2,13 +2,14 @@
 Automated Feature Selection Toolkit for Time Series Data.
 """
 
+from typing import Any
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from typing import List, Optional, Union, Dict, Any, Tuple
-from sklearn.feature_selection import mutual_info_regression, RFE, RFECV
-from sklearn.base import BaseEstimator
-import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.base import BaseEstimator
+from sklearn.feature_selection import RFECV, mutual_info_regression
 
 
 class TimeSeriesFeatureSelector:
@@ -18,7 +19,7 @@ class TimeSeriesFeatureSelector:
 
     @staticmethod
     def compute_mutual_info(
-        X: pd.DataFrame, y: pd.Series, discrete_features: Union[bool, List[int]] = False
+        X: pd.DataFrame, y: pd.Series, discrete_features: bool | list[int] = False
     ) -> pd.Series:
         """
         Compute Mutual Information between features and target.
@@ -42,7 +43,7 @@ class TimeSeriesFeatureSelector:
         step: int = 1,
         cv: int = 5,
         scoring: str = "neg_mean_absolute_error",
-    ) -> Tuple[RFECV, List[str]]:
+    ) -> tuple[RFECV, list[str]]:
         """
         Recursive Feature Elimination with Cross-Validation.
         Automatically finds the optimal number of features.
@@ -78,7 +79,7 @@ except ImportError:
 class SHAPToolkit:
     """Wrapper for SHAP (SHapley Additive exPlanations)."""
 
-    def __init__(self, model: Any, background_data: Optional[np.ndarray] = None):
+    def __init__(self, model: Any, background_data: np.ndarray | None = None):
         self.model = model
         self.background_data = background_data
         self.explainer = None

@@ -1,6 +1,7 @@
 """Linear SVM Model."""
 
 from sklearn.svm import LinearSVC, LinearSVR
+
 from ..base import ClassicalModel
 
 

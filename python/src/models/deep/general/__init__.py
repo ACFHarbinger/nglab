@@ -10,18 +10,18 @@ Standard and specialized neural network components:
 - Extreme Learning Machines (ELM)
 """
 
-from .mlp import MLP
-from .perceptron import Perceptron
-from .rbf import RBF
-from .pinn import PINN
-from .node import NeuralODE, odesolve
 from .elm import ELM
+from .mlp import MLP
+from .node import NeuralODE, odesolve
+from .perceptron import Perceptron
+from .pinn import PINN
+from .rbf import RBF
 
 __all__ = [
-    "MLP",
-    "Perceptron",
-    "RBF",
-    "PINN",
-    "NeuralODE",
     "ELM",
+    "MLP",
+    "PINN",
+    "RBF",
+    "NeuralODE",
+    "Perceptron",
 ]

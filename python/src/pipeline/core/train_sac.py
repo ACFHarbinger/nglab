@@ -13,13 +13,12 @@ import os
 
 import gymnasium as gym
 import numpy as np
+from environment import TradingEnv
 from gymnasium import spaces
 from stable_baselines3 import SAC
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
-
-from environment import TradingEnv
 
 
 class ContinuousActionWrapper(gym.ActionWrapper):
@@ -33,9 +32,8 @@ class ContinuousActionWrapper(gym.ActionWrapper):
         Initialize the wrapper.
         """
         super().__init__(env)
-        assert isinstance(env.action_space, spaces.Discrete), (
-            "Expected Discrete action space"
-        )
+        is_discrete = isinstance(env.action_space, spaces.Discrete)
+        assert is_discrete, "Expected Discrete action space"
         self.n_actions = env.action_space.n
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
 

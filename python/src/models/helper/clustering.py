@@ -3,10 +3,10 @@ Clustering models for NGLab.
 """
 
 from ..mac.base import ClassicalModel
-from .clustering_algorithm.kmeans import KMeansAlgorithm
-from .clustering_algorithm.hierarchical import HierarchicalClusteringAlgorithm
 from .clustering_algorithm.dbscan import DBSCANAlgorithm
 from .clustering_algorithm.gmm import GMMAlgorithm
+from .clustering_algorithm.hierarchical import HierarchicalClusteringAlgorithm
+from .clustering_algorithm.kmeans import KMeansAlgorithm
 from .clustering_algorithm.kmedians import KMediansAlgorithm
 
 

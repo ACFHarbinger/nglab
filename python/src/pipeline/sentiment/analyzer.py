@@ -6,9 +6,8 @@ from news headlines, reports, and social media.
 """
 
 import torch
-from typing import List, Dict, Union, Optional
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch.nn.functional as F
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 
 class SentimentAnalyzer:
@@ -16,9 +15,7 @@ class SentimentAnalyzer:
     Wrapper for FinBERT to analyze sentiment of financial text.
     """
 
-    def __init__(
-        self, model_name: str = "ProsusAI/finbert", device: Optional[str] = None
-    ):
+    def __init__(self, model_name: str = "ProsusAI/finbert", device: str | None = None):
         """
         Initialize the analyzer.
 
@@ -36,9 +33,7 @@ class SentimentAnalyzer:
         # FinBERT labels: 0: positive, 1: negative, 2: neutral
         self.labels = ["positive", "negative", "neutral"]
 
-    def analyze(
-        self, text: Union[str, List[str]]
-    ) -> List[Dict[str, Union[str, float]]]:
+    def analyze(self, text: str | list[str]) -> list[dict[str, str | float]]:
         """
         Analyze sentiment of the given text(s).
 

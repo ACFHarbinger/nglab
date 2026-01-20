@@ -1,6 +1,7 @@
 """Naive Bayes Model."""
 
 from sklearn.naive_bayes import GaussianNB, MultinomialNB
+
 from ..base import ClassicalModel
 
 

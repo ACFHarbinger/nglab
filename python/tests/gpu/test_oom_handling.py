@@ -6,7 +6,6 @@ Verifies that the system can handle or at least report Out Of Memory errors grac
 
 import pytest
 import torch
-import torch.nn as nn
 
 try:
     from python.src.utils.profiling import get_gpu_memory_stats

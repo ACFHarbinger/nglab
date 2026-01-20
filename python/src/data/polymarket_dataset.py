@@ -4,8 +4,10 @@ Handles loading and processing of multivariate time-series data from Polymarket 
 """
 
 import os
-import torch
+
 import pandas as pd
+import torch
+
 from .data_utils import read_json
 
 

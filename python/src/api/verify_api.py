@@ -2,11 +2,11 @@
 Verification script for the FastAPI inference API.
 """
 
-import time
 import subprocess
-import requests  # type: ignore[import-untyped]
-
 import sys
+import time
+
+import requests  # type: ignore[import-untyped]
 
 
 def verify() -> None:

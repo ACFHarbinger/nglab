@@ -1,11 +1,13 @@
+import logging
 import os
+from collections.abc import Callable
+from typing import Any
+
 import torch
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm
-from typing import Any, Callable
-import logging
 
 logger = logging.getLogger(__name__)
 

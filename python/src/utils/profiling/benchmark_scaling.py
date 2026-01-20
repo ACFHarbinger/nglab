@@ -2,12 +2,13 @@
 Benchmark scaling efficiency of vectorized environments.
 """
 
-import time
-import torch
 import argparse
-from tensordict import TensorDict
-import sys
 import os
+import sys
+import time
+
+import torch
+from tensordict import TensorDict
 
 # Add src to path
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../"))

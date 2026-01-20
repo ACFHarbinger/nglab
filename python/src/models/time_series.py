@@ -4,8 +4,8 @@ Unified Backbone for Time Series Models.
 
 from torch import nn
 
-from .deep_factory import create_deep_model, DEEP_MODEL_NAMES
-from .mac_factory import create_mac_model, MAC_MODEL_NAMES
+from .deep_factory import DEEP_MODEL_NAMES, create_deep_model
+from .mac_factory import MAC_MODEL_NAMES, create_mac_model
 
 
 class TimeSeriesBackbone(nn.Module):

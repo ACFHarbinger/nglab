@@ -7,13 +7,12 @@ by streaming data in chunks from disk.
 
 import logging
 import random
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Union, cast
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
-from pandas.io.parsers import TextFileReader
-import torch
 from torch.utils.data import IterableDataset, get_worker_info
 
 logger = logging.getLogger(__name__)
@@ -32,11 +31,11 @@ class StreamingFinancialDataset(IterableDataset):
 
     def __init__(
         self,
-        filepath: Union[str, Path],
+        filepath: str | Path,
         chunk_size: int = 10000,
         loop_forever: bool = False,
         shuffle_buffer_size: int = 0,
-        transform: Optional[Any] = None,
+        transform: Any | None = None,
         file_format: str = "csv",
         **reader_kwargs,
     ):
@@ -90,7 +89,7 @@ class StreamingFinancialDataset(IterableDataset):
         else:
             raise ValueError(f"Unsupported file format: {self.file_format}")
 
-    def _process_chunk(self, chunk: pd.DataFrame) -> Iterator[Dict[str, Any]]:
+    def _process_chunk(self, chunk: pd.DataFrame) -> Iterator[dict[str, Any]]:
         """Yield individual samples from a chunk."""
         # Convert to dict records or keep as tensor rows?
         # Usually datasets yield individual items.
@@ -104,7 +103,7 @@ class StreamingFinancialDataset(IterableDataset):
                 item = self.transform(item)
             yield item
 
-    def __iter__(self) -> Iterator[Dict[str, Any]]:
+    def __iter__(self) -> Iterator[dict[str, Any]]:
         """Iterate over the dataset."""
         worker_info = get_worker_info()
 
@@ -132,7 +131,7 @@ class StreamingFinancialDataset(IterableDataset):
             )
 
         # Shuffle buffer state
-        buffer: List[Dict[str, Any]] = []
+        buffer: list[dict[str, Any]] = []
 
         def iterator_logic():
             dataset_iter = self._get_iterator()

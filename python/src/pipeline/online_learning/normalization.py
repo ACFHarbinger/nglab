@@ -1,6 +1,5 @@
 import torch
-import torch.nn as nn
-from typing import Optional
+from torch import nn
 
 
 class OnlineNormalizer(nn.Module):
@@ -12,7 +11,7 @@ class OnlineNormalizer(nn.Module):
     def __init__(
         self,
         num_features: int,
-        momentum: Optional[float] = None,
+        momentum: float | None = None,
         affine: bool = True,
         eps: float = 1e-5,
     ):

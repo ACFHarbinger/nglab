@@ -1,6 +1,7 @@
 """Locally Weighted Learning Model."""
 
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+
 from ..base import ClassicalModel
 
 

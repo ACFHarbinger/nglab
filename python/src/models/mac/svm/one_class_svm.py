@@ -3,6 +3,7 @@
 import numpy as np
 import torch
 from sklearn.svm import OneClassSVM
+
 from ..base import ClassicalModel
 
 

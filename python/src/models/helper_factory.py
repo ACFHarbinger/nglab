@@ -2,36 +2,32 @@
 Factory for Classical and Supplemental ML Models.
 """
 
-from .helper.clustering import (
-    KMeansModel,
-    HierarchicalClusteringModel,
-    DBSCANModel,
-    DBSCANModel,
-    GMMModel,
-    KMediansModel,
-    EMModel,
-)
-
-from .helper.dim_reduction import (
-    PCAModel,
-    PCAModel,
-    TSNEModel,
-    LDAModel,
-    PCRModel,
-    PLSRModel,
-    MDSModel,
-    SammonMappingModel,
-    ProjectionPursuitModel,
-    MDAModel,
-    QDAModel,
-    FDAModel,
-    UMAPModel,
-)
 from .helper.association_rule import (
     AprioriModel,
-    AprioriModel,
-    FPGrowthModel,
     EclatModel,
+    FPGrowthModel,
+)
+from .helper.clustering import (
+    DBSCANModel,
+    EMModel,
+    GMMModel,
+    HierarchicalClusteringModel,
+    KMeansModel,
+    KMediansModel,
+)
+from .helper.dim_reduction import (
+    FDAModel,
+    LDAModel,
+    MDAModel,
+    MDSModel,
+    PCAModel,
+    PCRModel,
+    PLSRModel,
+    ProjectionPursuitModel,
+    QDAModel,
+    SammonMappingModel,
+    TSNEModel,
+    UMAPModel,
 )
 
 

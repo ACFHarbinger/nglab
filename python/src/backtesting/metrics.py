@@ -2,14 +2,15 @@
 Performance metrics calculation for backtesting results.
 """
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Any
 
 
 def calculate_metrics(
-    history: List[Dict[str, Any]], risk_free_rate: float = 0.0
-) -> Dict[str, float]:
+    history: list[dict[str, Any]], risk_free_rate: float = 0.0
+) -> dict[str, float]:
     """
     Calculate performance metrics from backtest history.
     """

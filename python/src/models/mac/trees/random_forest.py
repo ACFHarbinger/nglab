@@ -1,6 +1,7 @@
 """Random Forest Model."""
 
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+
 from ..base import ClassicalModel
 
 

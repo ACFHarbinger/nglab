@@ -3,9 +3,10 @@ Verification script for the backtesting framework.
 """
 
 import json
+
 from python.src.backtesting.engine import BacktestEngine
-from python.src.backtesting.sample_strategy import SMACrossoverStrategy
 from python.src.backtesting.metrics import calculate_metrics
+from python.src.backtesting.sample_strategy import SMACrossoverStrategy
 
 
 def verify() -> None:

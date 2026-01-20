@@ -6,7 +6,7 @@ import datetime
 import json
 import os
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,13 +17,13 @@ import wandb
 
 def log_timeseries_values(
     loss: float,
-    grad_norms: Tuple[List[float], List[float]],
+    grad_norms: tuple[list[float], list[float]],
     epoch: int,
     batch_id: int,
     step: int,
     output: torch.Tensor,
     tb_logger: Any,
-    opts: Dict[str, Any],
+    opts: dict[str, Any],
 ) -> None:
     """
     Log training metrics to console, TensorBoard, and WandB.
@@ -67,8 +67,8 @@ def log_epoch(
     epoch: int,
     epoch_duration: float,
     optimizer: torch.optim.Optimizer,
-    opts: Dict[str, Any],
-    avg_loss: Optional[float] = None,
+    opts: dict[str, Any],
+    avg_loss: float | None = None,
 ) -> None:
     """
     Log summary of an epoch.
@@ -121,7 +121,7 @@ def _convert_numpy(obj: Any) -> Any:
 
 
 def log_to_json_resilient(
-    json_path: str, data: Dict[str, Any], lock: Optional[Any] = None
+    json_path: str, data: dict[str, Any], lock: Any | None = None
 ) -> None:
     """
     Thread-safe and error-resilient JSON logger using a temporary file fallback.
@@ -133,9 +133,9 @@ def log_to_json_resilient(
         current_data = {}
         if os.path.isfile(json_path):
             try:
-                with open(json_path, "r") as f:
+                with open(json_path) as f:
                     current_data = json.load(f)
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 print(f"Warning: Failed to read {json_path}, starting fresh.")
 
         # Merge data

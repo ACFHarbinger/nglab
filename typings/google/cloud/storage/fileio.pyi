@@ -66,8 +66,10 @@ class BlobReader(io.BufferedIOBase):
     def __init__(self, blob, chunk_size=..., retry=..., **download_kwargs) -> None: ...
     def read(self, size=...):  # -> bytes:
         ...
+
     def read1(self, size=...):  # -> bytes:
         ...
+
     def seek(self, pos, whence=...):  # -> int:
         """Seek within the blob.
 
@@ -79,13 +81,17 @@ class BlobReader(io.BufferedIOBase):
 
     def close(self):  # -> None:
         ...
+
     @property
     def closed(self):  # -> bool:
         ...
+
     def readable(self):  # -> Literal[True]:
         ...
+
     def writable(self):  # -> Literal[False]:
         ...
+
     def seekable(self):  # -> Literal[True]:
         ...
 
@@ -159,25 +165,33 @@ class BlobWriter(io.BufferedIOBase):
     ) -> None: ...
     def write(self, b):  # -> int:
         ...
+
     def tell(self):  # -> int:
         ...
+
     def flush(self):  # -> None:
         ...
+
     def close(self):  # -> None:
         ...
+
     def terminate(self):  # -> None:
         """Cancel the ResumableUpload."""
         ...
 
     def __exit__(self, exc_type, exc_val, exc_tb):  # -> None:
         ...
+
     @property
     def closed(self):  # -> bool:
         ...
+
     def readable(self):  # -> Literal[False]:
         ...
+
     def writable(self):  # -> Literal[True]:
         ...
+
     def seekable(self):  # -> Literal[False]:
         ...
 
@@ -234,6 +248,7 @@ class SlidingBuffer:
 
     def close(self):  # -> None:
         ...
+
     @property
     def closed(self):  # -> bool:
         ...

@@ -3,6 +3,7 @@
 import numpy as np
 import torch
 from sklearn.naive_bayes import GaussianNB
+
 from ..base import ClassicalModel
 
 

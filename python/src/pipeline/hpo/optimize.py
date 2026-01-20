@@ -6,7 +6,8 @@ and training hyperparameters across different pipeline tasks.
 """
 
 import os
-from typing import Any, Dict, Optional, Union
+from pathlib import Path
+from typing import Any
 
 import optuna
 import pytorch_lightning as pl
@@ -16,20 +17,19 @@ from optuna.visualization import (
     plot_param_importances,
 )
 
-from pathlib import Path
 from python.src.models.time_series import TimeSeriesBackbone
 from python.src.pipeline.core.lightning.supervised_learning import SLLightningModule
-from python.src.pipeline.hpo.ray_tune import run_hpo_search
 from python.src.pipeline.hpo.dehb import (
     DifferentialEvolutionHyperband,
     get_config_space,
 )
+from python.src.pipeline.hpo.ray_tune import run_hpo_search
 
 
 def optimize_model(
-    config: Dict[str, Any],
-    opts: Dict[str, Any],
-    fidelity: Optional[Union[int, float]] = None,
+    config: dict[str, Any],
+    opts: dict[str, Any],
+    fidelity: int | float | None = None,
 ) -> float:
     """
     Core evaluation worker that trains a model with given hyperparameters.
@@ -77,8 +77,8 @@ def optimize_model(
 
 
 def bayesian_optimization(
-    opts: Dict[str, Any], n_trials: int = 20, storage_path: Optional[str] = None
-) -> Dict[str, Any]:
+    opts: dict[str, Any], n_trials: int = 20, storage_path: str | None = None
+) -> dict[str, Any]:
     """
     Native Optuna-based Bayesian Optimization for single-node search.
     """
@@ -118,11 +118,11 @@ def bayesian_optimization(
 
 
 def run_dehb_search(
-    opts: Dict[str, Any],
+    opts: dict[str, Any],
     fevals: int = 50,
     min_fidelity: int = 1,
     max_fidelity: int = 10,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Differential Evolution Hyperband (DEHB) Optimization.
     """
@@ -159,7 +159,7 @@ def run_dehb_search(
     return best_config
 
 
-def grid_search(opts: Dict[str, Any], search_space: Dict[str, Any]) -> Dict[str, Any]:
+def grid_search(opts: dict[str, Any], search_space: dict[str, Any]) -> dict[str, Any]:
     """
     Convenience wrapper for Grid Search (using Optuna or Ray Tune).
     """
@@ -177,7 +177,7 @@ def grid_search(opts: Dict[str, Any], search_space: Dict[str, Any]) -> Dict[str,
     return study.best_params
 
 
-def random_search(opts: Dict[str, Any], n_trials: int = 10) -> Dict[str, Any]:
+def random_search(opts: dict[str, Any], n_trials: int = 10) -> dict[str, Any]:
     """
     Convenience wrapper for Random Search.
     """
@@ -200,11 +200,11 @@ def random_search(opts: Dict[str, Any], n_trials: int = 10) -> Dict[str, Any]:
 
 
 def distributed_hpo(
-    opts: Dict[str, Any],
+    opts: dict[str, Any],
     num_samples: int = 10,
     max_epochs: int = 10,
     gpus_per_trial: float = 1.0,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Distributed HPO using Ray Tune.
     """

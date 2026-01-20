@@ -2,22 +2,23 @@
 Dimensionality reduction models for NGLab.
 """
 
-import torch
 import numpy as np
-from ..mac.base import ClassicalModel
-from ..mac.linear import MARSModel
-from .dimensionality_reduction.pca import PCAAlgorithm
-from .dimensionality_reduction.tsne import TSNEAlgorithm
-from .dimensionality_reduction.lda import LDAAlgorithm
-from .dimensionality_reduction.sammon import SammonMappingAlgorithm
-from .dimensionality_reduction.mda import MDAAlgorithm
+import torch
+from sklearn.cross_decomposition import PLSRegression
+from sklearn.decomposition import PCA, FastICA
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 
 # Sklearn imports for direct wrappers
 from sklearn.linear_model import LinearRegression
-from sklearn.decomposition import PCA, FastICA
-from sklearn.cross_decomposition import PLSRegression
 from sklearn.manifold import MDS
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+
+from ..mac.base import ClassicalModel
+from ..mac.linear import MARSModel
+from .dimensionality_reduction.lda import LDAAlgorithm
+from .dimensionality_reduction.mda import MDAAlgorithm
+from .dimensionality_reduction.pca import PCAAlgorithm
+from .dimensionality_reduction.sammon import SammonMappingAlgorithm
+from .dimensionality_reduction.tsne import TSNEAlgorithm
 
 
 class DimReductionModel(ClassicalModel):

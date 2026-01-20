@@ -401,9 +401,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         for i in range(generations):
             if verbose:
                 print(
-                    "Generation {:<2}/{:<2} -- {:<0.7}".format(
-                        i + 1, generations, self.inc_score
-                    )
+                    f"Generation {i + 1:<2}/{generations:<2} -- {self.inc_score:<0.7}"
                 )
             traj, runtime, history = self.evolve_generation(fidelity=fidelity, **kwargs)
             self.traj.extend(traj)

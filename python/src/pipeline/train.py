@@ -8,17 +8,18 @@ and handling gradient clipping.
 import math
 import os
 import time
-from typing import Any, Dict, List, Tuple, cast
+from typing import Any, cast
 
 import torch
 from tqdm import tqdm
+
 from python.src.utils.functions.functions import move_to
 from python.src.utils.functions.model_utils import get_inner_model
 from python.src.utils.logging.log_utils import log_epoch, log_timeseries_values
 
 
 def rollout(
-    model: torch.nn.Module, dataset: torch.utils.data.Dataset[Any], opts: Dict[str, Any]
+    model: torch.nn.Module, dataset: torch.utils.data.Dataset[Any], opts: dict[str, Any]
 ) -> torch.Tensor:
     """
     Perform evaluation rollout on a dataset.
@@ -33,13 +34,13 @@ def rollout(
     """
     model.eval()
 
-    def eval_model_bat(bat: Dict[str, torch.Tensor]) -> torch.Tensor:
+    def eval_model_bat(bat: dict[str, torch.Tensor]) -> torch.Tensor:
         """
         Evaluate a single batch.
         """
         with torch.no_grad():
             cost, _ = cast(
-                Tuple[torch.Tensor, Any], model(move_to(bat, opts["device"]))
+                tuple[torch.Tensor, Any], model(move_to(bat, opts["device"]))
             )
         return cost.data.cpu()
 
@@ -56,7 +57,7 @@ def rollout(
 
 def clip_grad_norms(
     param_groups: Any, max_norm: float = math.inf
-) -> Tuple[List[float], List[float]]:
+) -> tuple[list[float], list[float]]:
     """
     Clips the norms for all param groups to max_norm and returns gradient norms before clipping
     :param param_groups:
@@ -87,7 +88,7 @@ def train_epoch(
     epoch: int,
     dataset: torch.utils.data.Dataset[Any],
     tb_logger: Any,
-    opts: Dict[str, Any],
+    opts: dict[str, Any],
 ) -> None:
     """
     Train the model for one epoch.
@@ -147,10 +148,10 @@ def train_batch(
     baseline: Any,
     epoch: int,
     batch_id: int,
-    batch: Dict[str, torch.Tensor],
+    batch: dict[str, torch.Tensor],
     step: int,
     tb_logger: Any,
-    opts: Dict[str, Any],
+    opts: dict[str, Any],
 ) -> None:
     """
     Train the model on a single batch.
