@@ -13,8 +13,8 @@ FROM python:${PYTHON_VERSION}-slim-bookworm AS builder
 
 WORKDIR /app
 
-# 1. Install system build dependencies
-# We install the Rust toolchain directly to ensure compatibility and speed
+# 1. Install system build dependencies and Rust toolchain
+# We consolidate this to ensure the builder layer remains as small as possible
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
@@ -23,26 +23,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
     && rm -rf /var/lib/apt/lists/*
 
-# Add cargo to the path
+# Add cargo to the path for the build session
 ENV PATH="/root/.cargo/bin:${PATH}"
 ENV CARGO_INCREMENTAL=0
 ENV RUSTFLAGS="-C target-cpu=native -C opt-level=3"
 
-# 2. Install uv for high-speed dependency resolution
-RUN pip install uv
+# 2. Install uv
+RUN pip install --no-cache-dir uv
 
-# 3. Copy metadata and source code for building
+# 3. Copy source code
 COPY pyproject.toml uv.lock README.md ./
 COPY rust/ ./rust/
 COPY nglab/ ./nglab/
 
 # 4. Build and install the package
-# OPTIMIZATION: We explicitly point to the CPU-only wheel index for PyTorch.
-# This prevents the builder from downloading ~4GB of CUDA binaries, solving the "No Space" error.
+# OPTIMIZATION: We explicitly point to the CPU index. 
+# We also manually remove nvidia-* dependencies that some ML libs pull in by default
+# to prevent the "No Space Left on Device" error during the COPY phase.
 RUN uv pip install --system --no-cache \
     --index-url https://download.pytorch.org/whl/cpu \
     --extra-index-url https://pypi.org/simple \
-    .
+    . \
+    && find /usr/local/lib/python3.11/site-packages -name "nvidia*" -type d -exec rm -rf {} + \
+    && rm -rf /root/.cargo /root/.rustup /tmp/*
 
 # =============================================================================
 # Stage 2: Final Runtime (Ultra-slim)
@@ -55,13 +58,13 @@ ENV VERSION=${NGLAB_VERSION}
 LABEL org.opencontainers.image.version=${NGLAB_VERSION}
 LABEL org.opencontainers.image.description="Nothing Gambles Like A Bot (NGLAB) Production Image"
 
-# Create non-privileged user for security
+# Create non-privileged user
 RUN groupadd --gid 1000 nglab && \
     useradd --uid 1000 --gid nglab --shell /bin/bash --create-home nglab
 
 WORKDIR /app
 
-# 5. Install ONLY essential runtime libraries (no build tools)
+# 5. Install ONLY essential runtime libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libssl3 \
     libgomp1 \
@@ -71,7 +74,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean
 
 # 6. Copy the compiled Python site-packages from the builder stage
-# This carries over our built Rust extension module (_nglab.so)
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
@@ -79,7 +81,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --chown=nglab:nglab python/src ./src
 COPY --chown=nglab:nglab python/conf ./conf
 
-# Setup directory permissions for Prometheus and logs
+# Setup directory permissions
 RUN mkdir -p /app/logs /app/models /app/.cache /tmp/prometheus && \
     chown -R nglab:nglab /app /tmp/prometheus
 
@@ -90,16 +92,12 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV NGLAB_ENV=production
 ENV PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus
 
-# Health check to ensure the API is responding
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Execute as restricted user
 USER nglab
-
-# Default port
 EXPOSE 8000
 
-# Use tini to handle zombie processes (common in Python/ML workloads)
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-m", "api.main"]

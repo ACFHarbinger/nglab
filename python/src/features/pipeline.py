@@ -160,7 +160,8 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         return scaled
 
     def _generate_features(
-        self, X: pd.DataFrame | np.ndarray  # noqa: N803
+        self,
+        X: pd.DataFrame | np.ndarray,  # noqa: N803
     ) -> pd.DataFrame:
         """
         Internal method to generate raw features using GPU acceleration.

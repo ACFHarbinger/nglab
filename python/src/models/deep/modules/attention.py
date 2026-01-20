@@ -177,7 +177,13 @@ class ProbAttention(nn.Module):
         return contex
 
     def _update_context(  # noqa: PLR0913
-        self, context_in, V, scores, index, L_Q, attn_mask  # noqa: N803
+        self,
+        context_in,
+        V,  # noqa: N803
+        scores,
+        index,
+        L_Q,  # noqa: N803
+        attn_mask,
     ):
         B, H, L_V, _D = V.shape
 
