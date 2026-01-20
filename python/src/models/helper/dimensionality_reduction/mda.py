@@ -1,4 +1,5 @@
-from typing import Any, Optional, Dict
+from typing import Any, Dict, Optional, cast
+
 import numpy as np
 from numpy.typing import NDArray
 from sklearn.mixture import GaussianMixture
@@ -7,7 +8,7 @@ from sklearn.preprocessing import LabelEncoder
 
 class MDAAlgorithm:
     """Mixture Discriminant Analysis (MDA) Algorithm."""
-    
+
     def __init__(self, n_components_per_class: int = 1, **kwargs: Any) -> None:
         """Initialize MDA."""
         self.n_components_per_class = n_components_per_class
@@ -18,7 +19,7 @@ class MDAAlgorithm:
 
     def fit(self, X: NDArray[Any], y: NDArray[Any]) -> "MDAAlgorithm":  # noqa: N803
         """Fit the model."""
-        y_encoded = self.le.fit_transform(y)
+        y_encoded = cast(NDArray[np.int_], self.le.fit_transform(y))
         self.classes_ = self.le.classes_
         n_classes = len(self.classes_)
         self.gmms = {}
@@ -43,10 +44,10 @@ class MDAAlgorithm:
         """Apply dimensionality reduction/transformation."""
         if self.classes_ is None or self.priors_ is None:
             raise ValueError("Model not fitted yet.")
-            
+
         n_samples = X.shape[0]
         n_classes = len(self.classes_)
-        log_probs = np.zeros((n_samples, n_classes))
+        log_probs: NDArray[np.float64] = np.zeros((n_samples, n_classes), dtype=np.float64)
 
         for c in range(n_classes):
             # weighted log prob
@@ -59,9 +60,11 @@ class MDAAlgorithm:
         exp_log = np.exp(log_probs - max_log)
         probs = exp_log / np.sum(exp_log, axis=1, keepdims=True)
 
-        return probs
+        return cast(NDArray[np.float64], probs)
 
-    def fit_transform(self, X: NDArray[Any], y: NDArray[Any]) -> NDArray[np.float64]:  # noqa: N803
+    def fit_transform(
+        self, X: NDArray[Any], y: NDArray[Any]
+    ) -> NDArray[np.float64]:  # noqa: N803
         """Fit and transform."""
         self.fit(X, y)
         return self.transform(X)

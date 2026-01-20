@@ -2,7 +2,8 @@
 Association rule learning models for NGLab.
 """
 
-from typing import Any, List, Dict, Optional
+from typing import Any, Dict, List, Optional, cast
+
 import torch
 
 from ..mac.base import ClassicalModel
@@ -19,7 +20,12 @@ class AssociationRuleModel(ClassicalModel):
         super().__init__(output_type="rules")
         self.model: Optional[Any] = None
 
-    def forward(self, x: torch.Tensor, **kwargs: Any) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: Optional[bool] = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         Forward pass. Returns a dummy tensor to comply with interface.
         """
@@ -29,13 +35,16 @@ class AssociationRuleModel(ClassicalModel):
     def get_rules(self) -> List[Dict[str, Any]]:
         """Return the learned rules."""
         if self.model and self._is_fitted:
-            return self.model.rules
+            return cast(List[Dict[str, Any]], self.model.rules)
         return []
 
 
 class AprioriModel(AssociationRuleModel):
     """Apriori Association Rule Model."""
-    def __init__(self, min_support: float = 0.5, min_confidence: float = 0.7, **kwargs: Any) -> None:
+
+    def __init__(
+        self, min_support: float = 0.5, min_confidence: float = 0.7, **kwargs: Any
+    ) -> None:
         """Initialize Apriori Model."""
         super().__init__()
         self.model = AprioriAlgorithm(
@@ -45,7 +54,10 @@ class AprioriModel(AssociationRuleModel):
 
 class FPGrowthModel(AssociationRuleModel):
     """FP-Growth Association Rule Model."""
-    def __init__(self, min_support: float = 0.5, min_confidence: float = 0.7, **kwargs: Any) -> None:
+
+    def __init__(
+        self, min_support: float = 0.5, min_confidence: float = 0.7, **kwargs: Any
+    ) -> None:
         """Initialize FP-Growth Model."""
         super().__init__()
         self.model = FPGrowthAlgorithm(
@@ -55,7 +67,10 @@ class FPGrowthModel(AssociationRuleModel):
 
 class EclatModel(AssociationRuleModel):
     """Eclat Association Rule Model."""
-    def __init__(self, min_support: float = 0.5, min_confidence: float = 0.7, **kwargs: Any) -> None:
+
+    def __init__(
+        self, min_support: float = 0.5, min_confidence: float = 0.7, **kwargs: Any
+    ) -> None:
         """Initialize Eclat Model."""
         super().__init__()
         self.model = EclatAlgorithm(

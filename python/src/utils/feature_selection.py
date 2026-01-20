@@ -2,15 +2,15 @@
 Automated Feature Selection Toolkit for Time Series Data.
 """
 
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 from numpy.typing import NDArray
 from sklearn.base import BaseEstimator
-from sklearn.model_selection import TimeSeriesSplit
 from sklearn.feature_selection import RFECV, mutual_info_regression
+from sklearn.model_selection import TimeSeriesSplit
 
 
 class TimeSeriesFeatureSelector:
@@ -22,7 +22,7 @@ class TimeSeriesFeatureSelector:
     def compute_mutual_info(
         X: pd.DataFrame,  # noqa: N803
         y: pd.Series,
-        discrete_features: bool | list[int] = False,
+        discrete_features: Union[bool, List[int]] = False,
     ) -> pd.Series:
         """
         Compute Mutual Information between features and target.
@@ -34,7 +34,7 @@ class TimeSeriesFeatureSelector:
 
         mi_scores = mutual_info_regression(
             X_clean, y_clean, discrete_features=discrete_features
-        )  # type: ignore
+        )
         mi_series = pd.Series(mi_scores, index=X.columns)
         return mi_series.sort_values(ascending=False)
 
@@ -46,7 +46,7 @@ class TimeSeriesFeatureSelector:
         step: int = 1,
         cv: int = 5,
         scoring: str = "neg_mean_absolute_error",
-    ) -> tuple[RFECV, list[str]]:
+    ) -> Tuple[RFECV, List[str]]:
         """
         Recursive Feature Elimination with Cross-Validation.
         Automatically finds the optimal number of features.
@@ -57,7 +57,7 @@ class TimeSeriesFeatureSelector:
         )
         selector.fit(X, y)
 
-        selected_features: list[str] = list(X.columns[selector.support_])
+        selected_features: List[str] = list(X.columns[selector.support_])
         return selector, selected_features
 
     @staticmethod
@@ -72,29 +72,28 @@ class TimeSeriesFeatureSelector:
         plt.show()
 
 
+HAS_SHAP = False
 try:
     import shap
-
     HAS_SHAP = True
 except ImportError:
-    shap: Any = None
-    HAS_SHAP = False
+    shap = None
 
 
 class SHAPToolkit:
     """Wrapper for SHAP (SHapley Additive exPlanations)."""
 
-    def __init__(self, model: Any, background_data: NDArray[Any] | None = None) -> None:
+    def __init__(self, model: Any, background_data: Optional[NDArray[Any]] = None) -> None:
         self.model = model
         self.background_data = background_data
-        self.explainer = None
+        self.explainer: Any = None
 
         if not HAS_SHAP:
             print("Warning: SHAP library not found. SHAPToolkit will be limited.")
 
     def explain(self, X: NDArray[Any]) -> NDArray[Any]:  # noqa: N803
         """Calculate SHAP values for the given data."""
-        if not HAS_SHAP:
+        if not HAS_SHAP or shap is None:
             raise RuntimeError("SHAP not installed. Install with 'pip install shap'")
 
         if self.explainer is None:
@@ -104,8 +103,7 @@ class SHAPToolkit:
 
     def plot_summary(self, shap_values: Any, X: pd.DataFrame) -> None:  # noqa: N803
         """Plot SHAP summary plot."""
-        if not HAS_SHAP:
+        if not HAS_SHAP or shap is None:
             return
-        import shap as shap_pkg
 
-        shap_pkg.summary_plot(shap_values, X)
+        shap.summary_plot(shap_values, X)

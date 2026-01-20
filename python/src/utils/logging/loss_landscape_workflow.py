@@ -2,7 +2,7 @@
 Workflow for generating and visualizing reward landscapes.
 """
 
-from typing import Any
+from typing import Any, cast
 
 import loss_landscapes
 import matplotlib.pyplot as plt
@@ -22,7 +22,7 @@ def evaluate_model(model: Any, env: TradingEnv, num_steps: int = 100) -> float:
     # but is not directly callable. We use .forward() explicitly.
     model.eval()
     obs, _ = env.reset()
-    total_reward = 0
+    total_reward = 0.0
 
     # Try to get device from parameters
     try:
@@ -36,10 +36,12 @@ def evaluate_model(model: Any, env: TradingEnv, num_steps: int = 100) -> float:
             obs_tensor = torch.from_numpy(obs).float().unsqueeze(0).to(device)
             # Invoke forward explicitly as the wrapper might not be callable
             action_logits = model.forward(obs_tensor)
-            action = torch.argmax(action_logits, dim=-1).item()
+            action_val = int(torch.argmax(action_logits, dim=-1).item())
 
-            obs, reward, terminated, truncated, _info = env.step(action)
-            total_reward += reward
+            # TradingEnv expectations: action can be int or ndarray.
+            # If step expects ndarray, we should provide it.
+            obs, reward, terminated, truncated, _info = env.step(np.array([action_val]))
+            total_reward += float(reward)
 
             if terminated or truncated:
                 break
@@ -52,7 +54,9 @@ class SimplePolicy(nn.Module):
     Simple 2-layer MLP policy for landscape analysis.
     """
 
-    def __init__(self, input_dim: int = 12, hidden_dim: int = 64, output_dim: int = 1):
+    def __init__(
+        self, input_dim: int = 12, hidden_dim: int = 64, output_dim: int = 1
+    ) -> None:
         """
         Initialize.
         """
@@ -68,7 +72,7 @@ class SimplePolicy(nn.Module):
         """
         Forward pass.
         """
-        return self.net(x)
+        return cast(torch.Tensor, self.net(x))
 
 
 def run_landscape_analysis() -> None:
@@ -93,7 +97,7 @@ def run_landscape_analysis() -> None:
     # deepcopy_model=True ensures the original model isn't modified
     landscape = loss_landscapes.random_plane(
         model,
-        lambda m: evaluate_model(m, env),  # type: ignore[arg-type]
+        lambda m: evaluate_model(m, env),
         distance=1,
         steps=steps,
         normalization="filter",

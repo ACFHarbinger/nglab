@@ -1,13 +1,16 @@
-from typing import Any, Optional, Union
-from sklearn.decomposition import PCA
+from typing import Any, Optional, Union, cast
+
 import numpy as np
 from numpy.typing import NDArray
+from sklearn.decomposition import PCA
 
 
 class PCAAlgorithm:
     """Principal Component Analysis (PCA) Algorithm wrapper."""
-    
-    def __init__(self, n_components: Optional[Union[int, float, str]] = None, **kwargs: Any) -> None:
+
+    def __init__(
+        self, n_components: Optional[Union[int, float, str]] = None, **kwargs: Any
+    ) -> None:
         """Initialize PCA."""
         self.model = PCA(n_components=n_components, **kwargs)
 
@@ -18,12 +21,12 @@ class PCAAlgorithm:
 
     def transform(self, X: NDArray[Any]) -> NDArray[np.float64]:  # noqa: N803
         """Apply dimensionality reduction."""
-        return self.model.transform(X)
+        return cast(NDArray[np.float64], self.model.transform(X))
 
     def fit_transform(self, X: NDArray[Any]) -> NDArray[np.float64]:  # noqa: N803
         """Fit and transform."""
-        return self.model.fit_transform(X)
+        return cast(NDArray[np.float64], self.model.fit_transform(X))
 
     def inverse_transform(self, X: NDArray[Any]) -> NDArray[np.float64]:  # noqa: N803
         """Transform data back to its original space."""
-        return self.model.inverse_transform(X)
+        return cast(NDArray[np.float64], self.model.inverse_transform(X))

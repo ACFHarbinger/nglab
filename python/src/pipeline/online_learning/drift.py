@@ -6,7 +6,7 @@ import numpy as np
 class DriftDetector(ABC):
     """Abstract base class for concept drift detection."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.in_drift = False
         self.in_warning = False
 
@@ -19,7 +19,7 @@ class DriftDetector(ABC):
         pass
 
     @abstractmethod
-    def reset(self):
+    def reset(self) -> None:
         """Reset the detector state."""
         pass
 
@@ -37,7 +37,7 @@ class PageHinkley(DriftDetector):
         delta: float = 0.005,
         threshold: float = 50.0,
         alpha: float = 0.9999,
-    ):
+    ) -> None:
         """
         Args:
             min_instances: Minimum number of instances before detecting drift.
@@ -56,7 +56,7 @@ class PageHinkley(DriftDetector):
         self.sum_upper = 0.0
         self.sum_lower = 0.0
 
-    def reset(self):
+    def reset(self) -> None:
         self.sample_count = 0
         self.x_mean = 0.0
         self.sum_upper = 0.0
@@ -99,7 +99,7 @@ class MovingAverageDrift(DriftDetector):
 
     def __init__(
         self, short_window: int = 20, long_window: int = 100, threshold: float = 3.0
-    ):
+    ) -> None:
         super().__init__()
         self.short_window = short_window
         self.long_window = long_window
@@ -107,7 +107,7 @@ class MovingAverageDrift(DriftDetector):
 
         self.buffer: list[float] = []
 
-    def reset(self):
+    def reset(self) -> None:
         self.buffer = []
         self.in_drift = False
 
@@ -119,9 +119,9 @@ class MovingAverageDrift(DriftDetector):
         if len(self.buffer) < self.long_window:
             return False
 
-        long_ma = np.mean(self.buffer)
-        short_ma = np.mean(self.buffer[-self.short_window :])
-        std_dev = np.std(self.buffer) + 1e-6
+        long_ma = float(np.mean(self.buffer))
+        short_ma = float(np.mean(self.buffer[-self.short_window :]))
+        std_dev = float(np.std(self.buffer)) + 1e-6
 
         z_score = abs(short_ma - long_ma) / std_dev
 

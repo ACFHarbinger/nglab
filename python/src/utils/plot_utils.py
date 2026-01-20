@@ -11,6 +11,7 @@ This module provides functions for generating various plots:
 import math
 import os
 from typing import Any, Optional, List, Callable, Union, Dict, Tuple
+from numpy.typing import NDArray
 
 import networkx as nx
 import numpy as np
@@ -24,7 +25,7 @@ from matplotlib.patches import Rectangle
 import matplotlib.axes
 
 
-def draw_graph(distance_matrix: np.ndarray) -> None:
+def draw_graph(distance_matrix: NDArray[Any]) -> None:
     """
     Draws a networkx graph from a distance matrix using spring layout.
 
@@ -41,7 +42,7 @@ def draw_graph(distance_matrix: np.ndarray) -> None:
 
 def plot_linechart(  # noqa: PLR0913, PLR0915
     output_dest: str,
-    graph_log: np.ndarray,
+    graph_log: NDArray[Any],
     plot_func: Callable[..., Any],
     policies: List[str],
     x_label: Optional[str] = None,
@@ -64,7 +65,7 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
 
     def plot_graphs_out(
         plot_func: Callable[..., Any], 
-        graph_log: np.ndarray, 
+        graph_log: NDArray[Any], 
         x_values: Optional[List[float]], 
         linestyles: Optional[List[str]], 
         markers: Optional[List[str]]
@@ -195,7 +196,7 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
     return pareto_dominants if pareto_front else None
 
 
-def plot_tsp(xy: np.ndarray, tour: np.ndarray, ax1: matplotlib.axes.Axes) -> None:
+def plot_tsp(xy: NDArray[Any], tour: NDArray[Any], ax1: matplotlib.axes.Axes) -> None:
     """
     Plot the TSP tour on matplotlib axis ax1.
     """
@@ -352,7 +353,7 @@ def plot_attention_maps_wrapper(  # noqa: PLR0913, PLR0915
     x_labels: Optional[List[str]] = None,
     y_labels: Optional[List[str]] = None,
     **execution_kwargs: Any,
-) -> np.ndarray:
+) -> NDArray[Any]:
     """
     Plot attention maps as heatmaps for a given layer, head, batch, and simulation sample.
     """

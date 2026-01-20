@@ -9,17 +9,17 @@ import argparse
 import json
 import logging
 import sys
-from typing import Any
+from typing import Any, Dict, List, cast
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger("benchmark_compare")
 
 
-def load_benchmark(path: str) -> dict[str, Any]:
+def load_benchmark(path: str) -> Dict[str, Any]:
     """Load benchmark JSON file."""
     try:
         with open(path) as f:
-            return json.load(f)
+            return cast(Dict[str, Any], json.load(f))
     except FileNotFoundError:
         logger.error(f"Benchmark file not found: {path}")
         sys.exit(1)
@@ -29,15 +29,15 @@ def load_benchmark(path: str) -> dict[str, Any]:
 
 
 def compare_metrics(
-    current: dict[str, Any],
-    baseline: dict[str, Any],
+    current: Dict[str, Any],
+    baseline: Dict[str, Any],
     threshold: float = 0.10,  # 10% tolerance
-) -> list[str]:
+) -> List[str]:
     """
     Compare current metrics against baseline.
     Returns a list of regression warnings.
     """
-    regressions = []
+    regressions: List[str] = []
 
     # Flatten or traverse the structure. Assuming simple structure:
     # { "inference_latency_ms": 10.5, "throughput": 100 }
@@ -83,7 +83,8 @@ def compare_metrics(
     return regressions
 
 
-def main():
+def main() -> None:
+    """Main execution entry point."""
     parser = argparse.ArgumentParser(description="Compare Benchmark Results")
     parser.add_argument("current", help="Path to current benchmark JSON")
     parser.add_argument("baseline", help="Path to baseline benchmark JSON")
@@ -105,7 +106,7 @@ def main():
     # Assuming root keys are test names, and values are metrics
     # e.g. { "test_forward_pass": { "p50": ... } }
 
-    all_regressions = []
+    all_regressions: List[str] = []
 
     for test_name, base_metrics in base_data.items():
         if test_name not in curr_data:

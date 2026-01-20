@@ -1,7 +1,9 @@
 """Normalization layer wrapper supporting various types (Batch, Layer, Instance)."""
 
 import math
+from typing import Optional, Any, cast
 
+import torch
 from torch import nn
 
 
@@ -15,13 +17,13 @@ class Normalization(nn.Module):
         embed_dim: int,
         norm_name: str = "batch",
         eps_alpha: float = 1e-05,
-        learn_affine: bool | None = True,
-        track_stats: bool | None = False,
-        mbval: float | None = 0.1,
-        n_groups: int | None = None,
-        kval: float | None = None,
-        bias: bool | None = True,
-    ):
+        learn_affine: bool = True,
+        track_stats: bool = False,
+        mbval: float = 0.1,
+        n_groups: Optional[int] = None,
+        kval: float = 1.0,
+        bias: bool = True,
+    ) -> None:
         """
         Initializes the normalization layer.
 
@@ -37,6 +39,8 @@ class Normalization(nn.Module):
             bias: If True, add bias for LayerNorm.
         """
         super().__init__()
+
+        self.normalizer: nn.Module
 
         if norm_name == "instance":
             self.normalizer = nn.InstanceNorm1d(
@@ -59,11 +63,9 @@ class Normalization(nn.Module):
                 embed_dim, eps=eps_alpha, elementwise_affine=learn_affine, bias=bias
             )
         elif norm_name == "group":
-            if n_groups is None:
-                # Fallback or error if n_groups not provided
-                n_groups = 1  # avoid error if not used, or raise?
+            actual_n_groups = n_groups if n_groups is not None else 1
             self.normalizer = nn.GroupNorm(
-                n_groups, eps=eps_alpha, num_channels=embed_dim, affine=learn_affine
+                actual_n_groups, eps=eps_alpha, num_channels=embed_dim, affine=learn_affine
             )
         elif norm_name == "local_response":
             self.normalizer = nn.LocalResponseNorm(
@@ -76,28 +78,35 @@ class Normalization(nn.Module):
         if learn_affine:
             self.init_parameters()
 
-    def init_parameters(self):
+    def init_parameters(self) -> None:
         """Initializes the affine parameters if applicable."""
         for param in self.parameters():
-            stdv = 1.0 / math.sqrt(param.size(-1))
-            param.data.uniform_(-stdv, stdv)
+            if param.dim() > 0:
+                stdv = 1.0 / math.sqrt(param.size(-1))
+                param.data.uniform_(-stdv, stdv)
 
-    def forward(self, input, mask=None):
+    def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
         Applies the normalization to the input.
 
         Args:
-            input: Input tensor.
+            x: Input tensor.
             mask: Optional mask (currently not used by normalization layers).
 
         Returns:
             Normalized tensor.
         """
         if isinstance(self.normalizer, nn.BatchNorm1d):
-            return self.normalizer(input.view(-1, input.size(-1))).view(*input.size())
+            return cast(torch.Tensor, self.normalizer(x.view(-1, x.size(-1)))).view(*x.size())
         elif isinstance(self.normalizer, nn.InstanceNorm1d):
-            return self.normalizer(input.permute(0, 2, 1)).permute(0, 2, 1)
+            # InstanceNorm1d expects (N, C, L)
+            return cast(torch.Tensor, self.normalizer(x.permute(0, 2, 1))).permute(0, 2, 1)
         elif isinstance(self.normalizer, nn.LayerNorm):
-            return self.normalizer(input).view(*input.size())
+            return cast(torch.Tensor, self.normalizer(x)).view(*x.size())
+        elif isinstance(self.normalizer, (nn.GroupNorm, nn.LocalResponseNorm)):
+            # GroupNorm usually expects (N, C, ...)
+            if x.dim() == 3:
+                return cast(torch.Tensor, self.normalizer(x.transpose(1, 2))).transpose(1, 2)
+            return cast(torch.Tensor, self.normalizer(x))
         else:
-            return input
+            return x

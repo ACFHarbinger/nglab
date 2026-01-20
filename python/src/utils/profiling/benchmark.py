@@ -12,7 +12,7 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional, List, Dict, Union, Tuple, Type
+from typing import Any, Dict, List, Optional, Tuple, Type, cast
 
 import torch
 from torch import nn
@@ -296,7 +296,7 @@ class GPUBenchmark:
         """Run single training benchmark."""
         self.model.train()
 
-        optimizer = optimizer_class(self.model.parameters(), lr=1e-4)
+        optimizer = cast(Any, optimizer_class)(self.model.parameters(), lr=1e-4)
         scaler = (
             torch.cuda.amp.GradScaler()
             if mixed_precision and torch.cuda.is_available()

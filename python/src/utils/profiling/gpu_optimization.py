@@ -8,11 +8,11 @@ and utilities for identifying and resolving GPU bottlenecks.
 import gc
 import logging
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from functools import wraps
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import nn
@@ -43,7 +43,7 @@ class MemoryPool:
 
     device: int
     pool_size_mb: float
-    allocated_tensors: dict[str, torch.Tensor] = field(default_factory=dict)
+    allocated_tensors: Dict[str, torch.Tensor] = field(default_factory=dict)
 
     @classmethod
     def create(
@@ -83,7 +83,7 @@ class MemoryPool:
     def allocate(
         self,
         name: str,
-        shape: tuple[int, ...],
+        shape: Tuple[int, ...],
         dtype: torch.dtype = torch.float32,
     ) -> torch.Tensor:
         """Allocate a named tensor from the pool.
@@ -111,7 +111,7 @@ class MemoryPool:
         self.allocated_tensors[name] = tensor
         return tensor
 
-    def get(self, name: str) -> torch.Tensor | None:
+    def get(self, name: str) -> Optional[torch.Tensor]:
         """Get a previously allocated tensor by name."""
         return self.allocated_tensors.get(name)
 
@@ -131,18 +131,10 @@ class TransferProfiler:
 
     Measures the overhead of transferring data between Python (numpy/torch)
     and Rust (via PyO3 bindings).
-
-    Example:
-        profiler = TransferProfiler()
-
-        with profiler.profile_transfer("observations", direction="rust_to_py"):
-            obs = trading_env.get_observation()
-
-        profiler.print_summary()
     """
 
     def __init__(self) -> None:
-        self.profiles: list[TransferProfile] = []
+        self.profiles: List[TransferProfile] = []
         self._start_time: float = 0.0
         self._current_name: str = ""
         self._current_direction: str = ""
@@ -152,8 +144,8 @@ class TransferProfiler:
         self,
         name: str,
         direction: str = "py_to_rust",
-        data_size_bytes: int | None = None,
-    ):
+        data_size_bytes: Optional[int] = None,
+    ) -> Generator[None, None, None]:
         """Context manager for profiling a data transfer.
 
         Args:
@@ -161,12 +153,14 @@ class TransferProfiler:
             direction: "py_to_rust" or "rust_to_py".
             data_size_bytes: Optional data size (will estimate if not provided).
         """
-        torch.cuda.synchronize() if torch.cuda.is_available() else None
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         start_time = time.perf_counter()
 
         yield
 
-        torch.cuda.synchronize() if torch.cuda.is_available() else None
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         elapsed_ms = (time.perf_counter() - start_time) * 1000
 
         # Default data size if not provided
@@ -185,7 +179,7 @@ class TransferProfiler:
         name: str,
         array: Any,
         direction: str = "py_to_rust",
-    ) -> Callable:
+    ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
         """Decorator for profiling array transfers.
 
         Args:
@@ -197,16 +191,15 @@ class TransferProfiler:
             Decorator function.
         """
 
-        def decorator(func: Callable) -> Callable:
+        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             @wraps(func)
             def wrapper(*args: Any, **kwargs: Any) -> Any:
                 # Get data size
+                size = 0
                 if hasattr(array, "nbytes"):
-                    size = array.nbytes
+                    size = int(getattr(array, "nbytes"))
                 elif hasattr(array, "element_size") and hasattr(array, "numel"):
-                    size = array.element_size() * array.numel()
-                else:
-                    size = 0
+                    size = int(getattr(array, "element_size")() * getattr(array, "numel")())
 
                 with self.profile_transfer(name, direction, size):
                     result = func(*args, **kwargs)
@@ -216,7 +209,7 @@ class TransferProfiler:
 
         return decorator
 
-    def get_summary(self) -> dict[str, Any]:
+    def get_summary(self) -> Dict[str, Any]:
         """Get summary statistics of all profiles."""
         if not self.profiles:
             return {"total_transfers": 0}
@@ -224,16 +217,16 @@ class TransferProfiler:
         py_to_rust = [p for p in self.profiles if p.direction == "py_to_rust"]
         rust_to_py = [p for p in self.profiles if p.direction == "rust_to_py"]
 
-        def stats(profiles: list[TransferProfile]) -> dict[str, float]:
+        def stats(profiles: List[TransferProfile]) -> Dict[str, float]:
             if not profiles:
-                return {"count": 0, "total_ms": 0, "avg_ms": 0}
+                return {"count": 0.0, "total_ms": 0.0, "avg_ms": 0.0}
             times = [p.transfer_time_ms for p in profiles]
             return {
-                "count": len(profiles),
-                "total_ms": sum(times),
-                "avg_ms": sum(times) / len(times),
-                "max_ms": max(times),
-                "min_ms": min(times),
+                "count": float(len(profiles)),
+                "total_ms": float(sum(times)),
+                "avg_ms": float(sum(times) / len(times)),
+                "max_ms": float(max(times)),
+                "min_ms": float(min(times)),
             }
 
         return {
@@ -252,13 +245,13 @@ class TransferProfiler:
         print(f"Total time: {summary['total_time_ms']:.2f}ms")
 
         for direction in ["py_to_rust", "rust_to_py"]:
-            stats = summary.get(direction, {})
-            if stats.get("count", 0) > 0:
+            stats_dict = summary.get(direction, {})
+            if stats_dict.get("count", 0.0) > 0.0:
                 print(f"\n{direction}:")
-                print(f"  Count: {stats['count']}")
-                print(f"  Total: {stats['total_ms']:.2f}ms")
-                print(f"  Avg: {stats['avg_ms']:.2f}ms")
-                print(f"  Min/Max: {stats['min_ms']:.2f}ms / {stats['max_ms']:.2f}ms")
+                print(f"  Count: {int(stats_dict['count'])}")
+                print(f"  Total: {stats_dict['total_ms']:.2f}ms")
+                print(f"  Avg: {stats_dict['avg_ms']:.2f}ms")
+                print(f"  Min/Max: {stats_dict['min_ms']:.2f}ms / {stats_dict['max_ms']:.2f}ms")
 
     def clear(self) -> None:
         """Clear all profiles."""
@@ -271,19 +264,12 @@ class GPUMemoryOptimizer:
     Provides memory tracking, garbage collection, and optimization hints.
     """
 
-    def __init__(self, device: int = 0):
+    def __init__(self, device: int = 0) -> None:
         self.device = device
-        self._snapshots: list[dict[str, Any]] = []
+        self._snapshots: List[Dict[str, Any]] = []
 
-    def snapshot(self, label: str = "") -> dict[str, Any]:
-        """Take a memory snapshot.
-
-        Args:
-            label: Optional label for the snapshot.
-
-        Returns:
-            Dictionary with memory statistics.
-        """
+    def snapshot(self, label: str = "") -> Dict[str, Any]:
+        """Take a memory snapshot."""
         if not torch.cuda.is_available():
             return {"available": False}
 
@@ -304,16 +290,8 @@ class GPUMemoryOptimizer:
         self,
         before_label: str,
         after_label: str,
-    ) -> dict[str, float]:
-        """Compare two labeled snapshots.
-
-        Args:
-            before_label: Label of the "before" snapshot.
-            after_label: Label of the "after" snapshot.
-
-        Returns:
-            Dictionary with memory differences.
-        """
+    ) -> Dict[str, float]:
+        """Compare two labeled snapshots."""
         before = next(
             (s for s in self._snapshots if s.get("label") == before_label), None
         )
@@ -325,20 +303,16 @@ class GPUMemoryOptimizer:
             return {"error": -1.0}  # Signal error with negative value
 
         return {
-            "allocated_diff_mb": after["allocated_mb"] - before["allocated_mb"],
-            "reserved_diff_mb": after["reserved_mb"] - before["reserved_mb"],
-            "time_diff_s": after["timestamp"] - before["timestamp"],
+            "allocated_diff_mb": float(after["allocated_mb"] - before["allocated_mb"]),
+            "reserved_diff_mb": float(after["reserved_mb"] - before["reserved_mb"]),
+            "time_diff_s": float(after["timestamp"] - before["timestamp"]),
         }
 
     @staticmethod
-    def aggressive_cleanup() -> dict[str, float]:
-        """Perform aggressive GPU memory cleanup.
-
-        Returns:
-            Dictionary with before/after memory stats.
-        """
+    def aggressive_cleanup() -> Dict[str, float]:
+        """Perform aggressive GPU memory cleanup."""
         if not torch.cuda.is_available():
-            return {"available": False}
+            return {"available": 0.0}
 
         before = torch.cuda.memory_allocated() / 1024**2
 
@@ -360,16 +334,9 @@ class GPUMemoryOptimizer:
         }
 
     @staticmethod
-    def get_memory_bottlenecks(model: nn.Module) -> list[dict[str, Any]]:
-        """Identify potential memory bottlenecks in a model.
-
-        Args:
-            model: PyTorch model to analyze.
-
-        Returns:
-            List of potential bottlenecks with recommendations.
-        """
-        bottlenecks = []
+    def get_memory_bottlenecks(model: nn.Module) -> List[Dict[str, Any]]:
+        """Identify potential memory bottlenecks in a model."""
+        bottlenecks: List[Dict[str, Any]] = []
 
         total_params = 0
         for name, param in model.named_parameters():
@@ -417,21 +384,11 @@ class GPUMemoryOptimizer:
     @staticmethod
     def estimate_batch_memory(
         model: nn.Module,
-        input_shape: tuple[int, ...],
+        input_shape: Tuple[int, ...],
         dtype: torch.dtype = torch.float32,
         with_grad: bool = True,
-    ) -> dict[str, float]:
-        """Estimate memory usage for a batch.
-
-        Args:
-            model: PyTorch model.
-            input_shape: Input shape including batch size.
-            dtype: Input dtype.
-            with_grad: Whether gradients will be computed.
-
-        Returns:
-            Dictionary with memory estimates in MB.
-        """
+    ) -> Dict[str, float]:
+        """Estimate memory usage for a batch."""
         bytes_per_element = torch.tensor([], dtype=dtype).element_size()
 
         # Model parameters
@@ -467,11 +424,7 @@ class GPUMemoryOptimizer:
 
 
 def enable_memory_efficient_attention() -> bool:
-    """Enable memory-efficient attention if available.
-
-    Returns:
-        True if enabled successfully.
-    """
+    """Enable memory-efficient attention if available."""
     try:
         # Check for PyTorch 2.0+ scaled_dot_product_attention
         if hasattr(torch.nn.functional, "scaled_dot_product_attention"):
@@ -486,19 +439,7 @@ def enable_memory_efficient_attention() -> bool:
 
 
 def optimize_for_inference(model: nn.Module) -> nn.Module:
-    """Optimize model for inference.
-
-    Applies optimizations:
-    - Disables gradient computation
-    - Enables eval mode
-    - Applies torch.compile if available
-
-    Args:
-        model: PyTorch model.
-
-    Returns:
-        Optimized model.
-    """
+    """Optimize model for inference."""
     model.eval()
 
     for param in model.parameters():
@@ -517,12 +458,8 @@ def optimize_for_inference(model: nn.Module) -> nn.Module:
     return model
 
 
-def get_gpu_optimization_recommendations() -> list[str]:
-    """Get GPU optimization recommendations based on current setup.
-
-    Returns:
-        List of recommendation strings.
-    """
+def get_gpu_optimization_recommendations() -> List[str]:
+    """Get GPU optimization recommendations based on current setup."""
     recommendations = []
 
     if not torch.cuda.is_available():

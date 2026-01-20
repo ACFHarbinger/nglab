@@ -9,13 +9,14 @@ This module provides tools for:
 
 import argparse
 import os
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import loss_landscapes
 import matplotlib
 import numpy as np
 import seaborn as sns
 import torch
+from numpy.typing import NDArray
 from torch import nn
 
 matplotlib.use("Agg")
@@ -51,19 +52,19 @@ class MyModelWrapper(nn.Module):
     Wraps a model to conform to the interface expected by loss-landscapes library.
     """
 
-    def __init__(self, model: nn.Module):
+    def __init__(self, model: nn.Module) -> None:
         """Initializes the wrapper."""
         super().__init__()
         self.model = model
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass of the model."""
-        return self.model(x)
+        return cast(torch.Tensor, self.model(x))
 
 
 def load_model_instance(
     model_path: str, device: torch.device
-) -> tuple[nn.Module, dict[str, Any]]:
+) -> Tuple[nn.Module, Dict[str, Any]]:
     """
     Loads a model for visualization using the project's standard loading utility.
 
@@ -92,7 +93,9 @@ def plot_weight_trajectories(checkpoint_dir: str, output_file: str) -> None:
         output_file (str): Output image filename.
     """
     print("Computing Weight Trajectories...")
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    output_dir = os.path.dirname(output_file)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
 
     files = [f for f in os.listdir(checkpoint_dir) if f.endswith(".pt")]
     # Sort files by epoch number if possible
@@ -105,8 +108,8 @@ def plot_weight_trajectories(checkpoint_dir: str, output_file: str) -> None:
     except (IndexError, ValueError):
         files.sort()
 
-    weights = []
-    epochs = []
+    weights: List[NDArray[Any]] = []
+    epochs: List[str] = []
 
     for f in files:
         path = os.path.join(checkpoint_dir, f)
@@ -114,6 +117,9 @@ def plot_weight_trajectories(checkpoint_dir: str, output_file: str) -> None:
             checkpoint = torch.load(path, map_location="cpu")
             # Handle standard checkpoint format where 'model' key stores state_dict
             state_dict = checkpoint.get("model", checkpoint)
+
+            if not isinstance(state_dict, dict):
+                continue
 
             # Flatten all parameters into a single vector
             tensors = [
@@ -151,7 +157,7 @@ def plot_weight_trajectories(checkpoint_dir: str, output_file: str) -> None:
 
 
 def log_weight_distributions(
-    model: nn.Module, epoch: int, log_dir: str, writer: SummaryWriter | None = None
+    model: nn.Module, epoch: int, log_dir: str, writer: Optional[SummaryWriter] = None
 ) -> None:
     """
     Logs histograms of model weight distributions to TensorBoard.
@@ -206,23 +212,24 @@ def plot_logit_lens(
         try:
             # We follow the forward pass logic
             if hasattr(model, "enc_embedding"):
-                curr = model.enc_embedding(x_batch, x_mark)
+                curr = cast(nn.Module, getattr(model, "enc_embedding"))(x_batch, x_mark)
             else:
                 curr = x_batch
 
-            layer_outputs = []
+            layer_outputs: List[torch.Tensor] = []
             layer_outputs.append(curr)  # Layer 0: Embedding
 
             # Encoder layers
-            encoder = model.encoder
+            encoder = getattr(model, "encoder")
             if hasattr(encoder, "attn_layers"):
-                for attn_layer in encoder.attn_layers:
+                attn_layers = getattr(encoder, "attn_layers")
+                for attn_layer in cast(List[nn.Module], attn_layers):
                     curr, _ = attn_layer(curr)
                     layer_outputs.append(curr)
 
             # Final projection of each layer output
-            projection = model.projection
-            preds = []
+            projection = cast(nn.Module, getattr(model, "projection"))
+            preds: List[NDArray[Any]] = []
             for out in layer_outputs:
                 p = projection(out)
                 # Take last step of the sequence for visualization
@@ -236,7 +243,9 @@ def plot_logit_lens(
             plt.xlabel("Output Dimension")
             plt.ylabel("Layer Index (0=Embed, 1..N=Encoder)")
 
-            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+            output_dir = os.path.dirname(output_file)
+            if output_dir:
+                os.makedirs(output_dir, exist_ok=True)
             plt.savefig(output_file)
             plt.close()
             print(f"Logit Lens saved to {output_file}")
@@ -264,7 +273,7 @@ def mae_loss_fn(m: Any, x_batch: torch.Tensor, target: torch.Tensor) -> float:
 
 def plot_loss_landscape(  # noqa: PLR0913
     model: nn.Module,
-    opts: dict[str, Any],
+    opts: Dict[str, Any],
     output_dir: str,
     epoch: int = 0,
     seq_len: int = 30,
@@ -300,9 +309,7 @@ def plot_loss_landscape(  # noqa: PLR0913
         landscape = loss_landscapes.random_plane(
             model,
             lambda m: mae_loss_fn(m, x_batch, target),
-            distance=(
-                int(span) if span >= 1 else 1
-            ),  # random_plane distance usually takes int steps? Wait, Mypy said int.
+            distance=(int(span) if span >= 1 else 1),
             steps=resolution,
             normalization="filter",
             deepcopy_model=True,
@@ -324,7 +331,10 @@ def plot_loss_landscape(  # noqa: PLR0913
 
 
 def visualize_epoch(
-    model: nn.Module, opts: dict[str, Any], epoch: int, tb_logger: Any | None = None
+    model: nn.Module,
+    opts: Dict[str, Any],
+    epoch: int,
+    tb_logger: Optional[Any] = None,
 ) -> None:
     """
     Main entry point for visualization during training.
@@ -348,7 +358,7 @@ def visualize_epoch(
     try:
         if "distributions" in viz_modes or "both" in viz_modes:
             writer = (
-                tb_logger.writer
+                getattr(tb_logger, "writer")
                 if tb_logger is not None and hasattr(tb_logger, "writer")
                 else None
             )

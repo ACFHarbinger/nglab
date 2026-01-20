@@ -6,13 +6,14 @@ is parameterized by a neural network: dh/dt = f(h, t).
 """
 
 from collections.abc import Callable
+from typing import List, Optional, Union, Any, cast
 
 import torch
 from torch import nn
 
 
 def odesolve(
-    func: Callable[[float, torch.Tensor], torch.Tensor],
+    func: Callable[[Union[float, torch.Tensor], torch.Tensor], torch.Tensor],
     y0: torch.Tensor,
     t: torch.Tensor,
     method: str = "rk4",
@@ -47,8 +48,8 @@ def odesolve(
 
         elif method == "rk4":
             k1 = func(t0, curr_y)
-            k2 = func(t0 + dt / 2, curr_y + dt / 2 * k1)
-            k3 = func(t0 + dt / 2, curr_y + dt / 2 * k2)
+            k2 = func(t0 + dt / 2, curr_y + (dt / 2) * k1)
+            k3 = func(t0 + dt / 2, curr_y + (dt / 2) * k2)
             k4 = func(t0 + dt, curr_y + dt * k3)
 
             curr_y = curr_y + (dt / 6.0) * (k1 + 2 * k2 + 2 * k3 + k4)
@@ -66,20 +67,15 @@ class ODEFunc(nn.Module):
     Wrapper for the derivative function to handle time conditioning easily.
     """
 
-    def __init__(self, net: nn.Module):
+    def __init__(self, net: nn.Module) -> None:
         """Initialize with a neural network."""
         super().__init__()
         self.net = net
 
-    def forward(self, t: float, y: torch.Tensor) -> torch.Tensor:
+    def forward(self, t: Union[float, torch.Tensor], y: torch.Tensor) -> torch.Tensor:
         """Compute the derivative dy/dt."""
-        # If network accepts (y, t), pass both. Otherwise just y.
-        # Simple heuristic: concatenate t if possible or just ignore if autonomous.
         # For this implementation, we assume simple autonomous dynamics f(y)
-        # or we append t to y if needed.
-        # Let's try to append t to input if we can, but requires changing input dim.
-        # For simplicity, we assume autonomous f(y) for the default MLP.
-        return self.net(y)
+        return cast(torch.Tensor, self.net(y))
 
 
 class NeuralODE(nn.Module):
@@ -88,15 +84,6 @@ class NeuralODE(nn.Module):
 
     The model predicts the evolution of a state 'z' over time:
     dz/dt = f(z, t, theta)
-
-    where f is a neural network.
-
-    Args:
-        input_dim: Dimension of the state z.
-        hidden_dim: Hidden dimension of the derivative network.
-        output_dim: Output dimension (can be different if we project at the end).
-        time_steps: Number of time steps to simulate (default 10).
-        horizon: Time horizon (default 1.0).
     """
 
     def __init__(  # noqa: PLR0913
@@ -108,11 +95,9 @@ class NeuralODE(nn.Module):
         time_steps: int = 10,
         horizon: float = 1.0,
         output_type: str = "prediction",  # 'prediction' or 'embedding'
-    ):
+    ) -> None:
         """
         Initialize the Neural ODE.
-
-        See class docstring for configuration details.
         """
         super().__init__()
         self.input_dim = input_dim
@@ -122,7 +107,7 @@ class NeuralODE(nn.Module):
         self.output_type = output_type
 
         # Derivative network f(z)
-        layers = []
+        layers: List[nn.Module] = []
         layers.append(nn.Linear(input_dim, hidden_dim))
         layers.append(nn.Tanh())  # Tanh is often good for ODEs (smooth)
         for _ in range(num_layers - 1):
@@ -135,12 +120,13 @@ class NeuralODE(nn.Module):
         self.diffeq = ODEFunc(nn.Sequential(*layers))
 
         # Final projection if output_dim != input_dim
+        self.projection: nn.Module
         if output_dim != input_dim:
             self.projection = nn.Linear(input_dim, output_dim)
         else:
             self.projection = nn.Identity()
 
-    def forward(self, x: torch.Tensor, t: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, t: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
         Forward pass.
 
@@ -159,7 +145,6 @@ class NeuralODE(nn.Module):
         traj = odesolve(self.diffeq, x, t, method="rk4")
 
         # Permute to (batch, num_steps, ...)
-        # odesolve returns (num_steps, batch, ...)
         # We want to swap the first two dimensions
         dims = list(range(traj.dim()))
         dims[0], dims[1] = dims[1], dims[0]
@@ -172,6 +157,4 @@ class NeuralODE(nn.Module):
         # Project each step
         out = self.projection(traj)  # (batch, steps, output_dim)
 
-        # If specific requirements for prediction (e.g. just last step or full sequence)
-        # Assuming sequence return based on time_steps
-        return out
+        return cast(torch.Tensor, out)

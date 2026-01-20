@@ -9,11 +9,12 @@ import os
 import tempfile
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional, cast
 
 import torch
+import torch.nn as nn
 import zstandard as zstd
 
 logger = logging.getLogger(__name__)
@@ -35,16 +36,16 @@ class CloudStorageConfig:
     prefix: str = "models"
     compression_level: int = 3
     enable_versioning: bool = True
-    fallback_local_path: str | None = None
+    fallback_local_path: Optional[str] = None
 
     # AWS specific
     aws_region: str = "us-east-1"
-    aws_access_key_id: str | None = None
-    aws_secret_access_key: str | None = None
+    aws_access_key_id: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
 
     # GCS specific
-    gcs_project: str | None = None
-    gcs_credentials_path: str | None = None
+    gcs_project: Optional[str] = None
+    gcs_credentials_path: Optional[str] = None
 
 
 class CloudStorageBackend(ABC):
@@ -55,7 +56,7 @@ class CloudStorageBackend(ABC):
         self,
         local_path: Path,
         remote_key: str,
-        metadata: dict[str, str],
+        metadata: Dict[str, str],
     ) -> str:
         """Upload a file to cloud storage.
 
@@ -80,7 +81,7 @@ class CloudStorageBackend(ABC):
         ...
 
     @abstractmethod
-    def list_objects(self, prefix: str) -> list[dict[str, Any]]:
+    def list_objects(self, prefix: str) -> List[Dict[str, Any]]:
         """List objects with given prefix.
 
         Args:
@@ -122,7 +123,7 @@ class S3Backend(CloudStorageBackend):
     Uses boto3 for S3 operations with optional IAM role assumption.
     """
 
-    def __init__(self, config: CloudStorageConfig):
+    def __init__(self, config: CloudStorageConfig) -> None:
         """Initialize S3 backend.
 
         Args:
@@ -138,7 +139,7 @@ class S3Backend(CloudStorageBackend):
             try:
                 import boto3
 
-                session_kwargs: dict[str, Any] = {
+                session_kwargs: Dict[str, Any] = {
                     "region_name": self.config.aws_region,
                 }
 
@@ -165,7 +166,7 @@ class S3Backend(CloudStorageBackend):
         self,
         local_path: Path,
         remote_key: str,
-        metadata: dict[str, str],
+        metadata: Dict[str, str],
     ) -> str:
         """Upload file to S3 with optional compression."""
         full_key = self._get_full_key(remote_key)
@@ -232,10 +233,12 @@ class S3Backend(CloudStorageBackend):
                 f"Downloaded checkpoint from s3://{self.config.bucket}/{full_key}"
             )
 
-        except self.client.exceptions.NoSuchKey:
-            raise FileNotFoundError(f"Checkpoint not found: {remote_key}") from None
+        except Exception as e:
+            if "NoSuchKey" in str(e):
+                raise FileNotFoundError(f"Checkpoint not found: {remote_key}") from None
+            raise
 
-    def list_objects(self, prefix: str) -> list[dict[str, Any]]:
+    def list_objects(self, prefix: str) -> List[Dict[str, Any]]:
         """List objects in S3 with given prefix."""
         full_prefix = self._get_full_key(prefix)
 
@@ -291,7 +294,7 @@ class GCSBackend(CloudStorageBackend):
     Uses google-cloud-storage for GCS operations.
     """
 
-    def __init__(self, config: CloudStorageConfig):
+    def __init__(self, config: CloudStorageConfig) -> None:
         """Initialize GCS backend."""
         self.config = config
         self._client: Any | None = None
@@ -331,7 +334,7 @@ class GCSBackend(CloudStorageBackend):
         self,
         local_path: Path,
         remote_key: str,
-        metadata: dict[str, str],
+        metadata: Dict[str, str],
     ) -> str:
         """Upload file to GCS with compression."""
         blob_name = self._get_blob_name(remote_key)
@@ -372,7 +375,7 @@ class GCSBackend(CloudStorageBackend):
         if not blob.exists():
             raise FileNotFoundError(f"Checkpoint not found: {remote_key}")
 
-        compressed_data = blob.download_as_bytes()
+        compressed_data = cast(bytes, blob.download_as_bytes())
 
         # Decompress
         decompressor = zstd.ZstdDecompressor()
@@ -384,7 +387,7 @@ class GCSBackend(CloudStorageBackend):
 
         logger.info(f"Downloaded checkpoint from gs://{self.config.bucket}/{blob_name}")
 
-    def list_objects(self, prefix: str) -> list[dict[str, Any]]:
+    def list_objects(self, prefix: str) -> List[Dict[str, Any]]:
         """List blobs in GCS with given prefix."""
         full_prefix = self._get_blob_name(prefix)
 
@@ -416,7 +419,7 @@ class GCSBackend(CloudStorageBackend):
         """Check if blob exists in GCS."""
         blob_name = self._get_blob_name(remote_key)
         blob = self.bucket.blob(blob_name)
-        return blob.exists()
+        return cast(bool, blob.exists())
 
 
 class CloudCheckpointManager:
@@ -424,23 +427,13 @@ class CloudCheckpointManager:
 
     Provides a unified interface for saving and loading PyTorch models
     to cloud storage with compression, versioning, and MLflow integration.
-
-    Example:
-        >>> config = CloudStorageConfig(bucket="my-models", prefix="nglab")
-        >>> manager = CloudCheckpointManager(config, backend="s3")
-        >>>
-        >>> # Save model
-        >>> uri = manager.save_checkpoint(model, "ppo", "1.0.0", metrics={"loss": 0.01})
-        >>>
-        >>> # Load model
-        >>> model = manager.load_checkpoint(model, "ppo", "1.0.0")
     """
 
     def __init__(
         self,
         config: CloudStorageConfig,
         backend: str = "s3",  # "s3" or "gcs"
-    ):
+    ) -> None:
         """Initialize cloud checkpoint manager.
 
         Args:
@@ -465,10 +458,10 @@ class CloudCheckpointManager:
         model: torch.nn.Module,
         model_type: str,
         version: str,
-        optimizer: torch.optim.Optimizer | None = None,
-        scheduler: Any | None = None,
-        metrics: dict[str, float] | None = None,
-        extra_data: dict[str, Any] | None = None,
+        optimizer: Optional[torch.optim.Optimizer] = None,
+        scheduler: Optional[Any] = None,
+        metrics: Optional[Dict[str, float]] = None,
+        extra_data: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Save model checkpoint to cloud storage.
 
@@ -484,11 +477,11 @@ class CloudCheckpointManager:
         Returns:
             Cloud URI of saved checkpoint.
         """
-        checkpoint = {
+        checkpoint: Dict[str, Any] = {
             "model_state_dict": model.state_dict(),
             "model_type": model_type,
             "version": version,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "metrics": metrics or {},
         }
 
@@ -508,10 +501,10 @@ class CloudCheckpointManager:
 
         try:
             remote_key = self._generate_key(model_type, version)
-            metadata = {
+            metadata: Dict[str, str] = {
                 "model_type": model_type,
                 "version": version,
-                "timestamp": checkpoint["timestamp"],
+                "timestamp": str(checkpoint["timestamp"]),
             }
 
             uri = self._backend.upload(temp_path, remote_key, metadata)
@@ -526,10 +519,10 @@ class CloudCheckpointManager:
         model: torch.nn.Module,
         model_type: str,
         version: str,
-        optimizer: torch.optim.Optimizer | None = None,
-        scheduler: Any | None = None,
-        map_location: str | None = None,
-    ) -> dict[str, Any]:
+        optimizer: Optional[torch.optim.Optimizer] = None,
+        scheduler: Optional[Any] = None,
+        map_location: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Load model checkpoint from cloud storage.
 
         Args:
@@ -551,7 +544,7 @@ class CloudCheckpointManager:
         try:
             self._backend.download(remote_key, temp_path)
 
-            checkpoint = torch.load(temp_path, map_location=map_location)
+            checkpoint = cast(Dict[str, Any], torch.load(temp_path, map_location=map_location))
             model.load_state_dict(checkpoint["model_state_dict"])
 
             if optimizer is not None and "optimizer_state_dict" in checkpoint:
@@ -566,7 +559,7 @@ class CloudCheckpointManager:
         finally:
             temp_path.unlink()
 
-    def list_versions(self, model_type: str) -> list[str]:
+    def list_versions(self, model_type: str) -> List[str]:
         """List all versions for a model type.
 
         Args:
@@ -577,10 +570,10 @@ class CloudCheckpointManager:
         """
         objects = self._backend.list_objects(model_type)
 
-        versions = []
+        versions: List[str] = []
         for obj in objects:
             # Parse version from key: model_type/vX.X.X/checkpoint.pt.zst
-            parts = obj["key"].split("/")
+            parts = str(obj["key"]).split("/")
             for part in parts:
                 if part.startswith("v"):
                     versions.append(part[1:])  # Remove 'v' prefix
@@ -618,23 +611,7 @@ class CloudCheckpointManager:
 def create_cloud_manager_from_env(
     backend: str = "s3",
 ) -> CloudCheckpointManager:
-    """Create cloud checkpoint manager from environment variables.
-
-    Environment variables:
-        NGLAB_CLOUD_BUCKET: Bucket name (required)
-        NGLAB_CLOUD_PREFIX: Object prefix (default: "models")
-        AWS_ACCESS_KEY_ID: AWS access key (for S3)
-        AWS_SECRET_ACCESS_KEY: AWS secret key (for S3)
-        AWS_DEFAULT_REGION: AWS region (for S3)
-        GOOGLE_APPLICATION_CREDENTIALS: GCS credentials path (for GCS)
-        GCP_PROJECT: GCS project ID (for GCS)
-
-    Args:
-        backend: Cloud backend ("s3" or "gcs").
-
-    Returns:
-        Configured CloudCheckpointManager.
-    """
+    """Create cloud checkpoint manager from environment variables."""
     bucket = os.environ.get("NGLAB_CLOUD_BUCKET")
     if not bucket:
         raise ValueError("NGLAB_CLOUD_BUCKET environment variable required")

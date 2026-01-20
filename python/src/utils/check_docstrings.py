@@ -15,9 +15,10 @@ Usage:
 import ast
 import os
 import sys
+from typing import List
 
 
-def check_path(path):
+def check_path(path: str) -> List[str]:
     """
     Check a single file for missing docstrings using AST parsing.
 
@@ -29,7 +30,7 @@ def check_path(path):
               Returns an empty list if the file is not a Python file,
               has syntax errors, or is fully documented.
     """
-    missing = []
+    missing: List[str] = []
     if os.path.isfile(path):
         if not path.endswith(".py"):
             return []
@@ -54,7 +55,7 @@ def check_path(path):
     return missing
 
 
-def check_docstrings_recursive(directory):
+def check_docstrings_recursive(directory: str) -> List[str]:
     """
     Recursively check a directory for Python files with missing docstrings.
 
@@ -64,7 +65,7 @@ def check_docstrings_recursive(directory):
     Returns:
         list: A list of strings describing missing docstrings in all found Python files.
     """
-    missing = []
+    missing: List[str] = []
     for root, _dirs, files in os.walk(directory):
         for file in files:
             missing.extend(check_path(os.path.join(root, file)))
@@ -76,7 +77,7 @@ if __name__ == "__main__":
         print("Usage: python check_docstrings.py <path1> [path2 ...]")
         sys.exit(1)
 
-    all_missing = []
+    all_missing: List[str] = []
     for arg in sys.argv[1:]:
         if os.path.isfile(arg):
             all_missing.extend(check_path(arg))

@@ -6,15 +6,16 @@ GPU utilization and reduce memory usage while maintaining model accuracy.
 """
 
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
+from typing import Any, Dict, Optional, Tuple, Union
 
 import torch
-from torch import nn, autocast
-from torch.cuda.amp import GradScaler
+import torch.nn as nn
+from torch import autocast
+from torch.cuda.amp.grad_scaler import GradScaler
 
 
 class PrecisionMode(Enum):
@@ -90,14 +91,14 @@ class MixedPrecisionTrainer:
         self,
         model: nn.Module,
         optimizer: torch.optim.Optimizer,
-        config: MixedPrecisionConfig | None = None,
-    ):
+        config: Optional[MixedPrecisionConfig] = None,
+    ) -> None:
         self.model = model
         self.optimizer = optimizer
         self.config = config or MixedPrecisionConfig()
 
         # Initialize GradScaler for FP16 mixed precision
-        self._scaler: GradScaler | None = None
+        self._scaler: Optional[GradScaler] = None
         if self.config.use_amp and self.config.precision == "16-mixed":
             self._scaler = GradScaler(
                 init_scale=self.config.init_scale,
@@ -119,7 +120,7 @@ class MixedPrecisionTrainer:
         return "cpu"
 
     @contextmanager
-    def autocast_context(self):
+    def autocast_context(self) -> Generator[None, None, None]:
         """Context manager for automatic mixed precision."""
         if self.config.use_amp:
             with autocast(device_type=self._device_type, dtype=self.config.dtype):
@@ -133,7 +134,7 @@ class MixedPrecisionTrainer:
         forward_fn: Callable[[nn.Module, Any], torch.Tensor],
         loss_fn: Callable[[torch.Tensor, Any], torch.Tensor],
         accumulation_steps: int = 1,
-    ) -> tuple[torch.Tensor, float]:
+    ) -> Tuple[torch.Tensor, float]:
         """
         Execute a single training step with mixed precision.
 
@@ -158,9 +159,9 @@ class MixedPrecisionTrainer:
         else:
             loss.backward()
 
-        return loss, loss.item() * accumulation_steps
+        return loss, float(loss.item()) * accumulation_steps
 
-    def step(self, clip_grad_norm: float | None = None) -> None:
+    def step(self, clip_grad_norm: Optional[float] = None) -> None:
         """
         Execute optimizer step with gradient unscaling and optional clipping.
 
@@ -182,9 +183,9 @@ class MixedPrecisionTrainer:
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), clip_grad_norm)
             self.optimizer.step()
 
-    def state_dict(self) -> dict:
+    def state_dict(self) -> Dict[str, Any]:
         """Get state dict for checkpointing."""
-        state = {
+        state: Dict[str, Any] = {
             "config": {
                 "precision": self.config.precision,
                 "enabled": self.config.enabled,
@@ -194,7 +195,7 @@ class MixedPrecisionTrainer:
             state["scaler"] = self._scaler.state_dict()
         return state
 
-    def load_state_dict(self, state: dict) -> None:
+    def load_state_dict(self, state: Dict[str, Any]) -> None:
         """Load state dict from checkpoint."""
         if self._scaler is not None and "scaler" in state:
             self._scaler.load_state_dict(state["scaler"])
@@ -202,7 +203,7 @@ class MixedPrecisionTrainer:
     def get_scale(self) -> float:
         """Get current loss scale value."""
         if self._scaler is not None:
-            return self._scaler.get_scale()
+            return float(self._scaler.get_scale())
         return 1.0
 
 
@@ -286,7 +287,7 @@ def estimate_memory_savings(
     batch_size: int,
     sequence_length: int,
     precision: str = "16-mixed",
-) -> dict:
+) -> Dict[str, Any]:
     """
     Estimate memory savings from using mixed precision.
 

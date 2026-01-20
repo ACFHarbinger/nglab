@@ -1,12 +1,19 @@
-from typing import Any, Optional
+from typing import Any, Optional, cast
+
 import numpy as np
 from numpy.typing import NDArray
 
 
 class KMediansAlgorithm:
     """K-Medians Clustering Algorithm."""
-    
-    def __init__(self, n_clusters: int = 8, max_iter: int = 300, tol: float = 1e-4, random_state: Optional[int] = None) -> None:
+
+    def __init__(
+        self,
+        n_clusters: int = 8,
+        max_iter: int = 300,
+        tol: float = 1e-4,
+        random_state: Optional[int] = None,
+    ) -> None:
         """Initialize K-Medians."""
         self.n_clusters = n_clusters
         self.max_iter = max_iter
@@ -27,11 +34,13 @@ class KMediansAlgorithm:
         for _i in range(self.max_iter):
             # Assign labels based on L1 distance (Manhattan)
             # dist shape: (n_samples, n_clusters)
+            if self.cluster_centers_ is None:
+                break
             dist = np.sum(
                 np.abs(X[:, np.newaxis, :] - self.cluster_centers_[np.newaxis, :, :]),
                 axis=2,
             )
-            self.labels_ = np.argmin(dist, axis=1)
+            self.labels_ = cast(NDArray[np.int_], np.argmin(dist, axis=1))
 
             new_centers = np.empty((self.n_clusters, n_features))
             for k in range(self.n_clusters):
@@ -42,7 +51,7 @@ class KMediansAlgorithm:
                     new_centers[k] = self.cluster_centers_[k]
 
             # Check convergence
-            center_shift = np.sum(np.abs(new_centers - self.cluster_centers_))
+            center_shift = float(np.sum(np.abs(new_centers - self.cluster_centers_)))
             if center_shift < self.tol:
                 self.cluster_centers_ = new_centers
                 break
@@ -59,11 +68,11 @@ class KMediansAlgorithm:
             np.abs(X[:, np.newaxis, :] - self.cluster_centers_[np.newaxis, :, :]),
             axis=2,
         )
-        return np.argmin(dist, axis=1)
+        return cast(NDArray[np.int_], np.argmin(dist, axis=1))
 
     def fit_predict(self, X: NDArray[Any]) -> NDArray[np.int_]:  # noqa: N803
         """Fit and predict labels."""
         self.fit(X)
         if self.labels_ is None:
-             raise ValueError("Fitting failed to produce labels.")
+            raise ValueError("Fitting failed to produce labels.")
         return self.labels_

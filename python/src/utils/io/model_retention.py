@@ -7,7 +7,7 @@ and enforcing retention rules across local and cloud storage.
 
 import logging
 from dataclasses import dataclass
-from typing import Any, Protocol
+from typing import Any, Dict, List, Optional, Protocol, Union, cast
 
 from python.src.utils.io.cloud_storage import CloudCheckpointManager
 from python.src.utils.io.model_versioning import ModelRegistry
@@ -20,21 +20,18 @@ class RetentionConfig:
     """Configuration for model retention."""
 
     keep_latest_n: int = 5
-    keep_best_metric: str | None = "val_loss"
+    keep_best_metric: Optional[str] = "val_loss"
     keep_best_n: int = 1
-    max_age_days: int | None = None
+    max_age_days: Optional[int] = None
     dry_run: bool = False
 
 
 class CheckpointManagerProtocol(Protocol):
     """Protocol for checkpoint managers (local or cloud)."""
 
-    def list_versions(self, model_type: str) -> list[str]: ...
+    def list_versions(self, model_type: str) -> List[str]: ...
 
     def delete(self, model_type: str, version: str) -> bool: ...
-
-    # Note: different managers might unfortunately use delete vs delete_checkpoint
-    # We'll need to adapt.
 
 
 class ModelRetentionPolicy:
@@ -47,8 +44,8 @@ class ModelRetentionPolicy:
     def __init__(
         self,
         config: RetentionConfig,
-        manager: ModelRegistry | CloudCheckpointManager,
-    ):
+        manager: Union[ModelRegistry, CloudCheckpointManager],
+    ) -> None:
         """
         Initialize retention policy.
 
@@ -70,9 +67,9 @@ class ModelRetentionPolicy:
             # Use Any to bypass static analysis checks for dynamic dispatch
             mgr: Any = self.manager
             if hasattr(mgr, "delete_checkpoint"):
-                return mgr.delete_checkpoint(model_type, version)
+                return cast(bool, mgr.delete_checkpoint(model_type, version))
             elif hasattr(mgr, "delete"):
-                return mgr.delete(model_type, version)
+                return cast(bool, mgr.delete(model_type, version))
             else:
                 logger.error(f"Manager {type(self.manager)} has no delete method")
                 return False
@@ -131,7 +128,7 @@ class ModelRetentionPolicy:
 
         return deleted_count
 
-    def enforce_all(self, model_types: list[str]) -> dict[str, int]:
+    def enforce_all(self, model_types: List[str]) -> Dict[str, int]:
         """Enforce policy on a list of model types."""
         results = {}
         for m_type in model_types:

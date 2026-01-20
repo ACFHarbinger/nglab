@@ -4,7 +4,7 @@ Base parser utilities for the modular CLI.
 
 import argparse
 import sys
-from typing import Any
+from typing import Any, Dict, List, NoReturn, Optional, Tuple, Sequence, Union
 
 
 class ConfigsParser(argparse.ArgumentParser):
@@ -12,15 +12,15 @@ class ConfigsParser(argparse.ArgumentParser):
     Custom ArgumentParser with enhanced error handling.
     """
 
-    def error(self, message: str) -> None:
+    def error(self, message: str) -> NoReturn:
         """Handle parsing errors by printing help and exiting."""
         print(message, end=" ")
         self.print_help()
         sys.exit(2)
 
     def parse_process_args(
-        self, args: list[str] | None = None
-    ) -> tuple[str, dict[str, Any]]:
+        self, args: Optional[List[str]] = None
+    ) -> Tuple[str, Dict[str, Any]]:
         """
         Parses arguments and returns the command and options dictionary.
         """
@@ -39,7 +39,13 @@ class ConfigsParser(argparse.ArgumentParser):
 class LowercaseAction(argparse.Action):
     """Action to convert argument value to lowercase."""
 
-    def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: Union[str, Sequence[Any], None],
+        option_string: Optional[str] = None,
+    ) -> None:
         """Invoke action: lowercase input string."""
         if values is not None:
             values = str(values).lower()
@@ -49,16 +55,23 @@ class LowercaseAction(argparse.Action):
 class StoreDictKeyPair(argparse.Action):
     """Custom action to parse key=value into a dictionary."""
 
-    def __call__(self, parser, namespace, values, option_string=None):
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: Union[str, Sequence[Any], None],
+        option_string: Optional[str] = None,
+    ) -> None:
         """Invoke action: parse key=value strings into dictionary."""
-        my_dict = {}
-        if values:
+        my_dict: Dict[str, str] = {}
+        if values and isinstance(values, (list, tuple)):
             for kv in values:
-                if "=" in kv:
-                    k, v = kv.split("=", 1)
+                kv_str = str(kv)
+                if "=" in kv_str:
+                    k, v = kv_str.split("=", 1)
                     my_dict[k] = v
                 else:
                     raise argparse.ArgumentError(
-                        self, f"Could not parse argument '{kv}' as key=value format"
+                        self, f"Could not parse argument '{kv_str}' as key=value format"
                     )
         setattr(namespace, self.dest, my_dict)

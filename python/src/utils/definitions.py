@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Optional
 
 # Paths
 path = Path(os.getcwd())
@@ -12,7 +13,7 @@ CORE_LOCK_WAIT_TIME = 10
 LOCK_TIMEOUT = CORE_LOCK_WAIT_TIME
 
 
-def update_lock_wait_time(num_cpu_cores=None) -> int:
+def update_lock_wait_time(num_cpu_cores: Optional[int] = None) -> int:
     """
     Updates the global LOCK_TIMEOUT based on the number of CPU cores.
 

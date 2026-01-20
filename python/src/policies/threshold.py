@@ -4,6 +4,8 @@ Threshold-based Policy for NGLab.
 Simple rule-based strategy that buys/sells based on fixed price thresholds.
 """
 
+from typing import Any, Dict, Optional, Union
+
 from .base import Policy
 
 
@@ -14,7 +16,7 @@ class ThresholdPolicy(Policy):
     Sell if price > sell_threshold.
     """
 
-    def __init__(self, cfg=None):
+    def __init__(self, cfg: Optional[Dict[str, Any]] = None) -> None:
         """
         Initialize Threshold policy.
 
@@ -22,20 +24,22 @@ class ThresholdPolicy(Policy):
             cfg (Dict, optional): Configuration containing buy/sell thresholds.
         """
         super().__init__(cfg)
-        self.buy_threshold = self.cfg.get("buy_threshold", 90.0)
-        self.sell_threshold = self.cfg.get("sell_threshold", 110.0)
+        self.buy_threshold = float(self.cfg.get("buy_threshold", 90.0))
+        self.sell_threshold = float(self.cfg.get("sell_threshold", 110.0))
 
-    def act(self, observation):
+    def act(self, observation: Any) -> int:
         """
         Determine action based on price relative to thresholds.
         """
         # Observation assumed to contain 'price' or be a price value
         if isinstance(observation, dict):
-            price = observation.get("price", 100)
+            price = float(observation.get("price", 100.0))
+        elif isinstance(observation, (int, float)):
+            price = float(observation)
+        elif hasattr(observation, "__getitem__"):
+            price = float(observation[0])
         else:
-            price = (
-                observation if isinstance(observation, (int, float)) else observation[0]
-            )
+            price = 100.0
 
         if price < self.buy_threshold:
             return 1  # Buy

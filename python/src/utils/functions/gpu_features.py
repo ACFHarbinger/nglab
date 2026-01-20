@@ -5,6 +5,8 @@ Provides PyTorch-based implementations of common technical indicators
 for calculating features directly on the GPU, avoiding CPU-GPU transfers.
 """
 
+from typing import Any, List, Optional, Tuple, Union
+
 import torch
 
 
@@ -14,7 +16,7 @@ class GPUFeatureEngineer:
     Can be used with CPU tensors as well, but optimized for CUDA.
     """
 
-    def __init__(self, device: str | torch.device | None = None):
+    def __init__(self, device: Optional[Union[str, torch.device]] = None) -> None:
         """
         Initialize the engineer.
 
@@ -23,7 +25,7 @@ class GPUFeatureEngineer:
         """
         self.device = device
 
-    def _to_tensor(self, data: torch.Tensor | list) -> torch.Tensor:
+    def _to_tensor(self, data: Union[torch.Tensor, List[Any]]) -> torch.Tensor:
         """Convert input to tensor on correct device."""
         if not isinstance(data, torch.Tensor):
             data = torch.tensor(data, dtype=torch.float32)
@@ -153,13 +155,13 @@ class GPUFeatureEngineer:
         avg_loss = self.moving_average(loss, window)
 
         rs = avg_gain / (avg_loss + 1e-10)
-        rsi = 100 - (100 / (1 + rs))
+        rsi_val = 100 - (100 / (1 + rs))
 
-        return rsi
+        return rsi_val
 
     def macd(
         self, data: torch.Tensor, fast: int = 12, slow: int = 26, signal: int = 9
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Calculate MACD, Signal line, and Histogram.
         """
@@ -174,7 +176,7 @@ class GPUFeatureEngineer:
 
     def bollinger_bands(
         self, data: torch.Tensor, window: int = 20, num_std: float = 2.0
-    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Calculate Bollinger Bands (Upper, Middle, Lower).
         """

@@ -8,6 +8,7 @@ Provides a unified interface for accessing secrets from multiple backends
 import logging
 import os
 from dataclasses import dataclass
+from typing import Any, Dict, Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ class VaultConfig:
     """Configuration for HashiCorp Vault."""
 
     url: str
-    token: str | None = None
+    token: Optional[str] = None
     mount_point: str = "secret"
     path: str = "nglab"
 
@@ -32,11 +33,11 @@ class SecretsManager:
     3. Docker Secrets (optional, typical path /run/secrets/)
     """
 
-    def __init__(self, vault_config: VaultConfig | None = None):
+    def __init__(self, vault_config: Optional[VaultConfig] = None) -> None:
         """Initialize secrets manager with optional Vault config."""
         self.vault_config = vault_config
-        self._vault_client = None
-        self._vault_cache: dict[str, str] = {}
+        self._vault_client: Any = None
+        self._vault_cache: Dict[str, str] = {}
 
         if self.vault_config:
             self._init_vault()
@@ -48,12 +49,12 @@ class SecretsManager:
             return
 
         try:
-            import hvac  # type: ignore
+            import hvac
 
             self._vault_client = hvac.Client(
                 url=self.vault_config.url, token=self.vault_config.token
             )
-            if self._vault_client.is_authenticated():
+            if self._vault_client is not None and self._vault_client.is_authenticated():
                 logger.info(f"Connected to Vault at {self.vault_config.url}")
             else:
                 logger.warning("Vault client initialized but not authenticated")
@@ -62,7 +63,7 @@ class SecretsManager:
         except Exception as e:
             logger.error(f"Failed to connect to Vault: {e}")
 
-    def get_secret(self, key: str, default: str | None = None) -> str | None:
+    def get_secret(self, key: str, default: Optional[str] = None) -> Optional[str]:
         """
         Get a secret by key.
 
@@ -74,7 +75,7 @@ class SecretsManager:
             Secret value or default.
         """
         # 1. Try Vault
-        if self._vault_client:
+        if self._vault_client is not None:
             # Check cache first
             if key in self._vault_cache:
                 return self._vault_cache[key]
@@ -88,8 +89,9 @@ class SecretsManager:
                     )
                     data = response["data"]["data"]
                     if key in data:
-                        self._vault_cache[key] = data[key]
-                        return data[key]
+                        val = str(data[key])
+                        self._vault_cache[key] = val
+                        return val
             except Exception as e:
                 logger.debug(f"Secret {key} not found in Vault or error: {e}")
 

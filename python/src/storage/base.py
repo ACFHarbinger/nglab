@@ -9,6 +9,7 @@ import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union, cast
 
 
 @dataclass
@@ -25,13 +26,13 @@ class StorageConfig:
     s3_bucket: str = ""
     s3_prefix: str = "models/"
     s3_region: str = "us-east-1"
-    aws_access_key_id: str | None = None
-    aws_secret_access_key: str | None = None
+    aws_access_key_id: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
 
     # GCS settings
     gcs_bucket: str = ""
     gcs_prefix: str = "models/"
-    gcs_credentials_path: str | None = None
+    gcs_credentials_path: Optional[str] = None
 
     # Common settings
     compression: str = "zstd"  # none, gzip, zstd
@@ -71,15 +72,15 @@ class ModelMetadata:
     created_at: str
     framework: str = "pytorch"
     architecture: str = ""
-    metrics: dict = field(default_factory=dict)
-    tags: list = field(default_factory=list)
-    extra: dict = field(default_factory=dict)
+    metrics: Dict[str, Any] = field(default_factory=dict)
+    tags: List[str] = field(default_factory=list)
+    extra: Dict[str, Any] = field(default_factory=dict)
 
 
 class ModelStorage(ABC):
     """Abstract base class for model storage backends."""
 
-    def __init__(self, config: StorageConfig):
+    def __init__(self, config: StorageConfig) -> None:
         self.config = config
         self._setup_cache()
 
@@ -94,8 +95,8 @@ class ModelStorage(ABC):
         self,
         model_data: bytes,
         name: str,
-        version: str | None = None,
-        metadata: dict | None = None,
+        version: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Save model data to storage.
@@ -115,7 +116,7 @@ class ModelStorage(ABC):
     def load(
         self,
         name: str,
-        version: str | None = None,
+        version: Optional[str] = None,
     ) -> bytes:
         """
         Load model data from storage.
@@ -130,27 +131,27 @@ class ModelStorage(ABC):
         pass
 
     @abstractmethod
-    def exists(self, name: str, version: str | None = None) -> bool:
+    def exists(self, name: str, version: Optional[str] = None) -> bool:
         """Check if a model exists in storage."""
         pass
 
     @abstractmethod
-    def delete(self, name: str, version: str | None = None) -> bool:
+    def delete(self, name: str, version: Optional[str] = None) -> bool:
         """Delete a model from storage."""
         pass
 
     @abstractmethod
-    def list_models(self) -> list[str]:
+    def list_models(self) -> List[str]:
         """List all model names in storage."""
         pass
 
     @abstractmethod
-    def list_versions(self, name: str) -> list[str]:
+    def list_versions(self, name: str) -> List[str]:
         """List all versions of a model."""
         pass
 
     @abstractmethod
-    def get_metadata(self, name: str, version: str | None = None) -> ModelMetadata:
+    def get_metadata(self, name: str, version: Optional[str] = None) -> ModelMetadata:
         """Get metadata for a model."""
         pass
 
@@ -158,8 +159,8 @@ class ModelStorage(ABC):
         self,
         file_path: Path,
         name: str,
-        version: str | None = None,
-        metadata: dict | None = None,
+        version: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Save model from file path."""
         with open(file_path, "rb") as f:
@@ -169,7 +170,7 @@ class ModelStorage(ABC):
         self,
         name: str,
         output_path: Path,
-        version: str | None = None,
+        version: Optional[str] = None,
     ) -> Path:
         """Load model to a file path."""
         data = self.load(name, version)
@@ -195,7 +196,7 @@ class ModelStorage(ABC):
             f.write(data)
         return cache_path
 
-    def _load_from_cache(self, name: str, version: str) -> bytes | None:
+    def _load_from_cache(self, name: str, version: str) -> Optional[bytes]:
         """Load model data from local cache if available."""
         cache_path = self._get_cache_path(name, version)
         if cache_path.exists():
@@ -216,7 +217,7 @@ class ModelStorage(ABC):
                 import zstandard as zstd
 
                 cctx = zstd.ZstdCompressor(level=3)
-                return cctx.compress(data)
+                return cast(bytes, cctx.compress(data))
             except ImportError:
                 # Fallback to gzip if zstd not available
                 import gzip
@@ -237,9 +238,10 @@ class ModelStorage(ABC):
                 import zstandard as zstd
 
                 dctx = zstd.ZstdDecompressor()
-                return dctx.decompress(data)
+                return cast(bytes, dctx.decompress(data))
             except ImportError:
                 import gzip
 
                 return gzip.decompress(data)
+    
         return data

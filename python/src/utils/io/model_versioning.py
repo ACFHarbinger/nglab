@@ -9,7 +9,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import torch
 from torch import nn
@@ -35,20 +35,20 @@ class ModelMetadata:
     version: str
     model_type: str
     framework_version: str
-    hyperparameters: dict[str, Any]
-    metrics: dict[str, float]
+    hyperparameters: Dict[str, Any]
+    metrics: Dict[str, float]
     training_date: str
     dataset_hash: str
-    git_commit: str | None = None
-    description: str | None = None
-    tags: list[str] = field(default_factory=list)
+    git_commit: Optional[str] = None
+    description: Optional[str] = None
+    tags: List[str] = field(default_factory=list)
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         """Convert metadata to dictionary."""
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ModelMetadata":
+    def from_dict(cls, data: Dict[str, Any]) -> "ModelMetadata":
         """Create metadata from dictionary."""
         return cls(**data)
 
@@ -62,7 +62,7 @@ class ModelMetadata:
         return cls.from_dict(json.loads(json_str))
 
 
-def compute_dataset_hash(data_path: str | Path) -> str:
+def compute_dataset_hash(data_path: Union[str, Path]) -> str:
     """Compute SHA256 hash of dataset for reproducibility.
 
     Args:
@@ -91,7 +91,7 @@ def compute_dataset_hash(data_path: str | Path) -> str:
     return hasher.hexdigest()
 
 
-def get_git_commit() -> str | None:
+def get_git_commit() -> Optional[str]:
     """Get current git commit hash.
 
     Returns:
@@ -113,10 +113,10 @@ def get_git_commit() -> str | None:
 
 def save_model_with_metadata(
     model: nn.Module,
-    save_path: str | Path,
+    save_path: Union[str, Path],
     metadata: ModelMetadata,
-    optimizer: torch.optim.Optimizer | None = None,
-    scheduler: Any | None = None,
+    optimizer: Optional[torch.optim.Optimizer] = None,
+    scheduler: Optional[Any] = None,
 ) -> None:
     """Save model checkpoint with comprehensive metadata.
 
@@ -126,23 +126,11 @@ def save_model_with_metadata(
         metadata: Model metadata
         optimizer: Optimizer state (optional)
         scheduler: Learning rate scheduler state (optional)
-
-    Example:
-        >>> metadata = ModelMetadata(
-        ...     version="1.0.0",
-        ...     model_type="VAE",
-        ...     framework_version=f"pytorch-{torch.__version__}",
-        ...     hyperparameters={"latent_dim": 64},
-        ...     metrics={"val_loss": 0.123},
-        ...     training_date=datetime.now().isoformat(),
-        ...     dataset_hash=compute_dataset_hash("data/train.csv"),
-        ... )
-        >>> save_model_with_metadata(model, "checkpoints/vae_v1.pt", metadata)
     """
     save_path = Path(save_path)
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
-    checkpoint = {
+    checkpoint: Dict[str, Any] = {
         "model_state_dict": model.state_dict(),
         "metadata": metadata.to_dict(),
     }
@@ -163,10 +151,10 @@ def save_model_with_metadata(
 
 def load_model_with_metadata(
     model: nn.Module,
-    load_path: str | Path,
-    map_location: str | torch.device | None = None,
+    load_path: Union[str, Path],
+    map_location: Optional[Union[str, torch.device]] = None,
     strict: bool = True,
-) -> tuple[nn.Module, ModelMetadata]:
+) -> Tuple[nn.Module, ModelMetadata]:
     """Load model checkpoint with metadata.
 
     Args:
@@ -177,18 +165,13 @@ def load_model_with_metadata(
 
     Returns:
         Tuple of (loaded_model, metadata)
-
-    Example:
-        >>> model = VAE(input_dim=10, latent_dim=64)
-        >>> model, metadata = load_model_with_metadata(model, "checkpoints/vae_v1.pt")
-        >>> print(f"Loaded model version {metadata.version}")
     """
     load_path = Path(load_path)
 
     if not load_path.exists():
         raise FileNotFoundError(f"Checkpoint not found: {load_path}")
 
-    checkpoint = torch.load(load_path, map_location=map_location)
+    checkpoint = cast(Dict[str, Any], torch.load(load_path, map_location=map_location))
 
     model.load_state_dict(checkpoint["model_state_dict"], strict=strict)
     metadata = ModelMetadata.from_dict(checkpoint["metadata"])
@@ -211,12 +194,13 @@ def check_version_compatibility(current_version: str, checkpoint_version: str) -
         True if compatible, False otherwise
     """
 
-    def parse_version(version: str) -> tuple[int, int, int]:
+    def parse_version(version: str) -> Tuple[int, int, int]:
         """Parse version string into tuple of integers."""
         parts = version.split(".")
         if len(parts) != 3:
             raise ValueError(f"Invalid version format: {version}")
-        return tuple(map(int, parts))
+        v_tuple = tuple(map(int, parts))
+        return cast(Tuple[int, int, int], v_tuple)
 
     current = parse_version(current_version)
     checkpoint = parse_version(checkpoint_version)
@@ -229,15 +213,9 @@ class ModelRegistry:
     """Registry for managing multiple model versions.
 
     Provides a centralized interface for saving, loading, and listing models.
-
-    Example:
-        >>> registry = ModelRegistry("models/")
-        >>> registry.save(model, "vae", "1.0.0", metadata)
-        >>> model = registry.load("vae", "1.0.0")
-        >>> versions = registry.list_versions("vae")
     """
 
-    def __init__(self, base_path: str | Path):
+    def __init__(self, base_path: Union[str, Path]) -> None:
         """Initialize model registry.
 
         Args:
@@ -256,7 +234,7 @@ class ModelRegistry:
         model_type: str,
         version: str,
         metadata: ModelMetadata,
-        optimizer: torch.optim.Optimizer | None = None,
+        optimizer: Optional[torch.optim.Optimizer] = None,
     ) -> Path:
         """Save model to registry.
 
@@ -279,8 +257,8 @@ class ModelRegistry:
         model: nn.Module,
         model_type: str,
         version: str,
-        map_location: str | torch.device | None = None,
-    ) -> tuple[nn.Module, ModelMetadata]:
+        map_location: Optional[Union[str, torch.device]] = None,
+    ) -> Tuple[nn.Module, ModelMetadata]:
         """Load model from registry.
 
         Args:
@@ -295,7 +273,7 @@ class ModelRegistry:
         load_path = self._get_model_path(model_type, version)
         return load_model_with_metadata(model, load_path, map_location)
 
-    def list_versions(self, model_type: str) -> list[str]:
+    def list_versions(self, model_type: str) -> List[str]:
         """List all available versions for a model type.
 
         Args:
@@ -315,7 +293,7 @@ class ModelRegistry:
 
         return sorted(versions, reverse=True)  # Most recent first
 
-    def get_latest(self, model_type: str) -> str | None:
+    def get_latest(self, model_type: str) -> Optional[str]:
         """Get the latest version for a model type.
 
         Args:
@@ -352,12 +330,12 @@ class ModelRegistry:
 
 def create_metadata_from_config(  # noqa: PLR0913
     model_type: str,
-    config: dict[str, Any],
-    metrics: dict[str, float],
-    dataset_path: str | Path | None = None,
+    config: Dict[str, Any],
+    metrics: Dict[str, float],
+    dataset_path: Optional[Union[str, Path]] = None,
     version: str = "1.0.0",
-    description: str | None = None,
-    tags: list[str] | None = None,
+    description: Optional[str] = None,
+    tags: Optional[List[str]] = None,
 ) -> ModelMetadata:
     """Create model metadata from training configuration.
 

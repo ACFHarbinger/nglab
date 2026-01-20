@@ -4,6 +4,8 @@ Periodic (Regular) Policy for NGLab.
 Executes a specific action at fixed intervals (e.g., rebalancing).
 """
 
+from typing import Any, Dict, Optional
+
 from .base import Policy
 
 
@@ -14,7 +16,7 @@ class RegularPolicy(Policy):
     Here adapted for trading: e.g. Rebalance every N days.
     """
 
-    def __init__(self, cfg=None):
+    def __init__(self, cfg: Optional[Dict[str, Any]] = None) -> None:
         """
         Initialize Periodic policy.
 
@@ -22,10 +24,10 @@ class RegularPolicy(Policy):
             cfg (Dict, optional): Configuration containing the interval period.
         """
         super().__init__(cfg)
-        self.period = self.cfg.get("period", 30)  # collection every (lvl+1) days
+        self.period = int(self.cfg.get("period", 30))
         self.current_step = 0
 
-    def act(self, observation):
+    def act(self, observation: Any) -> int:
         """
         Trigger action every 'period' steps.
         """
@@ -36,7 +38,7 @@ class RegularPolicy(Policy):
 
         return 0  # Do nothing
 
-    def reset(self):
+    def reset(self) -> None:
         """
         Reset the step counter.
         """
