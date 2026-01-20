@@ -3,6 +3,7 @@ Denoising AutoEncoder (DAE) implementation.
 """
 
 import torch
+from typing import Optional
 
 from .ae import AutoEncoder
 
@@ -20,12 +21,12 @@ class DenoisingAE(AutoEncoder):
         latent_dim,
         noise_std=0.1,
         output_type="prediction",
-    ):
+    ) -> None:
         """Initialize Denoising AutoEncoder."""
         super().__init__(input_dim, hidden_dims, latent_dim, output_type)
         self.noise_std = noise_std
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
         """Forward pass."""
         if self.training:
             # Add noise

@@ -2,7 +2,10 @@
 Recurrent Neural Network (RNN) implementations (LSTM, GRU).
 """
 
+from typing import Optional
+import torch
 from torch import nn
+import torch.nn.functional as F  # noqa: N812
 
 
 class LSTM(nn.Module):
@@ -12,25 +15,16 @@ class LSTM(nn.Module):
 
     def __init__(  # noqa: PLR0913
         self,
-        input_dim,
-        hidden_dim,
-        n_layers,
-        output_dim,
-        dropout=0.0,
-        output_type="prediction",
-        apply_softmax=False,
-    ):
+        input_dim: int,
+        hidden_dim: int,
+        n_layers: int,
+        output_dim: int,
+        dropout: float = 0.0,
+        output_type: str = "prediction",
+        apply_softmax: bool = False,
+    ) -> None:
         """
         Initialize the LSTM.
-
-        Args:
-            input_dim (int): Input feature dimension.
-            hidden_dim (int): Hidden state dimension.
-            n_layers (int): Number of LSTM layers.
-            output_dim (int): Output dimension.
-            dropout (float): Dropout probability.
-            output_type (str): 'prediction' or 'embedding'.
-            apply_softmax (bool): Whether to apply softmax to output.
         """
         super().__init__()
         self.output_type = output_type
@@ -47,17 +41,9 @@ class LSTM(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, output_dim)
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
         """
         Forward pass.
-
-        Args:
-            x (Tensor): Input sequence [batch, seq_len, input_dim].
-            return_embedding (bool, optional): Override output type.
-            return_sequence (bool, optional): If True, return full sequence.
-
-        Returns:
-            Tensor: Output [batch, output_dim] or [batch, hidden_dim] or sequence.
         """
         # h0, c0 initialized to zeros by default if not provided
         out, (_h_n, _c_n) = self.lstm(x)
@@ -80,8 +66,6 @@ class LSTM(nn.Module):
         output = self.fc(state)
 
         if self.apply_softmax and self.output_type == "prediction":
-            import torch.nn.functional as F  # noqa: N812
-
             output = F.softmax(output, dim=-1)
 
         return output
@@ -94,23 +78,15 @@ class GRU(nn.Module):
 
     def __init__(  # noqa: PLR0913
         self,
-        input_dim,
-        hidden_dim,
-        n_layers,
-        output_dim,
-        dropout=0.0,
-        output_type="prediction",
-    ):
+        input_dim: int,
+        hidden_dim: int,
+        n_layers: int,
+        output_dim: int,
+        dropout: float = 0.0,
+        output_type: str = "prediction",
+    ) -> None:
         """
         Initialize the GRU.
-
-        Args:
-            input_dim (int): Input feature dimension.
-            hidden_dim (int): Hidden state dimension.
-            n_layers (int): Number of GRU layers.
-            output_dim (int): Output dimension.
-            dropout (float): Dropout probability.
-            output_type (str): 'prediction' or 'embedding'.
         """
         super().__init__()
         self.output_type = output_type
@@ -126,17 +102,9 @@ class GRU(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, output_dim)
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
         """
         Forward pass.
-
-        Args:
-            x (Tensor): Input sequence [batch, seq_len, input_dim].
-            return_embedding (bool, optional): Override output type.
-            return_sequence (bool, optional): If True, return full sequence.
-
-        Returns:
-            Tensor: Output [batch, output_dim] or [batch, hidden_dim] or sequence.
         """
         # h0 initialized to zeros by default if not provided
         out, _h_n = self.gru(x)

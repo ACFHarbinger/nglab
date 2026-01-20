@@ -3,6 +3,7 @@ Non-stationary Transformer for Time Series Forecasting.
 Adapted from the Time-Series-Library.
 """
 
+from typing import Optional, List, Any, Tuple
 import torch
 from torch import nn
 
@@ -22,8 +23,8 @@ class EncoderLayer(nn.Module):
     """
 
     def __init__(
-        self, n_heads, embed_dim, hidden_dim, dropout_rate=0.1, normalization="layer"
-    ):
+        self, n_heads: int, embed_dim: int, hidden_dim: int, dropout_rate: float = 0.1, normalization: str = "layer"
+    ) -> None:
         """
         Initialize.
         """
@@ -42,15 +43,15 @@ class EncoderLayer(nn.Module):
         )
         self.norm = Normalization(embed_dim, normalization)
 
-    def forward(self, x, attn_mask, tau, delta):
+    def forward(self, x: torch.Tensor, attn_mask: Any, tau: Optional[torch.Tensor], delta: Optional[torch.Tensor]) -> torch.Tensor:
         """
         Forward pass.
         """
-        y = x = self.norm(
-            self.attention(x, x, x, attn_mask=attn_mask, tau=tau, delta=delta)
-        )
-        y = self.conv(y)
-        return self.norm(x + y)
+        y = x = torch.as_tensor(self.norm(
+            self.attention(x, x, x, attn_mask=attn_mask, tau=tau, delta=delta)[0]
+        ))
+        y = torch.as_tensor(self.conv(y))
+        return torch.as_tensor(self.norm(x + y))
 
 
 class Encoder(nn.Module):
@@ -58,7 +59,7 @@ class Encoder(nn.Module):
     Encoder network consisting of multiple layers.
     """
 
-    def __init__(self, attn_layers, conv_layers=None, norm_layer=None):
+    def __init__(self, attn_layers: List[EncoderLayer], conv_layers: Optional[List[nn.Module]] = None, norm_layer: Optional[nn.Module] = None) -> None:
         """
         Initialize.
         """
@@ -69,7 +70,7 @@ class Encoder(nn.Module):
         )
         self.norm = norm_layer
 
-    def forward(self, x, attn_mask=None, tau=None, delta=None):
+    def forward(self, x: torch.Tensor, attn_mask: Any = None, tau: Optional[torch.Tensor] = None, delta: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -78,16 +79,30 @@ class Encoder(nn.Module):
             for i, (attn_layer, conv_layer) in enumerate(
                 zip(self.attn_layers, self.conv_layers, strict=False)
             ):
-                delta = delta if i == 0 else None
-                x = attn_layer(x, attn_mask=attn_mask, tau=tau, delta=delta)
-                x = conv_layer(x)
-            x = self.attn_layers[-1](x, tau=tau, delta=None)
+                delta_val = delta if i == 0 else None
+                out = attn_layer(x, attn_mask=attn_mask, tau=tau, delta=delta_val)
+                if isinstance(out, (tuple, list)):
+                    x = out[0]
+                else:
+                    x = out
+                x = torch.as_tensor(conv_layer(x))
+            
+            # Final attention layer
+            last_out = self.attn_layers[-1](x, attn_mask=attn_mask, tau=tau, delta=None)
+            if isinstance(last_out, (tuple, list)):
+                 x = last_out[0]
+            else:
+                 x = last_out
         else:
             for attn_layer in self.attn_layers:
-                x = attn_layer(x, attn_mask=attn_mask, tau=tau, delta=delta)
+                out_loop = attn_layer(x, attn_mask=attn_mask, tau=tau, delta=delta)
+                if isinstance(out_loop, (tuple, list)):
+                    x = out_loop[0]
+                else:
+                    x = out_loop
 
         if self.norm is not None:
-            x = self.norm(x)
+            x = torch.as_tensor(self.norm(x))
 
         return x
 
@@ -98,8 +113,8 @@ class DecoderLayer(nn.Module):
     """
 
     def __init__(
-        self, n_heads, embed_dim, hidden_dim, dropout_rate=0.1, normalization="layer"
-    ):
+        self, n_heads: int, embed_dim: int, hidden_dim: int, dropout_rate: float = 0.1, normalization: str = "layer"
+    ) -> None:
         """
         Initialize.
         """
@@ -122,19 +137,19 @@ class DecoderLayer(nn.Module):
         self.norm = Normalization(embed_dim, normalization)
 
     def forward(  # noqa: PLR0913
-        self, x, cross, x_mask=None, cross_mask=None, tau=None, delta=None
-    ):
+        self, x: torch.Tensor, cross: torch.Tensor, x_mask: Any = None, cross_mask: Any = None, tau: Optional[torch.Tensor] = None, delta: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
         """
         Forward pass.
         """
-        x = self.norm(self.attention(x, x, x, attn_mask=x_mask, tau=tau, delta=None)[0])
-        x = self.norm(
+        x = torch.as_tensor(self.norm(self.attention(x, x, x, attn_mask=x_mask, tau=tau, delta=None)[0]))
+        x = torch.as_tensor(self.norm(
             self.cross_attention(
                 x, cross, cross, attn_mask=cross_mask, tau=tau, delta=delta
             )[0]
-        )
-        y = self.conv(x)
-        return self.norm(x + y)
+        ))
+        y = torch.as_tensor(self.conv(x))
+        return torch.as_tensor(self.norm(x + y))
 
 
 class Decoder(nn.Module):
@@ -142,7 +157,7 @@ class Decoder(nn.Module):
     Decoder network consisting of multiple layers.
     """
 
-    def __init__(self, layers, norm_layer=None, projection=None):
+    def __init__(self, layers: List[DecoderLayer], norm_layer: Optional[nn.Module] = None, projection: Optional[nn.Module] = None) -> None:
         """
         Initialize.
         """
@@ -152,44 +167,34 @@ class Decoder(nn.Module):
         self.projection = projection
 
     def forward(  # noqa: PLR0913
-        self, x, cross, x_mask=None, cross_mask=None, tau=None, delta=None
-    ):
+        self, x: torch.Tensor, cross: torch.Tensor, x_mask: Any = None, cross_mask: Any = None, tau: Optional[torch.Tensor] = None, delta: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
         """
         Forward pass.
         """
         for layer in self.layers:
-            x = layer(
+            x = torch.as_tensor(layer(
                 x, cross, x_mask=x_mask, cross_mask=cross_mask, tau=tau, delta=delta
-            )
+            ))
 
         if self.norm is not None:
-            x = self.norm(x)
+            x = torch.as_tensor(self.norm(x))
 
         if self.projection is not None:
-            x = self.projection(x)
+            x = torch.as_tensor(self.projection(x))
         return x
 
 
-# Adapted from the Time-Series-Library (https://github.com/thuml/Time-Series-Library/blob/main/models/Nonstationary_Transformer.py)
 class Projector(nn.Module):
     """
     MLP to learn the De-stationary factors
-    Paper link: https://openreview.net/pdf?id=ucNDIDRNjjv
     """
 
     def __init__(  # noqa: PLR0913
-        self, enc_in, seq_len, hidden_dims, hidden_layers, output_dim, kernel_size=3
-    ):
+        self, enc_in: int, seq_len: int, hidden_dims: List[int], hidden_layers: int, output_dim: int, kernel_size: int = 3
+    ) -> None:
         """
         Initialize the Projector.
-
-        Args:
-            enc_in (int): Number of input channels.
-            seq_len (int): Input sequence length.
-            hidden_dims (list): List of hidden layer dimensions.
-            hidden_layers (int): Number of hidden layers.
-            output_dim (int): Output dimension.
-            kernel_size (int): Convolution kernel size.
         """
         super().__init__()
 
@@ -210,30 +215,19 @@ class Projector(nn.Module):
         layers += [nn.Linear(hidden_dims[-1], output_dim, bias=False)]
         self.backbone = nn.Sequential(*layers)
 
-    def forward(self, x, stats):
+    def forward(self, x: torch.Tensor, stats: torch.Tensor) -> torch.Tensor:
         """
         Forward pass for the Projector.
-
-        Args:
-            x (Tensor): Input sequence.
-            stats (Tensor): Statistics (e.g., mean/std).
-
-        Returns:
-            Tensor: Projection output.
         """
-        # x:     B x S x E
-        # stats: B x 1 x E
-        # y:     B x O
         batch_size = x.shape[0]
-        x = self.series_conv(x)  # B x 1 x E
+        x = torch.as_tensor(self.series_conv(x))  # B x 1 x E
         x = torch.cat([x, stats], dim=1)  # B x 2 x E
         x = x.view(batch_size, -1)  # B x 2E
-        y = self.backbone(x)  # B x O
+        y = torch.as_tensor(self.backbone(x))  # B x O
 
         return y
 
 
-# Based on https://github.com/thuml/Nonstationary_Transformers
 class NSTransformer(nn.Module):
     """
     Non-stationary Transformer Model.
@@ -241,39 +235,23 @@ class NSTransformer(nn.Module):
 
     def __init__(  # noqa: PLR0913
         self,
-        pred_len,
-        seq_len,
-        input_dim,
-        embed_dim,
-        hidden_dim,
-        output_dim,
-        learner_dims,
-        embed_type="fixed",
-        freq="h",
-        n_enc_layers=2,
-        n_dec_layers=2,
-        n_learner_layers=2,
-        n_heads=8,
-        dropout_rate=0.1,
-    ):
+        pred_len: int,
+        seq_len: int,
+        input_dim: int,
+        embed_dim: int,
+        hidden_dim: int,
+        output_dim: int,
+        learner_dims: List[int],
+        embed_type: str = "fixed",
+        freq: str = "h",
+        n_enc_layers: int = 2,
+        n_dec_layers: int = 2,
+        n_learner_layers: int = 2,
+        n_heads: int = 8,
+        dropout_rate: float = 0.1,
+    ) -> None:
         """
         Initialize the NSTransformer.
-
-        Args:
-            pred_len (int): Prediction sequence length.
-            seq_len (int): Input sequence length.
-            input_dim (int): Input dimension.
-            embed_dim (int): Embedding dimension.
-            hidden_dim (int): Hidden dimension.
-            output_dim (int): Output dimension.
-            learner_dims (list): Dimensions for the stationary learner.
-            embed_type (str): Type of embedding.
-            freq (str): Frequency of time features.
-            n_enc_layers (int): Number of encoder layers.
-            n_dec_layers (int): Number of decoder layers.
-            n_learner_layers (int): Number of learner layers.
-            n_heads (int): Number of attention heads.
-            dropout_rate (float): Dropout rate.
         """
         super().__init__()
         self.pred_len = pred_len
@@ -309,8 +287,9 @@ class NSTransformer(nn.Module):
         self.delta_learner = Projector(
             input_dim, seq_len, learner_dims, n_learner_layers, output_dim=seq_len
         )
+        self.label_len: int = 0
 
-    def forecast(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
+    def forecast(self, x_enc: torch.Tensor, x_mark_enc: Optional[torch.Tensor], x_dec: torch.Tensor, x_mark_dec: Optional[torch.Tensor]) -> torch.Tensor:
         """
         Forecasting function.
         """
@@ -323,13 +302,9 @@ class NSTransformer(nn.Module):
             torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5
         ).detach()  # B x 1 x E
         x_enc = x_enc / std_enc
-        # B x S x E, B x 1 x E -> B x 1, positive scalar
-        tau = self.tau_learner(x_raw, std_enc).exp()
-        # B x S x E, B x 1 x E -> B x S
-        delta = self.delta_learner(x_raw, mean_enc)
-
-        if not hasattr(self, "label_len"):
-            self.label_len = 0  # Default to 0 if not provided
+        
+        tau = torch.as_tensor(self.tau_learner(x_raw, std_enc)).exp()
+        delta = torch.as_tensor(self.delta_learner(x_raw, mean_enc))
 
         x_dec_new = (
             torch.cat(
@@ -343,17 +318,17 @@ class NSTransformer(nn.Module):
             .clone()
         )
 
-        enc_out = self.init_embedding(x_enc, x_mark_enc)
-        enc_out = self.encoder(enc_out, attn_mask=None, tau=tau, delta=delta)
+        enc_out = torch.as_tensor(self.init_embedding(x_enc, x_mark_enc))
+        enc_out = torch.as_tensor(self.encoder(enc_out, attn_mask=None, tau=tau, delta=delta))
 
-        dec_out = self.dec_embedding(x_dec_new, x_mark_dec)
-        dec_out = self.decoder(
+        dec_out = torch.as_tensor(self.dec_embedding(x_dec_new, x_mark_dec))
+        dec_out = torch.as_tensor(self.decoder(
             dec_out, enc_out, x_mask=None, cross_mask=None, tau=tau, delta=delta
-        )
+        ))
         dec_out = dec_out * std_enc + mean_enc
         return dec_out
 
-    def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec, mask=None):
+    def forward(self, x_enc: torch.Tensor, x_mark_enc: Optional[torch.Tensor], x_dec: torch.Tensor, x_mark_dec: Optional[torch.Tensor], mask: Any = None) -> torch.Tensor:
         """
         Forward pass for the NSTransformer.
         """

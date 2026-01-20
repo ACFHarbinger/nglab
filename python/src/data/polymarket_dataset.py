@@ -7,19 +7,20 @@ import os
 
 import pandas as pd
 import torch
+from typing import Any, Callable, Optional
 
 from .data_utils import read_json
 
 
-class PolymarketDataset(torch.utils.data.Dataset):
+class PolymarketDataset(torch.utils.data.Dataset[dict[str, torch.Tensor]]):
     """
     Dataset class for Polymarket prediction data (Multivariate).
     Loads multiple candidate files and aligns them by timestamp.
     """
 
     def __init__(  # noqa: PLR0913
-        self, name, dataset_dir, seq_len, pred_len, download=False, transform=None
-    ):
+        self, name: str, dataset_dir: str, seq_len: int, pred_len: int, download: bool = False, transform: Optional[Callable[[dict[str, torch.Tensor]], dict[str, torch.Tensor]]] = None
+    ) -> None:
         """
         Initialize the dataset.
 
@@ -45,17 +46,17 @@ class PolymarketDataset(torch.utils.data.Dataset):
         self.dataset_len = 0
         self._load_multivariate_data()
 
-    def _download(self):
+    def _download(self) -> None:
         raise NotImplementedError
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Return the total number of samples."""
         return self.dataset_len
 
-    def _get_name(self):
+    def _get_name(self) -> str:
         return self.name
 
-    def _load_multivariate_data(self):
+    def _load_multivariate_data(self) -> None:
         """
         Loads all CSVs defined in metadata.json and merges them into a single multivariate tensor.
         """
@@ -134,7 +135,7 @@ class PolymarketDataset(torch.utils.data.Dataset):
         self.dataset_len = len(self.dataset["Price"])
         print(f"Loaded Multivariate Dataset: Shape {self.dataset['Price'].shape}")
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> dict[str, torch.Tensor]:
         """
         Get a sample by index.
         """

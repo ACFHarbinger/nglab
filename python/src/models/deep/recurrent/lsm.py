@@ -4,6 +4,7 @@ Liquid State Machine (LSM) model.
 
 import torch
 from torch import nn
+from typing import Optional
 
 from python.src.models.deep.spiking.snn import LIFCell, surrogate_heaviside
 
@@ -17,13 +18,13 @@ class LiquidStateMachine(nn.Module):
 
     def __init__(  # noqa: PLR0913
         self,
-        input_dim,
-        liquid_size,
-        output_dim,
-        connection_prob=0.3,
-        spectral_radius=1.2,
-        output_type="prediction",
-    ):
+        input_dim: int,
+        liquid_size: int,
+        output_dim: int,
+        connection_prob: float = 0.3,
+        spectral_radius: float = 1.2,
+        output_type: str = "prediction",
+    ) -> None:
         """
         Initialize the Liquid State Machine.
 
@@ -65,7 +66,7 @@ class LiquidStateMachine(nn.Module):
         # Trainable readout
         self.readout = nn.Linear(liquid_size, output_dim)
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
         """
         x: (Batch, Seq, Feat)
         """

@@ -4,6 +4,7 @@ Spiking Neural Network (SNN) implementation using Surrogate Gradients.
 
 import torch
 from torch import nn
+from typing import Optional, Tuple, Any, List
 
 
 class SurrogateHeaviside(torch.autograd.Function):
@@ -13,20 +14,20 @@ class SurrogateHeaviside(torch.autograd.Function):
     """
 
     @staticmethod
-    def forward(ctx, input, alpha=25.0):
+    def forward(ctx: Any, input: torch.Tensor, alpha: float = 25.0) -> torch.Tensor:
         """Forward pass."""
         ctx.save_for_backward(input)
         ctx.alpha = alpha
         return (input > 0).float()
 
     @staticmethod
-    def backward(ctx, grad_output):
+    def backward(ctx: Any, grad_outputs: torch.Tensor) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
         """Backward pass with surrogate gradient."""
-        (input,) = ctx.saved_tensors
+        (input_tensor,) = ctx.saved_tensors
         # Surrogate gradient: alpha / (1 + |alpha * input|)^2
         # This is the derivative of the fast sigmoid function.
-        grad_input = grad_output * (
-            ctx.alpha / (1 + torch.abs(ctx.alpha * input)).pow(2)
+        grad_input = grad_outputs * (
+            ctx.alpha / (1 + torch.abs(ctx.alpha * input_tensor)).pow(2)
         )
         return grad_input, None
 
@@ -39,13 +40,9 @@ def surrogate_heaviside(x: torch.Tensor, alpha: float = 25.0) -> torch.Tensor:
 class LIFCell(nn.Module):
     """
     Leaky Integrate-and-Fire (LIF) Neuron Cell.
-
-    Dynamics:
-    U[t] = decay * U[t-1] + W X[t] - S[t-1] * threshold
-    S[t] = Heaviside(U[t] - threshold)
     """
 
-    def __init__(self, input_dim, hidden_dim, decay=0.9, threshold=1.0, alpha=25.0):
+    def __init__(self, input_dim: int, hidden_dim: int, decay: float = 0.9, threshold: float = 1.0, alpha: float = 25.0) -> None:
         """Initialize LIF Cell."""
         super().__init__()
         self.input_dim = input_dim
@@ -56,26 +53,17 @@ class LIFCell(nn.Module):
 
         self.linear = nn.Linear(input_dim, hidden_dim)
 
-    def forward(self, x, state=None):
+    def forward(self, x: torch.Tensor, state: Optional[Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         """
-        Args:
-            x: Input tensor (Batch, Input_Dim)
-            state: Tuple (u, s) of previous membrane potential and spike.
-                   If None, initialized to zeros.
+        Forward pass.
         Returns:
-            s_next: Spikes at current time step (Batch, Hidden_Dim)
-            state_next: (u_next, s_next)
+            s_next, (u_next, s_next)
         """
         batch_size = x.size(0)
 
         if state is None:
             u = torch.zeros(batch_size, self.hidden_dim, device=x.device)
             s = torch.zeros(batch_size, self.hidden_dim, device=x.device)
-            # We don't necessarily need previous s for reset if we implement soft reset:
-            # U[t] = decay * U[t-1] + input - s[t-1] * threshold
-            # But standard soft reset usually resets AFTER spike generation of current step.
-            # Let's use: U[t] = decay * (U[t-1] - S[t-1]*threshold) + Input[t]
-            # This is "reset by subtraction".
         else:
             u, s = state
 
@@ -83,7 +71,6 @@ class LIFCell(nn.Module):
         i_inj = self.linear(x)
 
         # Update membrane potential
-        # Reset mechanism: subtract threshold if previous step invoked a spike
         u_next = self.decay * (u - s * self.threshold) + i_inj
 
         # Fire spike
@@ -95,39 +82,26 @@ class LIFCell(nn.Module):
 class SNN(nn.Module):
     """
     Multi-layer Spiking Neural Network.
-    Currently implements a single recurrent layer of LIF cells.
     """
 
     def __init__(  # noqa: PLR0913
         self,
-        input_dim,
-        hidden_dim,
-        n_layers=1,
-        output_dim=None,
-        decay=0.9,
-        threshold=1.0,
-        alpha=25.0,
-        dropout=0.0,
-        output_type="prediction",
-    ):
-        """
-        Args:
-            input_dim: Feature dimension
-            hidden_dim: Hidden dimension of LIF neurons
-            n_layers: Number of LIF layers (stacked) -- simplified to 1 for now or stacked?
-                      Let's implement Single Layer Recurrent SNN first.
-            output_dim: Output dimension (if prediction)
-            decay: Membrane potential decay factor
-            threshold: Firing threshold
-            alpha: Surrogate gradient steepness
-            output_type: 'prediction' or 'embedding'
-        """
+        input_dim: int,
+        hidden_dim: int,
+        n_layers: int = 1,
+        output_dim: Optional[int] = None,
+        decay: float = 0.9,
+        threshold: float = 1.0,
+        alpha: float = 25.0,
+        dropout: float = 0.0,
+        output_type: str = "prediction",
+    ) -> None:
+        """Initialize SNN."""
         super().__init__()
         self.output_type = output_type
         self.hidden_dim = hidden_dim
-        self.n_layers = n_layers  # currently handling 1 recurrent layer logic primarily
+        self.n_layers = n_layers
 
-        # We can implement stacked LIF cells
         self.lif_layers = nn.ModuleList(
             [
                 LIFCell(
@@ -142,35 +116,11 @@ class SNN(nn.Module):
         )
 
         self.dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
-
-        # Optional readout layer (leaky calculation or simple linear?)
-        # For prediction, we usually take rate or membrane potentials.
-        # Here we follow existing backbone pattern: Linear projection of last state (spikes or potential).
-        # Using potential (u) often carries more information for regression than binary spikes.
-        # But if 'embedding' is spikes, it's very sparse.
         self.fc = nn.Linear(hidden_dim, output_dim) if output_dim else None
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
-        """
-        Args:
-            x: (Batch, Seq, Feature)
-
-        Returns:
-            Output compatible with TimeSeriesBackbone
-        """
+    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
+        """Forward pass."""
         _batch_size, seq_len, _ = x.size()
-
-        # Initialize states for each layer
-        [None] * self.n_layers
-
-        # We need to collect outputs to return sequence
-        # If n_layers > 1, we feed output of layer l-1 to layer l
-
-        # Let's simple loop over time, then layers (standard RNN processing)
-
-        # Or loop over layers, then time? (Easier for stacking if no feedback across layers)
-        # Yes, standard stacked RNN.
-
         current_input = x
 
         for layer_idx, lif in enumerate(self.lif_layers):
@@ -181,15 +131,10 @@ class SNN(nn.Module):
                 spikes, state = lif(input_t, state)
                 layer_outputs.append(spikes)
 
-            # Stack spikes for next layer input: (Batch, Seq, Hidden)
             current_input = torch.stack(layer_outputs, dim=1)
 
             if layer_idx < self.n_layers - 1:
                 current_input = self.dropout(current_input)
-
-        # Final layer output is current_input (spikes)
-        # We might also want membrane potentials for smoother regression?
-        # For now, let's stick to spikes as the "SNN" output.
 
         final_spikes = current_input
 
@@ -205,11 +150,9 @@ class SNN(nn.Module):
         )
 
         if should_return_embedding:
-            return out
+            return torch.as_tensor(out)
 
-        # If prediction, project
         if self.fc is not None:
-            return self.fc(out)
+            return torch.as_tensor(self.fc(out))
         else:
-            # Fallback if no output_dim given but prediction requested?
-            return out
+            return torch.as_tensor(out)

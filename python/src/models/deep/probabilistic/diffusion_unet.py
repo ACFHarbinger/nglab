@@ -3,7 +3,7 @@
 """
 
 import math
-
+from typing import Optional, List, Any
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
@@ -14,18 +14,18 @@ class SinusoidalPositionEmbeddings(nn.Module):
     Sinusoidal embeddings for time steps t.
     """
 
-    def __init__(self, dim):
+    def __init__(self, dim: int) -> None:
         """Initialize Sinusoidal Embeddings."""
         super().__init__()
         self.dim = dim
 
-    def forward(self, time):
+    def forward(self, time: torch.Tensor) -> torch.Tensor:
         """Generate embeddings for time steps."""
         device = time.device
         half_dim = self.dim // 2
         embeddings = math.log(10000) / (half_dim - 1)
         embeddings = torch.exp(torch.arange(half_dim, device=device) * -embeddings)
-        embeddings = time[:, None] * embeddings[None, :]
+        embeddings = time[:, None].float() * embeddings[None, :]
         embeddings = torch.cat((embeddings.sin(), embeddings.cos()), dim=-1)
         return embeddings
 
@@ -35,7 +35,7 @@ class ResidualBlock1D(nn.Module):
     1D Residual Block with optional time embedding injection and group norm.
     """
 
-    def __init__(self, in_channels, out_channels, time_emb_dim=None, n_groups=8):
+    def __init__(self, in_channels: int, out_channels: int, time_emb_dim: Optional[int] = None, n_groups: int = 8) -> None:
         """Initialize Residual Block."""
         super().__init__()
         self.norm1 = nn.GroupNorm(n_groups, in_channels)
@@ -50,11 +50,11 @@ class ResidualBlock1D(nn.Module):
         self.conv2 = nn.Conv1d(out_channels, out_channels, kernel_size=3, padding=1)
 
         if in_channels != out_channels:
-            self.shortcut = nn.Conv1d(in_channels, out_channels, kernel_size=1)
+            self.shortcut: nn.Module = nn.Conv1d(in_channels, out_channels, kernel_size=1)
         else:
             self.shortcut = nn.Identity()
 
-    def forward(self, x, time_emb=None):
+    def forward(self, x: torch.Tensor, time_emb: Optional[torch.Tensor] = None) -> torch.Tensor:
         """Forward pass."""
         h = self.conv1(F.silu(self.norm1(x)))
 
@@ -63,7 +63,7 @@ class ResidualBlock1D(nn.Module):
             h = h + t[:, :, None]  # Broadcast over time dimension
 
         h = self.conv2(F.silu(self.norm2(h)))
-        return h + self.shortcut(x)
+        return torch.as_tensor(h + self.shortcut(x))
 
 
 class DiffusionUNet1D(nn.Module):
@@ -76,8 +76,8 @@ class DiffusionUNet1D(nn.Module):
     """
 
     def __init__(
-        self, input_dim, output_dim, hidden_dim=64, layers=None, time_emb_dim=128
-    ):
+        self, input_dim: int, output_dim: int, hidden_dim: int = 64, layers: Optional[List[int]] = None, time_emb_dim: int = 128
+    ) -> None:
         """Initialize Diffusion UNet."""
         if layers is None:
             layers = [1, 2, 4]
@@ -92,19 +92,6 @@ class DiffusionUNet1D(nn.Module):
             nn.SiLU(),
             nn.Linear(time_emb_dim, time_emb_dim),
         )
-
-        # Initial Conv
-        # Concatenate input (x) and condition (cond) channels?
-        # Typically x is noisy target, cond is history. They align in features but maybe not length?
-        # Assumption: cond is concatenated or processed.
-        # Strategy: Input is x_t (noisy future). cond (history) is injected differently or fused.
-        # Simple approach: Concat along channel dim?
-        # For forecasting: inputs = x_t (L features) + cond (History L features?)
-        # Let's assume input_dim includes both if we concat early, or we assume specific signature.
-        # Let's support explicit 'cond' argument that we concat.
-
-        # We process 'x' (features) -> 'C' channels.
-        # Input channels = input_dim (model is passed total channels usually)
 
         self.init_conv = nn.Conv1d(input_dim, hidden_dim, kernel_size=3, padding=1)
 
@@ -148,16 +135,14 @@ class DiffusionUNet1D(nn.Module):
 
         self.out_conv = nn.Conv1d(channels, output_dim, kernel_size=1)
 
-    def forward(self, x, t, cond=None):
+    def forward(self, x: torch.Tensor, t: torch.Tensor, cond: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
+        Forward pass.
         Args:
             x: (B, L, F)
             t: (B)
             cond: (B, L, F_cond) optional condition
         """
-        # Prepare inputs: Transpose to (B, C, L)
-        # Verify L matches.
-
         if cond is not None:
             # Concat along feature dimension
             x = torch.cat([x, cond], dim=-1)
@@ -171,8 +156,11 @@ class DiffusionUNet1D(nn.Module):
         h = self.init_conv(x)
 
         # Down
-        skips = []
-        for block1, block2, downsample in self.downs:
+        skips: List[torch.Tensor] = []
+        for down_layer in self.downs:
+            if not isinstance(down_layer, nn.ModuleList):
+                continue
+            block1, block2, downsample = down_layer
             h = block1(h, t_emb)
             h = block2(h, t_emb)
             skips.append(h)
@@ -183,11 +171,13 @@ class DiffusionUNet1D(nn.Module):
         h = self.mid_block2(h, t_emb)
 
         # Up
-        for upsample, block1, block2 in self.ups:
+        for up_layer in self.ups:
+            if not isinstance(up_layer, nn.ModuleList):
+                 continue
+            upsample, block1, block2 = up_layer
             h = upsample(h)
             skip = skips.pop()
 
-            # Handle shape mismatch due to padding/striding?
             if h.shape[-1] != skip.shape[-1]:
                 h = F.interpolate(
                     h, size=skip.shape[-1], mode="linear", align_corners=False
@@ -198,4 +188,4 @@ class DiffusionUNet1D(nn.Module):
             h = block2(h, t_emb)
 
         h = self.out_conv(h)
-        return h.transpose(1, 2)  # Back to (B, L, OUT)
+        return torch.as_tensor(h.transpose(1, 2))  # Back to (B, L, OUT)

@@ -2,7 +2,9 @@
 Stacked AutoEncoder (StackedAE) implementation.
 """
 
+import torch
 from torch import nn
+from typing import Optional
 
 from .ae import AutoEncoder
 
@@ -12,7 +14,7 @@ class StackedAutoEncoder(nn.Module):
     Stacked AutoEncoder - A stack of individual AutoEncoders trained layer-wise.
     """
 
-    def __init__(self, layer_sizes, output_type="prediction"):
+    def __init__(self, layer_sizes: list[int], output_type: str = "prediction") -> None:
         """
         Args:
             layer_sizes (list[int]): Sizes of the layers [input, h1, h2, ..., latent].
@@ -35,7 +37,7 @@ class StackedAutoEncoder(nn.Module):
             )
             self.aes.append(ae)
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
         """
         Forward pass.
         If return_embedding is True (or output_type="embedding"), returns the latent code.

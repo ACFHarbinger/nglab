@@ -3,7 +3,7 @@ Data Embedding layers for Time Series Models.
 """
 
 import math
-
+from typing import Optional, Union, Tuple
 import torch
 from torch import nn
 
@@ -17,15 +17,11 @@ class PositionalEmbedding(nn.Module):
     def __init__(self, d_model: int, max_len: int = 5000) -> None:
         """
         Initialize positional embedding.
-
-        Args:
-            d_model (int): Model dimension.
-            max_len (int): Maximum sequence length.
         """
         super().__init__()
         # Compute the positional encodings once in log space.
         pe = torch.zeros(max_len, d_model).float()
-        pe.require_grad = False
+        pe.requires_grad = False
 
         position = torch.arange(0, max_len).float().unsqueeze(1)
         div_term = (
@@ -42,7 +38,7 @@ class PositionalEmbedding(nn.Module):
         """
         Forward pass.
         """
-        return self.pe[:, : x.size(1)]
+        return self.pe[:, : x.size(1)] # type: ignore
 
 
 class TokenEmbedding(nn.Module):
@@ -50,13 +46,9 @@ class TokenEmbedding(nn.Module):
     Token Embedding using 1D Convolution.
     """
 
-    def __init__(self, c_in, d_model):
+    def __init__(self, c_in: int, d_model: int) -> None:
         """
         Initialize token embedding.
-
-        Args:
-            c_in (int): Number of input channels.
-            d_model (int): Output model dimension.
         """
         super().__init__()
         padding = 1 if torch.__version__ >= "1.5.0" else 2
@@ -87,18 +79,14 @@ class FixedEmbedding(nn.Module):
     Fixed Sinusoidal Embedding.
     """
 
-    def __init__(self, c_in, d_model):
+    def __init__(self, c_in: int, d_model: int) -> None:
         """
         Initialize fixed embedding.
-
-        Args:
-            c_in (int): Number of categories.
-            d_model (int): Model dimension.
         """
         super().__init__()
 
         w = torch.zeros(c_in, d_model).float()
-        w.require_grad = False
+        w.requires_grad = False
 
         position = torch.arange(0, c_in).float().unsqueeze(1)
         div_term = (
@@ -123,14 +111,9 @@ class TemporalEmbedding(nn.Module):
     Embedding for Temporal Features (Hour, Day, Month, etc).
     """
 
-    def __init__(self, d_model, embed_type="fixed", freq="h"):
+    def __init__(self, d_model: int, embed_type: str = "fixed", freq: str = "h") -> None:
         """
         Initialize temporal embedding.
-
-        Args:
-            d_model (int): Model dimension.
-            embed_type (str): Type of embedding ('fixed' or 'learnable').
-            freq (str): Frequency of features.
         """
         super().__init__()
 
@@ -148,7 +131,7 @@ class TemporalEmbedding(nn.Module):
         self.day_embed = Embed(day_size, d_model)
         self.month_embed = Embed(month_size, d_model)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -169,14 +152,9 @@ class TimeFeatureEmbedding(nn.Module):
     Embedding for continuous time features.
     """
 
-    def __init__(self, d_model, embed_type="timeF", freq="h"):
+    def __init__(self, d_model: int, embed_type: str = "timeF", freq: str = "h") -> None:
         """
         Initialize time feature embedding.
-
-        Args:
-            d_model (int): Model dimension.
-            embed_type (str): Type of embedding.
-            freq (str): Frequency of features.
         """
         super().__init__()
 
@@ -184,7 +162,7 @@ class TimeFeatureEmbedding(nn.Module):
         d_inp = freq_map[freq]
         self.embed = nn.Linear(d_inp, d_model, bias=False)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -196,41 +174,34 @@ class DataEmbedding(nn.Module):
     Standard Data Embedding combining value, position, and temporal embeddings.
     """
 
-    def __init__(self, c_in, d_model, embed_type="fixed", freq="h", dropout=0.1):
+    def __init__(self, c_in: int, d_model: int, embed_type: str = "fixed", freq: str = "h", dropout: float = 0.1) -> None:
         """
         Initialize data embedding.
-
-        Args:
-            c_in (int): Input feature dimension.
-            d_model (int): Model dimension.
-            embed_type (str): Type of embedding.
-            freq (str): Frequency of features.
-            dropout (float): Dropout probability.
         """
         super().__init__()
 
         self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
         self.position_embedding = PositionalEmbedding(d_model=d_model)
-        self.temporal_embedding = (
+        self.temporal_embedding: nn.Module = (
             TemporalEmbedding(d_model=d_model, embed_type=embed_type, freq=freq)
             if embed_type != "timeF"
             else TimeFeatureEmbedding(d_model=d_model, embed_type=embed_type, freq=freq)
         )
         self.dropout = nn.Dropout(p=dropout)
 
-    def forward(self, x, x_mark):
+    def forward(self, x: torch.Tensor, x_mark: Optional[torch.Tensor]) -> torch.Tensor:
         """
         Forward pass.
         """
         if x_mark is None:
-            x = self.value_embedding(x) + self.position_embedding(x)
+            res = self.value_embedding(x) + self.position_embedding(x)
         else:
-            x = (
+            res = (
                 self.value_embedding(x)
                 + self.temporal_embedding(x_mark)
                 + self.position_embedding(x)
             )
-        return self.dropout(x)
+        return self.dropout(res)
 
 
 class DataEmbedding_inverted(nn.Module):  # noqa: N801
@@ -238,7 +209,7 @@ class DataEmbedding_inverted(nn.Module):  # noqa: N801
     Inverted Data Embedding for specific architectures.
     """
 
-    def __init__(self, c_in, d_model, embed_type="fixed", freq="h", dropout=0.1):
+    def __init__(self, c_in: int, d_model: int, embed_type: str = "fixed", freq: str = "h", dropout: float = 0.1) -> None:
         """
         Initialize inverted data embedding.
         """
@@ -246,18 +217,18 @@ class DataEmbedding_inverted(nn.Module):  # noqa: N801
         self.value_embedding = nn.Linear(c_in, d_model)
         self.dropout = nn.Dropout(p=dropout)
 
-    def forward(self, x, x_mark):
+    def forward(self, x: torch.Tensor, x_mark: Optional[torch.Tensor]) -> torch.Tensor:
         """
         Forward pass.
         """
         x = x.permute(0, 2, 1)
         # x: [Batch Variate Time]
         if x_mark is None:
-            x = self.value_embedding(x)
+            res = self.value_embedding(x)
         else:
-            x = self.value_embedding(torch.cat([x, x_mark.permute(0, 2, 1)], 1))
+            res = self.value_embedding(torch.cat([x, x_mark.permute(0, 2, 1)], 1))
         # x: [Batch Variate d_model]
-        return self.dropout(x)
+        return self.dropout(res)
 
 
 class DataEmbedding_wo_pos(nn.Module):  # noqa: N801
@@ -265,7 +236,7 @@ class DataEmbedding_wo_pos(nn.Module):  # noqa: N801
     Data Embedding without Positional Embedding.
     """
 
-    def __init__(self, c_in, d_model, embed_type="fixed", freq="h", dropout=0.1):
+    def __init__(self, c_in: int, d_model: int, embed_type: str = "fixed", freq: str = "h", dropout: float = 0.1) -> None:
         """
         Initialize.
         """
@@ -273,22 +244,22 @@ class DataEmbedding_wo_pos(nn.Module):  # noqa: N801
 
         self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
         self.position_embedding = PositionalEmbedding(d_model=d_model)
-        self.temporal_embedding = (
+        self.temporal_embedding: nn.Module = (
             TemporalEmbedding(d_model=d_model, embed_type=embed_type, freq=freq)
             if embed_type != "timeF"
             else TimeFeatureEmbedding(d_model=d_model, embed_type=embed_type, freq=freq)
         )
         self.dropout = nn.Dropout(p=dropout)
 
-    def forward(self, x, x_mark):
+    def forward(self, x: torch.Tensor, x_mark: Optional[torch.Tensor]) -> torch.Tensor:
         """
         Forward pass.
         """
         if x_mark is None:
-            x = self.value_embedding(x)
+            res = self.value_embedding(x)
         else:
-            x = self.value_embedding(x) + self.temporal_embedding(x_mark)
-        return self.dropout(x)
+            res = self.value_embedding(x) + self.temporal_embedding(x_mark)
+        return self.dropout(res)
 
 
 class PatchEmbedding(nn.Module):
@@ -296,16 +267,9 @@ class PatchEmbedding(nn.Module):
     Patch Embedding for PatchTST-style models.
     """
 
-    def __init__(self, d_model, patch_len, stride, padding, dropout):
+    def __init__(self, d_model: int, patch_len: int, stride: int, padding: int, dropout: float) -> None:
         """
         Initialize patch embedding.
-
-        Args:
-            d_model (int): Model dimension.
-            patch_len (int): Length of each patch.
-            stride (int): Stride for patching.
-            padding (int): Padding amount.
-            dropout (float): Dropout probability.
         """
         super().__init__()
         # Patching
@@ -322,7 +286,7 @@ class PatchEmbedding(nn.Module):
         # Residual dropout
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, int]:
         """
         Forward pass.
         """

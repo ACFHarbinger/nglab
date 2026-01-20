@@ -7,11 +7,12 @@ across different configurations and hardware.
 
 import gc
 import json
+import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, List, Dict, Union, Tuple, Type
 
 import torch
 from torch import nn
@@ -55,13 +56,13 @@ class BenchmarkResult:
     cuda_version: str = ""
 
     # Extra metrics
-    extra: dict[str, Any] = field(default_factory=dict)
+    extra: Dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return asdict(self)
 
-    def to_json(self, path: str | None = None) -> str:
+    def to_json(self, path: Optional[str] = None) -> str:
         """Export to JSON."""
         data = self.to_dict()
         if path:
@@ -73,11 +74,6 @@ class BenchmarkResult:
 class GPUBenchmark:
     """
     GPU Benchmark suite for model performance testing.
-
-    Example:
-        benchmark = GPUBenchmark(model, device="cuda")
-        results = benchmark.run_inference(batch_sizes=[1, 8, 32, 64])
-        benchmark.save_results("benchmark_results.json")
     """
 
     def __init__(
@@ -85,17 +81,18 @@ class GPUBenchmark:
         model: nn.Module,
         device: str = "cuda",
         output_dir: str = "./benchmark_results",
-    ):
+    ) -> None:
+        """Initialize GPU Benchmark."""
         self.model = model.to(device)
         self.device = device
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.results: list[BenchmarkResult] = []
+        self.results: List[BenchmarkResult] = []
 
         # Collect hardware info
         self._hardware_info = self._get_hardware_info()
 
-    def _get_hardware_info(self) -> dict:
+    def _get_hardware_info(self) -> Dict[str, Any]:
         """Collect hardware information."""
         info = {
             "gpu_name": "",
@@ -112,26 +109,15 @@ class GPUBenchmark:
 
     def run_inference(  # noqa: PLR0913
         self,
-        input_shape: tuple,
-        batch_sizes: list[int] | None = None,
+        input_shape: Tuple[int, ...],
+        batch_sizes: Optional[List[int]] = None,
         num_iterations: int = 100,
         warmup_iterations: int = 10,
         dtype: torch.dtype = torch.float32,
         mixed_precision: bool = False,
-    ) -> list[BenchmarkResult]:
+    ) -> List[BenchmarkResult]:
         """
         Run inference benchmarks across different batch sizes.
-
-        Args:
-            input_shape: Shape of single input (excluding batch dimension)
-            batch_sizes: List of batch sizes to test
-            num_iterations: Number of benchmark iterations
-            warmup_iterations: Number of warmup iterations
-            dtype: Data type for inputs
-            mixed_precision: Whether to use automatic mixed precision
-
-        Returns:
-            List of BenchmarkResults
         """
         if batch_sizes is None:
             batch_sizes = [1, 8, 32, 64]
@@ -150,7 +136,6 @@ class GPUBenchmark:
             results.append(result)
             self.results.append(result)
 
-            # Print progress
             print(
                 f"Batch {batch_size:>4d}: "
                 f"Mean: {result.mean_latency_ms:>8.2f}ms, "
@@ -162,7 +147,7 @@ class GPUBenchmark:
 
     def _benchmark_inference(  # noqa: PLR0913
         self,
-        input_shape: tuple,
+        input_shape: Tuple[int, ...],
         batch_size: int,
         num_iterations: int,
         warmup_iterations: int,
@@ -170,12 +155,10 @@ class GPUBenchmark:
         mixed_precision: bool,
     ) -> BenchmarkResult:
         """Run single inference benchmark."""
-        # Create sample input
         sample_input = torch.randn(
             batch_size, *input_shape, dtype=dtype, device=self.device
         )
 
-        # Clear cache
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
             torch.cuda.reset_peak_memory_stats()
@@ -194,39 +177,37 @@ class GPUBenchmark:
             torch.cuda.synchronize()
 
         # Benchmark
-        times = []
-        memory_readings = []
+        times: List[float] = []
+        memory_readings: List[float] = []
 
         with torch.no_grad():
             for _ in range(num_iterations):
                 if torch.cuda.is_available():
                     torch.cuda.reset_peak_memory_stats()
-                    start = torch.cuda.Event(enable_timing=True)
-                    end = torch.cuda.Event(enable_timing=True)
+                    start_evt = torch.cuda.Event(enable_timing=True)
+                    end_evt = torch.cuda.Event(enable_timing=True)
 
-                    start.record()
+                    start_evt.record()
                     if mixed_precision:
                         with torch.autocast(device_type="cuda", dtype=torch.float16):
                             _ = self.model(sample_input)
                     else:
                         _ = self.model(sample_input)
-                    end.record()
+                    end_evt.record()
 
                     torch.cuda.synchronize()
-                    times.append(start.elapsed_time(end))
+                    times.append(start_evt.elapsed_time(end_evt))
                     memory_readings.append(
                         torch.cuda.max_memory_allocated() / (1024 * 1024)
                     )
                 else:
-                    import time
-
-                    start = time.perf_counter()
+                    start_time = time.perf_counter()
                     if mixed_precision:
                         with torch.autocast(device_type="cpu", dtype=torch.bfloat16):
                             _ = self.model(sample_input)
                     else:
                         _ = self.model(sample_input)
-                    times.append((time.perf_counter() - start) * 1000)
+                    times.append((time.perf_counter() - start_time) * 1000)
 
         times_tensor = torch.tensor(times)
         sorted_times = times_tensor.sort().values
@@ -243,9 +224,9 @@ class GPUBenchmark:
             p99_latency_ms=sorted_times[int(0.99 * len(sorted_times))].item(),
             throughput_samples_per_sec=batch_size * 1000 / times_tensor.mean().item(),
             throughput_batches_per_sec=1000 / times_tensor.mean().item(),
-            peak_memory_mb=max(memory_readings) if memory_readings else 0,
+            peak_memory_mb=max(memory_readings) if memory_readings else 0.0,
             avg_memory_mb=(
-                sum(memory_readings) / len(memory_readings) if memory_readings else 0
+                sum(memory_readings) / len(memory_readings) if memory_readings else 0.0
             ),
             batch_size=batch_size,
             sequence_length=input_shape[0] if len(input_shape) > 0 else 0,
@@ -258,32 +239,18 @@ class GPUBenchmark:
 
     def run_training(  # noqa: PLR0913
         self,
-        input_shape: tuple,
-        target_shape: tuple,
-        loss_fn: Callable,
-        optimizer_class: type = torch.optim.Adam,
-        batch_sizes: list[int] | None = None,
+        input_shape: Tuple[int, ...],
+        target_shape: Tuple[int, ...],
+        loss_fn: Callable[..., torch.Tensor],
+        optimizer_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
+        batch_sizes: Optional[List[int]] = None,
         num_iterations: int = 50,
         warmup_iterations: int = 5,
         dtype: torch.dtype = torch.float32,
         mixed_precision: bool = False,
-    ) -> list[BenchmarkResult]:
+    ) -> List[BenchmarkResult]:
         """
         Run training benchmarks across different batch sizes.
-
-        Args:
-            input_shape: Shape of single input (excluding batch dimension)
-            target_shape: Shape of target (excluding batch dimension)
-            loss_fn: Loss function
-            optimizer_class: Optimizer class to use
-            batch_sizes: List of batch sizes to test
-            num_iterations: Number of benchmark iterations
-            warmup_iterations: Number of warmup iterations
-            dtype: Data type for inputs
-            mixed_precision: Whether to use automatic mixed precision
-
-        Returns:
-            List of BenchmarkResults
         """
         if batch_sizes is None:
             batch_sizes = [8, 32, 64]
@@ -316,10 +283,10 @@ class GPUBenchmark:
 
     def _benchmark_training(  # noqa: PLR0913, PLR0915
         self,
-        input_shape: tuple,
-        target_shape: tuple,
-        loss_fn: Callable,
-        optimizer_class: type,
+        input_shape: Tuple[int, ...],
+        target_shape: Tuple[int, ...],
+        loss_fn: Callable[..., torch.Tensor],
+        optimizer_class: Type[torch.optim.Optimizer],
         batch_size: int,
         num_iterations: int,
         warmup_iterations: int,
@@ -329,7 +296,6 @@ class GPUBenchmark:
         """Run single training benchmark."""
         self.model.train()
 
-        # Create optimizer and scaler
         optimizer = optimizer_class(self.model.parameters(), lr=1e-4)
         scaler = (
             torch.cuda.amp.GradScaler()
@@ -337,7 +303,6 @@ class GPUBenchmark:
             else None
         )
 
-        # Create sample data
         sample_input = torch.randn(
             batch_size, *input_shape, dtype=dtype, device=self.device
         )
@@ -345,25 +310,24 @@ class GPUBenchmark:
             batch_size, *target_shape, dtype=dtype, device=self.device
         )
 
-        # Clear cache
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
             torch.cuda.reset_peak_memory_stats()
 
-        def train_step(optimizer, scaler):
-            optimizer.zero_grad()
-            if mixed_precision and scaler is not None:
+        def train_step(opt: torch.optim.Optimizer, sclr: Optional[torch.cuda.amp.GradScaler]) -> None:
+            opt.zero_grad()
+            if mixed_precision and sclr is not None:
                 with torch.autocast(device_type="cuda", dtype=torch.float16):
                     output = self.model(sample_input)
                     loss = loss_fn(output, sample_target)
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
+                sclr.scale(loss).backward()
+                sclr.step(opt)
+                sclr.update()
             else:
                 output = self.model(sample_input)
                 loss = loss_fn(output, sample_target)
                 loss.backward()
-                optimizer.step()
+                opt.step()
 
         # Warmup
         for _ in range(warmup_iterations):
@@ -373,30 +337,28 @@ class GPUBenchmark:
             torch.cuda.synchronize()
 
         # Benchmark
-        times = []
-        memory_readings = []
+        times: List[float] = []
+        memory_readings: List[float] = []
 
         for _ in range(num_iterations):
             if torch.cuda.is_available():
                 torch.cuda.reset_peak_memory_stats()
-                start = torch.cuda.Event(enable_timing=True)
-                end = torch.cuda.Event(enable_timing=True)
+                start_evt = torch.cuda.Event(enable_timing=True)
+                end_evt = torch.cuda.Event(enable_timing=True)
 
-                start.record()
+                start_evt.record()
                 train_step(optimizer, scaler)
-                end.record()
+                end_evt.record()
 
                 torch.cuda.synchronize()
-                times.append(start.elapsed_time(end))
+                times.append(start_evt.elapsed_time(end_evt))
                 memory_readings.append(
                     torch.cuda.max_memory_allocated() / (1024 * 1024)
                 )
             else:
-                import time
-
-                start = time.perf_counter()
+                start_time = time.perf_counter()
                 train_step(optimizer, scaler)
-                times.append((time.perf_counter() - start) * 1000)
+                times.append((time.perf_counter() - start_time) * 1000)
 
         times_tensor = torch.tensor(times)
         sorted_times = times_tensor.sort().values
@@ -421,9 +383,9 @@ class GPUBenchmark:
             p99_latency_ms=sorted_times[int(0.99 * len(sorted_times))].item(),
             throughput_samples_per_sec=batch_size * 1000 / times_tensor.mean().item(),
             throughput_batches_per_sec=1000 / times_tensor.mean().item(),
-            peak_memory_mb=max(memory_readings) if memory_readings else 0,
+            peak_memory_mb=max(memory_readings) if memory_readings else 0.0,
             avg_memory_mb=(
-                sum(memory_readings) / len(memory_readings) if memory_readings else 0
+                sum(memory_readings) / len(memory_readings) if memory_readings else 0.0
             ),
             batch_size=batch_size,
             sequence_length=input_shape[0] if len(input_shape) > 0 else 0,
@@ -434,7 +396,7 @@ class GPUBenchmark:
             **self._hardware_info,
         )
 
-    def save_results(self, filename: str | None = None) -> str:
+    def save_results(self, filename: Optional[str] = None) -> str:
         """Save all benchmark results to JSON file."""
         if filename is None:
             filename = f"benchmark_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -451,21 +413,15 @@ class GPUBenchmark:
 
         return str(path)
 
-    def compare_with_baseline(self, baseline_path: str) -> dict[str, float]:
+    def compare_with_baseline(self, baseline_path: str) -> Dict[str, Any]:
         """
         Compare current results with a baseline.
-
-        Args:
-            baseline_path: Path to baseline JSON file
-
-        Returns:
-            Dictionary with percentage changes
         """
         with open(baseline_path) as f:
             baseline = json.load(f)
 
         baseline_results = {r["name"]: r for r in baseline["results"]}
-        comparisons = {}
+        comparisons: Dict[str, Any] = {}
 
         for result in self.results:
             if result.name in baseline_results:
@@ -477,7 +433,7 @@ class GPUBenchmark:
                 )
                 comparisons[result.name] = {
                     "latency_change_percent": change,
-                    "throughput_change_percent": -change,  # Inverse relationship
+                    "throughput_change_percent": -change,
                     "baseline_latency_ms": base["mean_latency_ms"],
                     "current_latency_ms": result.mean_latency_ms,
                 }
@@ -487,11 +443,11 @@ class GPUBenchmark:
 
 def run_inference_benchmark(
     model: nn.Module,
-    input_shape: tuple,
+    input_shape: Tuple[int, ...],
     device: str = "cuda",
-    batch_sizes: list[int] | None = None,
-    **kwargs,
-) -> list[BenchmarkResult]:
+    batch_sizes: Optional[List[int]] = None,
+    **kwargs: Any,
+) -> List[BenchmarkResult]:
     """Convenience function for running inference benchmarks."""
     if batch_sizes is None:
         batch_sizes = [1, 8, 32, 64]
@@ -501,13 +457,13 @@ def run_inference_benchmark(
 
 def run_training_benchmark(  # noqa: PLR0913
     model: nn.Module,
-    input_shape: tuple,
-    target_shape: tuple,
-    loss_fn: Callable,
+    input_shape: Tuple[int, ...],
+    target_shape: Tuple[int, ...],
+    loss_fn: Callable[..., torch.Tensor],
     device: str = "cuda",
-    batch_sizes: list[int] | None = None,
-    **kwargs,
-) -> list[BenchmarkResult]:
+    batch_sizes: Optional[List[int]] = None,
+    **kwargs: Any,
+) -> List[BenchmarkResult]:
     """Convenience function for running training benchmarks."""
     if batch_sizes is None:
         batch_sizes = [8, 32, 64]

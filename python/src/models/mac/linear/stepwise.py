@@ -26,7 +26,7 @@ class StepwiseRegressionModel(ClassicalModel):
         # SequentialFeatureSelector expects specific types for n_features_to_select
         self.model = SequentialFeatureSelector(
             self.base_estimator,
-            n_features_to_select=n_features_to_select, # type: ignore
+            n_features_to_select=n_features_to_select,
             direction=sel_direction,
             **kwargs,
         )

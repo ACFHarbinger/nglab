@@ -134,7 +134,10 @@ class GANLightningModule(BaseModule):
 
         g_loss = self.lambda_adv * g_loss_adv + self.lambda_l1 * g_loss_l1
 
-        opt_g.zero_grad()
+        if hasattr(opt_g, 'optimizer'):
+            opt_g.optimizer.zero_grad()  # type: ignore[union-attr]
+        else:
+            opt_g.zero_grad()  # type: ignore[attr-defined]
         self.manual_backward(g_loss)
         opt_g.step()
         self.untoggle_optimizer(opt_g)
@@ -153,7 +156,10 @@ class GANLightningModule(BaseModule):
         d_loss_fake = self.adversarial_loss(d_pred_fake, fake)
         d_loss = (d_loss_real + d_loss_fake) / 2
 
-        opt_d.zero_grad()
+        if hasattr(opt_d, 'optimizer'):
+            opt_d.optimizer.zero_grad()  # type: ignore[union-attr]
+        else:
+            opt_d.zero_grad()  # type: ignore[attr-defined]
         self.manual_backward(d_loss)
         opt_d.step()
         self.untoggle_optimizer(opt_d)

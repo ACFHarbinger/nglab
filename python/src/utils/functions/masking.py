@@ -2,16 +2,16 @@
 Masking utilities for self-attention.
 """
 
+from typing import Union
 import torch
 
 
-#  Adapted from the Time-Series-Library (https://github.com/thuml/Time-Series-Library/blob/main/utils/masking.py)
 class TriangularCausalMask:
     """
     Triangular causal mask for sequence processing.
     """
 
-    def __init__(self, B, L, device="cpu"):  # noqa: N803
+    def __init__(self, B: int, L: int, device: Union[str, torch.device] = "cpu") -> None:  # noqa: N803
         """
         Initialize the mask.
 
@@ -27,7 +27,7 @@ class TriangularCausalMask:
             ).to(device)
 
     @property
-    def mask(self):
+    def mask(self) -> torch.Tensor:
         """Return the mask tensor."""
         return self._mask
 
@@ -37,7 +37,7 @@ class ProbMask:
     Probabilistic mask for Informer-style attention.
     """
 
-    def __init__(self, B, H, L, index, scores, device="cpu"):  # noqa: N803, PLR0913
+    def __init__(self, B: int, H: int, L: int, index: torch.Tensor, scores: torch.Tensor, device: Union[str, torch.device] = "cpu") -> None:  # noqa: N803, PLR0913
         """
         Initialize the mask.
         """
@@ -49,7 +49,7 @@ class ProbMask:
         self._mask = indicator.view(scores.shape).to(device)
 
     @property
-    def mask(self):
+    def mask(self) -> torch.Tensor:
         """
         Return the mask tensor.
         """

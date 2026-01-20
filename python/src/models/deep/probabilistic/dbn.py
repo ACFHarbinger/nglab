@@ -2,7 +2,9 @@
 Deep Belief Network (DBN) implementation.
 """
 
+import torch
 from torch import nn
+from typing import Optional, List, Any
 
 from .rbm import RBM
 
@@ -13,7 +15,7 @@ class DeepBeliefNetwork(nn.Module):
     Greedy layer-wise pretraining; forward/backward passes for encoding/decoding.
     """
 
-    def __init__(self, layer_sizes, output_type="prediction"):
+    def __init__(self, layer_sizes: List[int], output_type: str = "prediction") -> None:
         """
         Args:
             layer_sizes: [input_dim, h1, h2, ..., latent_dim]
@@ -29,19 +31,20 @@ class DeepBeliefNetwork(nn.Module):
             ]
         )
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
         """Forward pass."""
         # Forward pass through the stack of RBMs
         current = x
         for rbm in self.rbms:
             # We use the sigmoid probabilities for deeper layers during forward pass
+            assert isinstance(rbm, RBM)
             current, _ = rbm.sample_h(current)
 
-        if not return_sequence and current.dim() == 3:
+        if not return_sequence and current.ndim == 3:
             return current[:, -1, :]
         return current
 
-    def pretrain(self, data_loader, epochs=10):
+    def pretrain(self, data_loader: Any, epochs: int = 10) -> None:
         """Example placeholder for greedy layer-wise pretraining."""
         # Typically one would train each RBM in sequence using CD-k
         pass

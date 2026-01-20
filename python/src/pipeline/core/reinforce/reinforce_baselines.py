@@ -7,6 +7,7 @@ during training.
 """
 
 import copy
+from typing import Optional, Any, Tuple, List, Dict, Union
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -21,43 +22,43 @@ class Baseline:
     Abstract Base Class for REINFORCE baselines.
     """
 
-    def wrap_dataset(self, dataset):
+    def wrap_dataset(self, dataset: Dataset) -> Dataset:
         """
         Wrap dataset if the baseline requires extra data.
         """
         return dataset
 
-    def unwrap_batch(self, batch):
+    def unwrap_batch(self, batch: Any) -> Tuple[Any, Optional[torch.Tensor]]:
         """
         Unwrap a batch to separate data and baseline values.
         """
         return batch, None
 
-    def eval(self, x, c):
+    def eval(self, x: torch.Tensor, c: torch.Tensor) -> Tuple[Union[torch.Tensor, float], Union[torch.Tensor, float]]:
         """
         Evaluate the baseline for a given state and cost.
         """
         raise NotImplementedError("Override this method")
 
-    def get_learnable_parameters(self):
+    def get_learnable_parameters(self) -> List[torch.nn.Parameter]:
         """
         Return inner model parameters if learnable.
         """
         return []
 
-    def epoch_callback(self, model, epoch):
+    def epoch_callback(self, model: torch.nn.Module, epoch: int) -> None:
         """
         Perform any necessary updates at the end of an epoch.
         """
         pass
 
-    def state_dict(self):
+    def state_dict(self) -> Dict[str, Any]:
         """
         Return the state of the baseline.
         """
         return {}
 
-    def load_state_dict(self, state_dict):
+    def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
         """
         Load the baseline state.
         """
@@ -71,22 +72,22 @@ class WarmupBaseline(Baseline):
 
     def __init__(
         self,
-        baseline,
-        n_epochs=1,
-        warmup_exp_beta=0.8,
-    ):
+        baseline: Baseline,
+        n_epochs: int = 1,
+        warmup_exp_beta: float = 0.8,
+    ) -> None:
         """
         Initialize Warmup baseline.
         """
-        super(Baseline, self).__init__()
+        super().__init__()
 
         self.baseline = baseline
         assert n_epochs > 0, "n_epochs to warmup must be positive"
         self.warmup_baseline = ExponentialBaseline(warmup_exp_beta)
-        self.alpha = 0
+        self.alpha: float = 0.0
         self.n_epochs = n_epochs
 
-    def wrap_dataset(self, dataset):
+    def wrap_dataset(self, dataset: Dataset) -> Dataset:
         """
         Wrap dataset according to the current warmup stage.
         """
@@ -94,7 +95,7 @@ class WarmupBaseline(Baseline):
             return self.baseline.wrap_dataset(dataset)
         return self.warmup_baseline.wrap_dataset(dataset)
 
-    def unwrap_batch(self, batch):
+    def unwrap_batch(self, batch: Any) -> Tuple[Any, Optional[torch.Tensor]]:
         """
         Unwrap batch according to the current warmup stage.
         """
@@ -102,7 +103,7 @@ class WarmupBaseline(Baseline):
             return self.baseline.unwrap_batch(batch)
         return self.warmup_baseline.unwrap_batch(batch)
 
-    def eval(self, x, c):
+    def eval(self, x: torch.Tensor, c: torch.Tensor) -> Tuple[Union[torch.Tensor, float], Union[torch.Tensor, float]]:
         """
         Evaluate baseline combining warmup and final baselines.
         """
@@ -111,15 +112,17 @@ class WarmupBaseline(Baseline):
             return self.baseline.eval(x, c)
         if self.alpha == 0:
             return self.warmup_baseline.eval(x, c)
+        
         v, loss = self.baseline.eval(x, c)
         vw, loss_w = self.warmup_baseline.eval(x, c)
+        
         # Return convex combination of baseline and of loss
         return (
             self.alpha * v + (1 - self.alpha) * vw,
             self.alpha * loss + (1 - self.alpha) * loss_w,
         )
 
-    def epoch_callback(self, model, epoch):
+    def epoch_callback(self, model: torch.nn.Module, epoch: int) -> None:
         """
         Update warmup alpha and call inner callback.
         """
@@ -129,14 +132,14 @@ class WarmupBaseline(Baseline):
             self.alpha = (epoch + 1) / float(self.n_epochs)
             print(f"Set warmup alpha = {self.alpha}")
 
-    def state_dict(self):
+    def state_dict(self) -> Dict[str, Any]:
         """
         Return inner baseline state dict.
         """
         # Checkpointing within warmup stage makes no sense, only save inner baseline
         return self.baseline.state_dict()
 
-    def load_state_dict(self, state_dict):
+    def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
         """
         Load inner baseline state.
         """
@@ -149,11 +152,11 @@ class NoBaseline(Baseline):
     Empty baseline that returns zero.
     """
 
-    def eval(self, x, c):
+    def eval(self, x: torch.Tensor, c: torch.Tensor) -> Tuple[Union[torch.Tensor, float], Union[torch.Tensor, float]]:
         """
         Return zero baseline and loss.
         """
-        return 0, 0  # No baseline, no loss
+        return 0.0, 0.0  # No baseline, no loss
 
 
 class ExponentialBaseline(Baseline):
@@ -161,39 +164,39 @@ class ExponentialBaseline(Baseline):
     Exponentially moving average baseline.
     """
 
-    def __init__(self, beta):
+    def __init__(self, beta: float) -> None:
         """
         Initialize Exponential baseline.
         """
-        super(Baseline, self).__init__()
+        super().__init__()
 
         self.beta = beta
-        self.v = None
+        self.v: Optional[torch.Tensor] = None
 
-    def eval(self, x, c):
+    def eval(self, x: torch.Tensor, c: torch.Tensor) -> Tuple[Union[torch.Tensor, float], Union[torch.Tensor, float]]:
         """
         Update and return EMA baseline value.
         """
 
         if self.v is None:
-            v = c.mean()
+            v_val = c.mean()
         else:
-            v = self.beta * self.v + (1.0 - self.beta) * c.mean()
+            v_val = self.beta * self.v + (1.0 - self.beta) * c.mean()
 
-        self.v = v.detach()  # Detach since we never want to backprop
-        return self.v, 0  # No loss
+        self.v = v_val.detach()  # Detach since we never want to backprop
+        return self.v, 0.0  # No loss
 
-    def state_dict(self):
+    def state_dict(self) -> Dict[str, Any]:
         """
         Return EMA state.
         """
         return {"v": self.v}
 
-    def load_state_dict(self, state_dict):
+    def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
         """
         Load EMA state.
         """
-        self.v = state_dict["v"]
+        self.v = state_dict.get("v")
 
 
 class CriticBaseline(Baseline):
@@ -201,15 +204,15 @@ class CriticBaseline(Baseline):
     Baseline based on a critic neural network.
     """
 
-    def __init__(self, critic):
+    def __init__(self, critic: torch.nn.Module) -> None:
         """
         Initialize Critic baseline.
         """
-        super(Baseline, self).__init__()
+        super().__init__()
 
         self.critic = critic
 
-    def eval(self, x, c):
+    def eval(self, x: torch.Tensor, c: torch.Tensor) -> Tuple[Union[torch.Tensor, float], Union[torch.Tensor, float]]:
         """
         Evaluate critic network and return value and MSE loss.
         """
@@ -217,32 +220,32 @@ class CriticBaseline(Baseline):
         # Detach v since actor should not backprop through baseline, only for loss
         return v.detach(), F.mse_loss(v, c.detach())
 
-    def get_learnable_parameters(self):
+    def get_learnable_parameters(self) -> List[torch.nn.Parameter]:
         """
         Return critic parameters.
         """
         return list(self.critic.parameters())
 
-    def epoch_callback(self, model, epoch):
+    def epoch_callback(self, model: torch.nn.Module, epoch: int) -> None:
         """
         Callback placeholder.
         """
         pass
 
-    def state_dict(self):
+    def state_dict(self) -> Dict[str, Any]:
         """
         Return critic state.
         """
         return {"critic": self.critic.state_dict()}
 
-    def load_state_dict(self, state_dict):
+    def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
         """
         Load critic state.
         """
         critic_state_dict = state_dict.get("critic", {})
-        if not isinstance(critic_state_dict, dict):  # backwards compatibility
-            critic_state_dict = critic_state_dict.state_dict()
-        self.critic.load_state_dict({**self.critic.state_dict(), **critic_state_dict})
+        if hasattr(critic_state_dict, 'state_dict'):
+            critic_state_dict = critic_state_dict.state_dict() # type: ignore
+        self.critic.load_state_dict({**self.critic.state_dict(), **critic_state_dict}) # type: ignore
 
 
 class RolloutBaseline(Baseline):
@@ -250,18 +253,23 @@ class RolloutBaseline(Baseline):
     Baseline based on a fixed rollout model (Greedy baseline).
     """
 
-    def __init__(self, model, problem, opts, epoch=0):
+    def __init__(self, model: torch.nn.Module, problem: Any, opts: Any, epoch: int = 0) -> None:
         """
         Initialize Rollout baseline.
         """
-        super(Baseline, self).__init__()
+        super().__init__()
 
         self.problem = problem
         self.opts = opts
+        self.model = copy.deepcopy(model)
+        self.dataset: Any = None
+        self.bl_vals: Any = None
+        self.mean: float = 0.0
+        self.epoch = epoch
 
         self._update_model(model, epoch)
 
-    def _update_model(self, model, epoch, dataset=None):
+    def _update_model(self, model: torch.nn.Module, epoch: int, dataset: Any = None) -> None:
         """
         Update the baseline model.
         """
@@ -295,7 +303,7 @@ class RolloutBaseline(Baseline):
         self.mean = self.bl_vals.mean()
         self.epoch = epoch
 
-    def wrap_dataset(self, dataset):
+    def wrap_dataset(self, dataset: Dataset) -> Dataset:
         """
         Wrap dataset with baseline values.
         """
@@ -306,7 +314,7 @@ class RolloutBaseline(Baseline):
             dataset, rollout(self.model, dataset, self.opts).view(-1, 1)
         )
 
-    def unwrap_batch(self, batch):
+    def unwrap_batch(self, batch: Dict[str, Any]) -> Tuple[Any, torch.Tensor]:
         """
         Unwrap batch previously wrapped by wrap_dataset.
         """
@@ -314,7 +322,7 @@ class RolloutBaseline(Baseline):
             -1
         )  # Flatten result to undo wrapping as 2D
 
-    def eval(self, x, c):
+    def eval(self, x: torch.Tensor, c: torch.Tensor) -> Tuple[Union[torch.Tensor, float], Union[torch.Tensor, float]]:
         """
         Evaluate baseline model on a batch.
         """
@@ -323,13 +331,11 @@ class RolloutBaseline(Baseline):
             v, _ = self.model(x)
 
         # There is no loss
-        return v, 0
+        return v, 0.0
 
-    def epoch_callback(self, model, epoch):
+    def epoch_callback(self, model: torch.nn.Module, epoch: int) -> None:
         """
         Challenges the current baseline with the model and replaces the baseline model if it is improved.
-        :param model: The model to challenge the baseline by
-        :param epoch: The current epoch
         """
         print("Evaluating candidate model on evaluation dataset")
         candidate_vals = rollout(model, self.dataset, self.opts).cpu().numpy()
@@ -350,13 +356,13 @@ class RolloutBaseline(Baseline):
                 print("Update baseline")
                 self._update_model(model, epoch)
 
-    def state_dict(self):
+    def state_dict(self) -> Dict[str, Any]:
         """
         Return baseline model state.
         """
         return {"model": self.model, "dataset": self.dataset, "epoch": self.epoch}
 
-    def load_state_dict(self, state_dict):
+    def load_state_dict(self, state_dict: Dict[str, Any]) -> None:
         """
         Load baseline model state.
         """
@@ -373,7 +379,7 @@ class BaselineDataset(Dataset):
     Dataset wrapper that includes baseline values.
     """
 
-    def __init__(self, dataset=None, baseline=None):
+    def __init__(self, dataset: Any = None, baseline: Any = None) -> None:
         """
         Initialize baseline dataset.
         """
@@ -381,15 +387,16 @@ class BaselineDataset(Dataset):
 
         self.dataset = dataset
         self.baseline = baseline
-        assert len(self.dataset) == len(self.baseline)
+        if self.dataset is not None and self.baseline is not None:
+             assert len(self.dataset) == len(self.baseline)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: int) -> Dict[str, Any]:
         """
         Get wrapped item index.
         """
         return {"data": self.dataset[item], "baseline": self.baseline[item]}
 
-    def __len__(self):
+    def __len__(self) -> int:
         """
         Return length matching original dataset.
         """

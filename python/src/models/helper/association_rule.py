@@ -2,6 +2,7 @@
 Association rule learning models for NGLab.
 """
 
+from typing import Any, List, Dict, Optional
 import torch
 
 from ..mac.base import ClassicalModel
@@ -13,41 +14,49 @@ from .association_rule_learning.fpgrowth import FPGrowthAlgorithm
 class AssociationRuleModel(ClassicalModel):
     """Base class for association rule models."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
+        """Initialize Association Rule Model."""
         super().__init__(output_type="rules")
+        self.model: Optional[Any] = None
 
-    def forward(self, x, **kwargs):
+    def forward(self, x: torch.Tensor, **kwargs: Any) -> torch.Tensor:
         """
-        For association rules, forward might return the rules or matched rules for x.
-        For now, returns a dummy tensor to comply with interface.
+        Forward pass. Returns a dummy tensor to comply with interface.
         """
         device = x.device
         return torch.zeros((x.shape[0], 1)).to(device)
 
-    def get_rules(self):
+    def get_rules(self) -> List[Dict[str, Any]]:
+        """Return the learned rules."""
         if self.model and self._is_fitted:
             return self.model.rules
         return []
 
 
 class AprioriModel(AssociationRuleModel):
-    def __init__(self, min_support=0.5, min_confidence=0.7, **kwargs):
+    """Apriori Association Rule Model."""
+    def __init__(self, min_support: float = 0.5, min_confidence: float = 0.7, **kwargs: Any) -> None:
+        """Initialize Apriori Model."""
         super().__init__()
         self.model = AprioriAlgorithm(
-            min_support=min_support, min_confidence=min_confidence, **kwargs
+            min_support=min_support, min_confidence=min_confidence
         )
 
 
 class FPGrowthModel(AssociationRuleModel):
-    def __init__(self, min_support=0.5, min_confidence=0.7, **kwargs):
+    """FP-Growth Association Rule Model."""
+    def __init__(self, min_support: float = 0.5, min_confidence: float = 0.7, **kwargs: Any) -> None:
+        """Initialize FP-Growth Model."""
         super().__init__()
         self.model = FPGrowthAlgorithm(
-            min_support=min_support, min_confidence=min_confidence, **kwargs
+            min_support=min_support, min_confidence=min_confidence
         )
 
 
 class EclatModel(AssociationRuleModel):
-    def __init__(self, min_support=0.5, min_confidence=0.7, **kwargs):
+    """Eclat Association Rule Model."""
+    def __init__(self, min_support: float = 0.5, min_confidence: float = 0.7, **kwargs: Any) -> None:
+        """Initialize Eclat Model."""
         super().__init__()
         self.model = EclatAlgorithm(
             min_support=min_support, min_confidence=min_confidence, **kwargs

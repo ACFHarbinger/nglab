@@ -6,7 +6,7 @@ between heuristic and neural approaches.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Dict, Optional
 
 
 class Policy(ABC):
@@ -14,7 +14,7 @@ class Policy(ABC):
     Abstract Base Class for all trading policies.
     """
 
-    def __init__(self, cfg: dict[str, Any] | None = None):
+    def __init__(self, cfg: Optional[Dict[str, Any]] = None) -> None:
         """
         Initialize the policy.
 
@@ -42,7 +42,7 @@ class Policy(ABC):
         """
         return self.act(observation)
 
-    def reset(self):  # noqa: B027
+    def reset(self) -> None:  # noqa: B027
         """
         Optional reset method for stateful policies.
         """

@@ -1,5 +1,5 @@
 """
-Plotting utilities for the WSmart+ Route framework.
+Plotting utilities for the NGLab framework.
 
 This module provides functions for generating various plots:
 - Static line charts (training curves, Pareto fronts).
@@ -10,18 +10,21 @@ This module provides functions for generating various plots:
 
 import math
 import os
+from typing import Any, Optional, List, Callable, Union, Dict, Tuple
 
 import networkx as nx
 import numpy as np
 import plotly.express as px
 import seaborn as sns
-from logic.src.utils.io_utils import compose_dirpath
+import torch
+from .io.file_utils import compose_dirpath
 from matplotlib import pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
+import matplotlib.axes
 
 
-def draw_graph(distance_matrix):
+def draw_graph(distance_matrix: np.ndarray) -> None:
     """
     Draws a networkx graph from a distance matrix using spring layout.
 
@@ -32,63 +35,45 @@ def draw_graph(distance_matrix):
     pos = nx.spring_layout(G)
     nx.draw(G, pos, with_labels=True)
     labels = {(u, v): str(attr["weight"]) for u, v, attr in G.edges(data=True)}
-    print(G.edges(data=True))
     nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
     plt.show()
 
 
 def plot_linechart(  # noqa: PLR0913, PLR0915
-    output_dest,
-    graph_log,
-    plot_func,
-    policies,
-    x_label=None,
-    y_label=None,
-    title=None,
-    fsave=True,
-    scale="linear",
-    x_values=None,
-    linestyles=None,
-    markers=None,
-    annotate=True,
-    pareto_front=False,
-):
+    output_dest: str,
+    graph_log: np.ndarray,
+    plot_func: Callable[..., Any],
+    policies: List[str],
+    x_label: Optional[str] = None,
+    y_label: Optional[str] = None,
+    title: Optional[str] = None,
+    fsave: bool = True,
+    scale: str = "linear",
+    x_values: Optional[List[float]] = None,
+    linestyles: Optional[List[str]] = None,
+    markers: Optional[List[str]] = None,
+    annotate: bool = True,
+    pareto_front: bool = False,
+) -> Optional[List[List[int]]]:
     """
     Plots a generic line chart, optionally handling multiple policies and Pareto fronts.
-
-    Args:
-        output_dest (str): File path to save the plot.
-        graph_log (np.ndarray): Data to plot.
-        plot_func (callable): The pyplot plotting function (e.g., plt.plot, plt.scatter).
-        policies (list): List of policy names for the legend.
-        x_label (str, optional): Label for x-axis.
-        y_label (str, optional): Label for y-axis.
-        title (str, optional): Chart title.
-        fsave (bool, optional): Whether to save figure to file. Defaults to True.
-        scale (str, optional): Axis scale ('linear', 'log'). Defaults to "linear".
-        x_values (list, optional): Custom x-values.
-        linestyles (list, optional): List of linestyles.
-        markers (list, optional): List of markers.
-        annotate (bool, optional): Whether to annotate points. Defaults to True.
-        pareto_front (bool, optional): Whether to calculate and overlay Pareto front. Defaults to False.
 
     Returns:
         list or None: Pareto dominants if pareto_front is True, else None.
     """
 
-    def plot_graphs_out(plot_func, graph_log, x_values, linestyles, markers):
+    def plot_graphs_out(
+        plot_func: Callable[..., Any], 
+        graph_log: np.ndarray, 
+        x_values: Optional[List[float]], 
+        linestyles: Optional[List[str]], 
+        markers: Optional[List[str]]
+    ) -> Dict[int, List[Tuple[float, float]]]:
         """
         Helper to plot graphs for different policies.
-
-        Args:
-            plot_func: Function to plot a single line.
-            graph_log: Log data.
-            x_values: X-axis values.
-            linestyles: Line styles.
-            markers: Markers.
         """
-        points_by_nbins = {}
-        for id, lg in enumerate(zip(*graph_log, strict=False)):
+        points_by_nbins: Dict[int, List[Tuple[float, float]]] = {}
+        for idx, lg in enumerate(zip(*graph_log, strict=False)):
             if x_values is None:
                 to_plot = (*lg,)
             else:
@@ -97,72 +82,58 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
                     *lg,
                 )
 
-            if linestyles is not None:
-                line = linestyles[id % len(linestyles)]
-            else:
-                line = False
-
-            if markers is not None:
-                mark = markers[id % len(markers)]
-            else:
-                mark = False
+            line: Optional[str] = linestyles[idx % len(linestyles)] if linestyles is not None else None
+            mark: Optional[str] = markers[idx % len(markers)] if markers is not None else None
 
             if not line and not mark:
                 plot_func(*to_plot)
-            elif not mark:
+            elif line and not mark:
                 plot_func(*to_plot, linestyle=line)
-            elif not line:
+            elif mark and not line:
                 plot_func(*to_plot, marker=mark)
             else:
                 plot_func(*to_plot, linestyle=line, marker=mark)
 
-            for _idx, (x, y) in enumerate(
-                zip(
-                    next(zip(*lg, strict=False)),
-                    list(zip(*lg, strict=False))[5],
-                    strict=False,
-                )
-            ):
-                if id not in points_by_nbins:
-                    points_by_nbins[id] = []
-                points_by_nbins[id].append((x, y))
+            # Extract points for Pareto
+            # Assuming lg structure allows this indexing
+            inner_lg = list(zip(*lg, strict=False))
+            for i in range(len(inner_lg[0])):
+                x = inner_lg[0][i]
+                y = inner_lg[5][i]
+                if idx not in points_by_nbins:
+                    points_by_nbins[idx] = []
+                points_by_nbins[idx].append((float(x), float(y)))
         return points_by_nbins
 
     plt.figure(dpi=200)
     if title is not None:
         plt.title(title)
 
+    points_by_nbins: Dict[int, List[Tuple[float, float]]] = {}
+
     if len(graph_log.shape) == 2:
         points_by_nbins = {0: []}
-        for id, ll in enumerate(graph_log):
+        for idx, ll in enumerate(graph_log):
             if markers is not None:
-                mark = markers[id % len(markers)]
+                mark = markers[idx % len(markers)]
                 plot_func(ll, mark)
             else:
                 plot_func(ll)
-
-            points_by_nbins[0].append((ll[0], ll[5]))
+            points_by_nbins[0].append((float(ll[0]), float(ll[5])))
     elif len(graph_log.shape) == 3:
-        # nbins = [20, 50, 100, 200]
-        # for id in range(len(nbins)):
-        #    graph_log[id, :, 0] /= nbins[id]
         points_by_nbins = plot_graphs_out(
             plot_func, graph_log, x_values, linestyles, markers
         )
         if annotate:
             for lg in zip(*graph_log, strict=False):
-                for id, xy in enumerate(
-                    zip(
-                        next(zip(*lg, strict=False)),
-                        list(zip(*lg, strict=False))[5],
-                        strict=False,
-                    )
-                ):
-                    # plt.annotate(id, xy=xy, textcoords='data')
-                    if id == graph_log.shape[0] - 1:
+                inner_lg = list(zip(*lg, strict=False))
+                for i in range(len(inner_lg[0])):
+                    x = inner_lg[0][i]
+                    y = inner_lg[5][i]
+                    if i == graph_log.shape[0] - 1:
                         plt.scatter(
-                            xy[0],
-                            xy[1],
+                            x,
+                            y,
                             s=200,
                             marker="o",
                             facecolors="none",
@@ -171,17 +142,14 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
                             zorder=10,
                         )
 
-    # Pareto front for minimizing x and maximizing y
+    pareto_dominants: List[List[int]] = []
     if pareto_front:
-        pareto_dominants = []
-        pareto_labels = []
         for id_nbins, points in points_by_nbins.items():
-            pareto_points = []
             dominance_ls = [0] * len(points)
+            pareto_points = []
             for id_point, point in enumerate(points):
                 dominated = False
                 for other_point in points:
-                    # Check if other_point dominates point
                     if (
                         other_point[0] <= point[0]
                         and other_point[1] >= point[1]
@@ -194,18 +162,11 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
                     pareto_points.append(point)
 
             pareto_dominants.append(dominance_ls)
-
-            # Sort Pareto points by x-coordinate for drawing the front
             pareto_points.sort(key=lambda p: p[0])
-
             pareto_x = [p[0] for p in pareto_points]
             pareto_y = [p[1] for p in pareto_points]
 
-            # colors = ['red', 'blue', 'green', 'purple', 'orange']
-            # color = colors[id % len(colors)]
-
             label = f"Pareto Front (ID {id_nbins})"
-            pareto_labels.append(label)
             plt.plot(
                 pareto_x,
                 pareto_y,
@@ -215,9 +176,6 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
                 label=label,
                 zorder=5,
             )
-
-            # Add dots at Pareto points
-            # plt.scatter(pareto_x, pareto_y, c=color, s=50, zorder=6)
 
     if scale != "linear":
         plt.yscale(scale)
@@ -237,22 +195,15 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
     return pareto_dominants if pareto_front else None
 
 
-# Code inspired by Google OR Tools plot:
-# https://github.com/google/or-tools/blob/fb12c5ded7423d524fc6c95656a9bdc290a81d4d/examples/python/cvrptw_plot.py
-def plot_tsp(xy, tour, ax1):
+def plot_tsp(xy: np.ndarray, tour: np.ndarray, ax1: matplotlib.axes.Axes) -> None:
     """
     Plot the TSP tour on matplotlib axis ax1.
-
-    Args:
-        xy (np.ndarray): Node coordinates [N, 2].
-        tour (np.ndarray): Tour indices [N+1] (including return to start).
-        ax1 (matplotlib.axes.Axes): The axis to plot on.
     """
     ax1.set_xlim(0, 1)
     ax1.set_ylim(0, 1)
 
-    xs, ys = xy[tour].transpose()
-    xs, ys = xy[tour].transpose()
+    coords = xy[tour]
+    xs, ys = coords.transpose()
     dx = np.roll(xs, -1) - xs
     dy = np.roll(ys, -1) - ys
     d = np.sqrt(dx * dx + dy * dy)
@@ -278,55 +229,32 @@ def plot_tsp(xy, tour, ax1):
     ax1.set_title(f"{len(tour)} nodes, total length {lengths[-1]:.2f}")
 
 
-def discrete_cmap(N, base_cmap=None):  # noqa: N803
+def discrete_cmap(n: int, base_cmap: Optional[Union[str, Any]] = None) -> Any:
     """
     Create an N-bin discrete colormap from the specified input map.
-
-    Args:
-        N (int): Number of bins.
-        base_cmap (str or Colormap, optional): Base colormap name.
-
-    Returns:
-        Colormap: Discretized colormap.
     """
-    # Note that if base_cmap is a string or None, you can simply do
-    #    return plt.cm.get_cmap(base_cmap, N)
-    # The following works for string, None, or a colormap instance:
     base = plt.cm.get_cmap(base_cmap)
-    color_list = base(np.linspace(0, 1, N))
-    cmap_name = base.name + str(N)
-    return base.from_list(cmap_name, color_list, N)
+    color_list = base(np.linspace(0, 1, n))
+    cmap_name = base.name + str(n)
+    return base.from_list(cmap_name, color_list, n)
 
 
 def plot_vehicle_routes(  # noqa: PLR0913
-    data,
-    route,
-    ax1,
-    markersize=5,
-    route_color="blue",
-    depot_color="red",
-    customer_color="green",
-    title="Vehicle Routes",
-    visualize_demands=False,
-    demand_scale=1,
-    round_demand=False,
-):
+    data: Dict[str, torch.Tensor],
+    route: torch.Tensor,
+    ax1: matplotlib.axes.Axes,
+    markersize: int = 5,
+    visualize_demands: bool = False,
+    demand_scale: float = 1.0,
+    round_demand: bool = False,
+) -> None:
     """
-    Plot vehicle routing problem routes. on matplotlib axis ax1.
-
-    Args:
-        data (dict): Dictionary with 'depot', 'loc', 'demand'.
-        route (Tensor): Route indices (single sequence with delimiters).
-        ax1 (matplotlib.axes.Axes): Axis to plot on.
-        markersize (int, optional): Size of markers. Defaults to 5.
-        visualize_demands (bool, optional): Visualize demands as bars. Defaults to False.
-        demand_scale (float, optional): Scaling factor for demands. Defaults to 1.
-        round_demand (bool, optional): Round demand values in labels. Defaults to False.
+    Plot vehicle routing problem routes on matplotlib axis ax1.
     """
-    # Route is one sequence, separating different routes with 0 (depot)
+    route_np = route.cpu().numpy()
     routes = [
         r[r != 0]
-        for r in np.split(route.cpu().numpy(), np.where(route == 0)[0])
+        for r in np.split(route_np, np.where(route_np == 0)[0])
         if (r != 0).any()
     ]
     depot = data["depot"].cpu().numpy()
@@ -345,66 +273,67 @@ def plot_vehicle_routes(  # noqa: PLR0913
     used_rects = []
     cap_rects = []
     qvs = []
-    total_dist = 0
+    total_dist = 0.0
     for veh_number, r in enumerate(routes):
-        color = cmap(len(routes) - veh_number)  # invert to have in rainbow order
+        color = cmap(len(routes) - veh_number)
 
         route_demands = demands[r - 1]
         coords = locs[r - 1, :]
         xs, ys = coords.transpose()
 
-        total_route_demand = sum(route_demands)
-        assert total_route_demand <= capacity
+        total_route_demand = float(sum(route_demands))
         if not visualize_demands:
             ax1.plot(xs, ys, "o", mfc=color, markersize=markersize, markeredgewidth=0.0)
 
-        dist = 0
+        dist = 0.0
         x_prev, y_prev = x_dep, y_dep
-        cum_demand = 0
+        cum_demand = 0.0
         for (x, y), d in zip(coords, route_demands, strict=False):
-            dist += np.sqrt((x - x_prev) ** 2 + (y - y_prev) ** 2)
-
-            cap_rects.append(Rectangle((x, y), 0.01, 0.1))
+            dist += float(np.sqrt((x - x_prev) ** 2 + (y - y_prev) ** 2))
+            cap_rects.append(Rectangle((float(x), float(y)), 0.01, 0.1))
             used_rects.append(
-                Rectangle((x, y), 0.01, 0.1 * total_route_demand / capacity)
+                Rectangle((float(x), float(y)), 0.01, 0.1 * total_route_demand / capacity)
             )
             dem_rects.append(
                 Rectangle(
-                    (x, y + 0.1 * cum_demand / capacity), 0.01, 0.1 * d / capacity
+                    (float(x), float(y) + 0.1 * cum_demand / capacity), 0.01, 0.1 * float(d) / capacity
                 )
             )
+            x_prev, y_prev = float(x), float(y)
+            cum_demand += float(d)
 
-            x_prev, y_prev = x, y
-            cum_demand += d
-
-        dist += np.sqrt((x_dep - x_prev) ** 2 + (y_dep - y_prev) ** 2)
+        dist += float(np.sqrt((x_dep - x_prev) ** 2 + (y_dep - y_prev) ** 2))
         total_dist += dist
-        qv = ax1.quiver(
-            xs[:-1],
-            ys[:-1],
-            xs[1:] - xs[:-1],
-            ys[1:] - ys[:-1],
-            scale_units="xy",
-            angles="xy",
-            scale=1,
-            color=color,
-            label=f"R{veh_number}, # {len(r)}, c {int(total_route_demand) if round_demand else total_route_demand} / {int(capacity) if round_demand else capacity}, d {dist:.2f}",
-        )
-
-        qvs.append(qv)
+        
+        # Prepare arrows
+        dx = xs[1:] - xs[:-1]
+        dy = ys[1:] - ys[:-1]
+        if len(xs) > 1:
+            qv = ax1.quiver(
+                xs[:-1],
+                ys[:-1],
+                dx,
+                dy,
+                scale_units="xy",
+                angles="xy",
+                scale=1,
+                color=color,
+                label=f"R{veh_number}, # {len(r)}, c {int(total_route_demand) if round_demand else total_route_demand} / {int(capacity) if round_demand else capacity}, d {dist:.2f}",
+            )
+            qvs.append(qv)
 
     ax1.set_title(f"{len(routes)} routes, total distance {total_dist:.2f}")
-    ax1.legend(handles=qvs)
-
-    pc_cap = PatchCollection(
-        cap_rects, facecolor="whitesmoke", alpha=1.0, edgecolor="lightgray"
-    )
-    pc_used = PatchCollection(
-        used_rects, facecolor="lightgray", alpha=1.0, edgecolor="lightgray"
-    )
-    pc_dem = PatchCollection(dem_rects, facecolor="black", alpha=1.0, edgecolor="black")
+    if qvs:
+        ax1.legend(handles=qvs)
 
     if visualize_demands:
+        pc_cap = PatchCollection(
+            cap_rects, facecolor="whitesmoke", alpha=1.0, edgecolor="lightgray"
+        )
+        pc_used = PatchCollection(
+            used_rects, facecolor="lightgray", alpha=1.0, edgecolor="lightgray"
+        )
+        pc_dem = PatchCollection(dem_rects, facecolor="black", alpha=1.0, edgecolor="black")
         ax1.add_collection(pc_cap)
         ax1.add_collection(pc_used)
         ax1.add_collection(pc_dem)
@@ -412,53 +341,28 @@ def plot_vehicle_routes(  # noqa: PLR0913
 
 @compose_dirpath
 def plot_attention_maps_wrapper(  # noqa: PLR0913, PLR0915
-    dir_path,
-    attention_dict,
-    model_name,
-    execution_function,
-    layer_idx=0,
-    sample_idx=0,
-    head_idx=0,
-    batch_idx=0,
-    x_labels=None,
-    y_labels=None,
-    **execution_kwargs,
-):
+    dir_path: str,
+    attention_dict: Dict[str, List[Dict[str, torch.Tensor]]],
+    model_name: str,
+    execution_function: Callable[..., Any],
+    layer_idx: int = 0,
+    sample_idx: int = 0,
+    head_idx: int = 0,
+    batch_idx: int = 0,
+    x_labels: Optional[List[str]] = None,
+    y_labels: Optional[List[str]] = None,
+    **execution_kwargs: Any,
+) -> np.ndarray:
     """
     Plot attention maps as heatmaps for a given layer, head, batch, and simulation sample.
-
-    Args:
-        dir_path (str): Directory path to save the heatmap image.
-        attention_dict (dict): Dictionary where:
-                              - Keys are model names (str);
-                              - Values are lists of attention data for each sample, where each element is a dictionary containing:
-                                'attention_weights' tensor of shape [num_layers, n_heads, batch_size, graph_size, graph_size].
-        model_name (str): Name of the model to extract attention maps for.
-        execution_function (function): Function that handles the plotting/saving logic.
-        layer_idx (int): Index of the layer to visualize.
-        sample_idx (int): Index of the simulation sample to visualize.
-        head_idx (int): Index of the head to visualize (-1 for average over all heads).
-        batch_idx (int): Index of the data batch to visualize (-1 for average over all batches).
-        x_labels (list, optional): Custom labels for x-axis vertices.
-        y_labels (list, optional): Custom labels for y-axis vertices.
-        **execution_kwargs: Additional arguments to pass to the execution function.
-
-    Returns:
-        attn_map (np.ndarray): The attention map as a Numpy array.
     """
     assert sample_idx >= 0, f"sample_idx {sample_idx} must be a non-negative integer"
 
     attention_weights = attention_dict[model_name][sample_idx]["attention_weights"]
-    msg1 = (
-        f"layer_idx {layer_idx} exceeds number of layers {attention_weights.shape[0]}"
-    )
-    assert layer_idx < attention_weights.shape[0], msg1
-
-    msg2 = f"head_idx {head_idx} exceeds number of heads {attention_weights.shape[1]}"
-    assert head_idx < attention_weights.shape[1], msg2
-
-    msg3 = f"layer_idx {batch_idx} exceeds batch size {attention_weights.shape[2]}"
-    assert batch_idx < attention_weights.shape[2], msg3
+    
+    assert layer_idx < attention_weights.shape[0]
+    assert head_idx < attention_weights.shape[1]
+    assert batch_idx < attention_weights.shape[2]
 
     # Extract attention map
     if head_idx >= 0:
@@ -507,12 +411,7 @@ def plot_attention_maps_wrapper(  # noqa: PLR0913, PLR0915
             f"layer{layer_idx}_headavg_map{sample_idx}.png",
         )
 
-    try:
-        os.makedirs(os.path.dirname(attention_filename), exist_ok=True)
-    except Exception:
-        raise Exception(
-            "directories to save attention maps do not exist and could not be created"
-        ) from None
+    os.makedirs(os.path.dirname(attention_filename), exist_ok=True)
 
     # Dynamically set figure size based on map_size
     base_vertexsize = 0.5
@@ -522,16 +421,14 @@ def plot_attention_maps_wrapper(  # noqa: PLR0913, PLR0915
     figsize = min(max(min_figsize, base_vertexsize * map_size), max_figsize)
     fig = plt.figure(figsize=(figsize, figsize))
 
-    # Adjust annotations and font sizes to scale inversely with map_size
+    # Adjust annotations and font sizes
     max_ticsize = 8
     max_annotsize = 8
-    annot = (
-        True if map_size <= 55 else False
-    )  # Disable annotations for large graphs to avoid clutter
+    annot = (map_size <= 55)
     tick_fontsize = max(max_ticsize, 14 - map_size // 10)
     annot_fontsize = max(max_annotsize, 12 - map_size // 10)
 
-    # Plot and/or log attention heatmap
+    # Plot
     plt.title(title)
     sns.heatmap(
         attn_map,
@@ -547,14 +444,15 @@ def plot_attention_maps_wrapper(  # noqa: PLR0913, PLR0915
         x_labels = [f"Vertex {i}" for i in range(attn_map.shape[0])]
     if y_labels is None:
         y_labels = [f"Vertex {i}" for i in range(attn_map.shape[1])]
+    
     plt.xticks(
-        ticks=range(attn_map.shape[0]),
+        ticks=np.arange(attn_map.shape[1]) + 0.5,
         labels=x_labels,
         rotation=45,
         fontsize=tick_fontsize,
     )
     plt.yticks(
-        ticks=range(attn_map.shape[1]),
+        ticks=np.arange(attn_map.shape[0]) + 0.5,
         labels=y_labels,
         rotation=0,
         fontsize=tick_fontsize,
@@ -573,26 +471,25 @@ def plot_attention_maps_wrapper(  # noqa: PLR0913, PLR0915
     return attn_map
 
 
-def visualize_interactive_plot(**kwargs):
+def visualize_interactive_plot(**kwargs: Any) -> None:
     """
     Execution function for interactive visualization using Plotly.
-
-    Args:
-        **kwargs: Keyword arguments containing 'plot_target', 'title', 'x_labels', 'y_labels', 'figsize'.
     """
     interactive_fig = px.imshow(
         kwargs["plot_target"],
         text_auto=".2f",
         color_continuous_scale="Viridis",
         title=kwargs["title"],
-        labels={"x": kwargs["x_labels"], "y": kwargs["y_labels"]},
-        width=kwargs["figsize"],
-        height=kwargs["figsize"],
+        labels={"x": "X", "y": "Y"},
+        width=int(kwargs["figsize"] * 100),
+        height=int(kwargs["figsize"] * 100),
     )
-    interactive_fig.update_xaxes(
-        tickvals=list(range(len(kwargs["x_labels"]))), ticktext=kwargs["x_labels"]
-    )
-    interactive_fig.update_yaxes(
-        tickvals=list(range(len(kwargs["y_labels"]))), ticktext=kwargs["y_labels"]
-    )
+    if "x_labels" in kwargs:
+        interactive_fig.update_xaxes(
+            tickvals=list(range(len(kwargs["x_labels"]))), ticktext=kwargs["x_labels"]
+        )
+    if "y_labels" in kwargs:
+        interactive_fig.update_yaxes(
+            tickvals=list(range(len(kwargs["y_labels"]))), ticktext=kwargs["y_labels"]
+        )
     interactive_fig.show()

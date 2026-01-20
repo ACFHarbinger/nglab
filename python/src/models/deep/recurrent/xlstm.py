@@ -2,7 +2,9 @@
 xLSTM Model wrapping xLSTMBlocks.
 """
 
+import torch
 from torch import nn
+from typing import Optional, Union, List
 
 from python.src.models.deep.modules.xlstm_block import xLSTMBlock
 
@@ -14,15 +16,15 @@ class xLSTM(nn.Module):  # noqa: N801
 
     def __init__(  # noqa: PLR0913
         self,
-        input_dim,
-        hidden_dim,
-        n_layers,
-        output_dim,
-        dropout=0.0,
-        output_type="prediction",
-        cell_type="slstm",
-        num_heads=4,
-    ):
+        input_dim: int,
+        hidden_dim: int,
+        n_layers: int,
+        output_dim: int,
+        dropout: float = 0.0,
+        output_type: str = "prediction",
+        cell_type: Union[str, List[str]] = "slstm",
+        num_heads: int = 4,
+    ) -> None:
         """
         Initialize the xLSTM.
 
@@ -67,7 +69,7 @@ class xLSTM(nn.Module):  # noqa: N801
         self.norm = nn.LayerNorm(hidden_dim)
         self.fc = nn.Linear(hidden_dim, output_dim)
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
         """
         Forward pass.
 

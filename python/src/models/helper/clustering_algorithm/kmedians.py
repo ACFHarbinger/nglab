@@ -1,27 +1,32 @@
+from typing import Any, Optional
 import numpy as np
+from numpy.typing import NDArray
 
 
 class KMediansAlgorithm:
-    def __init__(self, n_clusters=8, max_iter=300, tol=1e-4, random_state=None):
+    """K-Medians Clustering Algorithm."""
+    
+    def __init__(self, n_clusters: int = 8, max_iter: int = 300, tol: float = 1e-4, random_state: Optional[int] = None) -> None:
+        """Initialize K-Medians."""
         self.n_clusters = n_clusters
         self.max_iter = max_iter
         self.tol = tol
         self.random_state = random_state
-        self.cluster_centers_ = None
-        self.labels_ = None
+        self.cluster_centers_: Optional[NDArray[Any]] = None
+        self.labels_: Optional[NDArray[np.int_]] = None
 
-    def fit(self, X):  # noqa: N803
+    def fit(self, X: NDArray[Any]) -> "KMediansAlgorithm":  # noqa: N803
+        """Fit the model."""
         rng = np.random.RandomState(self.random_state)
         n_samples, n_features = X.shape
 
         # Initialize centroids randomly from data points
         random_indices = rng.permutation(n_samples)[: self.n_clusters]
-        self.cluster_centers_ = X[random_indices]
+        self.cluster_centers_ = X[random_indices].copy()
 
         for _i in range(self.max_iter):
             # Assign labels based on L1 distance (Manhattan)
             # dist shape: (n_samples, n_clusters)
-            # Broadcasting: X[:, none, :] - C[none, :, :]
             dist = np.sum(
                 np.abs(X[:, np.newaxis, :] - self.cluster_centers_[np.newaxis, :, :]),
                 axis=2,
@@ -34,8 +39,6 @@ class KMediansAlgorithm:
                 if np.any(mask):
                     new_centers[k] = np.median(X[mask], axis=0)
                 else:
-                    # Handle empty cluster: re-initialize randomly or keep old
-                    # Here we keep old to avoid drift or re-init random point
                     new_centers[k] = self.cluster_centers_[k]
 
             # Check convergence
@@ -48,7 +51,8 @@ class KMediansAlgorithm:
 
         return self
 
-    def predict(self, X):  # noqa: N803
+    def predict(self, X: NDArray[Any]) -> NDArray[np.int_]:  # noqa: N803
+        """Predict labels."""
         if self.cluster_centers_ is None:
             raise ValueError("Model not fitted yet.")
         dist = np.sum(
@@ -57,5 +61,9 @@ class KMediansAlgorithm:
         )
         return np.argmin(dist, axis=1)
 
-    def fit_predict(self, X):  # noqa: N803
-        return self.fit(X).labels_
+    def fit_predict(self, X: NDArray[Any]) -> NDArray[np.int_]:  # noqa: N803
+        """Fit and predict labels."""
+        self.fit(X)
+        if self.labels_ is None:
+             raise ValueError("Fitting failed to produce labels.")
+        return self.labels_

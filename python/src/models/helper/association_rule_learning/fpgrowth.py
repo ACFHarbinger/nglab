@@ -1,36 +1,46 @@
+from typing import Any, Optional, Dict, List, Set, Tuple, Union
 import pandas as pd
 
 
 class FPTreeNode:
-    def __init__(self, name, count, parent):
+    """Node in an FP-Tree."""
+    
+    def __init__(self, name: Any, count: int, parent: Optional["FPTreeNode"]) -> None:
+        """Initialize FP-Tree Node."""
         self.name = name
         self.count = count
         self.parent = parent
-        self.children = {}
-        self.neighbor = None
+        self.children: Dict[Any, "FPTreeNode"] = {}
+        self.neighbor: Optional["FPTreeNode"] = None
 
 
 class FPGrowthAlgorithm:
-    def __init__(self, min_support=0.5, min_confidence=0.7):
+    """FP-Growth Association Rule Learning Algorithm."""
+    
+    def __init__(self, min_support: float = 0.5, min_confidence: float = 0.7) -> None:
+        """Initialize FP-Growth."""
         self.min_support = min_support
         self.min_confidence = min_confidence
-        self.frequent_itemsets = {}
-        self.rules = []
+        self.frequent_itemsets: Dict[int, Dict[frozenset[Any], float]] = {}
+        self.rules: List[Dict[str, Any]] = []
 
-    def fit(self, transactions):
+    def fit(self, transactions: Union[pd.DataFrame, List[List[Any]]]) -> "FPGrowthAlgorithm":
+        """Fit the model."""
         if isinstance(transactions, pd.DataFrame):
             items = transactions.columns.tolist()
             transaction_list = []
             for _, row in transactions.iterrows():
                 transaction_list.append([items[i] for i, v in enumerate(row) if v > 0])
-            transactions = transaction_list
+            transactions_processed: List[List[Any]] = transaction_list
+        else:
+            transactions_processed = transactions
 
-        n_transactions = len(transactions)
+        n_transactions = len(transactions_processed)
         min_count = self.min_support * n_transactions
 
         # Step 1: Count item frequencies
-        item_counts = {}
-        for t in transactions:
+        item_counts: Dict[Any, int] = {}
+        for t in transactions_processed:
             for item in t:
                 item_counts[item] = item_counts.get(item, 0) + 1
 
@@ -44,32 +54,32 @@ class FPGrowthAlgorithm:
 
         # Step 3: Build FP-Tree
         tree_root = FPTreeNode("Null", 1, None)
-        header_table = {item[0]: [item[1], None] for item in sorted_items}
+        header_table: Dict[Any, List[Any]] = {item[0]: [item[1], None] for item in sorted_items}
 
-        for t in transactions:
+        for t in transactions_processed:
             frequent_t = [item for item in t if item in frequent_items]
             frequent_t.sort(key=lambda x: rank[x])
             if frequent_t:
                 self._insert_tree(frequent_t, tree_root, header_table)
 
         # Step 4: Mine FP-Tree
-        self.frequent_itemsets = {}
-        self._mine_tree(header_table, min_count, set(), self.frequent_itemsets)
+        raw_frequent_itemsets: Dict[frozenset[Any], int] = {}
+        self._mine_tree(header_table, min_count, set(), raw_frequent_itemsets)
 
         # Normalize frequent_itemsets to support
-        normalized_frequent = {}
-        for itemset, count in self.frequent_itemsets.items():
+        normalized_frequent: Dict[int, Dict[frozenset[Any], float]] = {}
+        for itemset, count in raw_frequent_itemsets.items():
             k = len(itemset)
             if k not in normalized_frequent:
                 normalized_frequent[k] = {}
             normalized_frequent[k][frozenset(itemset)] = count / n_transactions
 
         self.frequent_itemsets = normalized_frequent
-        # Rule generation same as Apriori (could be refactored into a base class if needed)
         self.rules = self._generate_rules()
         return self
 
-    def _insert_tree(self, items, node, header_table):
+    def _insert_tree(self, items: List[Any], node: FPTreeNode, header_table: Dict[Any, List[Any]]) -> None:
+        """Insert items into the FP-Tree."""
         if items[0] in node.children:
             node.children[items[0]].count += 1
         else:
@@ -87,7 +97,8 @@ class FPGrowthAlgorithm:
         if len(items) > 1:
             self._insert_tree(items[1:], node.children[items[0]], header_table)
 
-    def _mine_tree(self, header_table, min_count, prefix, frequent_itemsets):
+    def _mine_tree(self, header_table: Dict[Any, List[Any]], min_count: float, prefix: Set[Any], frequent_itemsets: Dict[frozenset[Any], int]) -> None:
+        """Mine the FP-Tree for frequent itemsets."""
         # Sort items in header table
         sorted_items = [
             item[0] for item in sorted(header_table.items(), key=lambda x: x[1][0])
@@ -99,12 +110,12 @@ class FPGrowthAlgorithm:
             frequent_itemsets[frozenset(new_prefix)] = header_table[item][0]
 
             # Find conditional pattern base
-            conditional_patterns = []
+            conditional_patterns: List[Tuple[List[Any], int]] = []
             node = header_table[item][1]
             while node is not None:
-                path = []
+                path: List[Any] = []
                 parent = node.parent
-                while parent.name != "Null":
+                while parent is not None and parent.name != "Null":
                     path.append(parent.name)
                     parent = parent.parent
                 if path:
@@ -112,14 +123,14 @@ class FPGrowthAlgorithm:
                 node = node.neighbor
 
             # Build conditional FP-Tree
-            cond_header_table = {}
+            cond_counts: Dict[Any, int] = {}
             for path, count in conditional_patterns:
                 for p_item in path:
-                    cond_header_table[p_item] = cond_header_table.get(p_item, 0) + count
+                    cond_counts[p_item] = cond_counts.get(p_item, 0) + count
 
             # Filter infrequent
             cond_header_table = {
-                k: [v, None] for k, v in cond_header_table.items() if v >= min_count
+                k: [v, None] for k, v in cond_counts.items() if v >= min_count
             }
 
             if cond_header_table:
@@ -129,10 +140,7 @@ class FPGrowthAlgorithm:
                     frequent_path = [
                         p_item for p_item in path if p_item in cond_header_table
                     ]
-                    # Sort by rank... actually need rank of conditional items
-                    # For simplicity, we skip full sorting here as path is already mostly sorted
                     if frequent_path:
-                        # Re-insert with counts
                         self._insert_tree_with_count(
                             frequent_path, count, cond_tree_root, cond_header_table
                         )
@@ -141,7 +149,8 @@ class FPGrowthAlgorithm:
                     cond_header_table, min_count, new_prefix, frequent_itemsets
                 )
 
-    def _insert_tree_with_count(self, items, count, node, header_table):
+    def _insert_tree_with_count(self, items: List[Any], count: int, node: FPTreeNode, header_table: Dict[Any, List[Any]]) -> None:
+        """Insert items into the conditional FP-Tree with specified count."""
         if items[0] in node.children:
             node.children[items[0]].count += count
         else:
@@ -159,8 +168,8 @@ class FPGrowthAlgorithm:
                 items[1:], count, node.children[items[0]], header_table
             )
 
-    def _generate_rules(self):
-        # reuse apriori rule gen
+    def _generate_rules(self) -> List[Dict[str, Any]]:
+        """Generate association rules."""
         from .apriori import AprioriAlgorithm
 
         dummy = AprioriAlgorithm(self.min_support, self.min_confidence)
