@@ -100,8 +100,6 @@ class GPUFeatureEngineer:
         # Let's use a recurrence relation that can be unrolled or a simple loop for now as a baseline,
         # acknowledging typical financial time series are not massive (thousands points).
 
-        dtype = data.dtype
-        device = data.device
 
         if data.dim() == 1:
             # Add batch dim

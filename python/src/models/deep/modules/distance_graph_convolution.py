@@ -31,7 +31,7 @@ class DistanceAwareGraphConvolution(nn.Module):
             aggregation: Aggregation method ('sum', 'mean', 'max').
             bias: Whether to use a bias term.
         """
-        super(DistanceAwareGraphConvolution, self).__init__()
+        super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.aggregation = aggregation

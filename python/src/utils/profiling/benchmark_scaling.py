@@ -48,7 +48,7 @@ def run_benchmark(num_envs, num_steps=1000, device="cpu"):
 
         # We generate random integers directly
         # For speed we can re-use tensor or generate new one
-        actions = env.action_space.sample()
+        env.action_space.sample()
         # But this might be slow if sampled from space object which isn't vectorized properly in Gym sometimes.
         # Better:
         # actions = torch.randint(0, 3, (num_envs,), device=device)
@@ -111,5 +111,5 @@ if __name__ == "__main__":
             results.append(0)
 
     print("\nScaling Results:")
-    for n, fps in zip(env_counts, results):
+    for n, fps in zip(env_counts, results, strict=False):
         print(f"Envs: {n:3d} | FPS: {fps:.2f}")

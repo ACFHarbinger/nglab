@@ -27,7 +27,7 @@ class CriticNetwork(nn.Module):
         """
         Initialize the critic network.
         """
-        super(CriticNetwork, self).__init__()
+        super().__init__()
 
         self.hidden_dim = hidden_dim
 

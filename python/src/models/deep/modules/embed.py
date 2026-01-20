@@ -22,7 +22,7 @@ class PositionalEmbedding(nn.Module):
             d_model (int): Model dimension.
             max_len (int): Maximum sequence length.
         """
-        super(PositionalEmbedding, self).__init__()
+        super().__init__()
         # Compute the positional encodings once in log space.
         pe = torch.zeros(max_len, d_model).float()
         pe.require_grad = False
@@ -58,7 +58,7 @@ class TokenEmbedding(nn.Module):
             c_in (int): Number of input channels.
             d_model (int): Output model dimension.
         """
-        super(TokenEmbedding, self).__init__()
+        super().__init__()
         padding = 1 if torch.__version__ >= "1.5.0" else 2
         self.tokenConv = nn.Conv1d(
             in_channels=c_in,
@@ -95,7 +95,7 @@ class FixedEmbedding(nn.Module):
             c_in (int): Number of categories.
             d_model (int): Model dimension.
         """
-        super(FixedEmbedding, self).__init__()
+        super().__init__()
 
         w = torch.zeros(c_in, d_model).float()
         w.require_grad = False
@@ -132,7 +132,7 @@ class TemporalEmbedding(nn.Module):
             embed_type (str): Type of embedding ('fixed' or 'learnable').
             freq (str): Frequency of features.
         """
-        super(TemporalEmbedding, self).__init__()
+        super().__init__()
 
         minute_size = 4
         hour_size = 24
@@ -178,7 +178,7 @@ class TimeFeatureEmbedding(nn.Module):
             embed_type (str): Type of embedding.
             freq (str): Frequency of features.
         """
-        super(TimeFeatureEmbedding, self).__init__()
+        super().__init__()
 
         freq_map = {"h": 4, "t": 5, "s": 6, "m": 1, "a": 1, "w": 2, "d": 3, "b": 3}
         d_inp = freq_map[freq]
@@ -207,7 +207,7 @@ class DataEmbedding(nn.Module):
             freq (str): Frequency of features.
             dropout (float): Dropout probability.
         """
-        super(DataEmbedding, self).__init__()
+        super().__init__()
 
         self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
         self.position_embedding = PositionalEmbedding(d_model=d_model)
@@ -242,7 +242,7 @@ class DataEmbedding_inverted(nn.Module):
         """
         Initialize inverted data embedding.
         """
-        super(DataEmbedding_inverted, self).__init__()
+        super().__init__()
         self.value_embedding = nn.Linear(c_in, d_model)
         self.dropout = nn.Dropout(p=dropout)
 
@@ -269,7 +269,7 @@ class DataEmbedding_wo_pos(nn.Module):
         """
         Initialize.
         """
-        super(DataEmbedding_wo_pos, self).__init__()
+        super().__init__()
 
         self.value_embedding = TokenEmbedding(c_in=c_in, d_model=d_model)
         self.position_embedding = PositionalEmbedding(d_model=d_model)
@@ -307,7 +307,7 @@ class PatchEmbedding(nn.Module):
             padding (int): Padding amount.
             dropout (float): Dropout probability.
         """
-        super(PatchEmbedding, self).__init__()
+        super().__init__()
         # Patching
         self.patch_len = patch_len
         self.stride = stride

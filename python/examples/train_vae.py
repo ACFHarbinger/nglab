@@ -26,7 +26,7 @@ from pipeline.lightning.vae_module import VAELightningModule
 from data.polymarket_dataset import PolymarketDataset
 
 
-def main():
+def main():  # noqa: PLR0915
     """Main training function."""
 
     # ========== Configuration ==========
@@ -209,8 +209,8 @@ def main():
     all_latents = []
     with torch.no_grad():
         for batch in val_loader:
-            batch = {k: v.to(model.device) for k, v in batch.items()}
-            mean, log_var = model.model.encode(batch["Price"])
+            batch_dict = {k: v.to(model.device) for k, v in batch.items()}
+            mean, _ = model.model.encode(batch_dict["Price"])
             all_latents.append(mean.cpu())
 
     all_latents = torch.cat(all_latents, dim=0)

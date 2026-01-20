@@ -68,7 +68,7 @@ def evaluate_agent(
     total_rewards = []
     episode_lengths = []
 
-    for episode in range(n_episodes):
+    for _episode in range(n_episodes):
         obs, info = env.reset()
         done = False
         episode_reward = 0

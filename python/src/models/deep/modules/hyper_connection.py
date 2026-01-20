@@ -69,7 +69,7 @@ class DynamicHyperConnection(nn.Module):
             embed_dim: Embedding dimension.
             n: Number of streams.
         """
-        super(DynamicHyperConnection, self).__init__()
+        super().__init__()
         self.module = module
         self.n = n
         self.embed_dim = embed_dim

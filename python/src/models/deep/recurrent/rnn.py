@@ -60,7 +60,7 @@ class LSTM(nn.Module):
             Tensor: Output [batch, output_dim] or [batch, hidden_dim] or sequence.
         """
         # h0, c0 initialized to zeros by default if not provided
-        out, (h_n, c_n) = self.lstm(x)
+        out, (_h_n, _c_n) = self.lstm(x)
 
         # Determine if we want full sequence or last step
         if return_sequence:
@@ -139,7 +139,7 @@ class GRU(nn.Module):
             Tensor: Output [batch, output_dim] or [batch, hidden_dim] or sequence.
         """
         # h0 initialized to zeros by default if not provided
-        out, h_n = self.gru(x)
+        out, _h_n = self.gru(x)
 
         # Determine if we want full sequence or last step
         if return_sequence:

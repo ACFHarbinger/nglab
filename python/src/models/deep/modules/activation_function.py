@@ -36,7 +36,7 @@ class ActivationFunction(nn.Module):
             urange: Uniform range for RReLU (lower, upper).
             inplace: Whether to perform the operation in-place.
         """
-        super(ActivationFunction, self).__init__()
+        super().__init__()
         if tval and rval is None and not af_name == "softplus":
             rval = tval  # Replacement value = threshold
         if af_name == "relu":

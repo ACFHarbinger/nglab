@@ -14,18 +14,19 @@ class DeepConvNet(nn.Module):
     def __init__(
         self,
         input_dim,
-        hidden_channels=[32, 64, 128],
+        hidden_channels=None,
         output_dim=1,
         output_type="prediction",
     ):
         """Initialize DCN."""
+        if hidden_channels is None:
+            hidden_channels = [32, 64, 128]
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.output_type = output_type
 
         layers = []
-        in_channels = 1  # Assume time series values as channels or single channel
 
         # Handle input_dim if we treat it as (Channels, Seq) or similar
         # For simplicity, we assume input is (Batch, Seq, Features) and we treat Features as channels

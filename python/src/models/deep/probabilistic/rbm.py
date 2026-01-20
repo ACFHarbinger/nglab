@@ -44,8 +44,8 @@ class RBM(nn.Module):
             h = h.view(b, s, -1)
             v_recon = v_recon.view(b, s, -1)
         else:
-            p_h, h = self.sample_h(x)
-            p_v, v_recon = self.sample_v(h)
+            _p_h, h = self.sample_h(x)
+            _p_v, v_recon = self.sample_v(h)
 
         should_return_embedding = (
             return_embedding

@@ -2,7 +2,7 @@
 Gymnasium-compatible environments wrapping the Rust arena
 """
 
-from typing import Any
+from typing import Any, ClassVar
 
 import gymnasium as gym
 import numpy as np
@@ -47,7 +47,7 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
         Risk-adjusted return with drawdown penalty
     """
 
-    metadata: dict[str, Any] = {"render_modes": ["human"]}
+    metadata: ClassVar[dict[str, Any]] = {"render_modes": ["human"]}
 
     def __init__(
         self,

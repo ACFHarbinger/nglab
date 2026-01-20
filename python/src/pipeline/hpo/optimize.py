@@ -150,7 +150,7 @@ def run_dehb_search(
     )
 
     # Run
-    traj, runtime, history = dehb.run(fevals=fevals)
+    _traj, _runtime, _history = dehb.run(fevals=fevals)
 
     best_config, best_fitness = dehb.get_incumbents()
     logger.info(f"DEHB Search finished. Best fitness: {best_fitness}")

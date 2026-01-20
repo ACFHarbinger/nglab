@@ -165,7 +165,7 @@ class BackgroundPrefetcher:
         try:
             item = self._queue.get(timeout=self.timeout)
         except queue.Empty:
-            raise RuntimeError("Prefetcher timeout waiting for batch")
+            raise RuntimeError("Prefetcher timeout waiting for batch") from None
 
         if item is StopIteration:
             # Cleanup

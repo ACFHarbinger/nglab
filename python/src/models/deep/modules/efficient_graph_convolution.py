@@ -53,7 +53,7 @@ class EfficientGraphConvolution(MessagePassing):
             bias: Whether to use a bias term.
             sigmoid: If set to `True`, applies a sigmoid activation to the weighting coefficients.
         """
-        super(EfficientGraphConvolution, self).__init__(node_dim=1, **kwargs)
+        super().__init__(node_dim=1, **kwargs)
         if out_channels % num_heads != 0:
             raise ValueError("out_channels must be divisible by the number of heads")
 
@@ -106,7 +106,7 @@ class EfficientGraphConvolution(MessagePassing):
             if isinstance(edge_index, Tensor):
                 cache = self._cached_edge_index
                 if cache is None:
-                    edge_index, symnorm_weight = gcn_norm(  # yapf: disable
+                    edge_index, symnorm_weight = gcn_norm(
                         edge_index,
                         None,
                         num_nodes=x.size(self.node_dim),
@@ -121,7 +121,7 @@ class EfficientGraphConvolution(MessagePassing):
             elif isinstance(edge_index, SparseTensor):
                 cache = self._cached_adj_t
                 if cache is None:
-                    edge_index = gcn_norm(  # yapf: disable
+                    edge_index = gcn_norm(
                         edge_index,
                         None,
                         num_nodes=x.size(self.node_dim),
@@ -228,7 +228,7 @@ class EfficientGraphConvolution(MessagePassing):
                 out = scatter(inputs, index, 0, dim_size, reduce="min")
             elif aggregator == "max":
                 out = scatter(inputs, index, 0, dim_size, reduce="max")
-            elif aggregator == "var" or aggregator == "std":
+            elif aggregator in {"var", "std"}:
                 mean = scatter(inputs, index, 0, dim_size, reduce="mean")
                 mean_squares = scatter(
                     inputs * inputs, index, 0, dim_size, reduce="mean"

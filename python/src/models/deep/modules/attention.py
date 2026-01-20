@@ -29,7 +29,7 @@ class DSAttention(nn.Module):
             output_attention (bool): Whether to return attention weights.
             scale (float): Scaling factor for scores.
         """
-        super(DSAttention, self).__init__()
+        super().__init__()
         self.scale = scale
         self.mask_flag = mask_flag
         self.output_attention = output_attention
@@ -39,8 +39,8 @@ class DSAttention(nn.Module):
         """
         Forward pass.
         """
-        B, L, H, E = queries.shape
-        _, S, _, D = values.shape
+        B, L, _H, E = queries.shape
+        _, _S, _, _D = values.shape
         scale = self.scale or 1.0 / sqrt(E)
 
         tau = 1.0 if tau is None else tau.unsqueeze(1).unsqueeze(1)  # B x 1 x 1 x 1
@@ -82,7 +82,7 @@ class FullAttention(nn.Module):
         """
         Initialize.
         """
-        super(FullAttention, self).__init__()
+        super().__init__()
         self.scale = scale
         self.mask_flag = mask_flag
         self.output_attention = output_attention
@@ -92,8 +92,8 @@ class FullAttention(nn.Module):
         """
         Forward pass.
         """
-        B, L, H, E = queries.shape
-        _, S, _, D = values.shape
+        B, L, _H, E = queries.shape
+        _, _S, _, _D = values.shape
         scale = self.scale or 1.0 / sqrt(E)
 
         scores = torch.einsum("blhe,bshe->bhls", queries, keys)
@@ -129,7 +129,7 @@ class ProbAttention(nn.Module):
         """
         Initialize.
         """
-        super(ProbAttention, self).__init__()
+        super().__init__()
         self.factor = factor
         self.scale = scale
         self.mask_flag = mask_flag
@@ -161,7 +161,7 @@ class ProbAttention(nn.Module):
         return Q_K, M_top
 
     def _get_initial_context(self, V, L_Q):
-        B, H, L_V, D = V.shape
+        B, H, L_V, _D = V.shape
         if not self.mask_flag:
             # V_sum = V.sum(dim=-2)
             V_sum = V.mean(dim=-2)
@@ -173,7 +173,7 @@ class ProbAttention(nn.Module):
         return contex
 
     def _update_context(self, context_in, V, scores, index, L_Q, attn_mask):
-        B, H, L_V, D = V.shape
+        B, H, L_V, _D = V.shape
 
         if self.mask_flag:
             attn_mask = ProbMask(B, H, L_Q, index, scores, device=V.device)
@@ -197,7 +197,7 @@ class ProbAttention(nn.Module):
         """
         Forward pass.
         """
-        B, L_Q, H, D = queries.shape
+        _B, L_Q, _H, D = queries.shape
         _, L_K, _, _ = keys.shape
 
         queries = queries.transpose(2, 1)
@@ -242,7 +242,7 @@ class AttentionLayer(nn.Module):
             d_keys (int): Key dimension.
             d_values (int): Value dimension.
         """
-        super(AttentionLayer, self).__init__()
+        super().__init__()
 
         d_keys = d_keys or (d_model // n_heads)
         d_values = d_values or (d_model // n_heads)

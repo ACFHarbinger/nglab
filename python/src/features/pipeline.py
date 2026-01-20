@@ -87,7 +87,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
             mi_scores = TimeSeriesFeatureSelector.compute_mutual_info(
                 features_clean, y if y is not None else features_clean.iloc[:, 0]
             )
-            top_features = mi_scores.head(
+            mi_scores.head(
                 self.selection_params.get("n_features", 10)
             ).index.tolist()
 

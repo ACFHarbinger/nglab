@@ -360,7 +360,7 @@ class TestNormalizingFlow:
         seq_len = 5
         model = NormalizingFlow(input_dim=input_dim, seq_len=seq_len, num_layers=2)
         x = torch.randn(3, seq_len, input_dim)
-        z, log_det = model(x)
+        z, _log_det = model(x)
         assert z.shape == (3, seq_len * input_dim)  # Latent is flattened
 
         x_recon = model.inverse(z)

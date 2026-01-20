@@ -76,9 +76,11 @@ class DiffusionUNet1D(nn.Module):
     """
 
     def __init__(
-        self, input_dim, output_dim, hidden_dim=64, layers=[1, 2, 4], time_emb_dim=128
+        self, input_dim, output_dim, hidden_dim=64, layers=None, time_emb_dim=128
     ):
         """Initialize Diffusion UNet."""
+        if layers is None:
+            layers = [1, 2, 4]
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim

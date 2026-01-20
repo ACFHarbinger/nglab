@@ -42,13 +42,10 @@ class HelperModelFactory:
         "kmeans": KMeansModel,
         "hierarchical": HierarchicalClusteringModel,
         "dbscan": DBSCANModel,
-        "dbscan": DBSCANModel,
         "gmm": GMMModel,
         "em": EMModel,
         "kmedians": KMediansModel,
         # Dimensionality Reduction
-        "pca": PCAModel,
-        "tsne": TSNEModel,
         "pca": PCAModel,
         "tsne": TSNEModel,
         "lda": LDAModel,
@@ -62,7 +59,6 @@ class HelperModelFactory:
         "fda": FDAModel,
         "umap": UMAPModel,
         # Association Rule Learning
-        "apriori": AprioriModel,
         "apriori": AprioriModel,
         "fpgrowth": FPGrowthModel,
         "eclat": EclatModel,

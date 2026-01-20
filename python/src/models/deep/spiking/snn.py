@@ -158,10 +158,10 @@ class SNN(nn.Module):
         Returns:
             Output compatible with TimeSeriesBackbone
         """
-        batch_size, seq_len, _ = x.size()
+        _batch_size, seq_len, _ = x.size()
 
         # Initialize states for each layer
-        states = [None] * self.n_layers
+        [None] * self.n_layers
 
         # We need to collect outputs to return sequence
         # If n_layers > 1, we feed output of layer l-1 to layer l
@@ -173,7 +173,6 @@ class SNN(nn.Module):
 
         current_input = x
 
-        all_layer_outputs = []  # For last layer
 
         for layer_idx, lif in enumerate(self.lif_layers):
             layer_outputs = []

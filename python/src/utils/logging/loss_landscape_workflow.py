@@ -38,7 +38,7 @@ def evaluate_model(model: Any, env: TradingEnv, num_steps: int = 100) -> float:
             action_logits = model.forward(obs_tensor)
             action = torch.argmax(action_logits, dim=-1).item()
 
-            obs, reward, terminated, truncated, info = env.step(action)
+            obs, reward, terminated, truncated, _info = env.step(action)
             total_reward += reward
 
             if terminated or truncated:

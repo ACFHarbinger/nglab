@@ -47,7 +47,7 @@ class GatedGraphConvolution(nn.Module):
             gated: Whether to use the gating mechanism.
             bias: Whether to use a bias term in linear layers.
         """
-        super(GatedGraphConvolution, self).__init__()
+        super().__init__()
         self.hidden_dim = hidden_dim
         self.aggregation = aggregation
         self.norm = norm
@@ -80,7 +80,7 @@ class GatedGraphConvolution(nn.Module):
         Returns:
             Updated node and edge features
         """
-        batch_size, num_nodes, hidden_dim = h.shape
+        _batch_size, num_nodes, _hidden_dim = h.shape
         # h_in = h
         # e_in = e
 

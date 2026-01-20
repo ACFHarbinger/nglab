@@ -36,7 +36,7 @@ class Normalization(nn.Module):
             kval: k value for LocalResponseNorm.
             bias: If True, add bias for LayerNorm.
         """
-        super(Normalization, self).__init__()
+        super().__init__()
 
         if norm_name == "instance":
             self.normalizer = nn.InstanceNorm1d(

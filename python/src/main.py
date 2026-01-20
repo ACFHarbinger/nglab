@@ -98,7 +98,7 @@ def main(cfg: DictConfig):
         # Get dataloader config (with defaults if not present)
         data_cfg = cfg.get("data", {})
 
-        train_loader, val_loader, test_loader = create_dataloader(
+        train_loader, val_loader, _test_loader = create_dataloader(
             data_path=data_cfg.get("data_path", "data/polymarket/"),
             target_column=data_cfg.get("target_column", "price"),
             batch_size=data_cfg.get("batch_size", 32),

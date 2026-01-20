@@ -277,7 +277,7 @@ class FDAModel(DimReductionModel):
             y = y.ravel()
 
         self.classes_ = np.unique(y)
-        n_classes = len(self.classes_)
+        len(self.classes_)
 
         # 2. Optimal Scoring / Indicator Matrix Regression
         # Create dummy variables for separate regression

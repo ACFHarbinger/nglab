@@ -113,7 +113,7 @@ class GPUBenchmark:
     def run_inference(
         self,
         input_shape: tuple,
-        batch_sizes: list[int] = [1, 8, 32, 64],
+        batch_sizes: list[int] | None = None,
         num_iterations: int = 100,
         warmup_iterations: int = 10,
         dtype: torch.dtype = torch.float32,
@@ -133,6 +133,8 @@ class GPUBenchmark:
         Returns:
             List of BenchmarkResults
         """
+        if batch_sizes is None:
+            batch_sizes = [1, 8, 32, 64]
         results = []
         self.model.eval()
 
@@ -260,7 +262,7 @@ class GPUBenchmark:
         target_shape: tuple,
         loss_fn: Callable,
         optimizer_class: type = torch.optim.Adam,
-        batch_sizes: list[int] = [8, 32, 64],
+        batch_sizes: list[int] | None = None,
         num_iterations: int = 50,
         warmup_iterations: int = 5,
         dtype: torch.dtype = torch.float32,
@@ -283,6 +285,8 @@ class GPUBenchmark:
         Returns:
             List of BenchmarkResults
         """
+        if batch_sizes is None:
+            batch_sizes = [8, 32, 64]
         results = []
 
         for batch_size in batch_sizes:
@@ -485,10 +489,12 @@ def run_inference_benchmark(
     model: nn.Module,
     input_shape: tuple,
     device: str = "cuda",
-    batch_sizes: list[int] = [1, 8, 32, 64],
+    batch_sizes: list[int] | None = None,
     **kwargs,
 ) -> list[BenchmarkResult]:
     """Convenience function for running inference benchmarks."""
+    if batch_sizes is None:
+        batch_sizes = [1, 8, 32, 64]
     benchmark = GPUBenchmark(model, device=device)
     return benchmark.run_inference(input_shape, batch_sizes=batch_sizes, **kwargs)
 
@@ -499,10 +505,12 @@ def run_training_benchmark(
     target_shape: tuple,
     loss_fn: Callable,
     device: str = "cuda",
-    batch_sizes: list[int] = [8, 32, 64],
+    batch_sizes: list[int] | None = None,
     **kwargs,
 ) -> list[BenchmarkResult]:
     """Convenience function for running training benchmarks."""
+    if batch_sizes is None:
+        batch_sizes = [8, 32, 64]
     benchmark = GPUBenchmark(model, device=device)
     return benchmark.run_training(
         input_shape, target_shape, loss_fn, batch_sizes=batch_sizes, **kwargs

@@ -105,7 +105,7 @@ class NTMMemory(nn.Module):
         Returns:
             Shifted weights (batch, N)
         """
-        batch_size, N = weights.shape
+        _batch_size, N = weights.shape
 
         # Create shifted versions of weights
         # Pad weights circularly

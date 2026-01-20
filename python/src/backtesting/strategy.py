@@ -35,6 +35,6 @@ class BaseStrategy(ABC):
         """Implement strategy logic here."""
         pass
 
-    def on_fill(self, market_id: str, amount: float, price: float, side: str) -> None:
+    def on_fill(self, market_id: str, amount: float, price: float, side: str) -> None:  # noqa: B027
         """Optional callback for order fills."""
         pass

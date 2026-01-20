@@ -307,7 +307,7 @@ class AttentionNetwork(nn.Module):
         Returns:
             Output tensor of shape (batch_size, output_dim) or (batch_size, seq_len, output_dim)
         """
-        batch_size, seq_len, _ = x.shape
+        _batch_size, seq_len, _ = x.shape
 
         # Input projection
         x = self.input_projection(x)

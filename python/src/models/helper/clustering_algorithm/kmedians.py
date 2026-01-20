@@ -18,7 +18,7 @@ class KMediansAlgorithm:
         random_indices = rng.permutation(n_samples)[: self.n_clusters]
         self.cluster_centers_ = X[random_indices]
 
-        for i in range(self.max_iter):
+        for _i in range(self.max_iter):
             # Assign labels based on L1 distance (Manhattan)
             # dist shape: (n_samples, n_clusters)
             # Broadcasting: X[:, none, :] - C[none, :, :]

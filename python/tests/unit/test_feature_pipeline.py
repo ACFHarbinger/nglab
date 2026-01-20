@@ -45,7 +45,7 @@ def test_pipeline_fit_transform(sample_data):
     # Exclude initial nan-filled rows (lookback)
     valid_output = output[15:]
     means = valid_output.mean(axis=0)
-    stds = valid_output.std(axis=0)
+    valid_output.std(axis=0)
 
     np.testing.assert_allclose(
         means, 0, atol=0.5
@@ -60,7 +60,7 @@ def test_feature_selection(sample_data):
     pipe = FeaturePipeline(selection_threshold=0.01)  # Drop near-zeros var
 
     pipe.fit(sample_data)
-    transformed = pipe.transform(sample_data)
+    pipe.transform(sample_data)
 
     # Constant features should be dropped (internal implementation details of _generate_features logic matter)
     # Current _generate_features doesn't necessarily pass through raw columns (it calculates new ones).

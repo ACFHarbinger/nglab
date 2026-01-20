@@ -17,11 +17,13 @@ class DeconvNet(nn.Module):
     def __init__(
         self,
         input_dim,
-        hidden_channels=[128, 64, 32],
+        hidden_channels=None,
         output_dim=1,
         output_type="prediction",
     ):
         """Initialize Deconvolutional Network."""
+        if hidden_channels is None:
+            hidden_channels = [128, 64, 32]
         super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -71,10 +73,12 @@ class AutoDeconvNet(nn.Module):
         self,
         input_dim,
         latent_dim=64,
-        hidden_channels=[32, 64, 128],
+        hidden_channels=None,
         output_type="prediction",
     ):
         """Initialize AutoDeconvNet."""
+        if hidden_channels is None:
+            hidden_channels = [32, 64, 128]
         super().__init__()
         self.input_dim = input_dim
         self.latent_dim = latent_dim

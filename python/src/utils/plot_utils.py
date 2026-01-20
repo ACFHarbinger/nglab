@@ -118,7 +118,7 @@ def plot_linechart(
 
             for id, (x, y) in enumerate(
                 zip(
-                    list(zip(*lg, strict=False))[0],
+                    next(zip(*lg, strict=False)),
                     list(zip(*lg, strict=False))[5],
                     strict=False,
                 )
@@ -153,7 +153,7 @@ def plot_linechart(
             for lg in zip(*graph_log, strict=False):
                 for id, xy in enumerate(
                     zip(
-                        list(zip(*lg, strict=False))[0],
+                        next(zip(*lg, strict=False)),
                         list(zip(*lg, strict=False))[5],
                         strict=False,
                     )

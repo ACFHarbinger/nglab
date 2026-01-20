@@ -14,7 +14,7 @@ class Policy(ABC):
     Abstract Base Class for all trading policies.
     """
 
-    def __init__(self, cfg: dict[str, Any] = None):
+    def __init__(self, cfg: dict[str, Any] | None = None):
         """
         Initialize the policy.
 

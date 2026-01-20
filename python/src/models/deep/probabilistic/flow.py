@@ -128,7 +128,7 @@ class NormalizingFlow(nn.Module):
 
         self.layers = nn.ModuleList()
 
-        for i in range(num_layers):
+        for _i in range(num_layers):
             self.layers.append(CouplingLayer(self.total_dim, hidden_dim))
             # We add a permutation step between layers implicitly or explicitly?
             # A simple way is to define a fixed permutation.

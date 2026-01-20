@@ -34,7 +34,7 @@ def verify_maml():
     # Simulate tasks (different market regimes)
     print("\nSimulating 3 market regime tasks...")
     tasks = []
-    for i in range(3):
+    for _ in range(3):
         # Generate synthetic data for each regime
         support_x = torch.randn(20, 10, 5)
         support_y = torch.randn(20, 1)

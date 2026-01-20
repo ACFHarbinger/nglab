@@ -46,7 +46,7 @@ class SammonMappingAlgorithm:
         # I'll use Adam for simplicity and stability in loop.
         optimizer = torch.optim.Adam([Y], lr=self.lr)
 
-        for i in range(self.max_iter):
+        for _i in range(self.max_iter):
             optimizer.zero_grad()
 
             # Distance in low-dim

@@ -179,7 +179,7 @@ def create_mac_model(model_name: str, cfg: dict):
         return RandomForestModel(
             task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
         )
-    elif model_name == "GradientBoosting" or model_name == "GBM":
+    elif model_name in {"GradientBoosting", "GBM"}:
         return GradientBoostingModel(
             task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
         )
@@ -203,7 +203,7 @@ def create_mac_model(model_name: str, cfg: dict):
         return VotingModel(
             task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
         )
-    elif model_name == "WeightedAverage" or model_name == "Blending":
+    elif model_name in {"WeightedAverage", "Blending"}:
         return WeightedAverageModel(
             task=cfg.get("task", "regression"), **cfg.get("model_kwargs", {})
         )
@@ -253,7 +253,7 @@ def create_mac_model(model_name: str, cfg: dict):
         return MultinomialNaiveBayesModel(**cfg.get("model_kwargs", {}))
     elif model_name == "AODE":
         return AODEModel(**cfg.get("model_kwargs", {}))
-    elif model_name == "BayesianNetwork" or model_name == "BBN" or model_name == "BN":
+    elif model_name in {"BayesianNetwork", "BBN", "BN"}:
         return BayesianNetworkModel(**cfg.get("model_kwargs", {}))
     elif model_name == "OLSR":
         return OLSRModel(**cfg.get("model_kwargs", {}))

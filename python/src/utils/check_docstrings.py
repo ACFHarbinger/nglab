@@ -65,7 +65,7 @@ def check_docstrings_recursive(directory):
         list: A list of strings describing missing docstrings in all found Python files.
     """
     missing = []
-    for root, dirs, files in os.walk(directory):
+    for root, _dirs, files in os.walk(directory):
         for file in files:
             missing.extend(check_path(os.path.join(root, file)))
     return missing

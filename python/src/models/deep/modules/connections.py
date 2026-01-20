@@ -13,7 +13,7 @@ class Connections(nn.Module):
 
     def __init__(self):
         """Initializes the connections factory."""
-        super(Connections, self).__init__()
+        super().__init__()
 
 
 def get_connection_module(module, embed_dim, connection_type="skip", **kwargs):

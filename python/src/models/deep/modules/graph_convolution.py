@@ -29,7 +29,7 @@ class GraphConvolution(nn.Module):
             aggregation: Aggregation method ('sum', 'mean', 'max').
             bias: Whether to include a learnable bias term.
         """
-        super(GraphConvolution, self).__init__()
+        super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.aggregation = aggregation

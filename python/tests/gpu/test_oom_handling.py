@@ -28,7 +28,7 @@ class TestOOMHandling:
             # Try to allocate a huge tensor effectively guaranteed to fail on consumer GPUs
             # 80GB VRAM might pass this, but typical 24GB will fail.
             # 40GB * 1024^3 bytes * 4 bytes/float = ~160GB
-            huge_tensor = torch.empty((40000, 10000, 1000), device="cuda")
+            torch.empty((40000, 10000, 1000), device="cuda")
         except RuntimeError as e:
             assert "out of memory" in str(e).lower()
 

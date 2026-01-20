@@ -27,7 +27,7 @@ class EncoderLayer(nn.Module):
         """
         Initialize.
         """
-        super(EncoderLayer, self).__init__()
+        super().__init__()
         self.attention = SkipConnection(
             AttentionLayer(DSAttention(False, dropout_rate, False), embed_dim, n_heads)
         )
@@ -62,7 +62,7 @@ class Encoder(nn.Module):
         """
         Initialize.
         """
-        super(Encoder, self).__init__()
+        super().__init__()
         self.attn_layers = nn.ModuleList(attn_layers)
         self.conv_layers = (
             nn.ModuleList(conv_layers) if conv_layers is not None else None
@@ -103,7 +103,7 @@ class DecoderLayer(nn.Module):
         """
         Initialize.
         """
-        super(DecoderLayer, self).__init__()
+        super().__init__()
         self.attention = SkipConnection(
             AttentionLayer(DSAttention(True, dropout_rate, False), embed_dim, n_heads)
         )
@@ -144,7 +144,7 @@ class Decoder(nn.Module):
         """
         Initialize.
         """
-        super(Decoder, self).__init__()
+        super().__init__()
         self.layers = nn.ModuleList(layers)
         self.norm = norm_layer
         self.projection = projection
@@ -187,7 +187,7 @@ class Projector(nn.Module):
             output_dim (int): Output dimension.
             kernel_size (int): Convolution kernel size.
         """
-        super(Projector, self).__init__()
+        super().__init__()
 
         padding = 1 if torch.__version__ >= "1.5.0" else 2
         self.series_conv = nn.Conv1d(

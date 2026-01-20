@@ -149,7 +149,7 @@ class VAELightningModule(LightningModule):
 
         # Compute loss
         current_kl_weight = self.get_current_kl_weight()
-        total_loss, loss_dict = vae_loss(
+        _total_loss, loss_dict = vae_loss(
             reconstruction=reconstruction,
             target=target,
             mean=mean,

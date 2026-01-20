@@ -15,7 +15,7 @@ def test_page_hinkley_drift():
 
     # Drift phase
     drift_detected = False
-    for i in range(20):
+    for _i in range(20):
         # Abrupt jump
         val = 110.0 + np.random.normal(0, 0.1)
         if ph.update(val):

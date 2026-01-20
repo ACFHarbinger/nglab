@@ -22,7 +22,7 @@ class FeedForward(nn.Module):
             output_dim: Output dimension.
             bias: Whether to include a bias term in the linear layer.
         """
-        super(FeedForward, self).__init__()
+        super().__init__()
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.linear = nn.Linear(input_dim, output_dim, bias=bias)

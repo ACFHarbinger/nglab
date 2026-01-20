@@ -17,12 +17,14 @@ class DCIGN(nn.Module):
         self,
         input_dim,
         latent_dim=128,
-        hidden_channels=[32, 64, 128, 256],
+        hidden_channels=None,
         num_intrinsic=32,
         num_extrinsic=96,
         output_type="prediction",
     ):
         """Initialize DCIGN."""
+        if hidden_channels is None:
+            hidden_channels = [32, 64, 128, 256]
         super().__init__()
         self.input_dim = input_dim
         self.latent_dim = latent_dim

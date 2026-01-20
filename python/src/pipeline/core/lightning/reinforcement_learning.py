@@ -113,7 +113,7 @@ class RLLightningModule(BaseModule):
         # Inner PPO Loop
         total_loss = 0
         for _ in range(self.ppo_epochs):
-            for i, sub_batch in enumerate(self.replay_buffer):
+            for _i, sub_batch in enumerate(self.replay_buffer):
                 loss_vals = self.loss_module(sub_batch)
                 loss_value = (
                     loss_vals["loss_objective"]

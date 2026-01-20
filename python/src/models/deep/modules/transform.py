@@ -17,7 +17,7 @@ class Transpose(torch.nn.Module):
         Args:
             dims (tuple): Dimensions to transpose.
         """
-        super(Transpose, self).__init__()
+        super().__init__()
         self.dims = dims
 
     def forward(self, x):

@@ -399,7 +399,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         """List of DE objects corresponding to the fidelities."""
         self.de = {}
         seeds = self.rng.integers(0, 2**32 - 1, size=len(self._max_pop_size))
-        for (i, f), _seed in zip(enumerate(self._max_pop_size.keys()), seeds):
+        for (_i, f), _seed in zip(enumerate(self._max_pop_size.keys()), seeds, strict=False):
             self.de[f] = AsyncDifferentialEvolution(
                 **self.de_params,
                 pop_size=self._max_pop_size[f],
@@ -1424,7 +1424,7 @@ class DEHB(DifferentialEvolutionHyperbandBase):
 
     def load_dehb(self, path):
         """Load a previously saved DEHB state."""
-        func = list(self.de.values())[0].f
+        func = next(iter(self.de.values())).f
         with open(path, "rb") as f:
             past_state = pickle.load(f)
         self.__dict__.update(**past_state)

@@ -49,7 +49,7 @@ class TimeGANGenerator(nn.Module):
         x: (Batch, Seq_Len, Features)
         Returns: (Batch, Pred_Len, Features)
         """
-        batch_size = x.size(0)
+        x.size(0)
 
         # Encode
         _, (h_n, c_n) = self.encoder(x)

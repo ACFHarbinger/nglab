@@ -267,7 +267,7 @@ class xLSTMBlock(nn.Module):
         if self.batch_first:
             x = x.transpose(0, 1)  # -> (Seq, Batch, Feat)
 
-        seq_len, batch_size, _ = x.shape
+        seq_len, _batch_size, _ = x.shape
 
         outputs = []
         current_state = state

@@ -93,8 +93,12 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
             "deferred",
         ], f"{self.async_strategy} is not a valid choice for type of DE"
 
-    def _add_random_population(self, pop_size, population=None, fitness=[], age=[]):
+    def _add_random_population(self, pop_size, population=None, fitness=None, age=None):
         """Adds random individuals to the population"""
+        if age is None:
+            age = []
+        if fitness is None:
+            fitness = []
         new_pop = self.init_population(pop_size=pop_size)
         new_fitness = np.array([np.inf] * pop_size)
         new_age = np.array([self.max_age] * pop_size)
@@ -310,7 +314,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
             return traj, runtime, history
 
         else:  # async_strategy == 'random' or async_strategy == 'worst':
-            for count in range(self.pop_size):
+            for _count in range(self.pop_size):
                 # choosing target individual
                 if self.async_strategy == "random":
                     i = self.rng.choice(np.arange(self.pop_size))
@@ -324,7 +328,7 @@ class AsyncDifferentialEvolution(DifferentialEvolution):
                     trial, float(fidelity or 0)
                 )
                 # evaluating a single trial population for the i-th individual
-                de_traj, de_runtime, de_history, fitnesses, costs = self.eval_pop(
+                de_traj, de_runtime, de_history, fitnesses, _costs = self.eval_pop(
                     trial.reshape(1, self.dimensions),
                     np.array([trial_id]),
                     fidelity=fidelity,

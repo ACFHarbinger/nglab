@@ -27,7 +27,7 @@ class KohonenMap(nn.Module):
             b, s, f = x.shape
             x_flat = x.view(b * s, f)
             bmu = self._find_bmu(x_flat)
-            res = bmu.view(b, s, -1)  # Wait, BMU is index.
+            bmu.view(b, s, -1)  # Wait, BMU is index.
             # Usually for SOM we might return the weights of BMU as embedding
             emb = self.weights[bmu].view(b, s, -1)
         else:

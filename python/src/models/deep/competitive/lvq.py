@@ -68,7 +68,7 @@ class LVQ(nn.Module):
         dists = torch.cdist(x, self.prototypes, p=2)
 
         # Find nearest prototype
-        min_dists, indices = torch.min(dists, dim=1)
+        _min_dists, _indices = torch.min(dists, dim=1)
 
         if return_embedding:
             # Embedding is the distance vector to prototypes

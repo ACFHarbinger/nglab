@@ -31,7 +31,7 @@ class NormalizedActivationFunction(nn.Module):
             dval: Divisor value for adaptive softmax.
             bias: Whether to use bias in adaptive softmax.
         """
-        super(NormalizedActivationFunction, self).__init__()
+        super().__init__()
         if naf_name == "softmin":
             self.norm_activation = nn.Softmin(dim=dim)
         elif naf_name == "softmax":

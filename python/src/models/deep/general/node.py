@@ -31,7 +31,7 @@ def odesolve(
     """
     device = y0.device
     num_steps = len(t)
-    y = torch.zeros((num_steps,) + y0.shape, device=device)
+    y = torch.zeros((num_steps, *y0.shape), device=device)
     y[0] = y0
 
     curr_y = y0

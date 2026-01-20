@@ -34,11 +34,6 @@ class BoltzmannMachine(nn.Module):
         Gibbs sampling for state evolution.
         x: (Batch, Num_Units) or (Batch, Seq, Num_Units)
         """
-        should_return_embedding = (
-            return_embedding
-            if return_embedding is not None
-            else (self.output_type == "embedding")
-        )
 
         if x.dim() == 3:
             b, s, f = x.shape

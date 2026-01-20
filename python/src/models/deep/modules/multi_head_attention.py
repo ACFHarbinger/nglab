@@ -30,7 +30,7 @@ class MultiHeadAttention(nn.Module):
             val_dim: Dimension of value vectors per head.
             key_dim: Dimension of key/query vectors per head.
         """
-        super(MultiHeadAttention, self).__init__()
+        super().__init__()
         if val_dim is None:
             assert embed_dim is not None, "Provide either embed_dim or val_dim"
             val_dim = embed_dim // n_heads

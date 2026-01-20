@@ -26,7 +26,7 @@ class TradingEnv(gym.Env):
             max_steps (int): Maximum steps per episode.
             feature_dim (int): Number of features per step.
         """
-        super(TradingEnv, self).__init__()
+        super().__init__()
         self.lookback = lookback
         self.max_steps = max_steps
         self.feature_dim = feature_dim

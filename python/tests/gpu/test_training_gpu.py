@@ -30,7 +30,7 @@ class TestGPUTraining:
 
         # Dummy batch
         x = torch.randn(16, 64, device=device)
-        y = torch.randn(16, 1, device=device)
+        torch.randn(16, 1, device=device)
 
         loss, _ = trainer.training_step(x, lambda m, b: m(b), nn.MSELoss())
         assert loss > 0
@@ -62,7 +62,7 @@ class TestGPUTraining:
         trainer = MixedPrecisionTrainer(simple_model, optimizer=optimizer)
 
         x = torch.randn(8, 64, device=device)
-        y = torch.randn(8, 1, device=device)
+        torch.randn(8, 1, device=device)
 
         trainer.training_step(x, lambda m, b: m(b), nn.MSELoss())
 

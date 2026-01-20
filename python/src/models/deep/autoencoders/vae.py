@@ -130,22 +130,7 @@ class VAE(nn.Module):
             "name": backbone_decoder_type,
             "feature_dim": d_model,
             "output_dim": input_dim,  # For NSTransformer final output or similar
-            "hidden_dim": d_model,  # Decoder input is d_model (expanded latent) or latent_dim? In forward decode loop?
-            # In decode(): h (d_model) -> expand -> (B, pred_len, d_model).
-            # So decoder backbone input dim is d_model.
-            # And it should output input_dim (reconstruction).
-            # But TimeSeriesBackbone often outputs 'embedding' (hidden states).
-            # If decoder backbone is Transformer, it outputs (Batch, Seq, hidden).
-            # We might need a head on top?
-            # Or does TimeSeriesBackbone handle projection?
-            # NSTransformer does.
-            # RNN wrappers (LSTM/GRU) output (Batch, Seq, Hidden).
-            # We need a projection layer if backbone doesn't do it.
-            # VAE implementation didn't have a projection before?
-            # Looking at previous code: self.decoder(...) -> reconstruction.
-            # If backbone outputs (B, L, H), valid.
-            # Let's ensure cfg matches intentions.
-            "feature_dim": d_model,
+            "hidden_dim": d_model,
             # Note: For LSTM wrapper, input_dim is feature_dim.
             "seq_len": pred_len,
             "pred_len": pred_len,

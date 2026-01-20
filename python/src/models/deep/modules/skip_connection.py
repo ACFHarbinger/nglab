@@ -15,7 +15,7 @@ class SkipConnection(nn.Module):
         Args:
             module: The neural network module to wrap with a residual connection.
         """
-        super(SkipConnection, self).__init__()
+        super().__init__()
         self.module = module
 
     def forward(self, input, *args, **kwargs):

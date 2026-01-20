@@ -106,7 +106,7 @@ def load_model(
             )
         model_filename = os.path.join(path, f"epoch-{epoch}.pt")
     else:
-        assert False, f"{path} is not a valid directory or file"
+        raise AssertionError(f"{path} is not a valid directory or file")
 
     args = load_args(os.path.join(path, "args.json"))
     model_class = {"lstm": LSTM, "nstransformer": NSTransformer}.get(

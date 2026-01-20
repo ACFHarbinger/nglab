@@ -50,7 +50,7 @@ def test_trading_env_reset():
     # Check observation is numpy array with correct shape
     assert isinstance(obs, np.ndarray)
     assert obs.shape[0] == 50, f"Expected lookback_window=50, got {obs.shape[0]}"
-    assert obs.dtype == np.float64 or obs.dtype == np.float32
+    assert obs.dtype in (np.float64, np.float32)
 
     # Check info dict
     assert isinstance(info, dict)
@@ -102,7 +102,7 @@ def test_trading_env_episode():
     while steps < max_steps:
         # Random action for testing
         action = np.random.choice([0, 1, 2])
-        obs, reward, terminated, truncated, info = env.step(action)
+        _obs, reward, terminated, truncated, _info = env.step(action)
 
         total_reward += reward
         steps += 1
@@ -153,7 +153,7 @@ def test_multiple_environments():
 
     # Step each environment independently
     for env in envs:
-        obs, reward, terminated, truncated, info = env.step(1)
+        obs, reward, _terminated, _truncated, _info = env.step(1)
         assert isinstance(reward, (float, np.floating))
 
 
@@ -170,7 +170,7 @@ def test_action_space_bounds():
     # Test with invalid action (if discrete, actions outside [0, 1, 2] should error)
     # This test depends on actual action space implementation
     try:
-        obs, reward, terminated, truncated, info = env.step(999)
+        _obs, _reward, _terminated, _truncated, _info = env.step(999)
         # If no error, action space might be continuous or unbounded
     except (ValueError, RuntimeError):
         # Expected behavior for invalid discrete action
@@ -249,7 +249,7 @@ def test_long_episode_stability():
 
     while steps < max_steps:
         action = np.random.choice([0, 1, 2])
-        obs, reward, terminated, truncated, info = env.step(action)
+        obs, reward, terminated, truncated, _info = env.step(action)
 
         # Verify no NaN or Inf values
         assert not np.isnan(obs).any(), f"NaN in observation at step {steps}"

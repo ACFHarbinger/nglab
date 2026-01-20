@@ -50,7 +50,7 @@ class StepwiseRegressionModel(ClassicalModel):
         device = x.device
         x_np = x.detach().cpu().numpy()
         if x_np.ndim == 3:
-            b, s, f = x_np.shape
+            _b, _s, _f = x_np.shape
             x_np = x_np[:, -1, :]
 
         out_np = self.final_model.predict(x_np[:, self.selected_features_])

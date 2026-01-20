@@ -61,7 +61,7 @@ class VectorizedTradingEnv:
         # Create individual environments
         self.envs: list[nglab.TradingEnv] = []
         for i in range(num_envs):
-            env_seed = seed + i if seed is not None else None
+            seed + i if seed is not None else None
             env = nglab.TradingEnv(
                 initial_capital=initial_capital,
                 transaction_cost=transaction_cost,
@@ -73,7 +73,7 @@ class VectorizedTradingEnv:
 
         # Get observation and action space info from first env
         self.single_observation_shape = (lookback, 6)  # From TradingEnv
-        self.observation_shape = (num_envs,) + self.single_observation_shape
+        self.observation_shape = (num_envs, *self.single_observation_shape)
         self.action_space_n = 3  # 0: Hold, 1: Buy, 2: Sell
 
         # Define Gym spaces for compatibility
@@ -85,8 +85,8 @@ class VectorizedTradingEnv:
             dtype=np.float64,
         )
 
-        action_space = gym.spaces.MultiDiscrete([self.action_space_n] * num_envs)
-        observation_space = gym.spaces.Box(
+        gym.spaces.MultiDiscrete([self.action_space_n] * num_envs)
+        gym.spaces.Box(
             low=-np.inf, high=np.inf, shape=self.observation_shape, dtype=np.float64
         )
 
@@ -133,7 +133,7 @@ class VectorizedTradingEnv:
 
         for i, env in enumerate(self.envs):
             env_seed = (seed + i) if seed is not None else None
-            obs, info = env.reset(seed=env_seed, options=options)
+            obs, _info = env.reset(seed=env_seed, options=options)
             observations.append(obs)
 
         stacked_obs = np.stack(observations, axis=0)
@@ -187,7 +187,7 @@ class VectorizedTradingEnv:
 
         # Execute steps in parallel
         results = []
-        for env, action in zip(self.envs, actions):
+        for env, action in zip(self.envs, actions, strict=False):
             obs, reward, terminated, truncated, info = env.step(int(action))
             results.append((obs, reward, terminated, truncated, info))
 
@@ -214,7 +214,7 @@ class VectorizedTradingEnv:
         self._pending_actions = list(actions)
         self._futures = [
             self._executor.submit(env.step, int(action))
-            for env, action in zip(self.envs, actions)
+            for env, action in zip(self.envs, actions, strict=False)
         ]
 
     def step_wait(
@@ -315,7 +315,7 @@ class SubprocVecEnv:
             self.processes.append(process)
 
         self.single_observation_shape = (lookback, 6)
-        self.observation_shape = (num_envs,) + self.single_observation_shape
+        self.observation_shape = (num_envs, *self.single_observation_shape)
         self.action_space_n = 3
 
     def reset(
@@ -329,7 +329,7 @@ class SubprocVecEnv:
 
         observations = []
         for pipe in self.parent_pipes:
-            obs, info = pipe.recv()
+            obs, _info = pipe.recv()
             observations.append(obs)
 
         return np.stack(observations, axis=0), {}
@@ -344,7 +344,7 @@ class SubprocVecEnv:
         NDArray[np.bool_],
         dict,
     ]:
-        for pipe, action in zip(self.parent_pipes, actions):
+        for pipe, action in zip(self.parent_pipes, actions, strict=False):
             pipe.send(("step", int(action)))
 
         results = [pipe.recv() for pipe in self.parent_pipes]

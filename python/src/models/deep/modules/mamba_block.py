@@ -95,7 +95,7 @@ class MambaBlock(nn.Module):
         """
         Forward pass.
         """
-        batch_size, seq_len, _ = x.shape
+        _batch_size, seq_len, _ = x.shape
 
         # 1. Project inputs
         x_and_res = self.in_proj(x)  # (B, L, 2*d_inner)

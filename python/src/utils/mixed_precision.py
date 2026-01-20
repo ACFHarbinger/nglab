@@ -267,7 +267,7 @@ def get_optimal_precision() -> str:
     # Get GPU compute capability
     device = torch.cuda.current_device()
     capability = torch.cuda.get_device_capability(device)
-    major, minor = capability
+    major, _minor = capability
 
     # Ampere (SM 8.0+) and newer: BF16 is preferred
     if major >= 8:

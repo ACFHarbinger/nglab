@@ -38,7 +38,7 @@ def main():
 
     assets = args.assets.split(",")
     start_date = datetime.now() - timedelta(days=args.days)
-    end_date = datetime.now()
+    datetime.now()
 
     # Calculate number of steps based on frequency
     # Simplified: assuming minutes for now
