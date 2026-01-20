@@ -147,7 +147,7 @@ class RLLightningModule(BaseModule):
                 # use Automatic Optimization and just do one pass?
                 # Best practice in PL for PPO is manual optimization.
 
-                opt.zero_grad()  # type: ignore
+                opt.zero_grad()
                 self.manual_backward(loss_value)
                 opt.step()
 

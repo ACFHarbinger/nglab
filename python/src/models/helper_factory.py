@@ -87,7 +87,8 @@ class HelperModelFactory:
                 f"Unknown model type: {model_name}. Available: {list(cls._MODELS.keys())}"
             )
 
-        return model_class(**kwargs)  # type: ignore
+        from typing import cast
+        return cast("ClassicalModel", model_class(**kwargs))
 
     @classmethod
     def list_available_models(cls) -> list[str]:

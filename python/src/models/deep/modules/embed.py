@@ -14,7 +14,7 @@ class PositionalEmbedding(nn.Module):
     Standard Positional Embedding.
     """
 
-    def __init__(self, d_model, max_len=5000):
+    def __init__(self, d_model: int, max_len: int = 5000) -> None:
         """
         Initialize positional embedding.
 
@@ -38,7 +38,7 @@ class PositionalEmbedding(nn.Module):
         pe = pe.unsqueeze(0)
         self.register_buffer("pe", pe)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -74,7 +74,7 @@ class TokenEmbedding(nn.Module):
                     m.weight, mode="fan_in", nonlinearity="leaky_relu"
                 )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -111,7 +111,7 @@ class FixedEmbedding(nn.Module):
         self.emb = nn.Embedding(c_in, d_model)
         self.emb.weight = nn.Parameter(w, requires_grad=False)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass.
         """

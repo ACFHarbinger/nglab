@@ -71,7 +71,7 @@ class DistributedTrainer:
         self.train_loader = train_loader
 
     def train_epoch(self, epoch: int) -> float:
-        self.model.train()  # type: ignore[no-untyped-call]
+        self.model.train()
         sampler = self.train_loader.sampler
         if isinstance(sampler, DistributedSampler):
             sampler.set_epoch(epoch)

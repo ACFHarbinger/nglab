@@ -28,7 +28,6 @@ dependencies = [
     "wandb==0.15",
     "xgboost>=2.0.0",
     "lightgbm>=4.0.0",
-    "yfinance>=0.2.31",
     "statsmodels>=0.14.0",
     "umap-learn>=0.5.4",
     "keyring>=24.2.0",
@@ -190,6 +189,7 @@ docstring-code-format = false
 [tool.mypy]
 python_version = "3.11"
 strict = false
+ignore_missing_imports = true
 files = ["python/src/"]
 exclude = ["python/examples/", "python/tests/", "python/scripts/", "python/docs/"]
 
@@ -216,7 +216,6 @@ module = [
     "scipy.*",
     "sklearn.*",
     "matplotlib.*",
-    "yfinance.*",
     "statsmodels.*",
     "umap.*",
     "flask.*",

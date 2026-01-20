@@ -63,7 +63,7 @@ class SLLightningModule(BaseModule):
 
         pred = self(x)
         loss = F.mse_loss(pred, y)  # Or CrossEntropy relative to task
-        loss.backward()  # type: ignore
+        loss.backward()
 
         self.log("train/sl_loss", loss)
         return loss
@@ -146,10 +146,10 @@ def train_from_csv(  # noqa: PLR0913, PLR0915
     # Add src to path
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-    from utils.model_versioning import ModelMetadata, save_model_with_metadata  # type: ignore
+    from utils.model_versioning import ModelMetadata, save_model_with_metadata
 
-    from data.time_series_dataset import TimeSeriesDataset  # type: ignore
-    from models.time_series import TimeSeriesBackbone  # type: ignore
+    from data.time_series_dataset import TimeSeriesDataset
+    from models.time_series import TimeSeriesBackbone
 
     # Create datasets
     train_dataset = TimeSeriesDataset(
@@ -251,7 +251,7 @@ def train_from_csv(  # noqa: PLR0913, PLR0915
             pred = model(x)  # [B, pred_len]
             # y is already [B, pred_len] from dataset collate
             loss = F.mse_loss(pred, y)
-            loss.backward()  # type: ignore
+            loss.backward()
             optimizer.step()
             train_losses.append(loss.item())
 

@@ -25,7 +25,7 @@ class SentimentAnalyzer:
             device: Device to run the model on ('cuda', 'cpu').
         """
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)  # type: ignore
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForSequenceClassification.from_pretrained(model_name).to(
             self.device
         )

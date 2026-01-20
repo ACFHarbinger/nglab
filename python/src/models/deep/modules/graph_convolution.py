@@ -41,13 +41,13 @@ class GraphConvolution(nn.Module):
             self.register_parameter("bias", None)
         self.init_parameters()
 
-    def init_parameters(self):
+    def init_parameters(self) -> None:
         """Initializes the parameters of the layer using uniform distribution."""
         for param in self.parameters():
             stdv = 1.0 / math.sqrt(param.size(-1))
             param.data.uniform_(-stdv, stdv)
 
-    def forward(self, h, mask):
+    def forward(self, h: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         """
         Args:
             h: Input node features (B x V x H_1)
@@ -110,7 +110,7 @@ class GraphConvolution(nn.Module):
             out += self.bias
         return out
 
-    def single_graph_forward(self, h, adj):
+    def single_graph_forward(self, h: torch.Tensor, adj: torch.Tensor) -> torch.Tensor:
         """
         Args:
             h: Input node features (N x H_1)

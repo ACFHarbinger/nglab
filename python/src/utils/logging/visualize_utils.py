@@ -299,7 +299,7 @@ def plot_loss_landscape(  # noqa: PLR0913
     try:
         landscape = loss_landscapes.random_plane(
             model,
-            lambda m: mae_loss_fn(m, x_batch, target),  # type: ignore[arg-type]
+            lambda m: mae_loss_fn(m, x_batch, target),
             distance=(
                 int(span) if span >= 1 else 1
             ),  # random_plane distance usually takes int steps? Wait, Mypy said int.

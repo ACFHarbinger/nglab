@@ -1,5 +1,7 @@
 """Connection factory for various neural network architectures."""
 
+from typing import Any
+
 from torch import nn
 
 from .hyper_connection import DynamicHyperConnection, StaticHyperConnection
@@ -11,12 +13,12 @@ class Connections(nn.Module):
     Factory for creating connection modules.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes the connections factory."""
         super().__init__()
 
 
-def get_connection_module(module, embed_dim, connection_type="skip", **kwargs):
+def get_connection_module(module: nn.Module, embed_dim: int, connection_type: str = "skip", **kwargs: Any) -> nn.Module:
     """
     Returns a connection module for the given type.
 

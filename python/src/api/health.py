@@ -1,32 +1,39 @@
 import psutil
 import torch
-from flask import Flask, jsonify
-from typing import Any
+from flask import Flask, jsonify, Response
+from typing import Any, Dict
 
 app = Flask(__name__)
 
 
 @app.route("/health", methods=["GET"])
-def health() -> dict[str, Any]:
+def health() -> Response:
+    """
+    Health check endpoint.
+    Returns a JSON response with system status.
+    """
     gpu_available = torch.cuda.is_available()
     gpu_name = torch.cuda.get_device_name(0) if gpu_available else None
 
-    return jsonify(
-        {
-            "status": "healthy",
-            "system": {
-                "cpu_percent": psutil.cpu_percent(),
-                "memory_percent": psutil.virtual_memory().percent,
-                "gpu_available": gpu_available,
-                "gpu_name": gpu_name,
-            },
-        }
-    )
+    # Mypy now knows jsonify returns a Response, so no cast is needed.
+    response_data: Dict[str, Any] = {
+        "status": "healthy",
+        "system": {
+            "cpu_percent": psutil.cpu_percent(),
+            "memory_percent": psutil.virtual_memory().percent,
+            "gpu_available": gpu_available,
+            "gpu_name": gpu_name,
+        },
+    }
+    return jsonify(response_data)
 
 
 @app.route("/ready", methods=["GET"])
-def ready():
-    # Placeholder for model readiness check
+def ready() -> Response:
+    """
+    Readiness probe for orchestration.
+    """
+    # Removed redundant cast here as well
     return jsonify({"ready": True})
 
 

@@ -12,7 +12,7 @@ CORE_LOCK_WAIT_TIME = 10
 LOCK_TIMEOUT = CORE_LOCK_WAIT_TIME
 
 
-def update_lock_wait_time(num_cpu_cores=None):
+def update_lock_wait_time(num_cpu_cores=None) -> int:
     """
     Updates the global LOCK_TIMEOUT based on the number of CPU cores.
 

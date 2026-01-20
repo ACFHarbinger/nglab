@@ -81,7 +81,7 @@ class MAMLLightningModule(pl.LightningModule):
             support_pred = temp_model(support_x)
             support_loss = torch.nn.functional.mse_loss(support_pred, support_y)
             temp_optimizer.zero_grad()
-            support_loss.backward()  # type: ignore
+            support_loss.backward()
             temp_optimizer.step()
 
         # Evaluate on query set (keep gradients for meta-loss)
@@ -130,7 +130,7 @@ class MAMLLightningModule(pl.LightningModule):
         val_losses = []
 
         # Validation doesn't need gradients through inner loop
-        with torch.enable_grad():  # type: ignore # Re-enable for inner loop even in eval mode
+        with torch.enable_grad():  # Re-enable for inner loop even in eval mode
             for support_x, support_y, query_x, query_y in tasks:
                 query_loss = self.inner_loop(support_x, support_y, query_x, query_y)
                 val_losses.append(query_loss.detach())  # Detach to avoid grad issues
@@ -166,7 +166,7 @@ class MAMLLightningModule(pl.LightningModule):
             pred = adapted_model(support_x)
             loss = torch.nn.functional.mse_loss(pred, support_y)
             optimizer.zero_grad()
-            loss.backward()  # type: ignore
+            loss.backward()
             optimizer.step()
 
         adapted_model.eval()

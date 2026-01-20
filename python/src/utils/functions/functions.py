@@ -92,7 +92,7 @@ def load_model(
     Returns:
         tuple: (model, args)
     """
-    from models import LSTM, NSTransformer  # type: ignore[import-untyped]
+    from python.src.models import LSTM, NSTransformer
 
     if os.path.isfile(path):
         model_filename = path

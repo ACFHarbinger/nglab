@@ -187,7 +187,7 @@ class DiffusionLightningModule(BaseModule):
         # Try to infer from model if possible, usually last linear layer out_features / forecast_horizon
         # But here we might just assume input_dim == output_dim if UNet1D
         if hasattr(self.model, "output_dim"):
-            output_dim = int(self.model.output_dim)  # type: ignore
+            output_dim = int(getattr(self.model, "output_dim", 1))
         else:
             output_dim = 1 # Fallback
             
