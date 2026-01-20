@@ -61,6 +61,9 @@ pub fn export_metrics() -> String {
     let encoder = prometheus::TextEncoder::new();
     let metric_families = REGISTRY.gather();
     let mut buffer = Vec::new();
-    encoder.encode(&metric_families, &mut buffer).unwrap();
-    String::from_utf8(buffer).unwrap()
+    if let Err(e) = encoder.encode(&metric_families, &mut buffer) {
+        return format!("# Error encoding metrics: {}", e);
+    }
+    String::from_utf8(buffer)
+        .unwrap_or_else(|e| format!("# Error converting metrics to UTF-8: {}", e))
 }

@@ -22,6 +22,9 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::VecDeque;
 
+use crate::errors::{ArenaError, ArenaResult};
+use crate::validation::{validate_price, validate_quantity};
+
 /**
  * Order side: Bid (buy) or Ask (sell).
  */
@@ -546,7 +549,9 @@ impl OrderBook {
         price: f64,
         quantity: f64,
         side: Side,
-    ) -> (u64, Vec<Trade>) {
+    ) -> ArenaResult<(u64, Vec<Trade>)> {
+        validate_price(price)?;
+        validate_quantity(quantity, None)?;
         let order_id = self.next_order_id;
         self.next_order_id += 1;
 
@@ -560,11 +565,16 @@ impl OrderBook {
         );
         let trades = self.match_order(order);
 
-        (order_id, trades)
+        Ok((order_id, trades))
     }
 
     /** Submit a market order and return trades */
-    pub fn submit_market_order(&mut self, quantity: f64, side: Side) -> (u64, Vec<Trade>) {
+    pub fn submit_market_order(
+        &mut self,
+        quantity: f64,
+        side: Side,
+    ) -> ArenaResult<(u64, Vec<Trade>)> {
+        validate_quantity(quantity, None)?;
         let order_id = self.next_order_id;
         self.next_order_id += 1;
 
@@ -584,7 +594,7 @@ impl OrderBook {
         );
         let trades = self.match_order(order);
 
-        (order_id, trades)
+        Ok((order_id, trades))
     }
 
     /** Match an incoming order against the book */
@@ -737,7 +747,10 @@ impl OrderBook {
         // 1. Search in bids
         for level in self.bids.values_mut() {
             if let Some(pos) = level.orders.iter().position(|o| o.id == order_id) {
-                let order = level.orders.remove(pos).unwrap();
+                let order = level
+                    .orders
+                    .remove(pos)
+                    .expect("Order missing after position check in bids");
                 level.total_quantity -= order.remaining();
                 self.bids.retain(|_, l| !l.is_empty());
                 return true;
@@ -747,7 +760,10 @@ impl OrderBook {
         // 2. Search in asks
         for level in self.asks.values_mut() {
             if let Some(pos) = level.orders.iter().position(|o| o.id == order_id) {
-                let order = level.orders.remove(pos).unwrap();
+                let order = level
+                    .orders
+                    .remove(pos)
+                    .expect("Order missing after position check in asks");
                 level.total_quantity -= order.remaining();
                 self.asks.retain(|_, l| !l.is_empty());
                 return true;
@@ -790,7 +806,9 @@ impl OrderBook {
                 // Note: submit_limit_order does not take timestamp directly.
                 // It uses self.timestamp. We'll update self.timestamp before calling.
                 self.timestamp = timestamp;
-                let (new_order_id, _) = self.submit_limit_order(new_price, new_quantity, side);
+                let (new_order_id, _) = self
+                    .submit_limit_order(new_price, new_quantity, side)
+                    .expect("Failed to submit limit order during modify");
                 return Some(new_order_id);
             }
         }
@@ -809,7 +827,9 @@ impl OrderBook {
                 // Note: submit_limit_order does not take timestamp directly.
                 // It uses self.timestamp. We'll update self.timestamp before calling.
                 self.timestamp = timestamp;
-                let (new_order_id, _) = self.submit_limit_order(new_price, new_quantity, side);
+                let (new_order_id, _) = self
+                    .submit_limit_order(new_price, new_quantity, side)
+                    .expect("Failed to submit limit order during modify ask");
                 return Some(new_order_id);
             }
         }
@@ -822,7 +842,9 @@ impl OrderBook {
             // Note: submit_limit_order does not take timestamp directly.
             // It uses self.timestamp. We'll update self.timestamp before calling.
             self.timestamp = timestamp;
-            let (new_order_id, _) = self.submit_limit_order(new_price, new_quantity, side);
+            let (new_order_id, _) = self
+                .submit_limit_order(new_price, new_quantity, side)
+                .expect("Failed to submit limit order during stop modify");
             return Some(new_order_id);
         }
 
@@ -853,12 +875,12 @@ mod tests {
         let mut book = OrderBook::new();
 
         // Add some bids
-        book.submit_limit_order(100.0, 10.0, Side::Bid);
-        book.submit_limit_order(99.0, 20.0, Side::Bid);
+        book.submit_limit_order(100.0, 10.0, Side::Bid).unwrap();
+        book.submit_limit_order(99.0, 20.0, Side::Bid).unwrap();
 
         // Add some asks
-        book.submit_limit_order(101.0, 15.0, Side::Ask);
-        book.submit_limit_order(102.0, 25.0, Side::Ask);
+        book.submit_limit_order(101.0, 15.0, Side::Ask).unwrap();
+        book.submit_limit_order(102.0, 25.0, Side::Ask).unwrap();
 
         assert_eq!(book.best_bid(), Some(100.0));
         assert_eq!(book.best_ask(), Some(101.0));
@@ -870,10 +892,10 @@ mod tests {
         let mut book = OrderBook::new();
 
         // Add a limit ask
-        book.submit_limit_order(100.0, 10.0, Side::Ask);
+        book.submit_limit_order(100.0, 10.0, Side::Ask).unwrap();
 
         // Submit a market buy that should match
-        let (_, trades) = book.submit_market_order(5.0, Side::Bid);
+        let (_, trades) = book.submit_market_order(5.0, Side::Bid).unwrap();
 
         assert_eq!(trades.len(), 1);
         assert_eq!(trades[0].quantity, 5.0);
@@ -884,7 +906,7 @@ mod tests {
     fn test_order_cancellation() {
         let mut book = OrderBook::new();
 
-        let (order_id, _) = book.submit_limit_order(100.0, 10.0, Side::Bid);
+        let (order_id, _) = book.submit_limit_order(100.0, 10.0, Side::Bid).unwrap();
         assert!(book.best_bid().is_some());
 
         let cancelled = book.cancel_order(order_id);
@@ -896,8 +918,8 @@ mod tests {
     fn test_imbalance() {
         let mut book = OrderBook::new();
 
-        book.submit_limit_order(100.0, 100.0, Side::Bid);
-        book.submit_limit_order(101.0, 50.0, Side::Ask);
+        book.submit_limit_order(100.0, 100.0, Side::Bid).unwrap();
+        book.submit_limit_order(101.0, 50.0, Side::Ask).unwrap();
 
         let imbalance = book.imbalance();
         // (100 - 50) / (100 + 50) = 50/150 ≈ 0.333
@@ -927,7 +949,7 @@ mod tests {
         assert_eq!(depth[0].1, 10.0);
 
         // 2. Buy 10 (fully fills current slice)
-        let (_, trades) = book.submit_market_order(10.0, Side::Bid);
+        let (_, trades) = book.submit_market_order(10.0, Side::Bid).unwrap();
         assert_eq!(trades.len(), 1);
         assert_eq!(trades[0].quantity, 10.0);
 
@@ -937,7 +959,7 @@ mod tests {
         assert_eq!(depth[0].1, 10.0);
 
         // 3. Buy 5 (partial fill)
-        let (_, trades) = book.submit_market_order(5.0, Side::Bid);
+        let (_, trades) = book.submit_market_order(5.0, Side::Bid).unwrap();
         assert_eq!(trades.len(), 1);
         assert_eq!(trades[0].quantity, 5.0);
 
@@ -987,7 +1009,7 @@ mod tests {
 
         // 4. Price hits 105. Should trigger.
         // Add a bid so the triggered market sell can match
-        book.submit_limit_order(100.0, 20.0, Side::Bid);
+        book.submit_limit_order(100.0, 20.0, Side::Bid).unwrap();
 
         let trades = book.check_triggers(104.0);
         assert!(
@@ -1003,15 +1025,15 @@ mod tests {
         book.set_timestamp(100);
 
         // 1. Submit two orders at same price
-        let (id1, _) = book.submit_limit_order(100.0, 10.0, Side::Bid);
-        let (id2, _) = book.submit_limit_order(100.0, 5.0, Side::Bid);
+        let (id1, _) = book.submit_limit_order(100.0, 10.0, Side::Bid).unwrap();
+        let (id2, _) = book.submit_limit_order(100.0, 5.0, Side::Bid).unwrap();
 
         // 2. Modify id1: decrease quantity (maintains priority)
         let nid1 = book.modify_order(id1, 100.0, 8.0, 101).unwrap();
         assert_eq!(nid1, id1);
 
         // Match against 9 units
-        let (_, trades) = book.submit_market_order(9.0, Side::Ask);
+        let (_, trades) = book.submit_market_order(9.0, Side::Ask).unwrap();
         // Should match 8 from id1 and 1 from id2
         assert_eq!(trades.len(), 2);
         assert_eq!(trades[0].maker_order_id, id1);
@@ -1022,20 +1044,20 @@ mod tests {
         book.clear();
 
         // 3. Reset priority: increase quantity
-        let (id3, _) = book.submit_limit_order(100.0, 10.0, Side::Bid);
-        let (id4, _) = book.submit_limit_order(100.0, 5.0, Side::Bid);
+        let (id3, _) = book.submit_limit_order(100.0, 10.0, Side::Bid).unwrap();
+        let (id4, _) = book.submit_limit_order(100.0, 5.0, Side::Bid).unwrap();
 
         // id3 increases qty -> should move to back of queue
         let nid3 = book.modify_order(id3, 100.0, 12.0, 102).unwrap();
         assert_ne!(nid3, id3); // Gets new ID due to re-submission
 
-        let (_, trades2) = book.submit_market_order(6.0, Side::Ask);
+        let (_, trades2) = book.submit_market_order(6.0, Side::Ask).unwrap();
         // Should match 5 from id4 (now at front) and 1 from new id3
         assert_eq!(trades2[0].maker_order_id, id4);
         assert_eq!(trades2[1].maker_order_id, nid3);
 
         // 4. Reset priority: change price
-        let (id5, _) = book.submit_limit_order(100.0, 10.0, Side::Bid);
+        let (id5, _) = book.submit_limit_order(100.0, 10.0, Side::Bid).unwrap();
         book.modify_order(id5, 101.0, 10.0, 103).unwrap();
         assert_eq!(book.best_bid(), Some(101.0));
     }

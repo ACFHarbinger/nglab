@@ -10,6 +10,8 @@ use serde::{Deserialize, Serialize};
 use std::f64::consts::PI;
 use ts_rs::TS;
 
+use crate::errors::{ArenaError, ArenaResult};
+
 /**
  * Configuration parameters for the Prophet model.
  */
@@ -73,9 +75,9 @@ impl Prophet {
      * @param times Array of timestamps.
      * @param y Array of target values.
      */
-    pub fn fit(&mut self, times: &[i64], y: &[f64]) -> Result<(), String> {
+    pub fn fit(&mut self, times: &[i64], y: &[f64]) -> ArenaResult<()> {
         if times.len() != y.len() || times.is_empty() {
-            return Err("Data mismatch or empty".to_string());
+            return Err(ArenaError::ModelError("Data mismatch or empty".to_string()));
         }
 
         let t = self.normalize_time(times);
@@ -249,7 +251,7 @@ impl Prophet {
         base_lambda: f64,
         delta_lambda: f64,
         num_changepoints: usize,
-    ) -> Result<Array1<f64>, String> {
+    ) -> ArenaResult<Array1<f64>> {
         let xt = x.t();
         let xt_x = xt.dot(x);
         let xt_y = xt.dot(y);
@@ -362,7 +364,7 @@ impl Prophet {
         x: &Array2<f64>,
         y: &Array1<f64>,
         lambda: f64,
-    ) -> Result<Array1<f64>, String> {
+    ) -> ArenaResult<Array1<f64>> {
         let xt = x.t();
         let xt_x = xt.dot(x);
         let xt_y = xt.dot(y);
@@ -386,7 +388,7 @@ impl Prophet {
         Ok(beta)
     }
 
-    fn cholesky(&self, a: &Array2<f64>) -> Result<Array2<f64>, String> {
+    fn cholesky(&self, a: &Array2<f64>) -> ArenaResult<Array2<f64>> {
         let n = a.nrows();
         let mut l = Array2::zeros((n, n));
 
@@ -400,7 +402,10 @@ impl Prophet {
                 if i == j {
                     let val = a[[i, i]] - sum;
                     if val <= 0.0 {
-                        return Err("Matrix not positive definite".to_string());
+                        return Err(ArenaError::NumericalError(
+                            "Matrix not positive definite during Cholesky decomposition"
+                                .to_string(),
+                        ));
                     }
                     l[[i, j]] = val.sqrt();
                 } else {
@@ -411,11 +416,7 @@ impl Prophet {
         Ok(l)
     }
 
-    fn forward_substitution(
-        &self,
-        l: &Array2<f64>,
-        b: &Array1<f64>,
-    ) -> Result<Array1<f64>, String> {
+    fn forward_substitution(&self, l: &Array2<f64>, b: &Array1<f64>) -> ArenaResult<Array1<f64>> {
         let n = l.nrows();
         let mut y = Array1::zeros(n);
 
@@ -425,18 +426,16 @@ impl Prophet {
                 sum += l[[i, j]] * y[j];
             }
             if l[[i, i]].abs() < 1e-10 {
-                return Err("Singular matrix in forward substitution".to_string());
+                return Err(ArenaError::NumericalError(
+                    "Singular matrix in forward substitution".to_string(),
+                ));
             }
             y[i] = (b[i] - sum) / l[[i, i]];
         }
         Ok(y)
     }
 
-    fn backward_substitution(
-        &self,
-        u: &Array2<f64>,
-        y: &Array1<f64>,
-    ) -> Result<Array1<f64>, String> {
+    fn backward_substitution(&self, u: &Array2<f64>, y: &Array1<f64>) -> ArenaResult<Array1<f64>> {
         let n = u.nrows();
         let mut x = Array1::zeros(n);
 
@@ -446,7 +445,9 @@ impl Prophet {
                 sum += u[[i, j]] * x[j];
             }
             if u[[i, i]].abs() < 1e-10 {
-                return Err("Singular matrix in backward substitution".to_string());
+                return Err(ArenaError::NumericalError(
+                    "Singular matrix in backward substitution".to_string(),
+                ));
             }
             x[i] = (y[i] - sum) / u[[i, i]];
         }
@@ -459,7 +460,7 @@ impl Prophet {
  *
  * @param params Prophet configuration and historical data.
  */
-pub fn simulate(params: ProphetParams) -> Result<ProphetResult, String> {
+pub fn simulate(params: ProphetParams) -> ArenaResult<ProphetResult> {
     let historical_times = &params.times;
     let historical_values = &params.values;
     // 1. Fit Model

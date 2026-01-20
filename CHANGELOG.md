@@ -2,6 +2,21 @@
 
 All notable changes to the NGLab project will be documented in this file.
 
+## [Unreleased] - 2026-01-20
+
+### Added
+
+- **HPO & Inference Test Suite**:
+  - Implemented comprehensive unit tests for **Differential Evolution (DE)** and HPO optimization wrappers in `python/tests/unit/test_hpo.py`.
+  - Created end-to-end tests for the `infer.py` script in `python/tests/unit/test_infer.py`, verifying JSON prediction responses and error handling.
+  - Developed `hpo_fixtures.py` and `model_fixtures.py` for automated mock model artifact generation with full `ModelMetadata`.
+  - Standardized `conftest.py` to modularly load new test fixtures.
+- **Environment & Bindings Test Suite**:
+  - Implemented comprehensive unit tests for `TradingEnv` and `PolymarketEnv` in `python/tests/test_trading_env.py` and `python/tests/test_polymarket_env.py`.
+  - Created `nglab_bindings.py` tests to verify Rust PyO3 integration and optional return type handling.
+  - Added `test_env_integration.py` to verify consistency between Python wrappers and Rust backend, including fallback mechanisms.
+  - Created modular fixtures in `environment_fixtures.py` and `nglab_fixtures.py` for environment and market data simulation.
+
 ## [Unreleased] - 2026-01-19
 
 ### Added

@@ -1,3 +1,7 @@
+#![cfg_attr(feature = "python", allow(clippy::too_many_arguments))]
+#![deny(clippy::unwrap_used)]
+#![cfg_attr(test, allow(clippy::unwrap_used))]
+
 /*!
  * nglab - High-Performance RL Arena for Financial Trading
  *
@@ -55,6 +59,7 @@ pub mod moon;
 pub mod secret;
 pub mod simulation;
 pub mod utils;
+pub mod validation;
 pub mod web;
 
 pub use errors::{ArenaError, ArenaResult};

@@ -23,6 +23,12 @@ import Papa from "papaparse";
 import { prepareChartData } from "../utils/dataHelpers";
 import { ArimaResult } from "../../../rust/bindings/ArimaResult";
 import { ProphetResult } from "../../../rust/bindings/ProphetResult";
+import {
+  ArimaParamsSchema,
+  ProphetParamsSchema,
+  GarchParamsSchema,
+  HoltWintersParamsSchema,
+} from "../validation";
 
 /**
  * Interface representing a row from a CSV file.
@@ -272,42 +278,63 @@ export default function PredictionTab() {
 
       switch (activeModel) {
         case "arima": {
-          const res = await invoke<ArimaResult>("run_arima", {
+          const params = {
             data: dataValues,
             p: arimaP,
             d: arimaD,
             q: arimaQ,
             steps,
-          });
+          };
+          ArimaParamsSchema.parse(params);
+          const res = await invoke<ArimaResult>("run_arima", params);
           result = res.path;
           break;
         }
         case "prophet": {
-          const res = await invoke<ProphetResult>("run_prophet", {
-            data: dataValues,
-            steps,
-          });
+          const params = {
+            times: rawData.map((r) => Number(r._ts) / 1000), // Convert to seconds
+            values: dataValues,
+            growth: "linear",
+            seasonality_mode: "additive",
+            yearly_seasonality: true,
+            weekly_seasonality: true,
+            daily_seasonality: false,
+            seasonality_prior_scale: 10.0,
+            changepoint_prior_scale: 0.05,
+            forecast_horizon: steps,
+          };
+          ProphetParamsSchema.parse(params);
+          const res = await invoke<ProphetResult>("run_prophet", { params });
           result = res.values;
           break;
         }
         case "garch": {
-          const res = await invoke<GarchResult>("run_garch", {
-            data: dataValues,
+          const params = {
+            omega: 0.01,
+            alpha: [0.1],
+            beta: [0.8],
             steps,
-          });
+            data: dataValues,
+          };
+          GarchParamsSchema.parse(params);
+          const res = await invoke<GarchResult>("run_garch", { params });
           const lastPrice = dataValues[dataValues.length - 1];
           result = res.volatility.map((v) => lastPrice * (1 + v));
           break;
         }
         case "holt_winters": {
-          const res = await invoke<HoltWintersResult>("run_holt_winters", {
-            data: dataValues,
+          const params = {
             alpha: hwAlpha,
             beta: hwBeta,
-            gamma: hwGamma,
-            seasonality: hwSeasonality,
+            gamma: 0.1,
+            period: 7,
+            seasonal_type: "Additive" as const,
             steps,
-          });
+            sigma: 0.01,
+            data: dataValues,
+          };
+          HoltWintersParamsSchema.parse(params);
+          const res = await invoke<HoltWintersResult>("run_holt_winters", { params });
           result = res.path;
           break;
         }

@@ -9,11 +9,11 @@ fn test_cascading_fills() {
 
     // Seed the book with asks at increasing prices
     // Ask 1: 10 units @ 100.0
-    book.submit_limit_order(100.0, 10.0, Side::Ask);
+    book.submit_limit_order(100.0, 10.0, Side::Ask).unwrap();
     // Ask 2: 20 units @ 101.0
-    book.submit_limit_order(101.0, 20.0, Side::Ask);
+    book.submit_limit_order(101.0, 20.0, Side::Ask).unwrap();
     // Ask 3: 50 units @ 102.0
-    book.submit_limit_order(102.0, 50.0, Side::Ask);
+    book.submit_limit_order(102.0, 50.0, Side::Ask).unwrap();
 
     assert_eq!(book.best_ask(), Some(100.0));
     assert_eq!(book.total_ask_volume(), 80.0);
@@ -23,7 +23,7 @@ fn test_cascading_fills() {
     // 1. 10.0 units @ 100.0 (Ask 1 cleared)
     // 2. 20.0 units @ 101.0 (Ask 2 cleared)
     // 3. 5.0 units @ 102.0 (Partial fill of Ask 3)
-    let (_, trades) = book.submit_market_order(35.0, Side::Bid);
+    let (_, trades) = book.submit_market_order(35.0, Side::Bid).unwrap();
 
     assert_eq!(trades.len(), 3, "Should have 3 trades");
 
@@ -52,19 +52,19 @@ fn test_price_time_priority() {
 
     // Submit two limit bids at the same price
     // Bid 1: 10 units @ 100.0 (First)
-    let (id1, _) = book.submit_limit_order(100.0, 10.0, Side::Bid);
+    let (id1, _) = book.submit_limit_order(100.0, 10.0, Side::Bid).unwrap();
 
     // Advance time slightly
     book.set_timestamp(1001);
 
     // Bid 2: 10 units @ 100.0 (Second)
-    let (id2, _) = book.submit_limit_order(100.0, 10.0, Side::Bid);
+    let (id2, _) = book.submit_limit_order(100.0, 10.0, Side::Bid).unwrap();
 
     assert_eq!(book.total_bid_volume(), 20.0);
 
     // Submit a matching Ask for 15 units @ 100.0
     // Should fill Bid 1 completely (10 units) and Bid 2 partially (5 units)
-    let (_, trades) = book.submit_limit_order(100.0, 15.0, Side::Ask);
+    let (_, trades) = book.submit_limit_order(100.0, 15.0, Side::Ask).unwrap();
 
     assert_eq!(trades.len(), 2, "Should have 2 trades");
 
@@ -91,14 +91,14 @@ fn test_market_depth_view() {
     let mut book = OrderBook::new();
 
     // Add asks
-    book.submit_limit_order(105.0, 100.0, Side::Ask);
-    book.submit_limit_order(104.0, 50.0, Side::Ask);
-    book.submit_limit_order(103.0, 10.0, Side::Ask);
+    book.submit_limit_order(105.0, 100.0, Side::Ask).unwrap();
+    book.submit_limit_order(104.0, 50.0, Side::Ask).unwrap();
+    book.submit_limit_order(103.0, 10.0, Side::Ask).unwrap();
 
     // Add bids
-    book.submit_limit_order(100.0, 20.0, Side::Bid);
-    book.submit_limit_order(99.0, 30.0, Side::Bid);
-    book.submit_limit_order(98.0, 40.0, Side::Bid);
+    book.submit_limit_order(100.0, 20.0, Side::Bid).unwrap();
+    book.submit_limit_order(99.0, 30.0, Side::Bid).unwrap();
+    book.submit_limit_order(98.0, 40.0, Side::Bid).unwrap();
 
     // Check Ask Depth (ascending price)
     let ask_depth = book.ask_depth(5);

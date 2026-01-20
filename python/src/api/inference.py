@@ -28,7 +28,7 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.trace.sampling import ParentBased, TraceIdRatioBased
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict, validator
 
 from python.src.utils import definitions
 from python.src.utils.functions.functions import load_model
@@ -68,12 +68,26 @@ class PredictionRequest(BaseModel):
     """Schema for model prediction request."""
 
     observations: list[list[float]] = Field(
-        ..., description="Batch of observation tensors."
+        ..., description="Batch of observation tensors.", min_length=1
     )
     model_path: str | None = Field(
         None, description="Path to specific model checkpoint."
     )
     temperature: float = Field(1.0, ge=0.01, le=2.0)
+
+    model_config = ConfigDict(strict=True)
+
+    @validator("observations")
+    @classmethod
+    def validate_obs_shape(cls, v: list[list[float]]) -> list[list[float]]:
+        if not v:
+            raise ValueError("Observations cannot be empty")
+        # Ensure all observations have same length
+        expected_len = len(v[0])
+        for i, obs in enumerate(v):
+            if len(obs) != expected_len:
+                raise ValueError(f"Observation at index {i} has inconsistent length {len(obs)}, expected {expected_len}")
+        return v
 
 
 class PredictionResponse(BaseModel):
@@ -83,6 +97,8 @@ class PredictionResponse(BaseModel):
     model_version: str
     latency_ms: float
     cached: bool = False
+
+    model_config = ConfigDict(strict=True)
 
 
 class BatchInferenceHandler:

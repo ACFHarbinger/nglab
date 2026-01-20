@@ -132,8 +132,8 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
         super().reset(seed=seed)
 
         if self._rust_env is not None:
-            obs = self._rust_env.reset()
-            return np.array(obs), {}
+            obs, info = self._rust_env.reset()
+            return np.array(obs), dict(info)
 
         # Python fallback
         self.current_step = self.lookback

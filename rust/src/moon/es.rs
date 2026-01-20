@@ -8,6 +8,8 @@
 use rand_distr::{Distribution, StandardNormal};
 use serde::{Deserialize, Serialize};
 
+use crate::errors::{ArenaError, ArenaResult};
+
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
 pub enum SeasonalType {
     Additive,
@@ -48,7 +50,7 @@ pub struct HoltWintersResult {
  * @param params Model parameters and optional historical data.
  */
 #[allow(clippy::needless_range_loop)]
-pub fn simulate(params: HoltWintersParams) -> Result<HoltWintersResult, String> {
+pub fn simulate(params: HoltWintersParams) -> ArenaResult<HoltWintersResult> {
     let seed = if let Some(s) = params.seed {
         s
     } else {
@@ -60,7 +62,7 @@ pub fn simulate(params: HoltWintersParams) -> Result<HoltWintersResult, String> 
 
     let m = params.period;
     if m == 0 {
-        return Err("Period must be >= 1".to_string());
+        return Err(ArenaError::ModelError("Period must be >= 1".to_string()));
     }
 
     // State variables
@@ -71,7 +73,9 @@ pub fn simulate(params: HoltWintersParams) -> Result<HoltWintersResult, String> 
             // but let's try to handle at least basic cases.
             // If extremely short data, we might just default.
             if data.len() < 2 {
-                return Err("Data length must be at least 2 for trend initialization".to_string());
+                return Err(ArenaError::ModelError(
+                    "Data length must be at least 2 for trend initialization".to_string(),
+                ));
             }
         }
         initialize_from_data(data, m, params.seasonal_type)?
@@ -223,7 +227,7 @@ fn initialize_from_data(
     data: &[f64],
     m: usize,
     stype: SeasonalType,
-) -> Result<(f64, f64, Vec<f64>), String> {
+) -> ArenaResult<(f64, f64, Vec<f64>)> {
     if data.len() < m {
         // Fallback for very short data (should verify earlier)
         return match stype {

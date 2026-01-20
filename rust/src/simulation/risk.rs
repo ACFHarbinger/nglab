@@ -5,6 +5,7 @@
  * and automatic risk-based position adjustments. Critical for production trading.
  */
 
+use crate::utils::math::safe_div;
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -199,15 +200,15 @@ impl RiskManager {
         let mut score = 0.0;
 
         // Drawdown contribution (0-40 points)
-        let dd_ratio = self.status.current_drawdown / self.config.max_drawdown;
+        let dd_ratio = safe_div(self.status.current_drawdown, self.config.max_drawdown, 0.0);
         score += (dd_ratio * 40.0).min(40.0);
 
         // Daily loss contribution (0-30 points)
-        let daily_ratio = (-self.status.daily_pnl) / self.config.daily_loss_limit;
+        let daily_ratio = safe_div(-self.status.daily_pnl, self.config.daily_loss_limit, 0.0);
         score += (daily_ratio * 30.0).clamp(0.0, 30.0);
 
         // VaR contribution (0-30 points)
-        let var_ratio = self.status.current_var / self.config.var_limit;
+        let var_ratio = safe_div(self.status.current_var, self.config.var_limit, 0.0);
         score += (var_ratio * 30.0).min(30.0);
 
         score.min(100.0) as u8

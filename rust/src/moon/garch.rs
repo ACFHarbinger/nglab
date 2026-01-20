@@ -8,6 +8,8 @@
 use rand_distr::{Distribution, StandardNormal};
 use serde::{Deserialize, Serialize};
 
+use crate::errors::{ArenaError, ArenaResult};
+
 /**
  * Configuration parameters for GARCH simulation and estimation.
  */
@@ -36,7 +38,7 @@ pub struct GarchResult {
  * @param params Garch model and simulation parameters.
  */
 #[allow(clippy::needless_range_loop, clippy::manual_memcpy)]
-pub fn simulate(params: GarchParams) -> Result<GarchResult, String> {
+pub fn simulate(params: GarchParams) -> ArenaResult<GarchResult> {
     let mut rng = if let Some(s) = params.seed {
         use rand::SeedableRng;
         rand::rngs::StdRng::seed_from_u64(s)
@@ -51,7 +53,10 @@ pub fn simulate(params: GarchParams) -> Result<GarchResult, String> {
 
     let (mut epsilon, mut sigma2, start_idx) = if let Some(ref data) = params.data {
         if data.len() < max_lag {
-            return Err(format!("Data length must be at least {}", max_lag));
+            return Err(ArenaError::ModelError(format!(
+                "Data length must be at least {}",
+                max_lag
+            )));
         }
         let n = params.steps + data.len();
         let mut eps = vec![0.0; n];

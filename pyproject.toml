@@ -52,6 +52,7 @@ dependencies = [
     "google-cloud-storage-control>=0.1.0",
     "distributed>=2026.1.1",
     "shap>=0.49.1",
+    "pydantic>=2.0",
 ]
 
 [dependency-groups]

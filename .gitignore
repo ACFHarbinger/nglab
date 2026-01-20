@@ -442,7 +442,8 @@ android/build/reports/ktlint/
 android/build/intermediates/ktLint/
 
 # Added by tests
-hypothesis/
+# hypothesis/
+.hypothesis/
 
 # Added by linting
 .ruff_cache/

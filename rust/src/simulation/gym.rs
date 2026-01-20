@@ -7,10 +7,10 @@
  * - Risk-adjusted reward functions
  */
 
-#[cfg(feature = "python")]
-use crate::errors::ArenaError;
+use crate::errors::{ArenaError, ArenaResult};
 use crate::simulation::orderbook::{OrderBook, Side};
 use crate::simulation::risk::{RiskManager, RiskStatus};
+use crate::utils::math::{safe_div, SafeFloat};
 #[cfg(feature = "python")]
 use numpy::{PyArray2, ToPyArray};
 #[cfg(feature = "python")]
@@ -255,12 +255,16 @@ impl TradingEnv {
 
         debug!("Executing action: {:?}", action_type);
 
-        let trade_cost = self.execute_action(action_type);
+        let trade_cost = self.execute_action(action_type)?;
         self.current_step += 1;
         self.total_steps += 1;
 
         let portfolio_value = self.portfolio_value();
-        let returns = (portfolio_value - self.prev_portfolio_value) / self.prev_portfolio_value;
+        let returns = safe_div(
+            portfolio_value - self.prev_portfolio_value,
+            self.prev_portfolio_value,
+            0.0,
+        );
         self.returns.push(returns);
         self.prev_portfolio_value = portfolio_value;
 
@@ -444,7 +448,7 @@ impl TradingEnv {
         let action_type = ActionType::from(action);
 
         // Execute action
-        let trade_cost = self.execute_action(action_type);
+        let trade_cost = self.execute_action(action_type).unwrap_or(0.0);
 
         // Advance time
         self.current_step += 1;
@@ -452,7 +456,11 @@ impl TradingEnv {
 
         // Calculate reward
         let portfolio_value = self.portfolio_value();
-        let returns = (portfolio_value - self.prev_portfolio_value) / self.prev_portfolio_value;
+        let returns = safe_div(
+            portfolio_value - self.prev_portfolio_value,
+            self.prev_portfolio_value,
+            0.0,
+        );
         self.returns.push(returns);
         self.prev_portfolio_value = portfolio_value;
 
@@ -505,12 +513,12 @@ impl TradingEnv {
                 };
 
                 let row_data = [
-                    price / self.prices[0],               // Normalized price
-                    returns,                              // Returns
-                    0.0,                                  // Volume (placeholder)
-                    self.orderbook.imbalance(),           // Order book imbalance
-                    self.position / self.initial_capital, // Normalized position
-                    self.cash / self.initial_capital,     // Normalized cash
+                    SafeFloat::new(safe_div(price, self.prices[0], 1.0)).unwrap(), // Normalized price
+                    SafeFloat::new(returns).unwrap(),                              // Returns
+                    0.0,                                                 // Volume (placeholder)
+                    SafeFloat::new(self.orderbook.imbalance()).unwrap(), // Order book imbalance
+                    SafeFloat::new(safe_div(self.position, self.initial_capital, 0.0)).unwrap(), // Normalized position
+                    SafeFloat::new(safe_div(self.cash, self.initial_capital, 1.0)).unwrap(), // Normalized cash
                 ];
                 self.obs_buffer.update(i, &row_data);
             }
@@ -524,10 +532,10 @@ impl TradingEnv {
     }
 
     /** Execute a trading action */
-    fn execute_action(&mut self, action: ActionType) -> f64 {
+    fn execute_action(&mut self, action: ActionType) -> ArenaResult<f64> {
         let price = match self.current_price() {
             Some(p) => p,
-            None => return 0.0,
+            None => return Ok(0.0),
         };
 
         let trade_size = self.initial_capital * 0.1; // Fixed position sizing
@@ -536,7 +544,7 @@ impl TradingEnv {
         match action {
             ActionType::Hold => {}
             ActionType::Buy => {
-                let shares = trade_size / price;
+                let shares = safe_div(trade_size, price, 0.0);
                 let tx_cost = trade_size * self.transaction_cost;
 
                 if self.cash >= trade_size + tx_cost {
@@ -545,12 +553,12 @@ impl TradingEnv {
                     cost = tx_cost;
 
                     // Update orderbook with our trade
-                    self.orderbook.submit_market_order(shares, Side::Bid);
+                    self.orderbook.submit_market_order(shares, Side::Bid)?;
                 }
             }
             ActionType::Sell => {
                 if self.position > 0.0 {
-                    let shares_to_sell = (trade_size / price).min(self.position);
+                    let shares_to_sell = safe_div(trade_size, price, 0.0).min(self.position);
                     let proceeds = shares_to_sell * price;
                     let tx_cost = proceeds * self.transaction_cost;
 
@@ -559,12 +567,12 @@ impl TradingEnv {
                     cost = tx_cost;
 
                     self.orderbook
-                        .submit_market_order(shares_to_sell, Side::Ask);
+                        .submit_market_order(shares_to_sell, Side::Ask)?;
                 }
             }
         }
 
-        cost
+        Ok(cost)
     }
 
     /** Calculate risk-adjusted reward */

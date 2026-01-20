@@ -18,7 +18,8 @@ fn orderbook_insert_limit_orders(c: &mut Criterion) {
             b.iter(|| {
                 let mut book = OrderBook::new();
                 for i in 0..size {
-                    book.submit_limit_order(100.0 + (i as f64 * 0.01), 10.0, Side::Bid);
+                    book.submit_limit_order(100.0 + (i as f64 * 0.01), 10.0, Side::Bid)
+                        .unwrap();
                 }
                 std::hint::black_box(book)
             });
@@ -37,11 +38,12 @@ fn orderbook_match_orders(c: &mut Criterion) {
 
             // Add buy orders
             for i in 0..100 {
-                book.submit_limit_order(100.0 - (i as f64 * 0.1), 10.0, Side::Bid);
+                book.submit_limit_order(100.0 - (i as f64 * 0.1), 10.0, Side::Bid)
+                    .unwrap();
             }
 
             // Add matching sell order (Market order for immediate fill)
-            book.submit_market_order(50.0, Side::Ask);
+            book.submit_market_order(50.0, Side::Ask).unwrap();
 
             std::hint::black_box(book)
         });
@@ -63,7 +65,7 @@ fn orderbook_price_levels(c: &mut Criterion) {
             100.0 + (i as f64 * 0.01)
         };
 
-        book.submit_limit_order(price, 10.0, side);
+        book.submit_limit_order(price, 10.0, side).unwrap();
     }
 
     c.bench_function("orderbook_get_levels", |b| {
@@ -86,11 +88,12 @@ fn orderbook_mixed_operations(c: &mut Criterion) {
             // Mixed operations: insert, match, cancel
             for i in 0..100 {
                 // Insert limit order
-                book.submit_limit_order(100.0 + (i as f64 * 0.01), 10.0, Side::Bid);
+                book.submit_limit_order(100.0 + (i as f64 * 0.01), 10.0, Side::Bid)
+                    .unwrap();
 
                 // Every 10th order, insert a market order to trigger matching
                 if i % 10 == 0 {
-                    book.submit_market_order(5.0, Side::Ask);
+                    book.submit_market_order(5.0, Side::Ask).unwrap();
                 }
 
                 // Every 20th order, cancel an order

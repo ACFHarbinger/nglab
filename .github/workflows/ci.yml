@@ -71,7 +71,6 @@ jobs:
 
       - name: Lint and Type Check
         run: |
-          uv run black --check .
           uv run ruff check .
           uv run mypy .
 

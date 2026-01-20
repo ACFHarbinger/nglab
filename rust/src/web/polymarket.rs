@@ -571,7 +571,9 @@ impl WebScraper for PolymarketScraper {
 
             // Prices
             for token_id in &self.token_ids {
-                let history = all_histories.get(token_id).unwrap();
+                let history = all_histories.get(token_id).ok_or_else(|| {
+                    ArenaError::InternalError(format!("History for token {} missing", token_id))
+                })?;
                 // Find price at this timestamp
                 if let Some(item) = history.iter().find(|h| h.t == ts) {
                     row.push(item.p.to_string());

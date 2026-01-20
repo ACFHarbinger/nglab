@@ -47,6 +47,17 @@ pub enum ArenaError {
 
     #[error("Python error: {0}")]
     Python(String),
+
+    #[error("Model error: {0}")]
+    ModelError(String),
+
+    #[error("Numerical error: {0}")]
+    NumericalError(String),
+
+    #[error("Internal error: {0}")]
+    InternalError(String),
+    #[error("Validation error: {0}")]
+    ValidationError(String),
 }
 
 #[cfg(feature = "python")]

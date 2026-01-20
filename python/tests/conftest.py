@@ -20,6 +20,10 @@ pytest_plugins = [
     "python.tests.fixtures.deep_fixtures",
     "python.tests.fixtures.mac_fixtures",
     "python.tests.fixtures.regression_fixtures",
+    "python.tests.fixtures.hpo_fixtures",
+    "python.tests.fixtures.model_fixtures",
+    "python.tests.fixtures.environment_fixtures",
+    "python.tests.fixtures.nglab_fixtures",
 ]
 
 
