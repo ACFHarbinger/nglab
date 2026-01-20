@@ -19,6 +19,7 @@ _LOGGER = ...
 DEFAULT_CLIENT_INFO = ...
 if hasattr(DEFAULT_CLIENT_INFO, "protobuf_runtime_version"):
     ...
+
 class StorageControlRestInterceptor:
     """Interceptor for StorageControl.
 
@@ -239,15 +240,25 @@ class StorageControlRestInterceptor:
 
 
     """
-    def pre_get_folder_intelligence_config(self, request: storage_control.GetFolderIntelligenceConfigRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[storage_control.GetFolderIntelligenceConfigRequest, Sequence[Tuple[str, Union[str, bytes]]],]:
+
+    def pre_get_folder_intelligence_config(
+        self,
+        request: storage_control.GetFolderIntelligenceConfigRequest,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]],
+    ) -> Tuple[
+        storage_control.GetFolderIntelligenceConfigRequest,
+        Sequence[Tuple[str, Union[str, bytes]]],
+    ]:
         """Pre-rpc interceptor for get_folder_intelligence_config
 
         Override in a subclass to manipulate the request or metadata
         before they are sent to the StorageControl server.
         """
         ...
-    
-    def post_get_folder_intelligence_config(self, response: storage_control.IntelligenceConfig) -> storage_control.IntelligenceConfig:
+
+    def post_get_folder_intelligence_config(
+        self, response: storage_control.IntelligenceConfig
+    ) -> storage_control.IntelligenceConfig:
         """Post-rpc interceptor for get_folder_intelligence_config
 
         DEPRECATED. Please use the `post_get_folder_intelligence_config_with_metadata`
@@ -259,8 +270,14 @@ class StorageControlRestInterceptor:
         before the `post_get_folder_intelligence_config_with_metadata` interceptor.
         """
         ...
-    
-    def post_get_folder_intelligence_config_with_metadata(self, response: storage_control.IntelligenceConfig, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[storage_control.IntelligenceConfig, Sequence[Tuple[str, Union[str, bytes]]]]:
+
+    def post_get_folder_intelligence_config_with_metadata(
+        self,
+        response: storage_control.IntelligenceConfig,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]],
+    ) -> Tuple[
+        storage_control.IntelligenceConfig, Sequence[Tuple[str, Union[str, bytes]]]
+    ]:
         """Post-rpc interceptor for get_folder_intelligence_config
 
         Override in a subclass to read or manipulate the response or metadata after it
@@ -274,16 +291,25 @@ class StorageControlRestInterceptor:
         `post_get_folder_intelligence_config_with_metadata`.
         """
         ...
-    
-    def pre_get_organization_intelligence_config(self, request: storage_control.GetOrganizationIntelligenceConfigRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[storage_control.GetOrganizationIntelligenceConfigRequest, Sequence[Tuple[str, Union[str, bytes]]],]:
+
+    def pre_get_organization_intelligence_config(
+        self,
+        request: storage_control.GetOrganizationIntelligenceConfigRequest,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]],
+    ) -> Tuple[
+        storage_control.GetOrganizationIntelligenceConfigRequest,
+        Sequence[Tuple[str, Union[str, bytes]]],
+    ]:
         """Pre-rpc interceptor for get_organization_intelligence_config
 
         Override in a subclass to manipulate the request or metadata
         before they are sent to the StorageControl server.
         """
         ...
-    
-    def post_get_organization_intelligence_config(self, response: storage_control.IntelligenceConfig) -> storage_control.IntelligenceConfig:
+
+    def post_get_organization_intelligence_config(
+        self, response: storage_control.IntelligenceConfig
+    ) -> storage_control.IntelligenceConfig:
         """Post-rpc interceptor for get_organization_intelligence_config
 
         DEPRECATED. Please use the `post_get_organization_intelligence_config_with_metadata`
@@ -295,8 +321,14 @@ class StorageControlRestInterceptor:
         before the `post_get_organization_intelligence_config_with_metadata` interceptor.
         """
         ...
-    
-    def post_get_organization_intelligence_config_with_metadata(self, response: storage_control.IntelligenceConfig, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[storage_control.IntelligenceConfig, Sequence[Tuple[str, Union[str, bytes]]]]:
+
+    def post_get_organization_intelligence_config_with_metadata(
+        self,
+        response: storage_control.IntelligenceConfig,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]],
+    ) -> Tuple[
+        storage_control.IntelligenceConfig, Sequence[Tuple[str, Union[str, bytes]]]
+    ]:
         """Post-rpc interceptor for get_organization_intelligence_config
 
         Override in a subclass to read or manipulate the response or metadata after it
@@ -310,16 +342,25 @@ class StorageControlRestInterceptor:
         `post_get_organization_intelligence_config_with_metadata`.
         """
         ...
-    
-    def pre_get_project_intelligence_config(self, request: storage_control.GetProjectIntelligenceConfigRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[storage_control.GetProjectIntelligenceConfigRequest, Sequence[Tuple[str, Union[str, bytes]]],]:
+
+    def pre_get_project_intelligence_config(
+        self,
+        request: storage_control.GetProjectIntelligenceConfigRequest,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]],
+    ) -> Tuple[
+        storage_control.GetProjectIntelligenceConfigRequest,
+        Sequence[Tuple[str, Union[str, bytes]]],
+    ]:
         """Pre-rpc interceptor for get_project_intelligence_config
 
         Override in a subclass to manipulate the request or metadata
         before they are sent to the StorageControl server.
         """
         ...
-    
-    def post_get_project_intelligence_config(self, response: storage_control.IntelligenceConfig) -> storage_control.IntelligenceConfig:
+
+    def post_get_project_intelligence_config(
+        self, response: storage_control.IntelligenceConfig
+    ) -> storage_control.IntelligenceConfig:
         """Post-rpc interceptor for get_project_intelligence_config
 
         DEPRECATED. Please use the `post_get_project_intelligence_config_with_metadata`
@@ -331,8 +372,14 @@ class StorageControlRestInterceptor:
         before the `post_get_project_intelligence_config_with_metadata` interceptor.
         """
         ...
-    
-    def post_get_project_intelligence_config_with_metadata(self, response: storage_control.IntelligenceConfig, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[storage_control.IntelligenceConfig, Sequence[Tuple[str, Union[str, bytes]]]]:
+
+    def post_get_project_intelligence_config_with_metadata(
+        self,
+        response: storage_control.IntelligenceConfig,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]],
+    ) -> Tuple[
+        storage_control.IntelligenceConfig, Sequence[Tuple[str, Union[str, bytes]]]
+    ]:
         """Post-rpc interceptor for get_project_intelligence_config
 
         Override in a subclass to read or manipulate the response or metadata after it
@@ -346,16 +393,25 @@ class StorageControlRestInterceptor:
         `post_get_project_intelligence_config_with_metadata`.
         """
         ...
-    
-    def pre_update_folder_intelligence_config(self, request: storage_control.UpdateFolderIntelligenceConfigRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[storage_control.UpdateFolderIntelligenceConfigRequest, Sequence[Tuple[str, Union[str, bytes]]],]:
+
+    def pre_update_folder_intelligence_config(
+        self,
+        request: storage_control.UpdateFolderIntelligenceConfigRequest,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]],
+    ) -> Tuple[
+        storage_control.UpdateFolderIntelligenceConfigRequest,
+        Sequence[Tuple[str, Union[str, bytes]]],
+    ]:
         """Pre-rpc interceptor for update_folder_intelligence_config
 
         Override in a subclass to manipulate the request or metadata
         before they are sent to the StorageControl server.
         """
         ...
-    
-    def post_update_folder_intelligence_config(self, response: storage_control.IntelligenceConfig) -> storage_control.IntelligenceConfig:
+
+    def post_update_folder_intelligence_config(
+        self, response: storage_control.IntelligenceConfig
+    ) -> storage_control.IntelligenceConfig:
         """Post-rpc interceptor for update_folder_intelligence_config
 
         DEPRECATED. Please use the `post_update_folder_intelligence_config_with_metadata`
@@ -367,8 +423,14 @@ class StorageControlRestInterceptor:
         before the `post_update_folder_intelligence_config_with_metadata` interceptor.
         """
         ...
-    
-    def post_update_folder_intelligence_config_with_metadata(self, response: storage_control.IntelligenceConfig, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[storage_control.IntelligenceConfig, Sequence[Tuple[str, Union[str, bytes]]]]:
+
+    def post_update_folder_intelligence_config_with_metadata(
+        self,
+        response: storage_control.IntelligenceConfig,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]],
+    ) -> Tuple[
+        storage_control.IntelligenceConfig, Sequence[Tuple[str, Union[str, bytes]]]
+    ]:
         """Post-rpc interceptor for update_folder_intelligence_config
 
         Override in a subclass to read or manipulate the response or metadata after it
@@ -382,16 +444,25 @@ class StorageControlRestInterceptor:
         `post_update_folder_intelligence_config_with_metadata`.
         """
         ...
-    
-    def pre_update_organization_intelligence_config(self, request: storage_control.UpdateOrganizationIntelligenceConfigRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[storage_control.UpdateOrganizationIntelligenceConfigRequest, Sequence[Tuple[str, Union[str, bytes]]],]:
+
+    def pre_update_organization_intelligence_config(
+        self,
+        request: storage_control.UpdateOrganizationIntelligenceConfigRequest,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]],
+    ) -> Tuple[
+        storage_control.UpdateOrganizationIntelligenceConfigRequest,
+        Sequence[Tuple[str, Union[str, bytes]]],
+    ]:
         """Pre-rpc interceptor for update_organization_intelligence_config
 
         Override in a subclass to manipulate the request or metadata
         before they are sent to the StorageControl server.
         """
         ...
-    
-    def post_update_organization_intelligence_config(self, response: storage_control.IntelligenceConfig) -> storage_control.IntelligenceConfig:
+
+    def post_update_organization_intelligence_config(
+        self, response: storage_control.IntelligenceConfig
+    ) -> storage_control.IntelligenceConfig:
         """Post-rpc interceptor for update_organization_intelligence_config
 
         DEPRECATED. Please use the `post_update_organization_intelligence_config_with_metadata`
@@ -403,8 +474,14 @@ class StorageControlRestInterceptor:
         before the `post_update_organization_intelligence_config_with_metadata` interceptor.
         """
         ...
-    
-    def post_update_organization_intelligence_config_with_metadata(self, response: storage_control.IntelligenceConfig, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[storage_control.IntelligenceConfig, Sequence[Tuple[str, Union[str, bytes]]]]:
+
+    def post_update_organization_intelligence_config_with_metadata(
+        self,
+        response: storage_control.IntelligenceConfig,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]],
+    ) -> Tuple[
+        storage_control.IntelligenceConfig, Sequence[Tuple[str, Union[str, bytes]]]
+    ]:
         """Post-rpc interceptor for update_organization_intelligence_config
 
         Override in a subclass to read or manipulate the response or metadata after it
@@ -418,16 +495,25 @@ class StorageControlRestInterceptor:
         `post_update_organization_intelligence_config_with_metadata`.
         """
         ...
-    
-    def pre_update_project_intelligence_config(self, request: storage_control.UpdateProjectIntelligenceConfigRequest, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[storage_control.UpdateProjectIntelligenceConfigRequest, Sequence[Tuple[str, Union[str, bytes]]],]:
+
+    def pre_update_project_intelligence_config(
+        self,
+        request: storage_control.UpdateProjectIntelligenceConfigRequest,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]],
+    ) -> Tuple[
+        storage_control.UpdateProjectIntelligenceConfigRequest,
+        Sequence[Tuple[str, Union[str, bytes]]],
+    ]:
         """Pre-rpc interceptor for update_project_intelligence_config
 
         Override in a subclass to manipulate the request or metadata
         before they are sent to the StorageControl server.
         """
         ...
-    
-    def post_update_project_intelligence_config(self, response: storage_control.IntelligenceConfig) -> storage_control.IntelligenceConfig:
+
+    def post_update_project_intelligence_config(
+        self, response: storage_control.IntelligenceConfig
+    ) -> storage_control.IntelligenceConfig:
         """Post-rpc interceptor for update_project_intelligence_config
 
         DEPRECATED. Please use the `post_update_project_intelligence_config_with_metadata`
@@ -439,8 +525,14 @@ class StorageControlRestInterceptor:
         before the `post_update_project_intelligence_config_with_metadata` interceptor.
         """
         ...
-    
-    def post_update_project_intelligence_config_with_metadata(self, response: storage_control.IntelligenceConfig, metadata: Sequence[Tuple[str, Union[str, bytes]]]) -> Tuple[storage_control.IntelligenceConfig, Sequence[Tuple[str, Union[str, bytes]]]]:
+
+    def post_update_project_intelligence_config_with_metadata(
+        self,
+        response: storage_control.IntelligenceConfig,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]],
+    ) -> Tuple[
+        storage_control.IntelligenceConfig, Sequence[Tuple[str, Union[str, bytes]]]
+    ]:
         """Post-rpc interceptor for update_project_intelligence_config
 
         Override in a subclass to read or manipulate the response or metadata after it
@@ -454,8 +546,6 @@ class StorageControlRestInterceptor:
         `post_update_project_intelligence_config_with_metadata`.
         """
         ...
-    
-
 
 @dataclasses.dataclass
 class StorageControlRestStub:
@@ -463,7 +553,6 @@ class StorageControlRestStub:
     _host: str
     _interceptor: StorageControlRestInterceptor
     ...
-
 
 class StorageControlRestTransport(_BaseStorageControlRestTransport):
     """REST backend synchronous transport for StorageControl.
@@ -477,7 +566,22 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
 
     It sends JSON representations of protocol buffers over HTTP/1.1
     """
-    def __init__(self, *, host: str = ..., credentials: Optional[ga_credentials.Credentials] = ..., credentials_file: Optional[str] = ..., scopes: Optional[Sequence[str]] = ..., client_cert_source_for_mtls: Optional[Callable[[], Tuple[bytes, bytes]]] = ..., quota_project_id: Optional[str] = ..., client_info: gapic_v1.client_info.ClientInfo = ..., always_use_jwt_access: Optional[bool] = ..., url_scheme: str = ..., interceptor: Optional[StorageControlRestInterceptor] = ..., api_audience: Optional[str] = ...) -> None:
+
+    def __init__(
+        self,
+        *,
+        host: str = ...,
+        credentials: Optional[ga_credentials.Credentials] = ...,
+        credentials_file: Optional[str] = ...,
+        scopes: Optional[Sequence[str]] = ...,
+        client_cert_source_for_mtls: Optional[Callable[[], Tuple[bytes, bytes]]] = ...,
+        quota_project_id: Optional[str] = ...,
+        client_info: gapic_v1.client_info.ClientInfo = ...,
+        always_use_jwt_access: Optional[bool] = ...,
+        url_scheme: str = ...,
+        interceptor: Optional[StorageControlRestInterceptor] = ...,
+        api_audience: Optional[str] = ...,
+    ) -> None:
         """Instantiate the transport.
 
         Args:
@@ -512,7 +616,7 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
                 "http" can be specified.
         """
         ...
-    
+
     @property
     def operations_client(self) -> operations_v1.AbstractOperationsClient:
         """Create the client designed to process long-running operations.
@@ -521,84 +625,128 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
         client.
         """
         ...
-    
-    class _CreateAnywhereCache(_BaseStorageControlRestTransport._BaseCreateAnywhereCache, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.CreateAnywhereCacheRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> operations_pb2.Operation:
-            ...
-        
-    
-    
-    class _CreateFolder(_BaseStorageControlRestTransport._BaseCreateFolder, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.CreateFolderRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.Folder:
-            ...
-        
-    
-    
-    class _CreateManagedFolder(_BaseStorageControlRestTransport._BaseCreateManagedFolder, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.CreateManagedFolderRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.ManagedFolder:
-            ...
-        
-    
-    
-    class _DeleteFolder(_BaseStorageControlRestTransport._BaseDeleteFolder, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.DeleteFolderRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...):
-            ...
-        
-    
-    
-    class _DeleteManagedFolder(_BaseStorageControlRestTransport._BaseDeleteManagedFolder, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.DeleteManagedFolderRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...):
-            ...
-        
-    
-    
-    class _DisableAnywhereCache(_BaseStorageControlRestTransport._BaseDisableAnywhereCache, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.DisableAnywhereCacheRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.AnywhereCache:
-            ...
-        
-    
-    
-    class _GetAnywhereCache(_BaseStorageControlRestTransport._BaseGetAnywhereCache, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.GetAnywhereCacheRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.AnywhereCache:
-            ...
-        
-    
-    
-    class _GetFolder(_BaseStorageControlRestTransport._BaseGetFolder, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.GetFolderRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.Folder:
-            ...
-        
-    
-    
-    class _GetFolderIntelligenceConfig(_BaseStorageControlRestTransport._BaseGetFolderIntelligenceConfig, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.GetFolderIntelligenceConfigRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.IntelligenceConfig:
+
+    class _CreateAnywhereCache(
+        _BaseStorageControlRestTransport._BaseCreateAnywhereCache,
+        StorageControlRestStub,
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.CreateAnywhereCacheRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> operations_pb2.Operation: ...
+
+    class _CreateFolder(
+        _BaseStorageControlRestTransport._BaseCreateFolder, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.CreateFolderRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.Folder: ...
+
+    class _CreateManagedFolder(
+        _BaseStorageControlRestTransport._BaseCreateManagedFolder,
+        StorageControlRestStub,
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.CreateManagedFolderRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.ManagedFolder: ...
+
+    class _DeleteFolder(
+        _BaseStorageControlRestTransport._BaseDeleteFolder, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.DeleteFolderRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ): ...
+
+    class _DeleteManagedFolder(
+        _BaseStorageControlRestTransport._BaseDeleteManagedFolder,
+        StorageControlRestStub,
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.DeleteManagedFolderRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ): ...
+
+    class _DisableAnywhereCache(
+        _BaseStorageControlRestTransport._BaseDisableAnywhereCache,
+        StorageControlRestStub,
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.DisableAnywhereCacheRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.AnywhereCache: ...
+
+    class _GetAnywhereCache(
+        _BaseStorageControlRestTransport._BaseGetAnywhereCache, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.GetAnywhereCacheRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.AnywhereCache: ...
+
+    class _GetFolder(
+        _BaseStorageControlRestTransport._BaseGetFolder, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.GetFolderRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.Folder: ...
+
+    class _GetFolderIntelligenceConfig(
+        _BaseStorageControlRestTransport._BaseGetFolderIntelligenceConfig,
+        StorageControlRestStub,
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.GetFolderIntelligenceConfigRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.IntelligenceConfig:
             r"""Call the get folder intelligence
             config method over HTTP.
 
@@ -627,32 +775,46 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
 
             """
             ...
-        
-    
-    
-    class _GetIamPolicy(_BaseStorageControlRestTransport._BaseGetIamPolicy, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: iam_policy_pb2.GetIamPolicyRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> policy_pb2.Policy:
-            ...
-        
-    
-    
-    class _GetManagedFolder(_BaseStorageControlRestTransport._BaseGetManagedFolder, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.GetManagedFolderRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.ManagedFolder:
-            ...
-        
-    
-    
-    class _GetOrganizationIntelligenceConfig(_BaseStorageControlRestTransport._BaseGetOrganizationIntelligenceConfig, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.GetOrganizationIntelligenceConfigRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.IntelligenceConfig:
+
+    class _GetIamPolicy(
+        _BaseStorageControlRestTransport._BaseGetIamPolicy, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: iam_policy_pb2.GetIamPolicyRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> policy_pb2.Policy: ...
+
+    class _GetManagedFolder(
+        _BaseStorageControlRestTransport._BaseGetManagedFolder, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.GetManagedFolderRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.ManagedFolder: ...
+
+    class _GetOrganizationIntelligenceConfig(
+        _BaseStorageControlRestTransport._BaseGetOrganizationIntelligenceConfig,
+        StorageControlRestStub,
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.GetOrganizationIntelligenceConfigRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.IntelligenceConfig:
             r"""Call the get organization
             intelligence config method over HTTP.
 
@@ -681,14 +843,20 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
 
             """
             ...
-        
-    
-    
-    class _GetProjectIntelligenceConfig(_BaseStorageControlRestTransport._BaseGetProjectIntelligenceConfig, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.GetProjectIntelligenceConfigRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.IntelligenceConfig:
+
+    class _GetProjectIntelligenceConfig(
+        _BaseStorageControlRestTransport._BaseGetProjectIntelligenceConfig,
+        StorageControlRestStub,
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.GetProjectIntelligenceConfigRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.IntelligenceConfig:
             r"""Call the get project intelligence
             config method over HTTP.
 
@@ -717,104 +885,152 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
 
             """
             ...
-        
-    
-    
-    class _GetStorageLayout(_BaseStorageControlRestTransport._BaseGetStorageLayout, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.GetStorageLayoutRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.StorageLayout:
-            ...
-        
-    
-    
-    class _ListAnywhereCaches(_BaseStorageControlRestTransport._BaseListAnywhereCaches, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.ListAnywhereCachesRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.ListAnywhereCachesResponse:
-            ...
-        
-    
-    
-    class _ListFolders(_BaseStorageControlRestTransport._BaseListFolders, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.ListFoldersRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.ListFoldersResponse:
-            ...
-        
-    
-    
-    class _ListManagedFolders(_BaseStorageControlRestTransport._BaseListManagedFolders, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.ListManagedFoldersRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.ListManagedFoldersResponse:
-            ...
-        
-    
-    
-    class _PauseAnywhereCache(_BaseStorageControlRestTransport._BasePauseAnywhereCache, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.PauseAnywhereCacheRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.AnywhereCache:
-            ...
-        
-    
-    
-    class _RenameFolder(_BaseStorageControlRestTransport._BaseRenameFolder, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.RenameFolderRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> operations_pb2.Operation:
-            ...
-        
-    
-    
-    class _ResumeAnywhereCache(_BaseStorageControlRestTransport._BaseResumeAnywhereCache, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.ResumeAnywhereCacheRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.AnywhereCache:
-            ...
-        
-    
-    
-    class _SetIamPolicy(_BaseStorageControlRestTransport._BaseSetIamPolicy, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: iam_policy_pb2.SetIamPolicyRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> policy_pb2.Policy:
-            ...
-        
-    
-    
-    class _TestIamPermissions(_BaseStorageControlRestTransport._BaseTestIamPermissions, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: iam_policy_pb2.TestIamPermissionsRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> iam_policy_pb2.TestIamPermissionsResponse:
-            ...
-        
-    
-    
-    class _UpdateAnywhereCache(_BaseStorageControlRestTransport._BaseUpdateAnywhereCache, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.UpdateAnywhereCacheRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> operations_pb2.Operation:
-            ...
-        
-    
-    
-    class _UpdateFolderIntelligenceConfig(_BaseStorageControlRestTransport._BaseUpdateFolderIntelligenceConfig, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.UpdateFolderIntelligenceConfigRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.IntelligenceConfig:
+
+    class _GetStorageLayout(
+        _BaseStorageControlRestTransport._BaseGetStorageLayout, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.GetStorageLayoutRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.StorageLayout: ...
+
+    class _ListAnywhereCaches(
+        _BaseStorageControlRestTransport._BaseListAnywhereCaches, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.ListAnywhereCachesRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.ListAnywhereCachesResponse: ...
+
+    class _ListFolders(
+        _BaseStorageControlRestTransport._BaseListFolders, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.ListFoldersRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.ListFoldersResponse: ...
+
+    class _ListManagedFolders(
+        _BaseStorageControlRestTransport._BaseListManagedFolders, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.ListManagedFoldersRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.ListManagedFoldersResponse: ...
+
+    class _PauseAnywhereCache(
+        _BaseStorageControlRestTransport._BasePauseAnywhereCache, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.PauseAnywhereCacheRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.AnywhereCache: ...
+
+    class _RenameFolder(
+        _BaseStorageControlRestTransport._BaseRenameFolder, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.RenameFolderRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> operations_pb2.Operation: ...
+
+    class _ResumeAnywhereCache(
+        _BaseStorageControlRestTransport._BaseResumeAnywhereCache,
+        StorageControlRestStub,
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.ResumeAnywhereCacheRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.AnywhereCache: ...
+
+    class _SetIamPolicy(
+        _BaseStorageControlRestTransport._BaseSetIamPolicy, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: iam_policy_pb2.SetIamPolicyRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> policy_pb2.Policy: ...
+
+    class _TestIamPermissions(
+        _BaseStorageControlRestTransport._BaseTestIamPermissions, StorageControlRestStub
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: iam_policy_pb2.TestIamPermissionsRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> iam_policy_pb2.TestIamPermissionsResponse: ...
+
+    class _UpdateAnywhereCache(
+        _BaseStorageControlRestTransport._BaseUpdateAnywhereCache,
+        StorageControlRestStub,
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.UpdateAnywhereCacheRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> operations_pb2.Operation: ...
+
+    class _UpdateFolderIntelligenceConfig(
+        _BaseStorageControlRestTransport._BaseUpdateFolderIntelligenceConfig,
+        StorageControlRestStub,
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.UpdateFolderIntelligenceConfigRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.IntelligenceConfig:
             r"""Call the update folder
             intelligence config method over HTTP.
 
@@ -843,14 +1059,20 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
 
             """
             ...
-        
-    
-    
-    class _UpdateOrganizationIntelligenceConfig(_BaseStorageControlRestTransport._BaseUpdateOrganizationIntelligenceConfig, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.UpdateOrganizationIntelligenceConfigRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.IntelligenceConfig:
+
+    class _UpdateOrganizationIntelligenceConfig(
+        _BaseStorageControlRestTransport._BaseUpdateOrganizationIntelligenceConfig,
+        StorageControlRestStub,
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.UpdateOrganizationIntelligenceConfigRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.IntelligenceConfig:
             r"""Call the update organization
             intelligence config method over HTTP.
 
@@ -879,14 +1101,20 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
 
             """
             ...
-        
-    
-    
-    class _UpdateProjectIntelligenceConfig(_BaseStorageControlRestTransport._BaseUpdateProjectIntelligenceConfig, StorageControlRestStub):
-        def __hash__(self) -> int:
-            ...
-        
-        def __call__(self, request: storage_control.UpdateProjectIntelligenceConfigRequest, *, retry: OptionalRetry = ..., timeout: Optional[float] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.IntelligenceConfig:
+
+    class _UpdateProjectIntelligenceConfig(
+        _BaseStorageControlRestTransport._BaseUpdateProjectIntelligenceConfig,
+        StorageControlRestStub,
+    ):
+        def __hash__(self) -> int: ...
+        def __call__(
+            self,
+            request: storage_control.UpdateProjectIntelligenceConfigRequest,
+            *,
+            retry: OptionalRetry = ...,
+            timeout: Optional[float] = ...,
+            metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+        ) -> storage_control.IntelligenceConfig:
             r"""Call the update project
             intelligence config method over HTTP.
 
@@ -915,120 +1143,143 @@ class StorageControlRestTransport(_BaseStorageControlRestTransport):
 
             """
             ...
-        
-    
-    
-    @property
-    def create_anywhere_cache(self) -> Callable[[storage_control.CreateAnywhereCacheRequest], operations_pb2.Operation]:
-        ...
-    
-    @property
-    def create_folder(self) -> Callable[[storage_control.CreateFolderRequest], storage_control.Folder]:
-        ...
-    
-    @property
-    def create_managed_folder(self) -> Callable[[storage_control.CreateManagedFolderRequest], storage_control.ManagedFolder]:
-        ...
-    
-    @property
-    def delete_folder(self) -> Callable[[storage_control.DeleteFolderRequest], empty_pb2.Empty]:
-        ...
-    
-    @property
-    def delete_managed_folder(self) -> Callable[[storage_control.DeleteManagedFolderRequest], empty_pb2.Empty]:
-        ...
-    
-    @property
-    def disable_anywhere_cache(self) -> Callable[[storage_control.DisableAnywhereCacheRequest], storage_control.AnywhereCache]:
-        ...
-    
-    @property
-    def get_anywhere_cache(self) -> Callable[[storage_control.GetAnywhereCacheRequest], storage_control.AnywhereCache]:
-        ...
-    
-    @property
-    def get_folder(self) -> Callable[[storage_control.GetFolderRequest], storage_control.Folder]:
-        ...
-    
-    @property
-    def get_folder_intelligence_config(self) -> Callable[[storage_control.GetFolderIntelligenceConfigRequest], storage_control.IntelligenceConfig,]:
-        ...
-    
-    @property
-    def get_iam_policy(self) -> Callable[[iam_policy_pb2.GetIamPolicyRequest], policy_pb2.Policy]:
-        ...
-    
-    @property
-    def get_managed_folder(self) -> Callable[[storage_control.GetManagedFolderRequest], storage_control.ManagedFolder]:
-        ...
-    
-    @property
-    def get_organization_intelligence_config(self) -> Callable[[storage_control.GetOrganizationIntelligenceConfigRequest], storage_control.IntelligenceConfig,]:
-        ...
-    
-    @property
-    def get_project_intelligence_config(self) -> Callable[[storage_control.GetProjectIntelligenceConfigRequest], storage_control.IntelligenceConfig,]:
-        ...
-    
-    @property
-    def get_storage_layout(self) -> Callable[[storage_control.GetStorageLayoutRequest], storage_control.StorageLayout]:
-        ...
-    
-    @property
-    def list_anywhere_caches(self) -> Callable[[storage_control.ListAnywhereCachesRequest], storage_control.ListAnywhereCachesResponse,]:
-        ...
-    
-    @property
-    def list_folders(self) -> Callable[[storage_control.ListFoldersRequest], storage_control.ListFoldersResponse]:
-        ...
-    
-    @property
-    def list_managed_folders(self) -> Callable[[storage_control.ListManagedFoldersRequest], storage_control.ListManagedFoldersResponse,]:
-        ...
-    
-    @property
-    def pause_anywhere_cache(self) -> Callable[[storage_control.PauseAnywhereCacheRequest], storage_control.AnywhereCache]:
-        ...
-    
-    @property
-    def rename_folder(self) -> Callable[[storage_control.RenameFolderRequest], operations_pb2.Operation]:
-        ...
-    
-    @property
-    def resume_anywhere_cache(self) -> Callable[[storage_control.ResumeAnywhereCacheRequest], storage_control.AnywhereCache]:
-        ...
-    
-    @property
-    def set_iam_policy(self) -> Callable[[iam_policy_pb2.SetIamPolicyRequest], policy_pb2.Policy]:
-        ...
-    
-    @property
-    def test_iam_permissions(self) -> Callable[[iam_policy_pb2.TestIamPermissionsRequest], iam_policy_pb2.TestIamPermissionsResponse,]:
-        ...
-    
-    @property
-    def update_anywhere_cache(self) -> Callable[[storage_control.UpdateAnywhereCacheRequest], operations_pb2.Operation]:
-        ...
-    
-    @property
-    def update_folder_intelligence_config(self) -> Callable[[storage_control.UpdateFolderIntelligenceConfigRequest], storage_control.IntelligenceConfig,]:
-        ...
-    
-    @property
-    def update_organization_intelligence_config(self) -> Callable[[storage_control.UpdateOrganizationIntelligenceConfigRequest], storage_control.IntelligenceConfig,]:
-        ...
-    
-    @property
-    def update_project_intelligence_config(self) -> Callable[[storage_control.UpdateProjectIntelligenceConfigRequest], storage_control.IntelligenceConfig,]:
-        ...
-    
-    @property
-    def kind(self) -> str:
-        ...
-    
-    def close(self): # -> None:
-        ...
-    
 
+    @property
+    def create_anywhere_cache(
+        self,
+    ) -> Callable[
+        [storage_control.CreateAnywhereCacheRequest], operations_pb2.Operation
+    ]: ...
+    @property
+    def create_folder(
+        self,
+    ) -> Callable[[storage_control.CreateFolderRequest], storage_control.Folder]: ...
+    @property
+    def create_managed_folder(
+        self,
+    ) -> Callable[
+        [storage_control.CreateManagedFolderRequest], storage_control.ManagedFolder
+    ]: ...
+    @property
+    def delete_folder(
+        self,
+    ) -> Callable[[storage_control.DeleteFolderRequest], empty_pb2.Empty]: ...
+    @property
+    def delete_managed_folder(
+        self,
+    ) -> Callable[[storage_control.DeleteManagedFolderRequest], empty_pb2.Empty]: ...
+    @property
+    def disable_anywhere_cache(
+        self,
+    ) -> Callable[
+        [storage_control.DisableAnywhereCacheRequest], storage_control.AnywhereCache
+    ]: ...
+    @property
+    def get_anywhere_cache(
+        self,
+    ) -> Callable[
+        [storage_control.GetAnywhereCacheRequest], storage_control.AnywhereCache
+    ]: ...
+    @property
+    def get_folder(
+        self,
+    ) -> Callable[[storage_control.GetFolderRequest], storage_control.Folder]: ...
+    @property
+    def get_folder_intelligence_config(self) -> Callable[
+        [storage_control.GetFolderIntelligenceConfigRequest],
+        storage_control.IntelligenceConfig,
+    ]: ...
+    @property
+    def get_iam_policy(
+        self,
+    ) -> Callable[[iam_policy_pb2.GetIamPolicyRequest], policy_pb2.Policy]: ...
+    @property
+    def get_managed_folder(
+        self,
+    ) -> Callable[
+        [storage_control.GetManagedFolderRequest], storage_control.ManagedFolder
+    ]: ...
+    @property
+    def get_organization_intelligence_config(self) -> Callable[
+        [storage_control.GetOrganizationIntelligenceConfigRequest],
+        storage_control.IntelligenceConfig,
+    ]: ...
+    @property
+    def get_project_intelligence_config(self) -> Callable[
+        [storage_control.GetProjectIntelligenceConfigRequest],
+        storage_control.IntelligenceConfig,
+    ]: ...
+    @property
+    def get_storage_layout(
+        self,
+    ) -> Callable[
+        [storage_control.GetStorageLayoutRequest], storage_control.StorageLayout
+    ]: ...
+    @property
+    def list_anywhere_caches(self) -> Callable[
+        [storage_control.ListAnywhereCachesRequest],
+        storage_control.ListAnywhereCachesResponse,
+    ]: ...
+    @property
+    def list_folders(
+        self,
+    ) -> Callable[
+        [storage_control.ListFoldersRequest], storage_control.ListFoldersResponse
+    ]: ...
+    @property
+    def list_managed_folders(self) -> Callable[
+        [storage_control.ListManagedFoldersRequest],
+        storage_control.ListManagedFoldersResponse,
+    ]: ...
+    @property
+    def pause_anywhere_cache(
+        self,
+    ) -> Callable[
+        [storage_control.PauseAnywhereCacheRequest], storage_control.AnywhereCache
+    ]: ...
+    @property
+    def rename_folder(
+        self,
+    ) -> Callable[[storage_control.RenameFolderRequest], operations_pb2.Operation]: ...
+    @property
+    def resume_anywhere_cache(
+        self,
+    ) -> Callable[
+        [storage_control.ResumeAnywhereCacheRequest], storage_control.AnywhereCache
+    ]: ...
+    @property
+    def set_iam_policy(
+        self,
+    ) -> Callable[[iam_policy_pb2.SetIamPolicyRequest], policy_pb2.Policy]: ...
+    @property
+    def test_iam_permissions(self) -> Callable[
+        [iam_policy_pb2.TestIamPermissionsRequest],
+        iam_policy_pb2.TestIamPermissionsResponse,
+    ]: ...
+    @property
+    def update_anywhere_cache(
+        self,
+    ) -> Callable[
+        [storage_control.UpdateAnywhereCacheRequest], operations_pb2.Operation
+    ]: ...
+    @property
+    def update_folder_intelligence_config(self) -> Callable[
+        [storage_control.UpdateFolderIntelligenceConfigRequest],
+        storage_control.IntelligenceConfig,
+    ]: ...
+    @property
+    def update_organization_intelligence_config(self) -> Callable[
+        [storage_control.UpdateOrganizationIntelligenceConfigRequest],
+        storage_control.IntelligenceConfig,
+    ]: ...
+    @property
+    def update_project_intelligence_config(self) -> Callable[
+        [storage_control.UpdateProjectIntelligenceConfigRequest],
+        storage_control.IntelligenceConfig,
+    ]: ...
+    @property
+    def kind(self) -> str: ...
+    def close(self):  # -> None:
+        ...
 
-__all__ = ("StorageControlRestTransport", )
+__all__ = ("StorageControlRestTransport",)

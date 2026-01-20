@@ -16,7 +16,10 @@ _URLENCODED_CONTENT_TYPE = ...
 _JSON_CONTENT_TYPE = ...
 _JWT_GRANT_TYPE = ...
 _REFRESH_GRANT_TYPE = ...
-def jwt_grant(request, token_uri, assertion, can_retry=...): # -> tuple[Any, datetime | None, Any | dict[Any, Any]]:
+
+def jwt_grant(
+    request, token_uri, assertion, can_retry=...
+):  # -> tuple[Any, datetime | None, Any | dict[Any, Any]]:
     """Implements the JWT Profile for OAuth 2.0 Authorization Grants.
 
     For more details, see `rfc7523 section 4`_.
@@ -41,7 +44,14 @@ def jwt_grant(request, token_uri, assertion, can_retry=...): # -> tuple[Any, dat
     """
     ...
 
-def call_iam_generate_id_token_endpoint(request, iam_id_token_endpoint, signer_email, audience, access_token, universe_domain=...): # -> tuple[Any, datetime]:
+def call_iam_generate_id_token_endpoint(
+    request,
+    iam_id_token_endpoint,
+    signer_email,
+    audience,
+    access_token,
+    universe_domain=...,
+):  # -> tuple[Any, datetime]:
     """Call iam.generateIdToken endpoint to get ID token.
 
     Args:
@@ -60,7 +70,9 @@ def call_iam_generate_id_token_endpoint(request, iam_id_token_endpoint, signer_e
     """
     ...
 
-def id_token_jwt_grant(request, token_uri, assertion, can_retry=...): # -> tuple[Any, datetime, Any | dict[Any, Any]]:
+def id_token_jwt_grant(
+    request, token_uri, assertion, can_retry=...
+):  # -> tuple[Any, datetime, Any | dict[Any, Any]]:
     """Implements the JWT Profile for OAuth 2.0 Authorization Grants, but
     requests an OpenID Connect ID Token instead of an access token.
 
@@ -88,7 +100,16 @@ def id_token_jwt_grant(request, token_uri, assertion, can_retry=...): # -> tuple
     """
     ...
 
-def refresh_grant(request, token_uri, refresh_token, client_id, client_secret, scopes=..., rapt_token=..., can_retry=...): # -> tuple[Any, Any, datetime | None, Any]:
+def refresh_grant(
+    request,
+    token_uri,
+    refresh_token,
+    client_id,
+    client_secret,
+    scopes=...,
+    rapt_token=...,
+    can_retry=...,
+):  # -> tuple[Any, Any, datetime | None, Any]:
     """Implements the OAuth 2.0 refresh token grant.
 
     For more details, see `rfc678 section 6`_.
@@ -121,4 +142,3 @@ def refresh_grant(request, token_uri, refresh_token, client_id, client_secret, s
     .. _rfc6748 section 6: https://tools.ietf.org/html/rfc6749#section-6
     """
     ...
-

@@ -44,24 +44,27 @@ def cache_key(*args: Any, **kwargs: Any) -> str:
 def cached_query(ttl: int = 300, key_prefix: str = "query"):
     """
     Decorator for caching query results in Redis.
-    
+
     Args:
         ttl: Time-to-live in seconds (default 5 minutes)
         key_prefix: Prefix for cache keys
-    
+
     Example:
         @cached_query(ttl=600, key_prefix="user_models")
         async def get_user_models(user_id: int):
             return await db.fetch_all(...)
     """
-    def decorator(func: Callable[..., Coroutine[Any, Any, T]]) -> Callable[..., Coroutine[Any, Any, T]]:
+
+    def decorator(
+        func: Callable[..., Coroutine[Any, Any, T]],
+    ) -> Callable[..., Coroutine[Any, Any, T]]:
         @functools.wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
             client = await get_redis_client()
-            
+
             # Generate cache key
             key = f"{key_prefix}:{func.__name__}:{cache_key(*args, **kwargs)}"
-            
+
             # Try to get from cache
             try:
                 cached = await client.get(key)
@@ -70,34 +73,37 @@ def cached_query(ttl: int = 300, key_prefix: str = "query"):
                     return json.loads(cached)
             except Exception as e:
                 logger.warning(f"Cache read error: {e}")
-            
+
             # Execute function
             result = await func(*args, **kwargs)
-            
+
             # Store in cache
             try:
                 await client.setex(
                     key,
                     ttl,
-                    json.dumps(result, default=str)  # default=str for datetime serialization
+                    json.dumps(
+                        result, default=str
+                    ),  # default=str for datetime serialization
                 )
                 logger.debug(f"Cache set: {key} (TTL: {ttl}s)")
             except Exception as e:
                 logger.warning(f"Cache write error: {e}")
-            
+
             return result
-        
+
         return cast(Callable[..., Coroutine[Any, Any, T]], wrapper)
+
     return decorator
 
 
 async def invalidate_cache(pattern: str) -> int:
     """
     Invalidate cache keys matching pattern.
-    
+
     Args:
         pattern: Redis key pattern (e.g., "user_models:*")
-    
+
     Returns:
         Number of keys invalidated
     """
@@ -118,7 +124,7 @@ async def get_cache_stats() -> dict[str, Any]:
         "keyspace_hits": info.get("keyspace_hits", 0),
         "keyspace_misses": info.get("keyspace_misses", 0),
         "hit_rate": (
-            info.get("keyspace_hits", 0) / 
-            (info.get("keyspace_hits", 0) + info.get("keyspace_misses", 1))
+            info.get("keyspace_hits", 0)
+            / (info.get("keyspace_hits", 0) + info.get("keyspace_misses", 1))
         ),
     }

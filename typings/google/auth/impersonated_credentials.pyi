@@ -23,7 +23,13 @@ _TRUST_BOUNDARY_LOOKUP_ENDPOINT = ...
 _SOURCE_CREDENTIAL_AUTHORIZED_USER_TYPE = ...
 _SOURCE_CREDENTIAL_SERVICE_ACCOUNT_TYPE = ...
 _SOURCE_CREDENTIAL_EXTERNAL_ACCOUNT_AUTHORIZED_USER_TYPE = ...
-class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, credentials.Signing, credentials.CredentialsWithTrustBoundary):
+
+class Credentials(
+    credentials.Scoped,
+    credentials.CredentialsWithQuotaProject,
+    credentials.Signing,
+    credentials.CredentialsWithTrustBoundary,
+):
     """This module defines impersonated credentials which are essentially
     impersonated identities.
 
@@ -92,7 +98,19 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
     untrusted source, you should validate it before using.
     Refer https://cloud.google.com/docs/authentication/external/externally-sourced-credentials for more details.
     """
-    def __init__(self, source_credentials, target_principal, target_scopes, delegates=..., subject=..., lifetime=..., quota_project_id=..., iam_endpoint_override=..., trust_boundary=...) -> None:
+
+    def __init__(
+        self,
+        source_credentials,
+        target_principal,
+        target_scopes,
+        delegates=...,
+        subject=...,
+        lifetime=...,
+        quota_project_id=...,
+        iam_endpoint_override=...,
+        trust_boundary=...,
+    ) -> None:
         """
         Args:
             source_credentials (google.auth.Credentials): The source credential
@@ -125,44 +143,44 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
             trust_boundary (Mapping[str,str]): A credential trust boundary.
         """
         ...
-    
-    def sign_bytes(self, message): # -> bytes:
+
+    def sign_bytes(self, message):  # -> bytes:
         ...
-    
+
     @property
-    def signer_email(self): # -> Any:
+    def signer_email(self):  # -> Any:
         ...
-    
+
     @property
-    def service_account_email(self): # -> Any:
+    def service_account_email(self):  # -> Any:
         ...
-    
+
     @property
-    def signer(self): # -> Self:
+    def signer(self):  # -> Self:
         ...
-    
+
     @property
-    def requires_scopes(self): # -> bool:
+    def requires_scopes(self):  # -> bool:
         ...
-    
+
     @_helpers.copy_docstring(credentials.Credentials)
-    def get_cred_info(self): # -> dict[str, Any] | None:
+    def get_cred_info(self):  # -> dict[str, Any] | None:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithTrustBoundary)
-    def with_trust_boundary(self, trust_boundary): # -> Self:
+    def with_trust_boundary(self, trust_boundary):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
-    def with_quota_project(self, quota_project_id): # -> Self:
+    def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.Scoped)
-    def with_scopes(self, scopes, default_scopes=...): # -> Self:
+    def with_scopes(self, scopes, default_scopes=...):  # -> Self:
         ...
-    
+
     @classmethod
-    def from_impersonated_service_account_info(cls, info, scopes=...): # -> Self:
+    def from_impersonated_service_account_info(cls, info, scopes=...):  # -> Self:
         """Creates a Credentials instance from parsed impersonated service account credentials info.
 
         **IMPORTANT**:
@@ -189,12 +207,17 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
             ValueError: If the info is not in the expected format.
         """
         ...
-    
-
 
 class IDTokenCredentials(credentials.CredentialsWithQuotaProject):
     """Open ID Connect ID Token-based service account credentials."""
-    def __init__(self, target_credentials, target_audience=..., include_email=..., quota_project_id=...) -> None:
+
+    def __init__(
+        self,
+        target_credentials,
+        target_audience=...,
+        include_email=...,
+        quota_project_id=...,
+    ) -> None:
         """
         Args:
             target_credentials (google.auth.Credentials): The target
@@ -205,23 +228,20 @@ class IDTokenCredentials(credentials.CredentialsWithQuotaProject):
                 quota and billing.
         """
         ...
-    
-    def from_credentials(self, target_credentials, target_audience=...): # -> Self:
+
+    def from_credentials(self, target_credentials, target_audience=...):  # -> Self:
         ...
-    
-    def with_target_audience(self, target_audience): # -> Self:
+
+    def with_target_audience(self, target_audience):  # -> Self:
         ...
-    
-    def with_include_email(self, include_email): # -> Self:
+
+    def with_include_email(self, include_email):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
-    def with_quota_project(self, quota_project_id): # -> Self:
+    def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.Credentials)
-    def refresh(self, request): # -> None:
+    def refresh(self, request):  # -> None:
         ...
-    
-
-

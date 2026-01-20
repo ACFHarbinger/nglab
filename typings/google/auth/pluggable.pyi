@@ -27,6 +27,7 @@ EXECUTABLE_TIMEOUT_MILLIS_LOWER_BOUND = ...
 EXECUTABLE_TIMEOUT_MILLIS_UPPER_BOUND = ...
 EXECUTABLE_INTERACTIVE_TIMEOUT_MILLIS_LOWER_BOUND = ...
 EXECUTABLE_INTERACTIVE_TIMEOUT_MILLIS_UPPER_BOUND = ...
+
 class Credentials(external_account.Credentials):
     """External account credentials sourced from executables.
 
@@ -38,7 +39,16 @@ class Credentials(external_account.Credentials):
     untrusted source, you should validate it before using.
     Refer https://cloud.google.com/docs/authentication/external/externally-sourced-credentials for more details.
     """
-    def __init__(self, audience, subject_token_type, token_url, credential_source, *args, **kwargs) -> None:
+
+    def __init__(
+        self,
+        audience,
+        subject_token_type,
+        token_url,
+        credential_source,
+        *args,
+        **kwargs,
+    ) -> None:
         """Instantiates an external account credentials object from a executables.
 
         Args:
@@ -72,12 +82,10 @@ class Credentials(external_account.Credentials):
             :meth:`from_info` are used instead of calling the constructor directly.
         """
         ...
-    
+
     @_helpers.copy_docstring(external_account.Credentials)
-    def retrieve_subject_token(self, request):
-        ...
-    
-    def revoke(self, request): # -> None:
+    def retrieve_subject_token(self, request): ...
+    def revoke(self, request):  # -> None:
         """Revokes the subject token using the credential_source object.
 
         Args:
@@ -89,9 +97,9 @@ class Credentials(external_account.Credentials):
 
         """
         ...
-    
+
     @property
-    def external_account_id(self): # -> str:
+    def external_account_id(self):  # -> str:
         """Returns the external account identifier.
 
         When service account impersonation is used the identifier is the service
@@ -101,9 +109,9 @@ class Credentials(external_account.Credentials):
         being used by the Google Cloud CLI which populates this field.
         """
         ...
-    
+
     @classmethod
-    def from_info(cls, info, **kwargs): # -> Self:
+    def from_info(cls, info, **kwargs):  # -> Self:
         """Creates a Pluggable Credentials instance from parsed external account info.
 
          **IMPORTANT**:
@@ -128,9 +136,9 @@ class Credentials(external_account.Credentials):
             google.auth.exceptions.MalformedError: For invalid parameters.
         """
         ...
-    
+
     @classmethod
-    def from_file(cls, filename, **kwargs): # -> Self:
+    def from_file(cls, filename, **kwargs):  # -> Self:
         """Creates an Pluggable Credentials instance from an external account json file.
 
         **IMPORTANT**:
@@ -150,6 +158,3 @@ class Credentials(external_account.Credentials):
                 credentials.
         """
         ...
-    
-
-

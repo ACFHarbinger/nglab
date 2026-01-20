@@ -8,8 +8,10 @@ import numpy as np
 from typing import List, Optional, Union, Dict, Any, Deque
 from sklearn.base import BaseEstimator
 
+
 class ExperienceReplayBuffer:
     """A simple FIFO buffer for experience replay in online learning."""
+
     def __init__(self, capacity: int = 1000):
         self.buffer: Deque[Dict[str, np.ndarray]] = collections.deque(maxlen=capacity)
 
@@ -22,36 +24,38 @@ class ExperienceReplayBuffer:
         """Sample a random batch from the buffer."""
         if len(self.buffer) < batch_size:
             return None
-            
+
         indices = np.random.choice(len(self.buffer), batch_size, replace=False)
         samples = [self.buffer[i] for i in indices]
-        
+
         return {
             "X": np.array([s["X"] for s in samples]),
-            "y": np.array([s["y"] for s in samples])
+            "y": np.array([s["y"] for s in samples]),
         }
+
 
 class OnlineTrainer:
     """
     Handles incremental updates to models during live trading.
     Supports rollback and replay-buffer stabilized learning.
     """
+
     def __init__(
         self,
         model: BaseEstimator,
         replay_capacity: int = 2000,
         update_batch_size: int = 32,
-        performance_threshold: float = -0.05, # Max 5% degradation before rollback
+        performance_threshold: float = -0.05,  # Max 5% degradation before rollback
     ):
         self.model = model
         self.replay_buffer = ExperienceReplayBuffer(capacity=replay_capacity)
         self.update_batch_size = update_batch_size
         self.performance_threshold = performance_threshold
-        
+
         # Performance tracking
         self.baseline_score: Optional[float] = None
         self.last_stable_model: Optional[BaseEstimator] = None
-        
+
         # Check if model supports partial_fit
         self.supports_incremental = hasattr(model, "partial_fit")
 
@@ -62,19 +66,19 @@ class OnlineTrainer:
         """
         if not self.supports_incremental:
             return False
-            
+
         # 1. Save current state for potential rollback
         self.last_stable_model = copy.deepcopy(self.model)
-        
+
         # 2. Add new data to replay buffer
         self.replay_buffer.add(X, y)
-        
+
         # 3. Sample from buffer for stable update
         batch = self.replay_buffer.sample(self.update_batch_size)
         if batch is None:
             # Not enough data for a full batch update yet
             return True
-            
+
         # 4. Incremental fit
         try:
             self.model.partial_fit(batch["X"], batch["y"])
@@ -82,7 +86,7 @@ class OnlineTrainer:
             print(f"Online update failed: {e}")
             self.rollback()
             return False
-            
+
         # 5. Stability check (simplified)
         # In a real scenario, we'd evaluate on a validation set or recent window
         return True

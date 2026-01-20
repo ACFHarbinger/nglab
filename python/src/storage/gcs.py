@@ -11,6 +11,7 @@ from python.src.storage.base import ModelMetadata, ModelStorage, StorageConfig
 if TYPE_CHECKING:
     from google.cloud import storage
 
+
 class GCSStorage(ModelStorage):
     """Google Cloud Storage backend."""
 
@@ -27,7 +28,7 @@ class GCSStorage(ModelStorage):
             try:
                 # Keep your existing deferred import for runtime
                 from google.cloud import storage
-                
+
                 if self.config.gcs_credentials_path:
                     self._client = storage.Client.from_service_account_json(
                         self.config.gcs_credentials_path

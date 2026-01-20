@@ -19,24 +19,24 @@ for the return value of :class:`Request`.
 DEFAULT_RETRYABLE_STATUS_CODES = ...
 DEFAULT_REFRESH_STATUS_CODES = ...
 DEFAULT_MAX_REFRESH_ATTEMPTS = ...
+
 class Response(metaclass=abc.ABCMeta):
     """HTTP Response data."""
+
     @abc.abstractproperty
     def status(self):
         """int: The HTTP status code."""
         ...
-    
+
     @abc.abstractproperty
     def headers(self):
         """Mapping[str, str]: The HTTP response headers."""
         ...
-    
+
     @abc.abstractproperty
     def data(self):
         """bytes: The response body."""
         ...
-    
-
 
 class Request(metaclass=abc.ABCMeta):
     """Interface for a callable that makes HTTP requests.
@@ -46,6 +46,7 @@ class Request(metaclass=abc.ABCMeta):
 
     .. automethod:: __call__
     """
+
     @abc.abstractmethod
     def __call__(self, url, method=..., body=..., headers=..., timeout=..., **kwargs):
         """Make an HTTP request.
@@ -69,6 +70,3 @@ class Request(metaclass=abc.ABCMeta):
             google.auth.exceptions.TransportError: If any exception occurred.
         """
         ...
-    
-
-

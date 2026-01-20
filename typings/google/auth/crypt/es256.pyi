@@ -6,6 +6,7 @@ from google.auth.crypt.es import EsSigner, EsVerifier
 
 """ECDSA (ES256) verifier and signer that use the ``cryptography`` library.
 """
+
 class ES256Verifier(EsVerifier):
     """Verifies ECDSA cryptographic signatures using public keys.
 
@@ -13,8 +14,8 @@ class ES256Verifier(EsVerifier):
         public_key (cryptography.hazmat.primitives.asymmetric.ec.ECDSAPublicKey): The public key used to verify
             signatures.
     """
-    ...
 
+    ...
 
 class ES256Signer(EsSigner):
     """Signs messages with an ECDSA private key.
@@ -27,6 +28,5 @@ class ES256Signer(EsSigner):
             can be useful to associate the private key with its associated
             public key or certificate.
     """
+
     ...
-
-

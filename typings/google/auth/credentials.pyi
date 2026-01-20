@@ -11,6 +11,7 @@ from google.auth._credentials_base import _BaseCredentials
 DEFAULT_UNIVERSE_DOMAIN = ...
 NO_OP_TRUST_BOUNDARY_LOCATIONS: List[str] = ...
 NO_OP_TRUST_BOUNDARY_ENCODED_LOCATIONS = ...
+
 class Credentials(_BaseCredentials):
     """Base class for all credentials.
 
@@ -29,11 +30,10 @@ class Credentials(_BaseCredentials):
     construction. Some classes will provide mechanisms to copy the credentials
     with modifications such as :meth:`ScopedCredentials.with_scopes`.
     """
-    def __init__(self) -> None:
-        ...
-    
+
+    def __init__(self) -> None: ...
     @property
-    def expired(self): # -> Literal[False]:
+    def expired(self):  # -> Literal[False]:
         """Checks if the credentials are expired.
 
         Note that credentials can be invalid but not expired because
@@ -44,9 +44,9 @@ class Credentials(_BaseCredentials):
           Prefer checking :attr:`token_state` instead.
         """
         ...
-    
+
     @property
-    def valid(self): # -> bool:
+    def valid(self):  # -> bool:
         """Checks the validity of the credentials.
 
         This is True if the credentials have a :attr:`token` and the token
@@ -56,25 +56,27 @@ class Credentials(_BaseCredentials):
           Prefer checking :attr:`token_state` instead.
         """
         ...
-    
+
     @property
-    def token_state(self): # -> Literal[TokenState.INVALID, TokenState.FRESH, TokenState.STALE]:
+    def token_state(
+        self,
+    ):  # -> Literal[TokenState.INVALID, TokenState.FRESH, TokenState.STALE]:
         """
         See `:obj:`TokenState`
         """
         ...
-    
+
     @property
-    def quota_project_id(self): # -> None:
+    def quota_project_id(self):  # -> None:
         """Project to use for quota and billing purposes."""
         ...
-    
+
     @property
-    def universe_domain(self): # -> str:
+    def universe_domain(self):  # -> str:
         """The universe domain value."""
         ...
-    
-    def get_cred_info(self): # -> None:
+
+    def get_cred_info(self):  # -> None:
         """The credential information JSON.
 
         The credential information will be added to auth related error messages
@@ -84,7 +86,7 @@ class Credentials(_BaseCredentials):
             Mapping[str, str]: The credential information JSON.
         """
         ...
-    
+
     @abc.abstractmethod
     def refresh(self, request):
         """Refreshes the access token.
@@ -98,8 +100,8 @@ class Credentials(_BaseCredentials):
                 not be refreshed.
         """
         ...
-    
-    def apply(self, headers, token=...): # -> None:
+
+    def apply(self, headers, token=...):  # -> None:
         """Apply the token to the authentication header.
 
         Args:
@@ -108,8 +110,8 @@ class Credentials(_BaseCredentials):
                 token.
         """
         ...
-    
-    def before_request(self, request, method, url, headers): # -> None:
+
+    def before_request(self, request, method, url, headers):  # -> None:
         """Performs credential-specific before request logic.
 
         Refreshes the credentials if necessary, then calls :meth:`apply` to
@@ -124,14 +126,13 @@ class Credentials(_BaseCredentials):
             headers (Mapping): The request's headers.
         """
         ...
-    
-    def with_non_blocking_refresh(self): # -> None:
-        ...
-    
 
+    def with_non_blocking_refresh(self):  # -> None:
+        ...
 
 class CredentialsWithQuotaProject(Credentials):
     """Abstract base for credentials supporting ``with_quota_project`` factory"""
+
     def with_quota_project(self, quota_project_id):
         """Returns a copy of these credentials with a modified quota project.
 
@@ -143,14 +144,13 @@ class CredentialsWithQuotaProject(Credentials):
             google.auth.credentials.Credentials: A new credentials instance.
         """
         ...
-    
-    def with_quota_project_from_environment(self): # -> Self:
-        ...
-    
 
+    def with_quota_project_from_environment(self):  # -> Self:
+        ...
 
 class CredentialsWithTokenUri(Credentials):
     """Abstract base for credentials supporting ``with_token_uri`` factory"""
+
     def with_token_uri(self, token_uri):
         """Returns a copy of these credentials with a modified token uri.
 
@@ -161,11 +161,10 @@ class CredentialsWithTokenUri(Credentials):
             google.auth.credentials.Credentials: A new credentials instance.
         """
         ...
-    
-
 
 class CredentialsWithUniverseDomain(Credentials):
     """Abstract base for credentials supporting ``with_universe_domain`` factory"""
+
     def with_universe_domain(self, universe_domain):
         """Returns a copy of these credentials with a modified universe domain.
 
@@ -176,11 +175,10 @@ class CredentialsWithUniverseDomain(Credentials):
             google.auth.credentials.Credentials: A new credentials instance.
         """
         ...
-    
-
 
 class CredentialsWithTrustBoundary(Credentials):
     """Abstract base for credentials supporting ``with_trust_boundary`` factory"""
+
     def with_trust_boundary(self, trust_boundary):
         """Returns a copy of these credentials with a modified trust boundary.
 
@@ -194,20 +192,18 @@ class CredentialsWithTrustBoundary(Credentials):
             google.auth.credentials.Credentials: A new credentials instance.
         """
         ...
-    
-    def apply(self, headers, token=...): # -> None:
+
+    def apply(self, headers, token=...):  # -> None:
         """Apply the token to the authentication header."""
         ...
-    
-    def refresh(self, request): # -> None:
+
+    def refresh(self, request):  # -> None:
         """Refreshes the access token and the trust boundary.
 
         This method calls the subclass's token refresh logic and then
         refreshes the trust boundary if applicable.
         """
         ...
-    
-
 
 class AnonymousCredentials(Credentials):
     """Credentials that do not provide any authentication information.
@@ -215,22 +211,23 @@ class AnonymousCredentials(Credentials):
     These are useful in the case of services that support anonymous access or
     local service emulators that do not use credentials.
     """
+
     @property
-    def expired(self): # -> Literal[False]:
+    def expired(self):  # -> Literal[False]:
         """Returns `False`, anonymous credentials never expire."""
         ...
-    
+
     @property
-    def valid(self): # -> Literal[True]:
+    def valid(self):  # -> Literal[True]:
         """Returns `True`, anonymous credentials are always valid."""
         ...
-    
+
     def refresh(self, request):
         """Raises :class:``InvalidOperation``, anonymous credentials cannot be
         refreshed."""
         ...
-    
-    def apply(self, headers, token=...): # -> None:
+
+    def apply(self, headers, token=...):  # -> None:
         """Anonymous credentials do nothing to the request.
 
         The optional ``token`` argument is not supported.
@@ -239,12 +236,10 @@ class AnonymousCredentials(Credentials):
             google.auth.exceptions.InvalidValue: If a token was specified.
         """
         ...
-    
-    def before_request(self, request, method, url, headers): # -> None:
+
+    def before_request(self, request, method, url, headers):  # -> None:
         """Anonymous credentials do nothing to the request."""
         ...
-    
-
 
 class ReadOnlyScoped(metaclass=abc.ABCMeta):
     """Interface for credentials whose scopes can be queried.
@@ -274,25 +269,24 @@ class ReadOnlyScoped(metaclass=abc.ABCMeta):
 
     .. _RFC6749 Section 3.3: https://tools.ietf.org/html/rfc6749#section-3.3
     """
-    def __init__(self) -> None:
-        ...
-    
+
+    def __init__(self) -> None: ...
     @property
-    def scopes(self): # -> None:
+    def scopes(self):  # -> None:
         """Sequence[str]: the credentials' current set of scopes."""
         ...
-    
+
     @property
-    def default_scopes(self): # -> None:
+    def default_scopes(self):  # -> None:
         """Sequence[str]: the credentials' current set of default scopes."""
         ...
-    
+
     @abc.abstractproperty
-    def requires_scopes(self): # -> Literal[False]:
+    def requires_scopes(self):  # -> Literal[False]:
         """True if these credentials require scopes to obtain an access token."""
         ...
-    
-    def has_scopes(self, scopes): # -> bool:
+
+    def has_scopes(self, scopes):  # -> bool:
         """Checks if the credentials have the given scopes.
 
         .. warning: This method is not guaranteed to be accurate if the
@@ -305,8 +299,6 @@ class ReadOnlyScoped(metaclass=abc.ABCMeta):
             bool: True if the credentials have the given scopes.
         """
         ...
-    
-
 
 class Scoped(ReadOnlyScoped):
     """Interface for credentials whose scopes can be replaced while copying.
@@ -336,6 +328,7 @@ class Scoped(ReadOnlyScoped):
 
     .. _RFC6749 Section 3.3: https://tools.ietf.org/html/rfc6749#section-3.3
     """
+
     @abc.abstractmethod
     def with_scopes(self, scopes, default_scopes=...):
         """Create a copy of these credentials with the specified scopes.
@@ -350,10 +343,8 @@ class Scoped(ReadOnlyScoped):
                 calling this method.
         """
         ...
-    
 
-
-def with_scopes_if_required(credentials, scopes, default_scopes=...): # -> Scoped:
+def with_scopes_if_required(credentials, scopes, default_scopes=...):  # -> Scoped:
     """Creates a copy of the credentials with scopes if scoping is required.
 
     This helper function is useful when you do not know (or care to know) the
@@ -379,6 +370,7 @@ def with_scopes_if_required(credentials, scopes, default_scopes=...): # -> Scope
 
 class Signing(metaclass=abc.ABCMeta):
     """Interface for credentials that can cryptographically sign messages."""
+
     @abc.abstractmethod
     def sign_bytes(self, message):
         """Signs the given message.
@@ -390,18 +382,16 @@ class Signing(metaclass=abc.ABCMeta):
             bytes: The message's cryptographic signature.
         """
         ...
-    
+
     @abc.abstractproperty
     def signer_email(self):
         """Optional[str]: An email address that identifies the signer."""
         ...
-    
+
     @abc.abstractproperty
     def signer(self):
         """google.auth.crypt.Signer: The signer used to sign bytes."""
         ...
-    
-
 
 class TokenState(Enum):
     """
@@ -410,8 +400,7 @@ class TokenState(Enum):
     STALE: The token is close to expired, and should be refreshed. The token can be used normally.
     INVALID: The token is expired or invalid. The token cannot be used for a normal operation.
     """
+
     FRESH = ...
     STALE = ...
     INVALID = ...
-
-

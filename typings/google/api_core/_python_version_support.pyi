@@ -9,6 +9,7 @@ from typing import Dict, List, NamedTuple, Optional, Tuple
 
 """Code to check Python versions supported by Google Cloud Client Libraries."""
 _LOGGER = ...
+
 class PythonVersionStatus(enum.Enum):
     """Support status of a Python version in this client library artifact release.
 
@@ -16,15 +17,16 @@ class PythonVersionStatus(enum.Enum):
     artifact is configured to run on the currently configured version of
     Python.
     """
+
     PYTHON_VERSION_STATUS_UNSPECIFIED = ...
     PYTHON_VERSION_SUPPORTED = ...
     PYTHON_VERSION_DEPRECATED = ...
     PYTHON_VERSION_EOL = ...
     PYTHON_VERSION_UNSUPPORTED = ...
 
-
 class VersionInfo(NamedTuple):
     """Hold release and support date information for a Python version."""
+
     version: str
     python_beta: Optional[datetime.date]
     python_start: datetime.date
@@ -33,7 +35,6 @@ class VersionInfo(NamedTuple):
     gapic_deprecation: Optional[datetime.date] = ...
     gapic_end: Optional[datetime.date] = ...
     dep_unpatchable_cve: Optional[datetime.date] = ...
-
 
 PYTHON_VERSIONS: List[VersionInfo] = ...
 PYTHON_VERSION_INFO: Dict[Tuple[int, int], VersionInfo] = ...
@@ -48,7 +49,10 @@ if sys.version_info < (3, 10):
     ...
 else:
     ...
-def check_python_version(package: str = ..., today: Optional[datetime.date] = ...) -> PythonVersionStatus:
+
+def check_python_version(
+    package: str = ..., today: Optional[datetime.date] = ...
+) -> PythonVersionStatus:
     """Check the running Python version and issue a support warning if needed.
 
     Args:
@@ -58,4 +62,3 @@ def check_python_version(package: str = ..., today: Optional[datetime.date] = ..
         The support status of the current Python version.
     """
     ...
-

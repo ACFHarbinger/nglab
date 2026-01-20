@@ -11,7 +11,8 @@ _CLOUD_SDK_WINDOWS_COMMAND = ...
 _CLOUD_SDK_CONFIG_GET_PROJECT_COMMAND = ...
 _CLOUD_SDK_USER_ACCESS_TOKEN_COMMAND = ...
 CLOUD_SDK_CLIENT_ID = ...
-def get_config_path(): # -> str:
+
+def get_config_path():  # -> str:
     """Returns the absolute path the the Cloud SDK's configuration directory.
 
     Returns:
@@ -19,7 +20,7 @@ def get_config_path(): # -> str:
     """
     ...
 
-def get_application_default_credentials_path(): # -> str:
+def get_application_default_credentials_path():  # -> str:
     """Gets the path to the application default credentials file.
 
     The path may or may not exist.
@@ -29,7 +30,7 @@ def get_application_default_credentials_path(): # -> str:
     """
     ...
 
-def get_project_id(): # -> str | None:
+def get_project_id():  # -> str | None:
     """Gets the project ID from the Cloud SDK.
 
     Returns:
@@ -37,7 +38,7 @@ def get_project_id(): # -> str | None:
     """
     ...
 
-def get_auth_access_token(account=...): # -> str:
+def get_auth_access_token(account=...):  # -> str:
     """Load user access token with the ``gcloud auth print-access-token`` command.
 
     Args:
@@ -52,4 +53,3 @@ def get_auth_access_token(account=...): # -> str:
             token from gcloud.
     """
     ...
-

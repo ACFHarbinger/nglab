@@ -38,11 +38,13 @@ _AWS_SECURITY_TOKEN_HEADER = ...
 _AWS_DATE_HEADER = ...
 _DEFAULT_AWS_REGIONAL_CREDENTIAL_VERIFICATION_URL = ...
 _IMDSV2_SESSION_TOKEN_TTL_SECONDS = ...
+
 class RequestSigner:
     """Implements an AWS request signer based on the AWS Signature Version 4 signing
     process.
     https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html
     """
+
     def __init__(self, region_name) -> None:
         """Instantiates an AWS request signer used to compute authenticated signed
         requests to AWS APIs based on the AWS Signature Version 4 signing process.
@@ -51,8 +53,15 @@ class RequestSigner:
             region_name (str): The AWS region to use.
         """
         ...
-    
-    def get_request_options(self, aws_security_credentials, url, method, request_payload=..., additional_headers=...): # -> dict[str, Any]:
+
+    def get_request_options(
+        self,
+        aws_security_credentials,
+        url,
+        method,
+        request_payload=...,
+        additional_headers=...,
+    ):  # -> dict[str, Any]:
         """Generates the signed request for the provided HTTP request for calling
         an AWS API. This follows the steps described at:
         https://docs.aws.amazon.com/general/latest/gr/sigv4_signing.html
@@ -71,8 +80,6 @@ class RequestSigner:
             Mapping[str, str]: The AWS signed request dictionary object.
         """
         ...
-    
-
 
 @dataclass
 class AwsSecurityCredentials:
@@ -83,16 +90,17 @@ class AwsSecurityCredentials:
         secret_access_key (str): The AWS security credentials secret access key.
         session_token (Optional[str]): The optional AWS security credentials session token. This should be set when using temporary credentials.
     """
+
     access_key_id: str
     secret_access_key: str
     session_token: Optional[str] = ...
-
 
 class AwsSecurityCredentialsSupplier(metaclass=abc.ABCMeta):
     """Base class for AWS security credential suppliers. This can be implemented with custom logic to retrieve
     AWS security credentials to exchange for a Google Cloud access token. The AWS external account credential does
     not cache the AWS security credentials, so caching logic should be added in the implementation.
     """
+
     @abc.abstractmethod
     def get_aws_security_credentials(self, context, request):
         """Returns the AWS security credentials for the requested context.
@@ -113,7 +121,7 @@ class AwsSecurityCredentialsSupplier(metaclass=abc.ABCMeta):
             AwsSecurityCredentials: The requested AWS security credentials.
         """
         ...
-    
+
     @abc.abstractmethod
     def get_aws_region(self, context, request):
         """Returns the AWS region for the requested context.
@@ -132,32 +140,39 @@ class AwsSecurityCredentialsSupplier(metaclass=abc.ABCMeta):
             str: The AWS region.
         """
         ...
-    
-
 
 class _DefaultAwsSecurityCredentialsSupplier(AwsSecurityCredentialsSupplier):
     """Default implementation of AWS security credentials supplier. Supports retrieving
     credentials and region via EC2 metadata endpoints and environment variables.
     """
-    def __init__(self, credential_source) -> None:
-        ...
-    
-    @_helpers.copy_docstring(AwsSecurityCredentialsSupplier)
-    def get_aws_security_credentials(self, context, request): # -> AwsSecurityCredentials:
-        ...
-    
-    @_helpers.copy_docstring(AwsSecurityCredentialsSupplier)
-    def get_aws_region(self, context, request): # -> str:
-        ...
-    
 
+    def __init__(self, credential_source) -> None: ...
+    @_helpers.copy_docstring(AwsSecurityCredentialsSupplier)
+    def get_aws_security_credentials(
+        self, context, request
+    ):  # -> AwsSecurityCredentials:
+        ...
+
+    @_helpers.copy_docstring(AwsSecurityCredentialsSupplier)
+    def get_aws_region(self, context, request):  # -> str:
+        ...
 
 class Credentials(external_account.Credentials):
     """AWS external account credentials.
     This is used to exchange serialized AWS signature v4 signed requests to
     AWS STS GetCallerIdentity service for Google access tokens.
     """
-    def __init__(self, audience, subject_token_type, token_url=..., credential_source=..., aws_security_credentials_supplier=..., *args, **kwargs) -> None:
+
+    def __init__(
+        self,
+        audience,
+        subject_token_type,
+        token_url=...,
+        credential_source=...,
+        aws_security_credentials_supplier=...,
+        *args,
+        **kwargs,
+    ) -> None:
         """Instantiates an AWS workload external account credentials object.
 
         Args:
@@ -199,7 +214,7 @@ class Credentials(external_account.Credentials):
             :meth:`from_info` are used instead of calling the constructor directly.
         """
         ...
-    
+
     def retrieve_subject_token(self, request):
         """Retrieves the subject token using the credential_source object.
         The subject token is a serialized `AWS GetCallerIdentity signed request`_.
@@ -233,9 +248,9 @@ class Credentials(external_account.Credentials):
             str: The retrieved subject token.
         """
         ...
-    
+
     @classmethod
-    def from_info(cls, info, **kwargs): # -> Self:
+    def from_info(cls, info, **kwargs):  # -> Self:
         """Creates an AWS Credentials instance from parsed external account info.
 
         Args:
@@ -250,9 +265,9 @@ class Credentials(external_account.Credentials):
             ValueError: For invalid parameters.
         """
         ...
-    
+
     @classmethod
-    def from_file(cls, filename, **kwargs): # -> Self:
+    def from_file(cls, filename, **kwargs):  # -> Self:
         """Creates an AWS Credentials instance from an external account json file.
 
         Args:
@@ -263,6 +278,3 @@ class Credentials(external_account.Credentials):
             google.auth.aws.Credentials: The constructed credentials.
         """
         ...
-    
-
-

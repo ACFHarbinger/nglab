@@ -9,6 +9,7 @@ CHUNK_SIZE_MULTIPLE = ...
 DEFAULT_CHUNK_SIZE = ...
 VALID_DOWNLOAD_KWARGS = ...
 VALID_UPLOAD_KWARGS = ...
+
 class BlobReader(io.BufferedIOBase):
     """A file-like object that reads from a blob.
 
@@ -61,16 +62,15 @@ class BlobReader(io.BufferedIOBase):
         Note that download_kwargs (excluding ``raw_download`` and ``single_shot_download``) are also applied to blob.reload(),
         if a reload is needed during seek().
     """
-    def __init__(self, blob, chunk_size=..., retry=..., **download_kwargs) -> None:
+
+    def __init__(self, blob, chunk_size=..., retry=..., **download_kwargs) -> None: ...
+    def read(self, size=...):  # -> bytes:
         ...
-    
-    def read(self, size=...): # -> bytes:
+
+    def read1(self, size=...):  # -> bytes:
         ...
-    
-    def read1(self, size=...): # -> bytes:
-        ...
-    
-    def seek(self, pos, whence=...): # -> int:
+
+    def seek(self, pos, whence=...):  # -> int:
         """Seek within the blob.
 
         This implementation of seek() uses knowledge of the blob size to
@@ -78,24 +78,22 @@ class BlobReader(io.BufferedIOBase):
         If the blob size is not already known it will call blob.reload().
         """
         ...
-    
-    def close(self): # -> None:
-        ...
-    
-    @property
-    def closed(self): # -> bool:
-        ...
-    
-    def readable(self): # -> Literal[True]:
-        ...
-    
-    def writable(self): # -> Literal[False]:
-        ...
-    
-    def seekable(self): # -> Literal[True]:
-        ...
-    
 
+    def close(self):  # -> None:
+        ...
+
+    @property
+    def closed(self):  # -> bool:
+        ...
+
+    def readable(self):  # -> Literal[True]:
+        ...
+
+    def writable(self):  # -> Literal[False]:
+        ...
+
+    def seekable(self):  # -> Literal[True]:
+        ...
 
 class BlobWriter(io.BufferedIOBase):
     """A file-like object that writes to a blob.
@@ -161,42 +159,41 @@ class BlobWriter(io.BufferedIOBase):
         - ``predefined_acl``
         - ``checksum``
     """
-    def __init__(self, blob, chunk_size=..., ignore_flush=..., retry=..., **upload_kwargs) -> None:
+
+    def __init__(
+        self, blob, chunk_size=..., ignore_flush=..., retry=..., **upload_kwargs
+    ) -> None: ...
+    def write(self, b):  # -> int:
         ...
-    
-    def write(self, b): # -> int:
+
+    def tell(self):  # -> int:
         ...
-    
-    def tell(self): # -> int:
+
+    def flush(self):  # -> None:
         ...
-    
-    def flush(self): # -> None:
+
+    def close(self):  # -> None:
         ...
-    
-    def close(self): # -> None:
-        ...
-    
-    def terminate(self): # -> None:
+
+    def terminate(self):  # -> None:
         """Cancel the ResumableUpload."""
         ...
-    
-    def __exit__(self, exc_type, exc_val, exc_tb): # -> None:
-        ...
-    
-    @property
-    def closed(self): # -> bool:
-        ...
-    
-    def readable(self): # -> Literal[False]:
-        ...
-    
-    def writable(self): # -> Literal[True]:
-        ...
-    
-    def seekable(self): # -> Literal[False]:
-        ...
-    
 
+    def __exit__(self, exc_type, exc_val, exc_tb):  # -> None:
+        ...
+
+    @property
+    def closed(self):  # -> bool:
+        ...
+
+    def readable(self):  # -> Literal[False]:
+        ...
+
+    def writable(self):  # -> Literal[True]:
+        ...
+
+    def seekable(self):  # -> Literal[False]:
+        ...
 
 class SlidingBuffer:
     """A non-rewindable buffer that frees memory of chunks already consumed.
@@ -216,25 +213,24 @@ class SlidingBuffer:
 
     This class does not attempt to implement the entire Python I/O interface.
     """
-    def __init__(self) -> None:
-        ...
-    
-    def write(self, b): # -> int:
+
+    def __init__(self) -> None: ...
+    def write(self, b):  # -> int:
         """Append to the end of the buffer without changing the position."""
         ...
-    
-    def read(self, size=...): # -> bytes:
+
+    def read(self, size=...):  # -> bytes:
         """Read and move the cursor."""
         ...
-    
-    def flush(self): # -> None:
+
+    def flush(self):  # -> None:
         """Delete already-read data (all data to the left of the position)."""
         ...
-    
-    def tell(self): # -> int:
+
+    def tell(self):  # -> int:
         """Report how many bytes have been read from the buffer in total."""
         ...
-    
+
     def seek(self, pos):
         """Seek to a position (backwards only) within the internal buffer.
 
@@ -245,17 +241,14 @@ class SlidingBuffer:
         The "whence" argument is not supported in this implementation.
         """
         ...
-    
-    def __len__(self): # -> int:
+
+    def __len__(self):  # -> int:
         """Determine the size of the buffer by seeking to the end."""
         ...
-    
-    def close(self): # -> None:
+
+    def close(self):  # -> None:
         ...
-    
+
     @property
-    def closed(self): # -> bool:
+    def closed(self):  # -> bool:
         ...
-    
-
-

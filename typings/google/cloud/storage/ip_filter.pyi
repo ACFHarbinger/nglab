@@ -12,6 +12,7 @@ _ALLOWED_IP_CIDR_RANGES = ...
 _NETWORK = ...
 _ALLOW_ALL_SERVICE_AGENT_ACCESS = ...
 _ALLOW_CROSS_ORG_VPCS = ...
+
 class PublicNetworkSource:
     """Represents a public network source for a GCS Bucket IP Filter.
 
@@ -20,10 +21,8 @@ class PublicNetworkSource:
                                    CIDR notation that are allowed to access
                                    the bucket.
     """
-    def __init__(self, allowed_ip_cidr_ranges: Optional[List[str]] = ...) -> None:
-        ...
-    
 
+    def __init__(self, allowed_ip_cidr_ranges: Optional[List[str]] = ...) -> None: ...
 
 class VpcNetworkSource:
     """Represents a VPC network source for a GCS Bucket IP Filter.
@@ -36,10 +35,10 @@ class VpcNetworkSource:
                                    notation allowed to access the bucket
                                    from this VPC.
     """
-    def __init__(self, network: str, allowed_ip_cidr_ranges: Optional[List[str]] = ...) -> None:
-        ...
-    
 
+    def __init__(
+        self, network: str, allowed_ip_cidr_ranges: Optional[List[str]] = ...
+    ) -> None: ...
 
 class IPFilter:
     """Represents a GCS Bucket IP Filter configuration.
@@ -47,8 +46,5 @@ class IPFilter:
     This class is a helper for constructing the IP Filter dictionary to be
     assigned to a bucket's ``ip_filter`` property.
     """
-    def __init__(self) -> None:
-        ...
-    
 
-
+    def __init__(self) -> None: ...

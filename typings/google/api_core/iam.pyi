@@ -49,10 +49,11 @@ EDITOR_ROLE = ...
 VIEWER_ROLE = ...
 _ASSIGNMENT_DEPRECATED_MSG = ...
 _DICT_ACCESS_MSG = ...
+
 class InvalidOperationException(Exception):
     """Raised when trying to use Policy class as a dict."""
-    ...
 
+    ...
 
 class Policy(collections.abc.MutableMapping):
     """IAM Policy
@@ -75,33 +76,30 @@ class Policy(collections.abc.MutableMapping):
         Policy versions https://cloud.google.com/iam/docs/policies#versions
         Conditions overview https://cloud.google.com/iam/docs/conditions-overview.
     """
+
     _OWNER_ROLES = ...
     _EDITOR_ROLES = ...
     _VIEWER_ROLES = ...
-    def __init__(self, etag=..., version=...) -> None:
+    def __init__(self, etag=..., version=...) -> None: ...
+    def __iter__(self):  # -> Generator[Any, None, None]:
         ...
-    
-    def __iter__(self): # -> Generator[Any, None, None]:
+
+    def __len__(self):  # -> int:
         ...
-    
-    def __len__(self): # -> int:
+
+    def __getitem__(self, key): ...
+    def __setitem__(self, key, value):  # -> None:
         ...
-    
-    def __getitem__(self, key):
+
+    def __delitem__(self, key):  # -> None:
         ...
-    
-    def __setitem__(self, key, value): # -> None:
-        ...
-    
-    def __delitem__(self, key): # -> None:
-        ...
-    
-    def __check_version__(self): # -> None:
+
+    def __check_version__(self):  # -> None:
         """Raise InvalidOperationException if version is greater than 1 or policy contains conditions."""
         ...
-    
+
     @property
-    def bindings(self): # -> list[Any]:
+    def bindings(self):  # -> list[Any]:
         """The policy's list of bindings.
 
         A binding is specified by a dictionary with keys:
@@ -151,13 +149,13 @@ class Policy(collections.abc.MutableMapping):
            ]
         """
         ...
-    
+
     @bindings.setter
-    def bindings(self, bindings): # -> None:
+    def bindings(self, bindings):  # -> None:
         ...
-    
+
     @property
-    def owners(self): # -> frozenset[Any]:
+    def owners(self):  # -> frozenset[Any]:
         """Legacy access to owner role.
 
         Raise InvalidOperationException if version is greater than 1 or policy contains conditions.
@@ -165,9 +163,9 @@ class Policy(collections.abc.MutableMapping):
         DEPRECATED:  use `policy.bindings` to access bindings instead.
         """
         ...
-    
+
     @owners.setter
-    def owners(self, value): # -> None:
+    def owners(self, value):  # -> None:
         """Update owners.
 
         Raise InvalidOperationException if version is greater than 1 or policy contains conditions.
@@ -175,9 +173,9 @@ class Policy(collections.abc.MutableMapping):
         DEPRECATED:  use `policy.bindings` to access bindings instead.
         """
         ...
-    
+
     @property
-    def editors(self): # -> frozenset[Any]:
+    def editors(self):  # -> frozenset[Any]:
         """Legacy access to editor role.
 
         Raise InvalidOperationException if version is greater than 1 or policy contains conditions.
@@ -185,9 +183,9 @@ class Policy(collections.abc.MutableMapping):
         DEPRECATED:  use `policy.bindings` to access bindings instead.
         """
         ...
-    
+
     @editors.setter
-    def editors(self, value): # -> None:
+    def editors(self, value):  # -> None:
         """Update editors.
 
         Raise InvalidOperationException if version is greater than 1 or policy contains conditions.
@@ -195,9 +193,9 @@ class Policy(collections.abc.MutableMapping):
         DEPRECATED:  use `policy.bindings` to modify bindings instead.
         """
         ...
-    
+
     @property
-    def viewers(self): # -> frozenset[Any]:
+    def viewers(self):  # -> frozenset[Any]:
         """Legacy access to viewer role.
 
         Raise InvalidOperationException if version is greater than 1 or policy contains conditions.
@@ -205,9 +203,9 @@ class Policy(collections.abc.MutableMapping):
         DEPRECATED:  use `policy.bindings` to modify bindings instead.
         """
         ...
-    
+
     @viewers.setter
-    def viewers(self, value): # -> None:
+    def viewers(self, value):  # -> None:
         """Update viewers.
 
         Raise InvalidOperationException if version is greater than 1 or policy contains conditions.
@@ -215,9 +213,9 @@ class Policy(collections.abc.MutableMapping):
         DEPRECATED:  use `policy.bindings` to modify bindings instead.
         """
         ...
-    
+
     @staticmethod
-    def user(email): # -> LiteralString:
+    def user(email):  # -> LiteralString:
         """Factory method for a user member.
 
         Args:
@@ -227,9 +225,9 @@ class Policy(collections.abc.MutableMapping):
             str: A member string corresponding to the given user.
         """
         ...
-    
+
     @staticmethod
-    def service_account(email): # -> LiteralString:
+    def service_account(email):  # -> LiteralString:
         """Factory method for a service account member.
 
         Args:
@@ -240,9 +238,9 @@ class Policy(collections.abc.MutableMapping):
 
         """
         ...
-    
+
     @staticmethod
-    def group(email): # -> LiteralString:
+    def group(email):  # -> LiteralString:
         """Factory method for a group member.
 
         Args:
@@ -252,9 +250,9 @@ class Policy(collections.abc.MutableMapping):
             str: A member string corresponding to the given group.
         """
         ...
-    
+
     @staticmethod
-    def domain(domain): # -> LiteralString:
+    def domain(domain):  # -> LiteralString:
         """Factory method for a domain member.
 
         Args:
@@ -264,27 +262,27 @@ class Policy(collections.abc.MutableMapping):
             str: A member string corresponding to the given domain.
         """
         ...
-    
+
     @staticmethod
-    def all_users(): # -> Literal['allUsers']:
+    def all_users():  # -> Literal['allUsers']:
         """Factory method for a member representing all users.
 
         Returns:
             str: A member string representing all users.
         """
         ...
-    
+
     @staticmethod
-    def authenticated_users(): # -> Literal['allAuthenticatedUsers']:
+    def authenticated_users():  # -> Literal['allAuthenticatedUsers']:
         """Factory method for a member representing all authenticated users.
 
         Returns:
             str: A member string representing all authenticated users.
         """
         ...
-    
+
     @classmethod
-    def from_api_repr(cls, resource): # -> Self:
+    def from_api_repr(cls, resource):  # -> Self:
         """Factory: create a policy from a JSON resource.
 
         Args:
@@ -294,14 +292,11 @@ class Policy(collections.abc.MutableMapping):
             :class:`Policy`: the parsed policy
         """
         ...
-    
-    def to_api_repr(self): # -> dict[Any, Any]:
+
+    def to_api_repr(self):  # -> dict[Any, Any]:
         """Render a JSON policy resource.
 
         Returns:
             dict: a resource to be passed to the ``setIamPolicy`` API.
         """
         ...
-    
-
-

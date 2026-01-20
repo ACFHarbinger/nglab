@@ -8,19 +8,20 @@ signing libraries.
 """
 _LOGGER = ...
 SIGN_CALLBACK_CTYPE = ...
-def load_offload_lib(offload_lib_path): # -> CDLL:
+
+def load_offload_lib(offload_lib_path):  # -> CDLL:
     ...
 
-def load_signer_lib(signer_lib_path): # -> CDLL:
+def load_signer_lib(signer_lib_path):  # -> CDLL:
     ...
 
-def load_provider_lib(provider_lib_path): # -> CDLL:
+def load_provider_lib(provider_lib_path):  # -> CDLL:
     ...
 
-def get_sign_callback(signer_lib, config_file_path): # -> _CFunctionType:
+def get_sign_callback(signer_lib, config_file_path):  # -> _CFunctionType:
     ...
 
-def get_cert(signer_lib, config_file_path): # -> bytes:
+def get_cert(signer_lib, config_file_path):  # -> bytes:
     ...
 
 class CustomTlsSigner:
@@ -43,18 +44,15 @@ class CustomTlsSigner:
                     }
         """
         ...
-    
-    def load_libraries(self): # -> None:
-        ...
-    
-    def set_up_custom_key(self): # -> None:
-        ...
-    
-    def should_use_provider(self): # -> bool:
-        ...
-    
-    def attach_to_ssl_context(self, ctx): # -> None:
-        ...
-    
 
+    def load_libraries(self):  # -> None:
+        ...
 
+    def set_up_custom_key(self):  # -> None:
+        ...
+
+    def should_use_provider(self):  # -> bool:
+        ...
+
+    def attach_to_ssl_context(self, ctx):  # -> None:
+        ...

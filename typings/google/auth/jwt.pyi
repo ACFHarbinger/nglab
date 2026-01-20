@@ -39,7 +39,8 @@ _ALGORITHM_TO_VERIFIER_CLASS = ...
 _CRYPTOGRAPHY_BASED_ALGORITHMS = ...
 if es is not None:
     ...
-def encode(signer, payload, header=..., key_id=...): # -> bytes:
+
+def encode(signer, payload, header=..., key_id=...):  # -> bytes:
     """Make a signed JWT.
 
     Args:
@@ -55,7 +56,7 @@ def encode(signer, payload, header=..., key_id=...): # -> bytes:
     """
     ...
 
-def decode_header(token): # -> Any:
+def decode_header(token):  # -> Any:
     """Return the decoded header of a token.
 
     No verification is done. This is useful to extract the key id from
@@ -70,7 +71,9 @@ def decode_header(token): # -> Any:
     """
     ...
 
-def decode(token, certs=..., verify=..., audience=..., clock_skew_in_seconds=...): # -> Any:
+def decode(
+    token, certs=..., verify=..., audience=..., clock_skew_in_seconds=...
+):  # -> Any:
     """Decode and verify a JWT.
 
     Args:
@@ -98,7 +101,9 @@ def decode(token, certs=..., verify=..., audience=..., clock_skew_in_seconds=...
     """
     ...
 
-class Credentials(google.auth.credentials.Signing, google.auth.credentials.CredentialsWithQuotaProject):
+class Credentials(
+    google.auth.credentials.Signing, google.auth.credentials.CredentialsWithQuotaProject
+):
     """Credentials that use a JWT as the bearer token.
 
     These credentials require an "audience" claim. This claim identifies the
@@ -147,7 +152,17 @@ class Credentials(google.auth.credentials.Signing, google.auth.credentials.Crede
             'https://pubsub.googleapis.com/google.pubsub.v1.Subscriber')
         new_credentials = credentials.with_claims(audience=new_audience)
     """
-    def __init__(self, signer, issuer, subject, audience, additional_claims=..., token_lifetime=..., quota_project_id=...) -> None:
+
+    def __init__(
+        self,
+        signer,
+        issuer,
+        subject,
+        audience,
+        additional_claims=...,
+        token_lifetime=...,
+        quota_project_id=...,
+    ) -> None:
         """
         Args:
             signer (google.auth.crypt.Signer): The signer used to sign JWTs.
@@ -163,9 +178,9 @@ class Credentials(google.auth.credentials.Signing, google.auth.credentials.Crede
                 and billing.
         """
         ...
-    
+
     @classmethod
-    def from_service_account_info(cls, info, **kwargs): # -> Self:
+    def from_service_account_info(cls, info, **kwargs):  # -> Self:
         """Creates an Credentials instance from a dictionary.
 
         Args:
@@ -180,9 +195,9 @@ class Credentials(google.auth.credentials.Signing, google.auth.credentials.Crede
             google.auth.exceptions.MalformedError: If the info is not in the expected format.
         """
         ...
-    
+
     @classmethod
-    def from_service_account_file(cls, filename, **kwargs): # -> Self:
+    def from_service_account_file(cls, filename, **kwargs):  # -> Self:
         """Creates a Credentials instance from a service account .json file
         in Google format.
 
@@ -194,9 +209,9 @@ class Credentials(google.auth.credentials.Signing, google.auth.credentials.Crede
             google.auth.jwt.Credentials: The constructed credentials.
         """
         ...
-    
+
     @classmethod
-    def from_signing_credentials(cls, credentials, audience, **kwargs): # -> Self:
+    def from_signing_credentials(cls, credentials, audience, **kwargs):  # -> Self:
         """Creates a new :class:`google.auth.jwt.Credentials` instance from an
         existing :class:`google.auth.credentials.Signing` instance.
 
@@ -224,8 +239,10 @@ class Credentials(google.auth.credentials.Signing, google.auth.credentials.Crede
             google.auth.jwt.Credentials: A new Credentials instance.
         """
         ...
-    
-    def with_claims(self, issuer=..., subject=..., audience=..., additional_claims=...): # -> Self:
+
+    def with_claims(
+        self, issuer=..., subject=..., audience=..., additional_claims=...
+    ):  # -> Self:
         """Returns a copy of these credentials with modified claims.
 
         Args:
@@ -243,41 +260,39 @@ class Credentials(google.auth.credentials.Signing, google.auth.credentials.Crede
             google.auth.jwt.Credentials: A new credentials instance.
         """
         ...
-    
+
     @_helpers.copy_docstring(google.auth.credentials.CredentialsWithQuotaProject)
-    def with_quota_project(self, quota_project_id): # -> Self:
+    def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-    
-    def refresh(self, request): # -> None:
+
+    def refresh(self, request):  # -> None:
         """Refreshes the access token.
 
         Args:
             request (Any): Unused.
         """
         ...
-    
+
     @_helpers.copy_docstring(google.auth.credentials.Signing)
-    def sign_bytes(self, message):
-        ...
-    
+    def sign_bytes(self, message): ...
     @property
     @_helpers.copy_docstring(google.auth.credentials.Signing)
-    def signer_email(self): # -> Any:
+    def signer_email(self):  # -> Any:
         ...
-    
+
     @property
     @_helpers.copy_docstring(google.auth.credentials.Signing)
-    def signer(self): # -> Any:
+    def signer(self):  # -> Any:
         ...
-    
+
     @property
-    def additional_claims(self): # -> dict[Any, Any]:
+    def additional_claims(self):  # -> dict[Any, Any]:
         """Additional claims the JWT object was created with."""
         ...
-    
 
-
-class OnDemandCredentials(google.auth.credentials.Signing, google.auth.credentials.CredentialsWithQuotaProject):
+class OnDemandCredentials(
+    google.auth.credentials.Signing, google.auth.credentials.CredentialsWithQuotaProject
+):
     """On-demand JWT credentials.
 
     Like :class:`Credentials`, this class uses a JWT as the bearer token for
@@ -294,7 +309,17 @@ class OnDemandCredentials(google.auth.credentials.Signing, google.auth.credentia
 
     .. _grpc: http://www.grpc.io/
     """
-    def __init__(self, signer, issuer, subject, additional_claims=..., token_lifetime=..., max_cache_size=..., quota_project_id=...) -> None:
+
+    def __init__(
+        self,
+        signer,
+        issuer,
+        subject,
+        additional_claims=...,
+        token_lifetime=...,
+        max_cache_size=...,
+        quota_project_id=...,
+    ) -> None:
         """
         Args:
             signer (google.auth.crypt.Signer): The signer used to sign JWTs.
@@ -311,9 +336,9 @@ class OnDemandCredentials(google.auth.credentials.Signing, google.auth.credentia
 
         """
         ...
-    
+
     @classmethod
-    def from_service_account_info(cls, info, **kwargs): # -> Self:
+    def from_service_account_info(cls, info, **kwargs):  # -> Self:
         """Creates an OnDemandCredentials instance from a dictionary.
 
         Args:
@@ -328,9 +353,9 @@ class OnDemandCredentials(google.auth.credentials.Signing, google.auth.credentia
             google.auth.exceptions.MalformedError: If the info is not in the expected format.
         """
         ...
-    
+
     @classmethod
-    def from_service_account_file(cls, filename, **kwargs): # -> Self:
+    def from_service_account_file(cls, filename, **kwargs):  # -> Self:
         """Creates an OnDemandCredentials instance from a service account .json
         file in Google format.
 
@@ -342,9 +367,9 @@ class OnDemandCredentials(google.auth.credentials.Signing, google.auth.credentia
             google.auth.jwt.OnDemandCredentials: The constructed credentials.
         """
         ...
-    
+
     @classmethod
-    def from_signing_credentials(cls, credentials, **kwargs): # -> Self:
+    def from_signing_credentials(cls, credentials, **kwargs):  # -> Self:
         """Creates a new :class:`google.auth.jwt.OnDemandCredentials` instance
         from an existing :class:`google.auth.credentials.Signing` instance.
 
@@ -368,8 +393,8 @@ class OnDemandCredentials(google.auth.credentials.Signing, google.auth.credentia
             google.auth.jwt.Credentials: A new Credentials instance.
         """
         ...
-    
-    def with_claims(self, issuer=..., subject=..., additional_claims=...): # -> Self:
+
+    def with_claims(self, issuer=..., subject=..., additional_claims=...):  # -> Self:
         """Returns a copy of these credentials with modified claims.
 
         Args:
@@ -385,20 +410,20 @@ class OnDemandCredentials(google.auth.credentials.Signing, google.auth.credentia
             google.auth.jwt.OnDemandCredentials: A new credentials instance.
         """
         ...
-    
+
     @_helpers.copy_docstring(google.auth.credentials.CredentialsWithQuotaProject)
-    def with_quota_project(self, quota_project_id): # -> Self:
+    def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-    
+
     @property
-    def valid(self): # -> Literal[True]:
+    def valid(self):  # -> Literal[True]:
         """Checks the validity of the credentials.
 
         These credentials are always valid because it generates tokens on
         demand.
         """
         ...
-    
+
     def refresh(self, request):
         """Raises an exception, these credentials can not be directly
         refreshed.
@@ -410,8 +435,8 @@ class OnDemandCredentials(google.auth.credentials.Signing, google.auth.credentia
             google.auth.RefreshError
         """
         ...
-    
-    def before_request(self, request, method, url, headers): # -> None:
+
+    def before_request(self, request, method, url, headers):  # -> None:
         """Performs credential-specific before request logic.
 
         Args:
@@ -423,20 +448,15 @@ class OnDemandCredentials(google.auth.credentials.Signing, google.auth.credentia
             headers (Mapping): The request's headers.
         """
         ...
-    
+
     @_helpers.copy_docstring(google.auth.credentials.Signing)
-    def sign_bytes(self, message):
-        ...
-    
+    def sign_bytes(self, message): ...
     @property
     @_helpers.copy_docstring(google.auth.credentials.Signing)
-    def signer_email(self): # -> Any:
+    def signer_email(self):  # -> Any:
         ...
-    
+
     @property
     @_helpers.copy_docstring(google.auth.credentials.Signing)
-    def signer(self): # -> Any:
+    def signer(self):  # -> Any:
         ...
-    
-
-

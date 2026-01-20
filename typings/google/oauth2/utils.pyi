@@ -32,15 +32,16 @@ capabilities:
 .. _RFC 6749 section 2.3.1: https://tools.ietf.org/html/rfc6749#section-2.3.1
 .. _RFC 6749 section 5.2: https://tools.ietf.org/html/rfc6749#section-5.2
 """
+
 class ClientAuthType(enum.Enum):
     basic = ...
     request_body = ...
-
 
 class ClientAuthentication:
     """Defines the client authentication credentials for basic and request-body
     types based on https://tools.ietf.org/html/rfc6749#section-2.3.1.
     """
+
     def __init__(self, client_auth_type, client_id, client_secret=...) -> None:
         """Instantiates a client authentication object containing the client ID
         and secret credentials for basic and response-body auth.
@@ -52,13 +53,12 @@ class ClientAuthentication:
             client_secret (Optional[str]): The client secret.
         """
         ...
-    
-
 
 class OAuthClientAuthHandler(metaclass=abc.ABCMeta):
     """Abstract class for handling client authentication in OAuth-based
     operations.
     """
+
     def __init__(self, client_authentication=...) -> None:
         """Instantiates an OAuth client authentication handler.
 
@@ -67,8 +67,10 @@ class OAuthClientAuthHandler(metaclass=abc.ABCMeta):
                 The OAuth client authentication credentials if available.
         """
         ...
-    
-    def apply_client_authentication_options(self, headers, request_body=..., bearer_token=...): # -> None:
+
+    def apply_client_authentication_options(
+        self, headers, request_body=..., bearer_token=...
+    ):  # -> None:
         """Applies client authentication on the OAuth request's headers or POST
         body.
 
@@ -80,8 +82,6 @@ class OAuthClientAuthHandler(metaclass=abc.ABCMeta):
             bearer_token (Optional[str]): The optional bearer token.
         """
         ...
-    
-
 
 def handle_error_response(response_body):
     """Translates an error response from an OAuth operation into an
@@ -94,4 +94,3 @@ def handle_error_response(response_body):
         google.auth.exceptions.OAuthError
     """
     ...
-

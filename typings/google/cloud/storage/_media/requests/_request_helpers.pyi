@@ -9,18 +9,17 @@ This utilities are explicitly catered to ``requests``-like transports.
 _SINGLE_GET_CHUNK_SIZE = ...
 _DEFAULT_CONNECT_TIMEOUT = ...
 _DEFAULT_READ_TIMEOUT = ...
+
 class RequestsMixin:
     """Mix-in class implementing ``requests``-specific behavior.
 
     These are methods that are more general purpose, with implementations
     specific to the types defined in ``requests``.
     """
+
     ...
 
-
-class RawRequestsMixin(RequestsMixin):
-    ...
-
+class RawRequestsMixin(RequestsMixin): ...
 
 def wait_and_retry(func, retry_strategy):
     """Attempts to retry a call to ``func`` until success.
@@ -35,4 +34,3 @@ def wait_and_retry(func, retry_strategy):
         object: The return value of ``func``.
     """
     ...
-

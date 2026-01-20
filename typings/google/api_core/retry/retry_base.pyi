@@ -17,6 +17,7 @@ _DEFAULT_MAXIMUM_DELAY = ...
 _DEFAULT_DELAY_MULTIPLIER = ...
 _DEFAULT_DEADLINE = ...
 _LOGGER = ...
+
 def if_exception_type(*exception_types: type[Exception]) -> Callable[[Exception], bool]:
     """Creates a predicate to check if the exception is of a given type.
 
@@ -31,7 +32,10 @@ def if_exception_type(*exception_types: type[Exception]) -> Callable[[Exception]
     ...
 
 if_transient_error = ...
-def exponential_sleep_generator(initial: float, maximum: float, multiplier: float = ...): # -> Generator[float, Any, NoReturn]:
+
+def exponential_sleep_generator(
+    initial: float, maximum: float, multiplier: float = ...
+):  # -> Generator[float, Any, NoReturn]:
     """Generates sleep intervals based on the exponential back-off algorithm.
 
     This implements the `Truncated Exponential Back-off`_ algorithm.
@@ -54,11 +58,16 @@ class RetryFailureReason(Enum):
     """
     The cause of a failed retry, used when building exceptions
     """
+
     TIMEOUT = ...
     NON_RETRYABLE_ERROR = ...
 
-
-def build_retry_error(exc_list: list[Exception], reason: RetryFailureReason, timeout_val: float | None, **kwargs: Any) -> tuple[Exception, Exception | None]:
+def build_retry_error(
+    exc_list: list[Exception],
+    reason: RetryFailureReason,
+    timeout_val: float | None,
+    **kwargs: Any,
+) -> tuple[Exception, Exception | None]:
     """
     Default exception_factory implementation.
 
@@ -83,12 +92,18 @@ class _BaseRetry:
     for both unary and streaming RPCs. It is not intended to be instantiated directly,
     but rather to be subclassed by the various retry configuration classes.
     """
-    def __init__(self, predicate: Callable[[Exception], bool] = ..., initial: float = ..., maximum: float = ..., multiplier: float = ..., timeout: Optional[float] = ..., on_error: Optional[Callable[[Exception], Any]] = ..., **kwargs: Any) -> None:
-        ...
-    
-    def __call__(self, *args, **kwargs) -> Any:
-        ...
-    
+
+    def __init__(
+        self,
+        predicate: Callable[[Exception], bool] = ...,
+        initial: float = ...,
+        maximum: float = ...,
+        multiplier: float = ...,
+        timeout: Optional[float] = ...,
+        on_error: Optional[Callable[[Exception], Any]] = ...,
+        **kwargs: Any,
+    ) -> None: ...
+    def __call__(self, *args, **kwargs) -> Any: ...
     @property
     def deadline(self) -> float | None:
         """
@@ -96,11 +111,9 @@ class _BaseRetry:
         documentation for details.
         """
         ...
-    
+
     @property
-    def timeout(self) -> float | None:
-        ...
-    
+    def timeout(self) -> float | None: ...
     def with_deadline(self, deadline: float | None) -> Self:
         """Return a copy of this retry with the given timeout.
 
@@ -115,7 +128,7 @@ class _BaseRetry:
             Retry: A new retry instance with the given timeout.
         """
         ...
-    
+
     def with_timeout(self, timeout: float | None) -> Self:
         """Return a copy of this retry with the given timeout.
 
@@ -127,7 +140,7 @@ class _BaseRetry:
             Retry: A new retry instance with the given timeout.
         """
         ...
-    
+
     def with_predicate(self, predicate: Callable[[Exception], bool]) -> Self:
         """Return a copy of this retry with the given predicate.
 
@@ -139,8 +152,13 @@ class _BaseRetry:
             Retry: A new retry instance with the given predicate.
         """
         ...
-    
-    def with_delay(self, initial: Optional[float] = ..., maximum: Optional[float] = ..., multiplier: Optional[float] = ...) -> Self:
+
+    def with_delay(
+        self,
+        initial: Optional[float] = ...,
+        maximum: Optional[float] = ...,
+        multiplier: Optional[float] = ...,
+    ) -> Self:
         """Return a copy of this retry with the given delay options.
 
         Args:
@@ -155,9 +173,5 @@ class _BaseRetry:
             Retry: A new retry instance with the given delay options.
         """
         ...
-    
-    def __str__(self) -> str:
-        ...
-    
 
-
+    def __str__(self) -> str: ...

@@ -10,6 +10,7 @@ from google.cloud.storage._media.requests import _request_helpers
 _CHECKSUM_MISMATCH = ...
 _STREAM_SEEK_ERROR = ...
 _RESPONSE_HEADERS_INFO = ...
+
 class Download(_request_helpers.RequestsMixin, _download.Download):
     """Helper to manage downloading a resource from a Google API.
 
@@ -52,6 +53,7 @@ class Download(_request_helpers.RequestsMixin, _download.Download):
         start (Optional[int]): The first byte in a range to be downloaded.
         end (Optional[int]): The last byte in a range to be downloaded.
     """
+
     def consume(self, transport, timeout=...):
         """Consume the resource to be downloaded.
 
@@ -79,8 +81,6 @@ class Download(_request_helpers.RequestsMixin, _download.Download):
                 finished.
         """
         ...
-    
-
 
 class RawDownload(_request_helpers.RawRequestsMixin, _download.Download):
     """Helper to manage downloading a raw resource from a Google API.
@@ -124,6 +124,7 @@ class RawDownload(_request_helpers.RawRequestsMixin, _download.Download):
         start (Optional[int]): The first byte in a range to be downloaded.
         end (Optional[int]): The last byte in a range to be downloaded.
     """
+
     def consume(self, transport, timeout=...):
         """Consume the resource to be downloaded.
 
@@ -151,8 +152,6 @@ class RawDownload(_request_helpers.RawRequestsMixin, _download.Download):
                 finished.
         """
         ...
-    
-
 
 class ChunkedDownload(_request_helpers.RequestsMixin, _download.ChunkedDownload):
     """Download a resource in chunks from a Google API.
@@ -189,6 +188,7 @@ class ChunkedDownload(_request_helpers.RequestsMixin, _download.ChunkedDownload)
     Raises:
         ValueError: If ``start`` is negative.
     """
+
     def consume_next_chunk(self, transport, timeout=...):
         """Consume the next chunk of the resource to be downloaded.
 
@@ -210,8 +210,6 @@ class ChunkedDownload(_request_helpers.RequestsMixin, _download.ChunkedDownload)
             ValueError: If the current download has finished.
         """
         ...
-    
-
 
 class RawChunkedDownload(_request_helpers.RawRequestsMixin, _download.ChunkedDownload):
     """Download a raw resource in chunks from a Google API.
@@ -248,6 +246,7 @@ class RawChunkedDownload(_request_helpers.RawRequestsMixin, _download.ChunkedDow
     Raises:
         ValueError: If ``start`` is negative.
     """
+
     def consume_next_chunk(self, transport, timeout=...):
         """Consume the next chunk of the resource to be downloaded.
 
@@ -269,8 +268,6 @@ class RawChunkedDownload(_request_helpers.RawRequestsMixin, _download.ChunkedDow
             ValueError: If the current download has finished.
         """
         ...
-    
-
 
 class _GzipDecoder(urllib3.response.GzipDecoder):
     """Custom subclass of ``urllib3`` decoder for ``gzip``-ed bytes.
@@ -282,10 +279,9 @@ class _GzipDecoder(urllib3.response.GzipDecoder):
         checksum (object):
             A checksum which will be updated with compressed bytes.
     """
-    def __init__(self, checksum) -> None:
-        ...
-    
-    def decompress(self, data, max_length=...): # -> bytes:
+
+    def __init__(self, checksum) -> None: ...
+    def decompress(self, data, max_length=...):  # -> bytes:
         """Decompress the bytes.
 
         Args:
@@ -295,8 +291,6 @@ class _GzipDecoder(urllib3.response.GzipDecoder):
             bytes: The decompressed bytes from ``data``.
         """
         ...
-    
-
 
 if hasattr(urllib3.response, "BrotliDecoder"):
     class _BrotliDecoder:
@@ -313,10 +307,9 @@ if hasattr(urllib3.response, "BrotliDecoder"):
             checksum (object):
                 A checksum which will be updated with compressed bytes.
         """
-        def __init__(self, checksum) -> None:
-            ...
-        
-        def decompress(self, data, max_length=...): # -> bytes:
+
+        def __init__(self, checksum) -> None: ...
+        def decompress(self, data, max_length=...):  # -> bytes:
             """Decompress the bytes.
 
             Args:
@@ -326,15 +319,12 @@ if hasattr(urllib3.response, "BrotliDecoder"):
                 bytes: The decompressed bytes from ``data``.
             """
             ...
-        
-        def flush(self): # -> bytes:
+
+        def flush(self):  # -> bytes:
             ...
-        
+
         @property
-        def has_unconsumed_tail(self) -> bool:
-            ...
-        
-    
-    
+        def has_unconsumed_tail(self) -> bool: ...
+
 else:
     _BrotliDecoder = ...

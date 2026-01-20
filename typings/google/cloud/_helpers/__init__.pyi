@@ -32,23 +32,23 @@ _USER_ROOT = ...
 _GCLOUD_CONFIG_FILE = ...
 _GCLOUD_CONFIG_SECTION = ...
 _GCLOUD_CONFIG_KEY = ...
+
 class _LocalStack(Local):
     """Manage a thread-local LIFO stack of resources.
 
     Intended for use in :class:`google.cloud.datastore.batch.Batch.__enter__`,
     :class:`google.cloud.storage.batch.Batch.__enter__`, etc.
     """
-    def __init__(self) -> None:
-        ...
-    
-    def __iter__(self): # -> Iterator[Any]:
+
+    def __init__(self) -> None: ...
+    def __iter__(self):  # -> Iterator[Any]:
         """Iterate the stack in LIFO order."""
         ...
-    
-    def push(self, resource): # -> None:
+
+    def push(self, resource):  # -> None:
         """Push a resource onto our stack."""
         ...
-    
+
     def pop(self):
         """Pop a resource from our stack.
 
@@ -57,19 +57,19 @@ class _LocalStack(Local):
         :raises IndexError: if the stack is empty.
         """
         ...
-    
+
     @property
-    def top(self): # -> None:
+    def top(self):  # -> None:
         """Get the top-most resource
 
         :rtype: object
         :returns: the top-most item, or None if the stack is empty.
         """
         ...
-    
 
-
-def make_secure_channel(credentials, user_agent, host, extra_options=...): # -> Channel:
+def make_secure_channel(
+    credentials, user_agent, host, extra_options=...
+):  # -> Channel:
     """Makes a secure channel for an RPC service.
 
     Uses / depends on gRPC.
@@ -139,4 +139,3 @@ def make_insecure_stub(stub_class, host, port=...):
     :returns: The stub object used to make gRPC requests to a given API.
     """
     ...
-

@@ -16,6 +16,7 @@ _CERTIFICATE_MARKER = ...
 _PKCS1_MARKER = ...
 _PKCS8_MARKER = ...
 _PKCS8_SPEC = ...
+
 class RSAVerifier(base.Verifier):
     """Verifies RSA cryptographic signatures using public keys.
 
@@ -23,15 +24,14 @@ class RSAVerifier(base.Verifier):
         public_key (rsa.key.PublicKey): The public key used to verify
             signatures.
     """
-    def __init__(self, public_key) -> None:
-        ...
-    
+
+    def __init__(self, public_key) -> None: ...
     @_helpers.copy_docstring(base.Verifier)
-    def verify(self, message, signature): # -> Literal[False]:
+    def verify(self, message, signature):  # -> Literal[False]:
         ...
-    
+
     @classmethod
-    def from_string(cls, public_key): # -> Self:
+    def from_string(cls, public_key):  # -> Self:
         """Construct an Verifier instance from a public key or public
         certificate string.
 
@@ -46,8 +46,6 @@ class RSAVerifier(base.Verifier):
             ValueError: If the public_key can't be parsed.
         """
         ...
-    
-
 
 class RSASigner(base.Signer, base.FromServiceAccountMixin):
     """Signs messages with an RSA private key.
@@ -58,20 +56,17 @@ class RSASigner(base.Signer, base.FromServiceAccountMixin):
             can be useful to associate the private key with its associated
             public key or certificate.
     """
-    def __init__(self, private_key, key_id=...) -> None:
-        ...
-    
+
+    def __init__(self, private_key, key_id=...) -> None: ...
     @property
     @_helpers.copy_docstring(base.Signer)
-    def key_id(self): # -> None:
+    def key_id(self):  # -> None:
         ...
-    
+
     @_helpers.copy_docstring(base.Signer)
-    def sign(self, message):
-        ...
-    
+    def sign(self, message): ...
     @classmethod
-    def from_string(cls, key, key_id=...): # -> Self:
+    def from_string(cls, key, key_id=...):  # -> Self:
         """Construct an Signer instance from a private key in PEM format.
 
         Args:
@@ -86,6 +81,3 @@ class RSASigner(base.Signer, base.FromServiceAccountMixin):
                 PEM format.
         """
         ...
-    
-
-

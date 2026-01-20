@@ -7,6 +7,7 @@ from typing import MutableSequence
 from google.protobuf import duration_pb2, field_mask_pb2, timestamp_pb2
 
 __protobuf__ = ...
+
 class PendingRenameInfo(proto.Message):
     r"""Contains information about a pending rename operation.
 
@@ -15,8 +16,8 @@ class PendingRenameInfo(proto.Message):
             Output only. The name of the rename
             operation.
     """
-    operation: str = ...
 
+    operation: str = ...
 
 class Folder(proto.Message):
     r"""A folder resource. This resource can only exist in a
@@ -44,12 +45,12 @@ class Folder(proto.Message):
             for this folder, including folder, managed
             folder, and object operations.
     """
+
     name: str = ...
     metageneration: int = ...
     create_time: timestamp_pb2.Timestamp = ...
     update_time: timestamp_pb2.Timestamp = ...
     pending_rename_info: PendingRenameInfo = ...
-
 
 class GetFolderRequest(proto.Message):
     r"""Request message for GetFolder. This operation is only
@@ -79,11 +80,11 @@ class GetFolderRequest(proto.Message):
             request. UUID is the recommended format, but
             other formats are still accepted.
     """
+
     name: str = ...
     if_metageneration_match: int = ...
     if_metageneration_not_match: int = ...
     request_id: str = ...
-
 
 class CreateFolderRequest(proto.Message):
     r"""Request message for CreateFolder. This operation is only
@@ -114,12 +115,12 @@ class CreateFolderRequest(proto.Message):
             request. UUID is the recommended format, but
             other formats are still accepted.
     """
+
     parent: str = ...
     folder: Folder = ...
     folder_id: str = ...
     recursive: bool = ...
     request_id: str = ...
-
 
 class DeleteFolderRequest(proto.Message):
     r"""Request message for DeleteFolder. This operation is only
@@ -149,11 +150,11 @@ class DeleteFolderRequest(proto.Message):
             request. UUID is the recommended format, but
             other formats are still accepted.
     """
+
     name: str = ...
     if_metageneration_match: int = ...
     if_metageneration_not_match: int = ...
     request_id: str = ...
-
 
 class ListFoldersRequest(proto.Message):
     r"""Request message for ListFolders. This operation is only
@@ -200,6 +201,7 @@ class ListFoldersRequest(proto.Message):
             request. UUID is the recommended format, but
             other formats are still accepted.
     """
+
     parent: str = ...
     page_size: int = ...
     page_token: str = ...
@@ -208,7 +210,6 @@ class ListFoldersRequest(proto.Message):
     lexicographic_start: str = ...
     lexicographic_end: str = ...
     request_id: str = ...
-
 
 class ListFoldersResponse(proto.Message):
     r"""Response message for ListFolders.
@@ -222,13 +223,12 @@ class ListFoldersResponse(proto.Message):
             subsequent request to return the next page of
             results.
     """
+
     @property
-    def raw_page(self): # -> Self:
+    def raw_page(self):  # -> Self:
         ...
-    
     folders: MutableSequence[Folder] = ...
     next_page_token: str = ...
-
 
 class RenameFolderRequest(proto.Message):
     r"""Request message for RenameFolder. This operation is only
@@ -261,12 +261,12 @@ class RenameFolderRequest(proto.Message):
             This request is only idempotent if a ``request_id`` is
             provided.
     """
+
     name: str = ...
     destination_folder_id: str = ...
     if_metageneration_match: int = ...
     if_metageneration_not_match: int = ...
     request_id: str = ...
-
 
 class CommonLongRunningOperationMetadata(proto.Message):
     r"""The message contains metadata that is common to all Storage Control
@@ -294,13 +294,13 @@ class CommonLongRunningOperationMetadata(proto.Message):
             percentage [0, 100]. The value -1 means the progress is
             unknown.
     """
+
     create_time: timestamp_pb2.Timestamp = ...
     end_time: timestamp_pb2.Timestamp = ...
     update_time: timestamp_pb2.Timestamp = ...
     type_: str = ...
     requested_cancellation: bool = ...
     progress_percent: int = ...
-
 
 class RenameFolderMetadata(proto.Message):
     r"""Message returned in the metadata field of the Operation
@@ -315,10 +315,10 @@ class RenameFolderMetadata(proto.Message):
         destination_folder_id (str):
             The path of the destination folder.
     """
+
     common_metadata: CommonLongRunningOperationMetadata = ...
     source_folder_id: str = ...
     destination_folder_id: str = ...
-
 
 class StorageLayout(proto.Message):
     r"""The storage layout configuration of a bucket.
@@ -343,6 +343,7 @@ class StorageLayout(proto.Message):
             configuration, the hierarchical namespace is
             disabled.
     """
+
     class CustomPlacementConfig(proto.Message):
         r"""Configuration for Custom Dual Regions. It should specify precisely
         two eligible regions within the same Multiregion. More information
@@ -353,9 +354,9 @@ class StorageLayout(proto.Message):
             data_locations (MutableSequence[str]):
                 List of locations to use for data placement.
         """
+
         data_locations: MutableSequence[str] = ...
-    
-    
+
     class HierarchicalNamespace(proto.Message):
         r"""Configuration for a bucket's hierarchical namespace feature.
 
@@ -363,15 +364,14 @@ class StorageLayout(proto.Message):
             enabled (bool):
                 Enables the hierarchical namespace feature.
         """
+
         enabled: bool = ...
-    
-    
+
     name: str = ...
     location: str = ...
     location_type: str = ...
     custom_placement_config: CustomPlacementConfig = ...
     hierarchical_namespace: HierarchicalNamespace = ...
-
 
 class GetStorageLayoutRequest(proto.Message):
     r"""Request message for GetStorageLayout.
@@ -389,10 +389,10 @@ class GetStorageLayoutRequest(proto.Message):
             request. UUID is the recommended format, but
             other formats are still accepted.
     """
+
     name: str = ...
     prefix: str = ...
     request_id: str = ...
-
 
 class ManagedFolder(proto.Message):
     r"""A managed folder.
@@ -414,11 +414,11 @@ class ManagedFolder(proto.Message):
             Output only. The modification time of the
             managed folder.
     """
+
     name: str = ...
     metageneration: int = ...
     create_time: timestamp_pb2.Timestamp = ...
     update_time: timestamp_pb2.Timestamp = ...
-
 
 class GetManagedFolderRequest(proto.Message):
     r"""Request message for GetManagedFolder.
@@ -446,11 +446,11 @@ class GetManagedFolderRequest(proto.Message):
             request. UUID is the recommended format, but
             other formats are still accepted.
     """
+
     name: str = ...
     if_metageneration_match: int = ...
     if_metageneration_not_match: int = ...
     request_id: str = ...
-
 
 class CreateManagedFolderRequest(proto.Message):
     r"""Request message for CreateManagedFolder.
@@ -473,11 +473,11 @@ class CreateManagedFolderRequest(proto.Message):
             request. UUID is the recommended format, but
             other formats are still accepted.
     """
+
     parent: str = ...
     managed_folder: ManagedFolder = ...
     managed_folder_id: str = ...
     request_id: str = ...
-
 
 class DeleteManagedFolderRequest(proto.Message):
     r"""DeleteManagedFolder RPC request message.
@@ -511,12 +511,12 @@ class DeleteManagedFolderRequest(proto.Message):
             request. UUID is the recommended format, but
             other formats are still accepted.
     """
+
     name: str = ...
     if_metageneration_match: int = ...
     if_metageneration_not_match: int = ...
     allow_non_empty: bool = ...
     request_id: str = ...
-
 
 class ListManagedFoldersRequest(proto.Message):
     r"""Request message for ListManagedFolders.
@@ -542,12 +542,12 @@ class ListManagedFoldersRequest(proto.Message):
             request. UUID is the recommended format, but
             other formats are still accepted.
     """
+
     parent: str = ...
     page_size: int = ...
     page_token: str = ...
     prefix: str = ...
     request_id: str = ...
-
 
 class ListManagedFoldersResponse(proto.Message):
     r"""Response message for ListManagedFolders.
@@ -561,13 +561,12 @@ class ListManagedFoldersResponse(proto.Message):
             subsequent request to return the next page of
             results.
     """
+
     @property
-    def raw_page(self): # -> Self:
+    def raw_page(self):  # -> Self:
         ...
-    
     managed_folders: MutableSequence[ManagedFolder] = ...
     next_page_token: str = ...
-
 
 class CreateAnywhereCacheMetadata(proto.Message):
     r"""Message returned in the metadata field of the Operation
@@ -605,12 +604,12 @@ class CreateAnywhereCacheMetadata(proto.Message):
 
             This field is a member of `oneof`_ ``_admission_policy``.
     """
+
     common_metadata: CommonLongRunningOperationMetadata = ...
     anywhere_cache_id: str = ...
     zone: str = ...
     ttl: duration_pb2.Duration = ...
     admission_policy: str = ...
-
 
 class UpdateAnywhereCacheMetadata(proto.Message):
     r"""Message returned in the metadata field of the Operation
@@ -647,12 +646,12 @@ class UpdateAnywhereCacheMetadata(proto.Message):
 
             This field is a member of `oneof`_ ``_admission_policy``.
     """
+
     common_metadata: CommonLongRunningOperationMetadata = ...
     anywhere_cache_id: str = ...
     zone: str = ...
     ttl: duration_pb2.Duration = ...
     admission_policy: str = ...
-
 
 class AnywhereCache(proto.Message):
     r"""An Anywhere Cache Instance.
@@ -690,6 +689,7 @@ class AnywhereCache(proto.Message):
             Subsequential update requests will be rejected
             if this field is true. Output only.
     """
+
     name: str = ...
     zone: str = ...
     ttl: duration_pb2.Duration = ...
@@ -698,7 +698,6 @@ class AnywhereCache(proto.Message):
     create_time: timestamp_pb2.Timestamp = ...
     update_time: timestamp_pb2.Timestamp = ...
     pending_update: bool = ...
-
 
 class CreateAnywhereCacheRequest(proto.Message):
     r"""Request message for CreateAnywhereCache.
@@ -718,10 +717,10 @@ class CreateAnywhereCacheRequest(proto.Message):
             This request is only idempotent if a ``request_id`` is
             provided.
     """
+
     parent: str = ...
     anywhere_cache: AnywhereCache = ...
     request_id: str = ...
-
 
 class UpdateAnywhereCacheRequest(proto.Message):
     r"""Request message for UpdateAnywhereCache.
@@ -746,10 +745,10 @@ class UpdateAnywhereCacheRequest(proto.Message):
             This request is only idempotent if a ``request_id`` is
             provided.
     """
+
     anywhere_cache: AnywhereCache = ...
     update_mask: field_mask_pb2.FieldMask = ...
     request_id: str = ...
-
 
 class DisableAnywhereCacheRequest(proto.Message):
     r"""Request message for DisableAnywhereCache.
@@ -764,9 +763,9 @@ class DisableAnywhereCacheRequest(proto.Message):
             This request is only idempotent if a ``request_id`` is
             provided.
     """
+
     name: str = ...
     request_id: str = ...
-
 
 class PauseAnywhereCacheRequest(proto.Message):
     r"""Request message for PauseAnywhereCache.
@@ -781,9 +780,9 @@ class PauseAnywhereCacheRequest(proto.Message):
             This request is only idempotent if a ``request_id`` is
             provided.
     """
+
     name: str = ...
     request_id: str = ...
-
 
 class ResumeAnywhereCacheRequest(proto.Message):
     r"""Request message for ResumeAnywhereCache.
@@ -798,9 +797,9 @@ class ResumeAnywhereCacheRequest(proto.Message):
             This request is only idempotent if a ``request_id`` is
             provided.
     """
+
     name: str = ...
     request_id: str = ...
-
 
 class GetAnywhereCacheRequest(proto.Message):
     r"""Request message for GetAnywhereCache.
@@ -814,9 +813,9 @@ class GetAnywhereCacheRequest(proto.Message):
             request. UUID is the recommended format, but
             other formats are still accepted.
     """
+
     name: str = ...
     request_id: str = ...
-
 
 class ListAnywhereCachesRequest(proto.Message):
     r"""Request message for ListAnywhereCaches.
@@ -837,11 +836,11 @@ class ListAnywhereCachesRequest(proto.Message):
             request. UUID is the recommended format, but
             other formats are still accepted.
     """
+
     parent: str = ...
     page_size: int = ...
     page_token: str = ...
     request_id: str = ...
-
 
 class ListAnywhereCachesResponse(proto.Message):
     r"""Response message for ListAnywhereCaches.
@@ -854,13 +853,12 @@ class ListAnywhereCachesResponse(proto.Message):
             next page. If this field is omitted, there are no subsequent
             pages.
     """
+
     @property
-    def raw_page(self): # -> Self:
+    def raw_page(self):  # -> Self:
         ...
-    
     anywhere_caches: MutableSequence[AnywhereCache] = ...
     next_page_token: str = ...
-
 
 class IntelligenceConfig(proto.Message):
     r"""The ``IntelligenceConfig`` resource associated with your
@@ -895,6 +893,7 @@ class IntelligenceConfig(proto.Message):
             The trial configuration of the ``IntelligenceConfig``
             resource.
     """
+
     class EditionConfig(proto.Enum):
         r"""The edition configuration of the ``IntelligenceConfig`` resource.
         This signifies the edition used for configuring the
@@ -924,13 +923,13 @@ class IntelligenceConfig(proto.Message):
                 ``IntelligenceConfig`` resource is upgraded to ``STANDARD``
                 edition.
         """
+
         EDITION_CONFIG_UNSPECIFIED = ...
         INHERIT = ...
         DISABLED = ...
         STANDARD = ...
         TRIAL = ...
-    
-    
+
     class Filter(proto.Message):
         r"""Filter over location and bucket using include or exclude
         semantics. Resources that match the include or exclude filter
@@ -962,6 +961,7 @@ class IntelligenceConfig(proto.Message):
 
                 This field is a member of `oneof`_ ``cloud_storage_buckets``.
         """
+
         class CloudStorageLocations(proto.Message):
             r"""Collection of bucket locations.
 
@@ -971,9 +971,9 @@ class IntelligenceConfig(proto.Message):
                     Storage regions specified in lower case format. For example,
                     ``us-east1``, ``us-west1``.
             """
+
             locations: MutableSequence[str] = ...
-        
-        
+
         class CloudStorageBuckets(proto.Message):
             r"""Collection of buckets.
 
@@ -988,15 +988,22 @@ class IntelligenceConfig(proto.Message):
                     ``gs://test_sample_bucket``. If you want to match a single
                     bucket, say ``gs://sample_bucket``, use ``sample_bucket``.
             """
+
             bucket_id_regexes: MutableSequence[str] = ...
-        
-        
-        included_cloud_storage_locations: IntelligenceConfig.Filter.CloudStorageLocations = ...
-        excluded_cloud_storage_locations: IntelligenceConfig.Filter.CloudStorageLocations = ...
-        included_cloud_storage_buckets: IntelligenceConfig.Filter.CloudStorageBuckets = ...
-        excluded_cloud_storage_buckets: IntelligenceConfig.Filter.CloudStorageBuckets = ...
-    
-    
+
+        included_cloud_storage_locations: (
+            IntelligenceConfig.Filter.CloudStorageLocations
+        ) = ...
+        excluded_cloud_storage_locations: (
+            IntelligenceConfig.Filter.CloudStorageLocations
+        ) = ...
+        included_cloud_storage_buckets: (
+            IntelligenceConfig.Filter.CloudStorageBuckets
+        ) = ...
+        excluded_cloud_storage_buckets: (
+            IntelligenceConfig.Filter.CloudStorageBuckets
+        ) = ...
+
     class EffectiveIntelligenceConfig(proto.Message):
         r"""The effective ``IntelligenceConfig`` for the resource.
 
@@ -1009,6 +1016,7 @@ class IntelligenceConfig(proto.Message):
                 applied for the target resource. Format:
                 ``{organizations|folders|projects}/{id}/locations/{location}/intelligenceConfig``
         """
+
         class EffectiveEdition(proto.Enum):
             r"""The effective edition of the ``IntelligenceConfig`` resource.
 
@@ -1020,15 +1028,16 @@ class IntelligenceConfig(proto.Message):
                 STANDARD (2):
                     The ``IntelligenceConfig`` resource is of STANDARD edition.
             """
+
             EFFECTIVE_EDITION_UNSPECIFIED = ...
             NONE = ...
             STANDARD = ...
-        
-        
-        effective_edition: IntelligenceConfig.EffectiveIntelligenceConfig.EffectiveEdition = ...
+
+        effective_edition: (
+            IntelligenceConfig.EffectiveIntelligenceConfig.EffectiveEdition
+        ) = ...
         intelligence_config: str = ...
-    
-    
+
     class TrialConfig(proto.Message):
         r"""The trial configuration of the ``IntelligenceConfig`` resource.
 
@@ -1037,16 +1046,15 @@ class IntelligenceConfig(proto.Message):
                 Output only. The time at which the trial
                 expires.
         """
+
         expire_time: timestamp_pb2.Timestamp = ...
-    
-    
+
     name: str = ...
     edition_config: EditionConfig = ...
     update_time: timestamp_pb2.Timestamp = ...
     filter: Filter = ...
     effective_intelligence_config: EffectiveIntelligenceConfig = ...
     trial_config: TrialConfig = ...
-
 
 class UpdateOrganizationIntelligenceConfigRequest(proto.Message):
     r"""Request message to update the ``IntelligenceConfig`` resource
@@ -1069,10 +1077,10 @@ class UpdateOrganizationIntelligenceConfigRequest(proto.Message):
             Optional. The ID that uniquely identifies the
             request, preventing duplicate processing.
     """
+
     intelligence_config: IntelligenceConfig = ...
     update_mask: field_mask_pb2.FieldMask = ...
     request_id: str = ...
-
 
 class UpdateFolderIntelligenceConfigRequest(proto.Message):
     r"""Request message to update the ``IntelligenceConfig`` resource
@@ -1095,10 +1103,10 @@ class UpdateFolderIntelligenceConfigRequest(proto.Message):
             Optional. The ID that uniquely identifies the
             request, preventing duplicate processing.
     """
+
     intelligence_config: IntelligenceConfig = ...
     update_mask: field_mask_pb2.FieldMask = ...
     request_id: str = ...
-
 
 class UpdateProjectIntelligenceConfigRequest(proto.Message):
     r"""Request message to update the ``IntelligenceConfig`` resource
@@ -1121,10 +1129,10 @@ class UpdateProjectIntelligenceConfigRequest(proto.Message):
             Optional. The ID that uniquely identifies the
             request, preventing duplicate processing.
     """
+
     intelligence_config: IntelligenceConfig = ...
     update_mask: field_mask_pb2.FieldMask = ...
     request_id: str = ...
-
 
 class GetOrganizationIntelligenceConfigRequest(proto.Message):
     r"""Request message to get the ``IntelligenceConfig`` resource
@@ -1144,8 +1152,8 @@ class GetOrganizationIntelligenceConfigRequest(proto.Message):
             Format:
             ``organizations/{org_id}/locations/global/intelligenceConfig``
     """
-    name: str = ...
 
+    name: str = ...
 
 class GetFolderIntelligenceConfigRequest(proto.Message):
     r"""Request message to get the ``IntelligenceConfig`` resource
@@ -1164,8 +1172,8 @@ class GetFolderIntelligenceConfigRequest(proto.Message):
 
             Format: ``folders/{id}/locations/global/intelligenceConfig``
     """
-    name: str = ...
 
+    name: str = ...
 
 class GetProjectIntelligenceConfigRequest(proto.Message):
     r"""Request message to get the ``IntelligenceConfig`` resource
@@ -1185,7 +1193,7 @@ class GetProjectIntelligenceConfigRequest(proto.Message):
             Format:
             ``projects/{id}/locations/global/intelligenceConfig``
     """
-    name: str = ...
 
+    name: str = ...
 
 __all__ = tuple(sorted(__protobuf__.manifest))

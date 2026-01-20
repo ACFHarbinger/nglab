@@ -18,6 +18,7 @@ _TOPIC_NAME_PATTERN = ...
 _TOPIC_REF_PATTERN = ...
 _TOPIC_REF_RE = ...
 _BAD_TOPIC = ...
+
 class BucketNotification:
     """Represent a single notification resource for a bucket.
 
@@ -56,11 +57,20 @@ class BucketNotification:
     :param notification_id:
         (Optional) The ID of the notification.
     """
-    def __init__(self, bucket, topic_name=..., topic_project=..., custom_attributes=..., event_types=..., blob_name_prefix=..., payload_format=..., notification_id=...) -> None:
-        ...
-    
+
+    def __init__(
+        self,
+        bucket,
+        topic_name=...,
+        topic_project=...,
+        custom_attributes=...,
+        event_types=...,
+        blob_name_prefix=...,
+        payload_format=...,
+        notification_id=...,
+    ) -> None: ...
     @classmethod
-    def from_api_repr(cls, resource, bucket): # -> Self:
+    def from_api_repr(cls, resource, bucket):  # -> Self:
         """Construct an instance from the JSON repr returned by the server.
 
         See: https://cloud.google.com/storage/docs/json_api/v1/notifications
@@ -75,68 +85,68 @@ class BucketNotification:
         :returns: the new notification instance
         """
         ...
-    
+
     @property
-    def bucket(self): # -> Any:
+    def bucket(self):  # -> Any:
         """Bucket to which the notification is bound."""
         ...
-    
+
     @property
-    def topic_name(self): # -> None:
+    def topic_name(self):  # -> None:
         """Topic name to which notifications are published."""
         ...
-    
+
     @property
     def topic_project(self):
         """Project ID of topic to which notifications are published."""
         ...
-    
+
     @property
-    def custom_attributes(self): # -> None:
+    def custom_attributes(self):  # -> None:
         """Custom attributes passed with notification events."""
         ...
-    
+
     @property
-    def event_types(self): # -> None:
+    def event_types(self):  # -> None:
         """Event types for which notification events are published."""
         ...
-    
+
     @property
-    def blob_name_prefix(self): # -> None:
+    def blob_name_prefix(self):  # -> None:
         """Prefix of blob names for which notification events are published."""
         ...
-    
+
     @property
-    def payload_format(self): # -> None:
+    def payload_format(self):  # -> None:
         """Format of payload of notification events."""
         ...
-    
+
     @property
-    def notification_id(self): # -> None:
+    def notification_id(self):  # -> None:
         """Server-set ID of notification resource."""
         ...
-    
+
     @property
-    def etag(self): # -> None:
+    def etag(self):  # -> None:
         """Server-set ETag of notification resource."""
         ...
-    
+
     @property
-    def self_link(self): # -> None:
+    def self_link(self):  # -> None:
         """Server-set ETag of notification resource."""
         ...
-    
+
     @property
     def client(self):
         """The client bound to this notfication."""
         ...
-    
+
     @property
-    def path(self): # -> str:
+    def path(self):  # -> str:
         """The URL path for this notification."""
         ...
-    
-    def create(self, client=..., timeout=..., retry=...): # -> None:
+
+    def create(self, client=..., timeout=..., retry=...):  # -> None:
         """API wrapper: create the notification.
 
         See:
@@ -160,8 +170,8 @@ class BucketNotification:
         :raises ValueError: if the notification already exists.
         """
         ...
-    
-    def exists(self, client=..., timeout=..., retry=...): # -> bool:
+
+    def exists(self, client=..., timeout=..., retry=...):  # -> bool:
         """Test whether this notification exists.
 
         See:
@@ -188,8 +198,8 @@ class BucketNotification:
         :raises ValueError: if the notification has no ID.
         """
         ...
-    
-    def reload(self, client=..., timeout=..., retry=...): # -> None:
+
+    def reload(self, client=..., timeout=..., retry=...):  # -> None:
         """Update this notification from the server configuration.
 
         See:
@@ -215,8 +225,8 @@ class BucketNotification:
         :raises ValueError: if the notification has no ID.
         """
         ...
-    
-    def delete(self, client=..., timeout=..., retry=...): # -> None:
+
+    def delete(self, client=..., timeout=..., retry=...):  # -> None:
         """Delete this notification.
 
         See:
@@ -243,6 +253,3 @@ class BucketNotification:
         :raises ValueError: if the notification has no ID.
         """
         ...
-    
-
-

@@ -70,6 +70,7 @@ through it or using :func:`list`::
         <MyItemClass at 0x7fd64a098e90>,
     ]
 """
+
 class Page:
     """Single page of results in an iterator.
 
@@ -85,33 +86,30 @@ class Page:
         raw_page Optional[google.protobuf.message.Message]:
             The raw page response.
     """
-    def __init__(self, parent, items, item_to_value, raw_page=...) -> None:
-        ...
-    
+
+    def __init__(self, parent, items, item_to_value, raw_page=...) -> None: ...
     @property
-    def raw_page(self): # -> None:
+    def raw_page(self):  # -> None:
         """google.protobuf.message.Message"""
         ...
-    
+
     @property
-    def num_items(self): # -> int:
+    def num_items(self):  # -> int:
         """int: Total items in the page."""
         ...
-    
+
     @property
-    def remaining(self): # -> int:
+    def remaining(self):  # -> int:
         """int: Remaining items in the page."""
         ...
-    
-    def __iter__(self): # -> Self:
+
+    def __iter__(self):  # -> Self:
         """The :class:`Page` is an iterator of items."""
         ...
-    
+
     def __next__(self):
         """Get the next value in the page."""
         ...
-    
-
 
 class Iterator(metaclass=abc.ABCMeta):
     """A generic class for iterating through API list responses.
@@ -126,11 +124,12 @@ class Iterator(metaclass=abc.ABCMeta):
             fetching results from.
         max_results (int): The maximum number of results to fetch.
     """
-    def __init__(self, client, item_to_value=..., page_token=..., max_results=...) -> None:
-        ...
-    
+
+    def __init__(
+        self, client, item_to_value=..., page_token=..., max_results=...
+    ) -> None: ...
     @property
-    def pages(self): # -> Generator[Any, Any, None]:
+    def pages(self):  # -> Generator[Any, Any, None]:
         """Iterator of pages in the response.
 
         returns:
@@ -141,8 +140,8 @@ class Iterator(metaclass=abc.ABCMeta):
             ValueError: If the iterator has already been started.
         """
         ...
-    
-    def __iter__(self): # -> Generator[Any, Any, None]:
+
+    def __iter__(self):  # -> Generator[Any, Any, None]:
         """Iterator for each item returned.
 
         Returns:
@@ -152,11 +151,8 @@ class Iterator(metaclass=abc.ABCMeta):
             ValueError: If the iterator has already been started.
         """
         ...
-    
-    def __next__(self):
-        ...
-    
 
+    def __next__(self): ...
 
 class HTTPIterator(Iterator):
     """A generic class for iterating through HTTP/JSON API list responses.
@@ -197,16 +193,27 @@ class HTTPIterator(Iterator):
 
     .. autoattribute:: pages
     """
+
     _DEFAULT_ITEMS_KEY = ...
     _PAGE_TOKEN = ...
     _MAX_RESULTS = ...
     _NEXT_TOKEN = ...
     _RESERVED_PARAMS = ...
     _HTTP_METHOD = ...
-    def __init__(self, client, api_request, path, item_to_value, items_key=..., page_token=..., page_size=..., max_results=..., extra_params=..., page_start=..., next_token=...) -> None:
-        ...
-    
-
+    def __init__(
+        self,
+        client,
+        api_request,
+        path,
+        item_to_value,
+        items_key=...,
+        page_token=...,
+        page_size=...,
+        max_results=...,
+        extra_params=...,
+        page_start=...,
+        next_token=...,
+    ) -> None: ...
 
 class _GAXIterator(Iterator):
     """A generic class for iterating through Cloud gRPC APIs list responses.
@@ -222,10 +229,8 @@ class _GAXIterator(Iterator):
 
     .. autoattribute:: pages
     """
-    def __init__(self, client, page_iter, item_to_value, max_results=...) -> None:
-        ...
-    
 
+    def __init__(self, client, page_iter, item_to_value, max_results=...) -> None: ...
 
 class GRPCIterator(Iterator):
     """A generic class for iterating through gRPC list responses.
@@ -252,10 +257,17 @@ class GRPCIterator(Iterator):
 
     .. autoattribute:: pages
     """
+
     _DEFAULT_REQUEST_TOKEN_FIELD = ...
     _DEFAULT_RESPONSE_TOKEN_FIELD = ...
-    def __init__(self, client, method, request, items_field, item_to_value=..., request_token_field=..., response_token_field=..., max_results=...) -> None:
-        ...
-    
-
-
+    def __init__(
+        self,
+        client,
+        method,
+        request,
+        items_field,
+        item_to_value=...,
+        request_token_field=...,
+        response_token_field=...,
+        max_results=...,
+    ) -> None: ...

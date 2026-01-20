@@ -6,12 +6,9 @@ from typing import ClassVar as _ClassVar, Optional as _Optional
 from google.protobuf import descriptor as _descriptor, message as _message
 
 DESCRIPTOR: _descriptor.FileDescriptor
+
 class GetPolicyOptions(_message.Message):
     __slots__ = ...
     REQUESTED_POLICY_VERSION_FIELD_NUMBER: _ClassVar[int]
     requested_policy_version: int
-    def __init__(self, requested_policy_version: _Optional[int] = ...) -> None:
-        ...
-    
-
-
+    def __init__(self, requested_policy_version: _Optional[int] = ...) -> None: ...

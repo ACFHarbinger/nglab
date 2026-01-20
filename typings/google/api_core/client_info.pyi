@@ -13,6 +13,7 @@ _PY_VERSION = ...
 _API_CORE_VERSION = ...
 _GRPC_VERSION: Union[str, None]
 _GRPC_VERSION = ...
+
 class ClientInfo:
     """Client information used to generate a user-agent for API calls.
 
@@ -38,12 +39,18 @@ class ClientInfo:
             dependencies used for REST transport.
         protobuf_runtime_version (Optional[str]): The protobuf runtime version.
     """
-    def __init__(self, python_version=..., grpc_version=..., api_core_version=..., gapic_version=..., client_library_version=..., user_agent=..., rest_version=..., protobuf_runtime_version=...) -> None:
-        ...
-    
-    def to_user_agent(self): # -> str:
+
+    def __init__(
+        self,
+        python_version=...,
+        grpc_version=...,
+        api_core_version=...,
+        gapic_version=...,
+        client_library_version=...,
+        user_agent=...,
+        rest_version=...,
+        protobuf_runtime_version=...,
+    ) -> None: ...
+    def to_user_agent(self):  # -> str:
         """Returns the user-agent string for this client info."""
         ...
-    
-
-

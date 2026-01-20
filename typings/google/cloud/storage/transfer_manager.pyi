@@ -11,8 +11,18 @@ PROCESS = ...
 THREAD = ...
 DOWNLOAD_CRC32C_MISMATCH_TEMPLATE = ...
 _cached_clients = ...
+
 @_deprecate_threads_param
-def upload_many(file_blob_pairs, skip_if_exists=..., upload_kwargs=..., threads=..., deadline=..., raise_exception=..., worker_type=..., max_workers=...): # -> list[Any]:
+def upload_many(
+    file_blob_pairs,
+    skip_if_exists=...,
+    upload_kwargs=...,
+    threads=...,
+    deadline=...,
+    raise_exception=...,
+    worker_type=...,
+    max_workers=...,
+):  # -> list[Any]:
     """Upload many files concurrently via a worker pool.
 
     :type file_blob_pairs: List(Tuple(IOBase or str, 'google.cloud.storage.blob.Blob'))
@@ -110,7 +120,17 @@ def upload_many(file_blob_pairs, skip_if_exists=..., upload_kwargs=..., threads=
     ...
 
 @_deprecate_threads_param
-def download_many(blob_file_pairs, download_kwargs=..., threads=..., deadline=..., raise_exception=..., worker_type=..., max_workers=..., *, skip_if_exists=...): # -> list[Any]:
+def download_many(
+    blob_file_pairs,
+    download_kwargs=...,
+    threads=...,
+    deadline=...,
+    raise_exception=...,
+    worker_type=...,
+    max_workers=...,
+    *,
+    skip_if_exists=...,
+):  # -> list[Any]:
     """Download many blobs concurrently via a worker pool.
 
     :type blob_file_pairs: List(Tuple('google.cloud.storage.blob.Blob', IOBase or str))
@@ -201,7 +221,22 @@ def download_many(blob_file_pairs, download_kwargs=..., threads=..., deadline=..
     ...
 
 @_deprecate_threads_param
-def upload_many_from_filenames(bucket, filenames, source_directory=..., blob_name_prefix=..., skip_if_exists=..., blob_constructor_kwargs=..., upload_kwargs=..., threads=..., deadline=..., raise_exception=..., worker_type=..., max_workers=..., *, additional_blob_attributes=...): # -> list[Any]:
+def upload_many_from_filenames(
+    bucket,
+    filenames,
+    source_directory=...,
+    blob_name_prefix=...,
+    skip_if_exists=...,
+    blob_constructor_kwargs=...,
+    upload_kwargs=...,
+    threads=...,
+    deadline=...,
+    raise_exception=...,
+    worker_type=...,
+    max_workers=...,
+    *,
+    additional_blob_attributes=...,
+):  # -> list[Any]:
     """Upload many files concurrently by their filenames.
 
     The destination blobs are automatically created, with blob names based on
@@ -353,7 +388,21 @@ def upload_many_from_filenames(bucket, filenames, source_directory=..., blob_nam
     ...
 
 @_deprecate_threads_param
-def download_many_to_path(bucket, blob_names, destination_directory=..., blob_name_prefix=..., download_kwargs=..., threads=..., deadline=..., create_directories=..., raise_exception=..., worker_type=..., max_workers=..., *, skip_if_exists=...): # -> list[Any]:
+def download_many_to_path(
+    bucket,
+    blob_names,
+    destination_directory=...,
+    blob_name_prefix=...,
+    download_kwargs=...,
+    threads=...,
+    deadline=...,
+    create_directories=...,
+    raise_exception=...,
+    worker_type=...,
+    max_workers=...,
+    *,
+    skip_if_exists=...,
+):  # -> list[Any]:
     """Download many files concurrently by their blob names.
 
     The destination files are automatically created, with paths based on the
@@ -492,7 +541,17 @@ def download_many_to_path(bucket, blob_names, destination_directory=..., blob_na
     """
     ...
 
-def download_chunks_concurrently(blob, filename, chunk_size=..., download_kwargs=..., deadline=..., worker_type=..., max_workers=..., *, crc32c_checksum=...): # -> None:
+def download_chunks_concurrently(
+    blob,
+    filename,
+    chunk_size=...,
+    download_kwargs=...,
+    deadline=...,
+    worker_type=...,
+    max_workers=...,
+    *,
+    crc32c_checksum=...,
+):  # -> None:
     """Download a single file in chunks, concurrently.
 
     In some environments, using this feature with mutiple processes will result
@@ -583,7 +642,19 @@ def download_chunks_concurrently(blob, filename, chunk_size=..., download_kwargs
     """
     ...
 
-def upload_chunks_concurrently(filename, blob, content_type=..., chunk_size=..., deadline=..., worker_type=..., max_workers=..., *, checksum=..., timeout=..., retry=...): # -> None:
+def upload_chunks_concurrently(
+    filename,
+    blob,
+    content_type=...,
+    chunk_size=...,
+    deadline=...,
+    worker_type=...,
+    max_workers=...,
+    *,
+    checksum=...,
+    timeout=...,
+    retry=...,
+):  # -> None:
     """Upload a single file in chunks, concurrently.
 
     This function uses the XML MPU API to initialize an upload and upload a
@@ -704,28 +775,23 @@ class _ChecksummingSparseFileWrapper:
     This wrapper only implements write() and does not inherit from `io` module
     base classes.
     """
-    def __init__(self, filename, start_position, crc32c_enabled) -> None:
-        ...
-    
-    def write(self, chunk): # -> None:
-        ...
-    
-    @property
-    def crc(self): # -> int | None:
-        ...
-    
-    def __enter__(self): # -> Self:
-        ...
-    
-    def __exit__(self, exc_type, exc_value, tb): # -> None:
-        ...
-    
 
+    def __init__(self, filename, start_position, crc32c_enabled) -> None: ...
+    def write(self, chunk):  # -> None:
+        ...
+
+    @property
+    def crc(self):  # -> int | None:
+        ...
+
+    def __enter__(self):  # -> Self:
+        ...
+
+    def __exit__(self, exc_type, exc_value, tb):  # -> None:
+        ...
 
 class _LazyClient:
     """An object that will transform into either a cached or a new Client"""
-    def __new__(cls, id, *args, **kwargs): # -> Client:
+
+    def __new__(cls, id, *args, **kwargs):  # -> Client:
         ...
-    
-
-

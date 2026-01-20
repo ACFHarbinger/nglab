@@ -25,6 +25,7 @@ _STS_GRANT_TYPE = ...
 _STS_REQUESTED_TOKEN_TYPE = ...
 _CLOUD_RESOURCE_MANAGER = ...
 _DEFAULT_TOKEN_URL = ...
+
 @dataclass
 class SupplierContext:
     """A context class that contains information about the requested third party credential that is passed
@@ -41,12 +42,18 @@ class SupplierContext:
 
         audience (str): The requested audience for the subject token.
     """
+
     subject_token_type: str
     audience: str
     ...
 
-
-class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, credentials.CredentialsWithTokenUri, credentials.CredentialsWithTrustBoundary, metaclass=abc.ABCMeta):
+class Credentials(
+    credentials.Scoped,
+    credentials.CredentialsWithQuotaProject,
+    credentials.CredentialsWithTokenUri,
+    credentials.CredentialsWithTrustBoundary,
+    metaclass=abc.ABCMeta,
+):
     """Base class for all external account credentials.
 
     This is used to instantiate Credentials for exchanging external account
@@ -62,7 +69,25 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
     untrusted source, you should validate it before using.
     Refer https://cloud.google.com/docs/authentication/external/externally-sourced-credentials for more details.
     """
-    def __init__(self, audience, subject_token_type, token_url, credential_source, service_account_impersonation_url=..., service_account_impersonation_options=..., client_id=..., client_secret=..., token_info_url=..., quota_project_id=..., scopes=..., default_scopes=..., workforce_pool_user_project=..., universe_domain=..., trust_boundary=...) -> None:
+
+    def __init__(
+        self,
+        audience,
+        subject_token_type,
+        token_url,
+        credential_source,
+        service_account_impersonation_url=...,
+        service_account_impersonation_options=...,
+        client_id=...,
+        client_secret=...,
+        token_info_url=...,
+        quota_project_id=...,
+        scopes=...,
+        default_scopes=...,
+        workforce_pool_user_project=...,
+        universe_domain=...,
+        trust_boundary=...,
+    ) -> None:
         """Instantiates an external account credentials object.
 
         Args:
@@ -100,9 +125,9 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
                 endpoint returned an error.
         """
         ...
-    
+
     @property
-    def info(self): # -> dict[str, Any]:
+    def info(self):  # -> dict[str, Any]:
         """Generates the dictionary representation of the current credentials.
 
         Returns:
@@ -112,9 +137,9 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
                 later.
         """
         ...
-    
+
     @property
-    def service_account_email(self): # -> None:
+    def service_account_email(self):  # -> None:
         """Returns the service account email if service account impersonation is used.
 
         Returns:
@@ -122,9 +147,9 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
                 None is returned.
         """
         ...
-    
+
     @property
-    def is_user(self): # -> bool:
+    def is_user(self):  # -> bool:
         """Returns whether the credentials represent a user (True) or workload (False).
         Workloads behave similarly to service accounts. Currently workloads will use
         service account impersonation but will eventually not require impersonation.
@@ -136,9 +161,9 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
                 workload.
         """
         ...
-    
+
     @property
-    def is_workforce_pool(self): # -> bool:
+    def is_workforce_pool(self):  # -> bool:
         """Returns whether the credentials represent a workforce pool (True) or
         workload (False) based on the credentials' audience.
 
@@ -149,34 +174,34 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
                 represent a workload.
         """
         ...
-    
+
     @property
-    def requires_scopes(self): # -> bool:
+    def requires_scopes(self):  # -> bool:
         """Checks if the credentials requires scopes.
 
         Returns:
             bool: True if there are no scopes set otherwise False.
         """
         ...
-    
+
     @property
-    def project_number(self): # -> None:
+    def project_number(self):  # -> None:
         """Optional[str]: The project number corresponding to the workload identity pool."""
         ...
-    
+
     @property
-    def token_info_url(self): # -> None:
+    def token_info_url(self):  # -> None:
         """Optional[str]: The STS token introspection endpoint."""
         ...
-    
+
     @_helpers.copy_docstring(credentials.Credentials)
-    def get_cred_info(self): # -> dict[str, Any] | None:
+    def get_cred_info(self):  # -> dict[str, Any] | None:
         ...
-    
+
     @_helpers.copy_docstring(credentials.Scoped)
-    def with_scopes(self, scopes, default_scopes=...): # -> Self:
+    def with_scopes(self, scopes, default_scopes=...):  # -> Self:
         ...
-    
+
     @abc.abstractmethod
     def retrieve_subject_token(self, request):
         """Retrieves the subject token using the credential_source object.
@@ -188,8 +213,8 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
             str: The retrieved subject token.
         """
         ...
-    
-    def get_project_id(self, request): # -> Any | None:
+
+    def get_project_id(self, request):  # -> Any | None:
         """Retrieves the project ID corresponding to the workload identity or workforce pool.
         For workforce pool credentials, it returns the project ID corresponding to
         the workforce_pool_user_project.
@@ -212,8 +237,8 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
                 or workforce pool if determinable.
         """
         ...
-    
-    def refresh(self, request): # -> None:
+
+    def refresh(self, request):  # -> None:
         """Refreshes the access token.
 
         For impersonated credentials, this method will refresh the underlying
@@ -221,25 +246,25 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
         credentials, it will refresh the access token and the trust boundary.
         """
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
-    def with_quota_project(self, quota_project_id): # -> Self:
+    def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
-    def with_token_uri(self, token_uri): # -> Self:
+    def with_token_uri(self, token_uri):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
-    def with_universe_domain(self, universe_domain): # -> Self:
+    def with_universe_domain(self, universe_domain):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithTrustBoundary)
-    def with_trust_boundary(self, trust_boundary): # -> Self:
+    def with_trust_boundary(self, trust_boundary):  # -> Self:
         ...
-    
+
     @classmethod
-    def from_info(cls, info, **kwargs): # -> Self:
+    def from_info(cls, info, **kwargs):  # -> Self:
         """Creates a Credentials instance from parsed external account info.
 
         **IMPORTANT**:
@@ -263,9 +288,9 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
             InvalidValue: For invalid parameters.
         """
         ...
-    
+
     @classmethod
-    def from_file(cls, filename, **kwargs): # -> Self:
+    def from_file(cls, filename, **kwargs):  # -> Self:
         """Creates a Credentials instance from an external account json file.
 
         **IMPORTANT**:
@@ -285,6 +310,3 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
                 credentials.
         """
         ...
-    
-
-

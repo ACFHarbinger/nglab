@@ -6,6 +6,7 @@ from google.cloud.client import ClientWithProject
 
 """Client for interacting with the Google Cloud Storage API."""
 _marker = ...
+
 class Client(ClientWithProject):
     """Client to bundle configuration needed for API requests.
 
@@ -57,12 +58,22 @@ class Client(ClientWithProject):
         This parameter is an alias for setting `client_options.api_key` and
         will supercede any api key set in the `client_options` parameter.
     """
+
     SCOPE = ...
-    def __init__(self, project=..., credentials=..., _http=..., client_info=..., client_options=..., use_auth_w_custom_endpoint=..., extra_headers=..., *, api_key=...) -> None:
-        ...
-    
+    def __init__(
+        self,
+        project=...,
+        credentials=...,
+        _http=...,
+        client_info=...,
+        client_options=...,
+        use_auth_w_custom_endpoint=...,
+        extra_headers=...,
+        *,
+        api_key=...,
+    ) -> None: ...
     @classmethod
-    def create_anonymous_client(cls): # -> Self:
+    def create_anonymous_client(cls):  # -> Self:
         """Factory: return client with anonymous credentials.
 
         .. note::
@@ -74,25 +85,23 @@ class Client(ClientWithProject):
         :returns: Instance w/ anonymous credentials and no project.
         """
         ...
-    
+
     @property
-    def universe_domain(self): # -> str:
+    def universe_domain(self):  # -> str:
         ...
-    
+
     @property
-    def api_endpoint(self):
-        ...
-    
-    def update_user_agent(self, user_agent): # -> None:
+    def api_endpoint(self): ...
+    def update_user_agent(self, user_agent):  # -> None:
         """Update the user-agent string for this client.
 
         :type user_agent: str
         :param user_agent: The string to add to the user-agent.
         """
         ...
-    
+
     @property
-    def current_batch(self): # -> None:
+    def current_batch(self):  # -> None:
         """Currently-active batch.
 
         :rtype: :class:`google.cloud.storage.batch.Batch` or ``NoneType`` (if
@@ -100,7 +109,7 @@ class Client(ClientWithProject):
         :returns: The batch at the top of the batch stack.
         """
         ...
-    
+
     def get_service_account_email(self, project=..., timeout=..., retry=...):
         """Get the email address of the project's GCS service account
 
@@ -121,8 +130,8 @@ class Client(ClientWithProject):
         :returns: service account email address
         """
         ...
-    
-    def bucket(self, bucket_name, user_project=..., generation=...): # -> Bucket:
+
+    def bucket(self, bucket_name, user_project=..., generation=...):  # -> Bucket:
         """Factory constructor for bucket object.
 
         .. note::
@@ -144,8 +153,8 @@ class Client(ClientWithProject):
         :returns: The bucket object created.
         """
         ...
-    
-    def batch(self, raise_exception=...): # -> Batch:
+
+    def batch(self, raise_exception=...):  # -> Batch:
         """Factory constructor for batch object.
 
         .. note::
@@ -163,8 +172,18 @@ class Client(ClientWithProject):
         :returns: The batch object created.
         """
         ...
-    
-    def get_bucket(self, bucket_or_name, timeout=..., if_metageneration_match=..., if_metageneration_not_match=..., retry=..., *, generation=..., soft_deleted=...): # -> Bucket:
+
+    def get_bucket(
+        self,
+        bucket_or_name,
+        timeout=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        retry=...,
+        *,
+        generation=...,
+        soft_deleted=...,
+    ):  # -> Bucket:
         """Retrieve a bucket via a GET request.
 
         See [API reference docs](https://cloud.google.com/storage/docs/json_api/v1/buckets/get) and a [code sample](https://cloud.google.com/storage/docs/samples/storage-get-bucket-metadata#storage_get_bucket_metadata-python).
@@ -226,8 +245,15 @@ class Client(ClientWithProject):
                 If the bucket is not found.
         """
         ...
-    
-    def lookup_bucket(self, bucket_name, timeout=..., if_metageneration_match=..., if_metageneration_not_match=..., retry=...): # -> Bucket | None:
+
+    def lookup_bucket(
+        self,
+        bucket_name,
+        timeout=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        retry=...,
+    ):  # -> Bucket | None:
         """Get a bucket by name, returning None if not found.
 
         You can use this if you would rather check for a None value
@@ -257,8 +283,21 @@ class Client(ClientWithProject):
         :returns: The bucket matching the name provided or None if not found.
         """
         ...
-    
-    def create_bucket(self, bucket_or_name, requester_pays=..., project=..., user_project=..., location=..., data_locations=..., predefined_acl=..., predefined_default_object_acl=..., enable_object_retention=..., timeout=..., retry=...): # -> Bucket:
+
+    def create_bucket(
+        self,
+        bucket_or_name,
+        requester_pays=...,
+        project=...,
+        user_project=...,
+        location=...,
+        data_locations=...,
+        predefined_acl=...,
+        predefined_default_object_acl=...,
+        enable_object_retention=...,
+        timeout=...,
+        retry=...,
+    ):  # -> Bucket:
         """Create a new bucket via a POST request.
 
         See [API reference docs](https://cloud.google.com/storage/docs/json_api/v1/buckets/insert) and a [code sample](https://cloud.google.com/storage/docs/samples/storage-create-bucket#storage_create_bucket-python).
@@ -326,8 +365,25 @@ class Client(ClientWithProject):
                 If the bucket already exists.
         """
         ...
-    
-    def download_blob_to_file(self, blob_or_uri, file_obj, start=..., end=..., raw_download=..., if_etag_match=..., if_etag_not_match=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., checksum=..., retry=..., single_shot_download=...): # -> None:
+
+    def download_blob_to_file(
+        self,
+        blob_or_uri,
+        file_obj,
+        start=...,
+        end=...,
+        raw_download=...,
+        if_etag_match=...,
+        if_etag_not_match=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        checksum=...,
+        retry=...,
+        single_shot_download=...,
+    ):  # -> None:
         """Download the contents of a blob object or blob URI into a file-like object.
 
         See https://cloud.google.com/storage/docs/downloading-objects
@@ -405,8 +461,27 @@ class Client(ClientWithProject):
                 (Optional) If true, download the object in a single request.
         """
         ...
-    
-    def list_blobs(self, bucket_or_name, max_results=..., page_token=..., prefix=..., delimiter=..., start_offset=..., end_offset=..., include_trailing_delimiter=..., versions=..., projection=..., fields=..., page_size=..., timeout=..., retry=..., match_glob=..., include_folders_as_prefixes=..., soft_deleted=...): # -> HTTPIterator:
+
+    def list_blobs(
+        self,
+        bucket_or_name,
+        max_results=...,
+        page_token=...,
+        prefix=...,
+        delimiter=...,
+        start_offset=...,
+        end_offset=...,
+        include_trailing_delimiter=...,
+        versions=...,
+        projection=...,
+        fields=...,
+        page_size=...,
+        timeout=...,
+        retry=...,
+        match_glob=...,
+        include_folders_as_prefixes=...,
+        soft_deleted=...,
+    ):  # -> HTTPIterator:
         """Return an iterator used to find blobs in the bucket.
 
         If :attr:`user_project` is set, bills the API request to that project.
@@ -524,8 +599,22 @@ class Client(ClientWithProject):
             up to and including the requested delimiter. Duplicate entries are omitted from this list.
         """
         ...
-    
-    def list_buckets(self, max_results=..., page_token=..., prefix=..., projection=..., fields=..., project=..., page_size=..., timeout=..., retry=..., *, soft_deleted=..., return_partial_success=...): # -> HTTPIterator:
+
+    def list_buckets(
+        self,
+        max_results=...,
+        page_token=...,
+        prefix=...,
+        projection=...,
+        fields=...,
+        project=...,
+        page_size=...,
+        timeout=...,
+        retry=...,
+        *,
+        soft_deleted=...,
+        return_partial_success=...,
+    ):  # -> HTTPIterator:
         """Get all buckets in the project associated to the client.
 
         This will not populate the list of blobs available in each
@@ -597,8 +686,17 @@ class Client(ClientWithProject):
                   belonging to this project.
         """
         ...
-    
-    def restore_bucket(self, bucket_name, generation, projection=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., retry=...): # -> Bucket:
+
+    def restore_bucket(
+        self,
+        bucket_name,
+        generation,
+        projection=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+    ):  # -> Bucket:
         """Restores a soft-deleted bucket.
 
         :type bucket_name: str
@@ -636,8 +734,15 @@ class Client(ClientWithProject):
         :returns: The restored Bucket.
         """
         ...
-    
-    def create_hmac_key(self, service_account_email, project_id=..., user_project=..., timeout=..., retry=...): # -> tuple[HMACKeyMetadata, Any]:
+
+    def create_hmac_key(
+        self,
+        service_account_email,
+        project_id=...,
+        user_project=...,
+        timeout=...,
+        retry=...,
+    ):  # -> tuple[HMACKeyMetadata, Any]:
         """Create an HMAC key for a service account.
 
         :type service_account_email: str
@@ -674,8 +779,17 @@ class Client(ClientWithProject):
         :returns: metadata for the created key, plus the bytes of the key's secret, which is an 40-character base64-encoded string.
         """
         ...
-    
-    def list_hmac_keys(self, max_results=..., service_account_email=..., show_deleted_keys=..., project_id=..., user_project=..., timeout=..., retry=...): # -> HTTPIterator:
+
+    def list_hmac_keys(
+        self,
+        max_results=...,
+        service_account_email=...,
+        show_deleted_keys=...,
+        project_id=...,
+        user_project=...,
+        timeout=...,
+        retry=...,
+    ):  # -> HTTPIterator:
         """List HMAC keys for a project.
 
         :type max_results: int
@@ -712,8 +826,10 @@ class Client(ClientWithProject):
         :returns: metadata for the created key, plus the bytes of the key's secret, which is an 40-character base64-encoded string.
         """
         ...
-    
-    def get_hmac_key_metadata(self, access_id, project_id=..., user_project=..., timeout=...): # -> HMACKeyMetadata:
+
+    def get_hmac_key_metadata(
+        self, access_id, project_id=..., user_project=..., timeout=...
+    ):  # -> HMACKeyMetadata:
         """Return a metadata instance for the given HMAC key.
 
         :type access_id: str
@@ -732,8 +848,21 @@ class Client(ClientWithProject):
         :param user_project: (Optional) This parameter is currently ignored.
         """
         ...
-    
-    def generate_signed_post_policy_v4(self, bucket_name, blob_name, expiration, conditions=..., fields=..., credentials=..., virtual_hosted_style=..., bucket_bound_hostname=..., scheme=..., service_account_email=..., access_token=...): # -> dict[str, Any]:
+
+    def generate_signed_post_policy_v4(
+        self,
+        bucket_name,
+        blob_name,
+        expiration,
+        conditions=...,
+        fields=...,
+        credentials=...,
+        virtual_hosted_style=...,
+        bucket_bound_hostname=...,
+        scheme=...,
+        service_account_email=...,
+        access_token=...,
+    ):  # -> dict[str, Any]:
         """Generate a V4 signed policy object. Generated policy object allows user to upload objects with a POST request.
 
         .. note::
@@ -798,6 +927,3 @@ class Client(ClientWithProject):
         :returns: Signed POST policy.
         """
         ...
-    
-
-

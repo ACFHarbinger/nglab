@@ -18,7 +18,17 @@ class _BaseStorageControlRestTransport(StorageControlTransport):
 
     It sends JSON representations of protocol buffers over HTTP/1.1
     """
-    def __init__(self, *, host: str = ..., credentials: Optional[Any] = ..., client_info: gapic_v1.client_info.ClientInfo = ..., always_use_jwt_access: Optional[bool] = ..., url_scheme: str = ..., api_audience: Optional[str] = ...) -> None:
+
+    def __init__(
+        self,
+        *,
+        host: str = ...,
+        credentials: Optional[Any] = ...,
+        client_info: gapic_v1.client_info.ClientInfo = ...,
+        always_use_jwt_access: Optional[bool] = ...,
+        url_scheme: str = ...,
+        api_audience: Optional[str] = ...,
+    ) -> None:
         """Instantiate the transport.
         Args:
             host (Optional[str]):
@@ -40,169 +50,95 @@ class _BaseStorageControlRestTransport(StorageControlTransport):
                 "http" can be specified.
         """
         ...
-    
+
     class _BaseCreateAnywhereCache:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseCreateFolder:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseCreateManagedFolder:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseDeleteFolder:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseDeleteManagedFolder:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseDisableAnywhereCache:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseGetAnywhereCache:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseGetFolder:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseGetFolderIntelligenceConfig:
-        def __hash__(self) -> int:
-            ...
-        
+        def __hash__(self) -> int: ...
+
         __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] = ...
-    
-    
+
     class _BaseGetIamPolicy:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseGetManagedFolder:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseGetOrganizationIntelligenceConfig:
-        def __hash__(self) -> int:
-            ...
-        
+        def __hash__(self) -> int: ...
+
         __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] = ...
-    
-    
+
     class _BaseGetProjectIntelligenceConfig:
-        def __hash__(self) -> int:
-            ...
-        
+        def __hash__(self) -> int: ...
+
         __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] = ...
-    
-    
+
     class _BaseGetStorageLayout:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseListAnywhereCaches:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseListFolders:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseListManagedFolders:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BasePauseAnywhereCache:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseRenameFolder:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseResumeAnywhereCache:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseSetIamPolicy:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseTestIamPermissions:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseUpdateAnywhereCache:
-        def __hash__(self) -> int:
-            ...
-        
-    
-    
+        def __hash__(self) -> int: ...
+
     class _BaseUpdateFolderIntelligenceConfig:
-        def __hash__(self) -> int:
-            ...
-        
+        def __hash__(self) -> int: ...
+
         __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] = ...
-    
-    
+
     class _BaseUpdateOrganizationIntelligenceConfig:
-        def __hash__(self) -> int:
-            ...
-        
+        def __hash__(self) -> int: ...
+
         __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] = ...
-    
-    
+
     class _BaseUpdateProjectIntelligenceConfig:
-        def __hash__(self) -> int:
-            ...
-        
+        def __hash__(self) -> int: ...
+
         __REQUIRED_FIELDS_DEFAULT_VALUES: Dict[str, Any] = ...
-    
-    
 
-
-__all__ = ("_BaseStorageControlRestTransport", )
+__all__ = ("_BaseStorageControlRestTransport",)

@@ -23,10 +23,12 @@ spec JSON response.
 .. _rfc8693 section 2.2.1: https://tools.ietf.org/html/rfc8693#section-2.2.1
 """
 _URLENCODED_HEADERS = ...
+
 class Client(utils.OAuthClientAuthHandler):
     """Implements the OAuth 2.0 token exchange spec based on
     https://tools.ietf.org/html/rfc8693.
     """
+
     def __init__(self, token_exchange_endpoint, client_authentication=...) -> None:
         """Initializes an STS client instance.
 
@@ -36,8 +38,22 @@ class Client(utils.OAuthClientAuthHandler):
                 The optional OAuth client authentication credentials if available.
         """
         ...
-    
-    def exchange_token(self, request, grant_type, subject_token, subject_token_type, resource=..., audience=..., scopes=..., requested_token_type=..., actor_token=..., actor_token_type=..., additional_options=..., additional_headers=...): # -> dict[Any, Any] | Any:
+
+    def exchange_token(
+        self,
+        request,
+        grant_type,
+        subject_token,
+        subject_token_type,
+        resource=...,
+        audience=...,
+        scopes=...,
+        requested_token_type=...,
+        actor_token=...,
+        actor_token_type=...,
+        additional_options=...,
+        additional_headers=...,
+    ):  # -> dict[Any, Any] | Any:
         """Exchanges the provided token for another type of token based on the
         rfc8693 spec.
 
@@ -68,8 +84,8 @@ class Client(utils.OAuthClientAuthHandler):
                 an error.
         """
         ...
-    
-    def refresh_token(self, request, refresh_token): # -> dict[Any, Any] | Any:
+
+    def refresh_token(self, request, refresh_token):  # -> dict[Any, Any] | Any:
         """Exchanges a refresh token for an access token based on the
         RFC6749 spec.
 
@@ -79,8 +95,10 @@ class Client(utils.OAuthClientAuthHandler):
             subject_token (str): The OAuth 2.0 refresh token.
         """
         ...
-    
-    def revoke_token(self, request, token, token_type_hint, revoke_url): # -> dict[Any, Any] | Any:
+
+    def revoke_token(
+        self, request, token, token_type_hint, revoke_url
+    ):  # -> dict[Any, Any] | Any:
         """Revokes the provided token based on the RFC7009 spec.
 
         Args:
@@ -95,6 +113,3 @@ class Client(utils.OAuthClientAuthHandler):
                 returned an error.
         """
         ...
-    
-
-

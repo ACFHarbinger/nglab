@@ -21,6 +21,7 @@ from google.oauth2 import service_account
 HAS_GOOGLE_AUTH_API_KEY = ...
 _GOOGLE_AUTH_CREDENTIALS_HELP = ...
 _CREDENTIALS_REFRESH_TIMEOUT = ...
+
 class _ClientFactoryMixin:
     """Mixin to allow factories that create credentials.
 
@@ -28,9 +29,10 @@ class _ClientFactoryMixin:
 
         This class is virtual.
     """
+
     _SET_PROJECT = ...
     @classmethod
-    def from_service_account_info(cls, info, *args, **kwargs): # -> Self:
+    def from_service_account_info(cls, info, *args, **kwargs):  # -> Self:
         """Factory to retrieve JSON credentials while creating client.
 
         :type info: dict
@@ -49,9 +51,11 @@ class _ClientFactoryMixin:
                  and the credentials created by the factory.
         """
         ...
-    
+
     @classmethod
-    def from_service_account_json(cls, json_credentials_path, *args, **kwargs): # -> Self:
+    def from_service_account_json(
+        cls, json_credentials_path, *args, **kwargs
+    ):  # -> Self:
         """Factory to retrieve JSON credentials while creating client.
 
         :type json_credentials_path: str
@@ -73,8 +77,6 @@ class _ClientFactoryMixin:
                  and the credentials created by the factory.
         """
         ...
-    
-
 
 class Client(_ClientFactoryMixin):
     """Client to bundle configuration needed for API requests.
@@ -110,15 +112,14 @@ class Client(_ClientFactoryMixin):
             Raised if ``credentials`` is not specified and the library fails
             to acquire default credentials.
     """
+
     SCOPE: Union[Tuple[str, ...], None] = ...
-    def __init__(self, credentials=..., _http=..., client_options=...) -> None:
-        ...
-    
+    def __init__(self, credentials=..., _http=..., client_options=...) -> None: ...
     def __getstate__(self):
         """Explicitly state that clients are not pickleable."""
         ...
-    
-    def close(self): # -> None:
+
+    def close(self):  # -> None:
         """Clean up transport, if set.
 
         Suggested use:
@@ -131,8 +132,6 @@ class Client(_ClientFactoryMixin):
                do_something_with(client)
         """
         ...
-    
-
 
 class _ClientProjectMixin:
     """Mixin to allow setting the project on the client.
@@ -150,10 +149,8 @@ class _ClientProjectMixin:
              set on the credentials or in the environment. :class:`ValueError`
              if the project value is invalid.
     """
-    def __init__(self, project=..., credentials=...) -> None:
-        ...
-    
 
+    def __init__(self, project=..., credentials=...) -> None: ...
 
 class ClientWithProject(Client, _ClientProjectMixin):
     """Client that also stores a project.
@@ -181,9 +178,8 @@ class ClientWithProject(Client, _ClientProjectMixin):
     :raises: :class:`ValueError` if the project is neither passed in nor
              set in the environment.
     """
+
     _SET_PROJECT = ...
-    def __init__(self, project=..., credentials=..., client_options=..., _http=...) -> None:
-        ...
-    
-
-
+    def __init__(
+        self, project=..., credentials=..., client_options=..., _http=...
+    ) -> None: ...

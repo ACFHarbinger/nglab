@@ -30,7 +30,8 @@ _AUTHENTICATED = ...
 _CHALLENGE_REQUIRED = ...
 _CHALLENGE_PENDING = ...
 RUN_CHALLENGE_RETRY_LIMIT = ...
-def is_interactive(): # -> bool | Any:
+
+def is_interactive():  # -> bool | Any:
     """Check if we are in an interractive environment.
 
     Override this function with a different logic if you are using this library
@@ -45,7 +46,9 @@ def is_interactive(): # -> bool | Any:
     """
     ...
 
-def get_rapt_token(request, client_id, client_secret, refresh_token, token_uri, scopes=...): # -> Any:
+def get_rapt_token(
+    request, client_id, client_secret, refresh_token, token_uri, scopes=...
+):  # -> Any:
     """Given an http request method and refresh_token, get rapt token.
 
     Args:
@@ -64,7 +67,16 @@ def get_rapt_token(request, client_id, client_secret, refresh_token, token_uri, 
     """
     ...
 
-def refresh_grant(request, token_uri, refresh_token, client_id, client_secret, scopes=..., rapt_token=..., enable_reauth_refresh=...): # -> tuple[Any, Any, datetime | None, Any, Any | None]:
+def refresh_grant(
+    request,
+    token_uri,
+    refresh_token,
+    client_id,
+    client_secret,
+    scopes=...,
+    rapt_token=...,
+    enable_reauth_refresh=...,
+):  # -> tuple[Any, Any, datetime | None, Any, Any | None]:
     """Implements the reauthentication flow.
 
     Args:
@@ -95,4 +107,3 @@ def refresh_grant(request, token_uri, refresh_token, client_id, client_secret, s
             an error.
     """
     ...
-

@@ -25,7 +25,13 @@ Example credential:
 }
 """
 _EXTERNAL_ACCOUNT_AUTHORIZED_USER_JSON_TYPE = ...
-class Credentials(credentials.CredentialsWithQuotaProject, credentials.ReadOnlyScoped, credentials.CredentialsWithTokenUri, credentials.CredentialsWithTrustBoundary):
+
+class Credentials(
+    credentials.CredentialsWithQuotaProject,
+    credentials.ReadOnlyScoped,
+    credentials.CredentialsWithTokenUri,
+    credentials.CredentialsWithTrustBoundary,
+):
     """Credentials for External Account Authorized Users.
 
     This is used to instantiate Credentials for exchanging refresh tokens from
@@ -44,7 +50,23 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.ReadOnlyS
     untrusted source, you should validate it before using.
     Refer https://cloud.google.com/docs/authentication/external/externally-sourced-credentials for more details.
     """
-    def __init__(self, token=..., expiry=..., refresh_token=..., audience=..., client_id=..., client_secret=..., token_url=..., token_info_url=..., revoke_url=..., scopes=..., quota_project_id=..., universe_domain=..., trust_boundary=...) -> None:
+
+    def __init__(
+        self,
+        token=...,
+        expiry=...,
+        refresh_token=...,
+        audience=...,
+        client_id=...,
+        client_secret=...,
+        token_url=...,
+        token_info_url=...,
+        revoke_url=...,
+        scopes=...,
+        quota_project_id=...,
+        universe_domain=...,
+        trust_boundary=...,
+    ) -> None:
         """Instantiates a external account authorized user credentials object.
 
         Args:
@@ -76,9 +98,9 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.ReadOnlyS
                 constructed credentials.
         """
         ...
-    
+
     @property
-    def info(self): # -> dict[str, Any]:
+    def info(self):  # -> dict[str, Any]:
         """Generates the serializable dictionary representation of the current
         credentials.
 
@@ -89,67 +111,67 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.ReadOnlyS
                 later.
         """
         ...
-    
-    def constructor_args(self): # -> dict[str, Any]:
+
+    def constructor_args(self):  # -> dict[str, Any]:
         ...
-    
+
     @property
-    def scopes(self): # -> None:
+    def scopes(self):  # -> None:
         """Optional[str]: The OAuth 2.0 permission scopes."""
         ...
-    
+
     @property
-    def requires_scopes(self): # -> Literal[False]:
+    def requires_scopes(self):  # -> Literal[False]:
         """False: OAuth 2.0 credentials have their scopes set when
         the initial token is requested and can not be changed."""
         ...
-    
+
     @property
-    def client_id(self): # -> None:
+    def client_id(self):  # -> None:
         """Optional[str]: The OAuth 2.0 client ID."""
         ...
-    
+
     @property
-    def client_secret(self): # -> None:
+    def client_secret(self):  # -> None:
         """Optional[str]: The OAuth 2.0 client secret."""
         ...
-    
+
     @property
-    def audience(self): # -> None:
+    def audience(self):  # -> None:
         """Optional[str]: The STS audience which contains the resource name for the
         workforce pool and the provider identifier in that pool."""
         ...
-    
+
     @property
-    def refresh_token(self): # -> Any | None:
+    def refresh_token(self):  # -> Any | None:
         """Optional[str]: The OAuth 2.0 refresh token."""
         ...
-    
+
     @property
-    def token_url(self): # -> None:
+    def token_url(self):  # -> None:
         """Optional[str]: The STS token exchange endpoint for refresh."""
         ...
-    
+
     @property
-    def token_info_url(self): # -> None:
+    def token_info_url(self):  # -> None:
         """Optional[str]: The STS endpoint for token info."""
         ...
-    
+
     @property
-    def revoke_url(self): # -> None:
+    def revoke_url(self):  # -> None:
         """Optional[str]: The STS endpoint for token revocation."""
         ...
-    
+
     @property
-    def is_user(self): # -> Literal[True]:
+    def is_user(self):  # -> Literal[True]:
         """True: This credential always represents a user."""
         ...
-    
+
     @property
-    def can_refresh(self): # -> bool:
+    def can_refresh(self):  # -> bool:
         ...
-    
-    def get_project_id(self, request=...): # -> None:
+
+    def get_project_id(self, request=...):  # -> None:
         """Retrieves the project ID corresponding to the workload identity or workforce pool.
         For workforce pool credentials, it returns the project ID corresponding to
         the workforce_pool_user_project.
@@ -164,8 +186,8 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.ReadOnlyS
           str: project ID is not determinable for this credential type so it returns None
         """
         ...
-    
-    def to_json(self, strip=...): # -> str:
+
+    def to_json(self, strip=...):  # -> str:
         """Utility function that creates a JSON representation of this
         credential.
         Args:
@@ -177,8 +199,8 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.ReadOnlyS
             to create a new instance.
         """
         ...
-    
-    def revoke(self, request): # -> None:
+
+    def revoke(self, request):  # -> None:
         """Revokes the refresh token.
 
         Args:
@@ -190,29 +212,29 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.ReadOnlyS
                 revoked.
         """
         ...
-    
+
     @_helpers.copy_docstring(credentials.Credentials)
-    def get_cred_info(self): # -> dict[str, Any] | None:
+    def get_cred_info(self):  # -> dict[str, Any] | None:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
-    def with_quota_project(self, quota_project_id): # -> Self:
+    def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
-    def with_token_uri(self, token_uri): # -> Self:
+    def with_token_uri(self, token_uri):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
-    def with_universe_domain(self, universe_domain): # -> Self:
+    def with_universe_domain(self, universe_domain):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithTrustBoundary)
-    def with_trust_boundary(self, trust_boundary): # -> Self:
+    def with_trust_boundary(self, trust_boundary):  # -> Self:
         ...
-    
+
     @classmethod
-    def from_info(cls, info, **kwargs): # -> Self:
+    def from_info(cls, info, **kwargs):  # -> Self:
         """Creates a Credentials instance from parsed external account info.
 
         **IMPORTANT**:
@@ -236,9 +258,9 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.ReadOnlyS
             ValueError: For invalid parameters.
         """
         ...
-    
+
     @classmethod
-    def from_file(cls, filename, **kwargs): # -> Self:
+    def from_file(cls, filename, **kwargs):  # -> Self:
         """Creates a Credentials instance from an external account json file.
 
         **IMPORTANT**:
@@ -258,6 +280,3 @@ class Credentials(credentials.CredentialsWithQuotaProject, credentials.ReadOnlyS
                 constructed credentials.
         """
         ...
-    
-
-

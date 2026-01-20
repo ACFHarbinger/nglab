@@ -24,7 +24,10 @@ _CLOUD_SDK_MISSING_CREDENTIALS = ...
 _CLOUD_SDK_CREDENTIALS_WARNING = ...
 _GENERIC_LOAD_METHOD_WARNING = ...
 _AWS_SUBJECT_TOKEN_TYPE = ...
-def load_credentials_from_file(filename, scopes=..., default_scopes=..., quota_project_id=..., request=...): # -> tuple[Credentials | Any | ServiceAccountCredentials, Any | None]:
+
+def load_credentials_from_file(
+    filename, scopes=..., default_scopes=..., quota_project_id=..., request=...
+):  # -> tuple[Credentials | Any | ServiceAccountCredentials, Any | None]:
     """Loads Google credentials from a file.
 
     The credentials file must be a service account key, stored authorized
@@ -69,7 +72,9 @@ def load_credentials_from_file(filename, scopes=..., default_scopes=..., quota_p
     """
     ...
 
-def load_credentials_from_dict(info, scopes=..., default_scopes=..., quota_project_id=..., request=...): # -> tuple[Credentials | Any | ServiceAccountCredentials, Any | None]:
+def load_credentials_from_dict(
+    info, scopes=..., default_scopes=..., quota_project_id=..., request=...
+):  # -> tuple[Credentials | Any | ServiceAccountCredentials, Any | None]:
     """Loads Google credentials from a dict.
 
     The credentials file must be a service account key, stored authorized
@@ -114,11 +119,16 @@ def load_credentials_from_dict(info, scopes=..., default_scopes=..., quota_proje
     """
     ...
 
-def get_api_key_credentials(key): # -> Credentials:
+def get_api_key_credentials(key):  # -> Credentials:
     """Return credentials with the given API key."""
     ...
 
-def default(scopes: Optional[Sequence[str]] = ..., request: Optional[google.auth.transport.Request] = ..., quota_project_id: Optional[str] = ..., default_scopes: Optional[Sequence[str]] = ...) -> tuple[google.auth.credentials.Credentials, Optional[str]]:
+def default(
+    scopes: Optional[Sequence[str]] = ...,
+    request: Optional[google.auth.transport.Request] = ...,
+    quota_project_id: Optional[str] = ...,
+    default_scopes: Optional[Sequence[str]] = ...,
+) -> tuple[google.auth.credentials.Credentials, Optional[str]]:
     """Gets the default credentials for the current environment.
 
     `Application Default Credentials`_ provides an easy way to obtain
@@ -216,4 +226,3 @@ def default(scopes: Optional[Sequence[str]] = ..., request: Optional[google.auth
             invalid.
     """
     ...
-

@@ -28,12 +28,14 @@ and used to create Identity Pool credentials. The credentials will then call the
 supplier instead of using pre-defined methods such as reading a local file or
 calling a URL.
 """
+
 class SubjectTokenSupplier(metaclass=abc.ABCMeta):
     """Base class for subject token suppliers. This can be implemented with custom logic to retrieve
     a subject token to exchange for a Google Cloud access token when using Workload or
     Workforce Identity Federation. The identity pool credential does not cache the subject token,
     so caching logic should be added in the implementation.
     """
+
     @abc.abstractmethod
     def get_subject_token(self, context, request):
         """Returns the requested subject token. The subject token must be valid.
@@ -54,8 +56,6 @@ class SubjectTokenSupplier(metaclass=abc.ABCMeta):
             str: The requested subject token string.
         """
         ...
-    
-
 
 class _TokenContent(NamedTuple):
     """Models the token content response from file and url internal suppliers.
@@ -63,43 +63,34 @@ class _TokenContent(NamedTuple):
         content (str): The string content of the file or URL response.
         location (str): The location the content was retrieved from. This will either be a file location or a URL.
     """
+
     content: str
     location: str
     ...
 
-
 class _FileSupplier(SubjectTokenSupplier):
     """Internal implementation of subject token supplier which supports reading a subject token from a file."""
-    def __init__(self, path, format_type, subject_token_field_name) -> None:
-        ...
-    
-    @_helpers.copy_docstring(SubjectTokenSupplier)
-    def get_subject_token(self, context, request): # -> Any:
-        ...
-    
 
+    def __init__(self, path, format_type, subject_token_field_name) -> None: ...
+    @_helpers.copy_docstring(SubjectTokenSupplier)
+    def get_subject_token(self, context, request):  # -> Any:
+        ...
 
 class _UrlSupplier(SubjectTokenSupplier):
     """Internal implementation of subject token supplier which supports retrieving a subject token by calling a URL endpoint."""
-    def __init__(self, url, format_type, subject_token_field_name, headers) -> None:
-        ...
-    
-    @_helpers.copy_docstring(SubjectTokenSupplier)
-    def get_subject_token(self, context, request): # -> Any:
-        ...
-    
 
+    def __init__(self, url, format_type, subject_token_field_name, headers) -> None: ...
+    @_helpers.copy_docstring(SubjectTokenSupplier)
+    def get_subject_token(self, context, request):  # -> Any:
+        ...
 
 class _X509Supplier(SubjectTokenSupplier):
     """Internal supplier for X509 workload credentials. This class is used internally and always returns an empty string as the subject token."""
-    def __init__(self, trust_chain_path, leaf_cert_callback) -> None:
-        ...
-    
-    @_helpers.copy_docstring(SubjectTokenSupplier)
-    def get_subject_token(self, context, request): # -> str:
-        ...
-    
 
+    def __init__(self, trust_chain_path, leaf_cert_callback) -> None: ...
+    @_helpers.copy_docstring(SubjectTokenSupplier)
+    def get_subject_token(self, context, request):  # -> str:
+        ...
 
 class Credentials(external_account.Credentials):
     """External account credentials sourced from files and URLs.
@@ -112,7 +103,17 @@ class Credentials(external_account.Credentials):
     untrusted source, you should validate it before using.
     Refer https://cloud.google.com/docs/authentication/external/externally-sourced-credentials for more details.
     """
-    def __init__(self, audience, subject_token_type, token_url=..., credential_source=..., subject_token_supplier=..., *args, **kwargs) -> None:
+
+    def __init__(
+        self,
+        audience,
+        subject_token_type,
+        token_url=...,
+        credential_source=...,
+        subject_token_supplier=...,
+        *args,
+        **kwargs,
+    ) -> None:
         """Instantiates an external account credentials object from a file/URL.
 
         Args:
@@ -163,13 +164,13 @@ class Credentials(external_account.Credentials):
             :meth:`from_info` are used instead of calling the constructor directly.
         """
         ...
-    
+
     @_helpers.copy_docstring(external_account.Credentials)
-    def retrieve_subject_token(self, request): # -> Any | str:
+    def retrieve_subject_token(self, request):  # -> Any | str:
         ...
-    
+
     @classmethod
-    def from_info(cls, info, **kwargs): # -> Self:
+    def from_info(cls, info, **kwargs):  # -> Self:
         """Creates an Identity Pool Credentials instance from parsed external account info.
 
         **IMPORTANT**:
@@ -193,9 +194,9 @@ class Credentials(external_account.Credentials):
             ValueError: For invalid parameters.
         """
         ...
-    
+
     @classmethod
-    def from_file(cls, filename, **kwargs): # -> Self:
+    def from_file(cls, filename, **kwargs):  # -> Self:
         """Creates an IdentityPool Credentials instance from an external account json file.
 
         **IMPORTANT**:
@@ -215,8 +216,8 @@ class Credentials(external_account.Credentials):
                 credentials.
         """
         ...
-    
-    def refresh(self, request): # -> None:
+
+    def refresh(self, request):  # -> None:
         """Refreshes the access token.
 
         Args:
@@ -224,6 +225,3 @@ class Credentials(external_account.Credentials):
                 HTTP requests.
         """
         ...
-    
-
-

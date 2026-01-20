@@ -39,6 +39,7 @@ You can also pass a mapping object.
 
 
 """
+
 class ClientOptions:
     """Client Options used to set options on clients.
 
@@ -88,13 +89,22 @@ class ClientOptions:
         ValueError: If both ``client_cert_source`` and ``client_encrypted_cert_source``
             are provided, or both ``credentials_file`` and ``api_key`` are provided.
     """
-    def __init__(self, api_endpoint: Optional[str] = ..., client_cert_source: Optional[Callable[[], Tuple[bytes, bytes]]] = ..., client_encrypted_cert_source: Optional[Callable[[], Tuple[str, str, bytes]]] = ..., quota_project_id: Optional[str] = ..., credentials_file: Optional[str] = ..., scopes: Optional[Sequence[str]] = ..., api_key: Optional[str] = ..., api_audience: Optional[str] = ..., universe_domain: Optional[str] = ...) -> None:
-        ...
-    
-    def __repr__(self) -> str:
-        ...
-    
 
+    def __init__(
+        self,
+        api_endpoint: Optional[str] = ...,
+        client_cert_source: Optional[Callable[[], Tuple[bytes, bytes]]] = ...,
+        client_encrypted_cert_source: Optional[
+            Callable[[], Tuple[str, str, bytes]]
+        ] = ...,
+        quota_project_id: Optional[str] = ...,
+        credentials_file: Optional[str] = ...,
+        scopes: Optional[Sequence[str]] = ...,
+        api_key: Optional[str] = ...,
+        api_audience: Optional[str] = ...,
+        universe_domain: Optional[str] = ...,
+    ) -> None: ...
+    def __repr__(self) -> str: ...
 
 def from_dict(options: Mapping[str, object]) -> ClientOptions:
     """Construct a client options object from a mapping object.
@@ -104,4 +114,3 @@ def from_dict(options: Mapping[str, object]) -> ClientOptions:
             See the docstring for ClientOptions for details on valid arguments.
     """
     ...
-

@@ -9,7 +9,8 @@ _UTC_EPOCH = ...
 _RFC3339_MICROS = ...
 _RFC3339_NO_FRACTION = ...
 _RFC3339_NANOS = ...
-def utcnow(): # -> datetime:
+
+def utcnow():  # -> datetime:
     """A :meth:`datetime.datetime.utcnow()` alias to allow mocking in tests."""
     ...
 
@@ -24,7 +25,7 @@ def to_milliseconds(value):
     """
     ...
 
-def from_microseconds(value): # -> datetime:
+def from_microseconds(value):  # -> datetime:
     """Convert timestamp in microseconds since the unix epoch to datetime.
 
     Args:
@@ -47,7 +48,7 @@ def to_microseconds(value):
     """
     ...
 
-def from_iso8601_date(value): # -> _Date:
+def from_iso8601_date(value):  # -> _Date:
     """Convert a ISO8601 date string to a date.
 
     Args:
@@ -58,7 +59,7 @@ def from_iso8601_date(value): # -> _Date:
     """
     ...
 
-def from_iso8601_time(value): # -> _Time:
+def from_iso8601_time(value):  # -> _Time:
     """Convert a zoneless ISO8601 time string to a time.
 
     Args:
@@ -69,7 +70,7 @@ def from_iso8601_time(value): # -> _Time:
     """
     ...
 
-def from_rfc3339(value): # -> datetime:
+def from_rfc3339(value):  # -> datetime:
     """Convert an RFC3339-format timestamp to a native datetime.
 
     Supported formats include those without fractional seconds, or with
@@ -93,6 +94,7 @@ def from_rfc3339(value): # -> datetime:
     ...
 
 from_rfc3339_nanos = ...
+
 def to_rfc3339(value, ignore_zone=...):
     """Convert a datetime to an RFC3339 timestamp string.
 
@@ -112,25 +114,26 @@ class DatetimeWithNanoseconds(datetime.datetime):
 
     Nanosecond can be passed only as a keyword argument.
     """
+
     __slots__ = ...
-    def __new__(cls, *args, **kw): # -> Self:
+    def __new__(cls, *args, **kw):  # -> Self:
         ...
-    
+
     @property
     def nanosecond(self):
         """Read-only: nanosecond precision."""
         ...
-    
-    def rfc3339(self): # -> str:
+
+    def rfc3339(self):  # -> str:
         """Return an RFC3339-compliant timestamp.
 
         Returns:
             (str): Timestamp string according to RFC3339 spec.
         """
         ...
-    
+
     @classmethod
-    def from_rfc3339(cls, stamp): # -> Self:
+    def from_rfc3339(cls, stamp):  # -> Self:
         """Parse RFC3339-compliant timestamp, preserving nanoseconds.
 
         Args:
@@ -144,17 +147,17 @@ class DatetimeWithNanoseconds(datetime.datetime):
             ValueError: if `stamp` does not match the expected format
         """
         ...
-    
-    def timestamp_pb(self): # -> Timestamp:
+
+    def timestamp_pb(self):  # -> Timestamp:
         """Return a timestamp message.
 
         Returns:
             (:class:`~google.protobuf.timestamp_pb2.Timestamp`): Timestamp message
         """
         ...
-    
+
     @classmethod
-    def from_timestamp_pb(cls, stamp): # -> Self:
+    def from_timestamp_pb(cls, stamp):  # -> Self:
         """Parse RFC3339-compliant timestamp, preserving nanoseconds.
 
         Args:
@@ -165,6 +168,3 @@ class DatetimeWithNanoseconds(datetime.datetime):
                 an instance matching the timestamp message
         """
         ...
-    
-
-

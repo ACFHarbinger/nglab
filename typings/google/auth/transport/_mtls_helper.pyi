@@ -14,7 +14,12 @@ _WELL_KNOWN_CLOUD_RUN_CERT_PATH = ...
 _WELL_KNOWN_CLOUD_RUN_KEY_PATH = ...
 _INCORRECT_CLOUD_RUN_CERT_PATH = ...
 _INCORRECT_CLOUD_RUN_KEY_PATH = ...
-def get_client_ssl_credentials(generate_encrypted_key=..., context_aware_metadata_path=..., certificate_config_path=...): # -> tuple[Literal[True], Any, Any, None] | tuple[Literal[True], Any, Any, Any | None] | tuple[Literal[False], None, None, None]:
+
+def get_client_ssl_credentials(
+    generate_encrypted_key=...,
+    context_aware_metadata_path=...,
+    certificate_config_path=...,
+):  # -> tuple[Literal[True], Any, Any, None] | tuple[Literal[True], Any, Any, Any | None] | tuple[Literal[False], None, None, None]:
     """Returns the client side certificate, private key and passphrase.
 
     We look for certificates and keys with the following order of priority:
@@ -41,7 +46,9 @@ def get_client_ssl_credentials(generate_encrypted_key=..., context_aware_metadat
     """
     ...
 
-def get_client_cert_and_key(client_cert_callback=...): # -> tuple[Literal[True], Any, Any] | tuple[bool, Any | None, Any | None]:
+def get_client_cert_and_key(
+    client_cert_callback=...,
+):  # -> tuple[Literal[True], Any, Any] | tuple[bool, Any | None, Any | None]:
     """Returns the client side certificate and private key. The function first
     tries to get certificate and key from client_cert_callback; if the callback
     is None or doesn't provide certificate and key, the function tries application
@@ -98,7 +105,7 @@ def decrypt_private_key(key, passphrase):
     """
     ...
 
-def check_use_client_cert(): # -> bool:
+def check_use_client_cert():  # -> bool:
     """Returns boolean for whether the client certificate should be used for mTLS.
 
     If GOOGLE_API_USE_CLIENT_CERTIFICATE is set to true or false, a corresponding
@@ -114,7 +121,9 @@ def check_use_client_cert(): # -> bool:
     """
     ...
 
-def check_parameters_for_unauthorized_response(cached_cert): # -> tuple[Any | None, Any | None, str, str]:
+def check_parameters_for_unauthorized_response(
+    cached_cert,
+):  # -> tuple[Any | None, Any | None, str, str]:
     """Returns the cached and current cert fingerprint for reconfiguring mTLS.
 
     Args:
@@ -127,4 +136,3 @@ def check_parameters_for_unauthorized_response(cached_cert): # -> tuple[Any | No
         str: The base64-encoded SHA256 current cert fingerprint.
     """
     ...
-

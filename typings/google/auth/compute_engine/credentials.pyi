@@ -11,7 +11,13 @@ Compute Engine using the Compute Engine metadata server.
 
 """
 _TRUST_BOUNDARY_LOOKUP_ENDPOINT = ...
-class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, credentials.CredentialsWithUniverseDomain, credentials.CredentialsWithTrustBoundary):
+
+class Credentials(
+    credentials.Scoped,
+    credentials.CredentialsWithQuotaProject,
+    credentials.CredentialsWithUniverseDomain,
+    credentials.CredentialsWithTrustBoundary,
+):
     """Compute Engine Credentials.
 
     These credentials use the Google Compute Engine metadata server to obtain
@@ -29,7 +35,16 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
     .. _Compute Engine authentication documentation:
         https://cloud.google.com/compute/docs/authentication#using
     """
-    def __init__(self, service_account_email=..., quota_project_id=..., scopes=..., default_scopes=..., universe_domain=..., trust_boundary=...) -> None:
+
+    def __init__(
+        self,
+        service_account_email=...,
+        quota_project_id=...,
+        scopes=...,
+        default_scopes=...,
+        universe_domain=...,
+        trust_boundary=...,
+    ) -> None:
         """
         Args:
             service_account_email (str): The service account email to use, or
@@ -47,49 +62,52 @@ class Credentials(credentials.Scoped, credentials.CredentialsWithQuotaProject, c
             trust_boundary (Mapping[str,str]): A credential trust boundary.
         """
         ...
-    
+
     @property
-    def service_account_email(self): # -> str | Any:
+    def service_account_email(self):  # -> str | Any:
         """The service account email.
 
         .. note:: This is not guaranteed to be set until :meth:`refresh` has been
             called.
         """
         ...
-    
-    @property
-    def requires_scopes(self): # -> bool:
-        ...
-    
-    @property
-    def universe_domain(self): # -> Any | str:
-        ...
-    
-    @_helpers.copy_docstring(credentials.Credentials)
-    def get_cred_info(self): # -> dict[str, Any]:
-        ...
-    
-    @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
-    def with_quota_project(self, quota_project_id): # -> Self:
-        ...
-    
-    @_helpers.copy_docstring(credentials.Scoped)
-    def with_scopes(self, scopes, default_scopes=...): # -> Self:
-        ...
-    
-    @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
-    def with_universe_domain(self, universe_domain): # -> Self:
-        ...
-    
-    @_helpers.copy_docstring(credentials.CredentialsWithTrustBoundary)
-    def with_trust_boundary(self, trust_boundary): # -> Self:
-        ...
-    
 
+    @property
+    def requires_scopes(self):  # -> bool:
+        ...
+
+    @property
+    def universe_domain(self):  # -> Any | str:
+        ...
+
+    @_helpers.copy_docstring(credentials.Credentials)
+    def get_cred_info(self):  # -> dict[str, Any]:
+        ...
+
+    @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
+    def with_quota_project(self, quota_project_id):  # -> Self:
+        ...
+
+    @_helpers.copy_docstring(credentials.Scoped)
+    def with_scopes(self, scopes, default_scopes=...):  # -> Self:
+        ...
+
+    @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
+    def with_universe_domain(self, universe_domain):  # -> Self:
+        ...
+
+    @_helpers.copy_docstring(credentials.CredentialsWithTrustBoundary)
+    def with_trust_boundary(self, trust_boundary):  # -> Self:
+        ...
 
 _DEFAULT_TOKEN_LIFETIME_SECS = ...
 _DEFAULT_TOKEN_URI = ...
-class IDTokenCredentials(credentials.CredentialsWithQuotaProject, credentials.Signing, credentials.CredentialsWithTokenUri):
+
+class IDTokenCredentials(
+    credentials.CredentialsWithQuotaProject,
+    credentials.Signing,
+    credentials.CredentialsWithTokenUri,
+):
     """Open ID Connect ID Token-based service account credentials.
 
     These credentials relies on the default service account of a GCE instance.
@@ -102,7 +120,18 @@ class IDTokenCredentials(credentials.CredentialsWithQuotaProject, credentials.Si
     .. _GCE metadata server identity endpoint:
         https://cloud.google.com/compute/docs/instances/verifying-instance-identity
     """
-    def __init__(self, request, target_audience, token_uri=..., additional_claims=..., service_account_email=..., signer=..., use_metadata_identity_endpoint=..., quota_project_id=...) -> None:
+
+    def __init__(
+        self,
+        request,
+        target_audience,
+        token_uri=...,
+        additional_claims=...,
+        service_account_email=...,
+        signer=...,
+        use_metadata_identity_endpoint=...,
+        quota_project_id=...,
+    ) -> None:
         """
         Args:
             request (google.auth.transport.Request): The object used to make
@@ -134,8 +163,8 @@ class IDTokenCredentials(credentials.CredentialsWithQuotaProject, credentials.Si
                  ``signer`` arguments is set.
         """
         ...
-    
-    def with_target_audience(self, target_audience): # -> Self:
+
+    def with_target_audience(self, target_audience):  # -> Self:
         """Create a copy of these credentials with the specified target
         audience.
         Args:
@@ -146,16 +175,16 @@ class IDTokenCredentials(credentials.CredentialsWithQuotaProject, credentials.Si
                 instance.
         """
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
-    def with_quota_project(self, quota_project_id): # -> Self:
+    def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
-    def with_token_uri(self, token_uri): # -> Self:
+    def with_token_uri(self, token_uri):  # -> Self:
         ...
-    
-    def refresh(self, request): # -> None:
+
+    def refresh(self, request):  # -> None:
         """Refreshes the ID token.
 
         Args:
@@ -168,13 +197,13 @@ class IDTokenCredentials(credentials.CredentialsWithQuotaProject, credentials.Si
             ValueError: If extracting expiry from the obtained ID token fails.
         """
         ...
-    
+
     @property
     @_helpers.copy_docstring(credentials.Signing)
-    def signer(self): # -> Signer | None:
+    def signer(self):  # -> Signer | None:
         ...
-    
-    def sign_bytes(self, message): # -> bytes:
+
+    def sign_bytes(self, message):  # -> bytes:
         """Signs the given message.
 
         Args:
@@ -188,15 +217,12 @@ class IDTokenCredentials(credentials.CredentialsWithQuotaProject, credentials.Si
                 Signer is not available if metadata identity endpoint is used.
         """
         ...
-    
+
     @property
-    def service_account_email(self): # -> Any | str:
+    def service_account_email(self):  # -> Any | str:
         """The service account email."""
         ...
-    
+
     @property
-    def signer_email(self): # -> Any | str:
+    def signer_email(self):  # -> Any | str:
         ...
-    
-
-

@@ -6,6 +6,7 @@ _DEFAULT_RETRY_TOTAL_ATTEMPTS = ...
 _DEFAULT_INITIAL_INTERVAL_SECONDS = ...
 _DEFAULT_RANDOMIZATION_FACTOR = ...
 _DEFAULT_MULTIPLIER = ...
+
 class _BaseExponentialBackoff:
     """An exponential backoff iterator base class.
 
@@ -29,48 +30,44 @@ class _BaseExponentialBackoff:
             this sequence [1.0, 2.0, 4.0, 8.0].
             The default value is 2.0.
     """
-    def __init__(self, total_attempts=..., initial_wait_seconds=..., randomization_factor=..., multiplier=...) -> None:
-        ...
-    
+
+    def __init__(
+        self,
+        total_attempts=...,
+        initial_wait_seconds=...,
+        randomization_factor=...,
+        multiplier=...,
+    ) -> None: ...
     @property
-    def total_attempts(self): # -> int:
+    def total_attempts(self):  # -> int:
         """The total amount of backoff attempts that will be made."""
         ...
-    
+
     @property
-    def backoff_count(self): # -> int:
+    def backoff_count(self):  # -> int:
         """The current amount of backoff attempts that have been made."""
         ...
-    
-
 
 class ExponentialBackoff(_BaseExponentialBackoff):
     """An exponential backoff iterator. This can be used in a for loop to
     perform requests with exponential backoff.
     """
-    def __init__(self, *args, **kwargs) -> None:
-        ...
-    
-    def __iter__(self): # -> Self:
-        ...
-    
-    def __next__(self): # -> int:
-        ...
-    
 
+    def __init__(self, *args, **kwargs) -> None: ...
+    def __iter__(self):  # -> Self:
+        ...
+
+    def __next__(self):  # -> int:
+        ...
 
 class AsyncExponentialBackoff(_BaseExponentialBackoff):
     """An async exponential backoff iterator. This can be used in a for loop to
     perform async requests with exponential backoff.
     """
-    def __init__(self, *args, **kwargs) -> None:
-        ...
-    
-    def __aiter__(self): # -> Self:
-        ...
-    
-    async def __anext__(self): # -> int:
-        ...
-    
 
+    def __init__(self, *args, **kwargs) -> None: ...
+    def __aiter__(self):  # -> Self:
+        ...
 
+    async def __anext__(self):  # -> int:
+        ...

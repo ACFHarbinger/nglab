@@ -7,6 +7,7 @@ _CONTENT_RANGE_RE = ...
 _ACCEPTABLE_STATUS_CODES = ...
 _GET = ...
 _ZERO_CONTENT_RANGE_HEADER = ...
+
 class DownloadBase:
     """Base class for download helpers.
 
@@ -34,15 +35,14 @@ class DownloadBase:
         start (Optional[int]): The first byte in a range to be downloaded.
         end (Optional[int]): The last byte in a range to be downloaded.
     """
-    def __init__(self, media_url, stream=..., start=..., end=..., headers=..., retry=...) -> None:
-        ...
-    
+
+    def __init__(
+        self, media_url, stream=..., start=..., end=..., headers=..., retry=...
+    ) -> None: ...
     @property
-    def finished(self): # -> bool:
+    def finished(self):  # -> bool:
         """bool: Flag indicating if the download has completed."""
         ...
-    
-
 
 class Download(DownloadBase):
     """Helper to manage downloading a resource from a Google API.
@@ -85,9 +85,18 @@ class Download(DownloadBase):
             Please enable this as per your use case.
 
     """
-    def __init__(self, media_url, stream=..., start=..., end=..., headers=..., checksum=..., retry=..., single_shot_download=...) -> None:
-        ...
-    
+
+    def __init__(
+        self,
+        media_url,
+        stream=...,
+        start=...,
+        end=...,
+        headers=...,
+        checksum=...,
+        retry=...,
+        single_shot_download=...,
+    ) -> None: ...
     def consume(self, transport, timeout=...):
         """Consume the resource to be downloaded.
 
@@ -109,8 +118,6 @@ class Download(DownloadBase):
             NotImplementedError: Always, since virtual.
         """
         ...
-    
-
 
 class ChunkedDownload(DownloadBase):
     """Download a resource in chunks from a Google API.
@@ -147,27 +154,28 @@ class ChunkedDownload(DownloadBase):
     Raises:
         ValueError: If ``start`` is negative.
     """
-    def __init__(self, media_url, chunk_size, stream, start=..., end=..., headers=..., retry=...) -> None:
-        ...
-    
+
+    def __init__(
+        self, media_url, chunk_size, stream, start=..., end=..., headers=..., retry=...
+    ) -> None: ...
     @property
-    def bytes_downloaded(self): # -> int:
+    def bytes_downloaded(self):  # -> int:
         """int: Number of bytes that have been downloaded."""
         ...
-    
+
     @property
-    def total_bytes(self): # -> int | None:
+    def total_bytes(self):  # -> int | None:
         """Optional[int]: The total number of bytes to be downloaded."""
         ...
-    
+
     @property
-    def invalid(self): # -> bool:
+    def invalid(self):  # -> bool:
         """bool: Indicates if the download is in an invalid state.
 
         This will occur if a call to :meth:`consume_next_chunk` fails.
         """
         ...
-    
+
     def consume_next_chunk(self, transport, timeout=...):
         """Consume the next chunk of the resource to be downloaded.
 
@@ -186,10 +194,8 @@ class ChunkedDownload(DownloadBase):
             NotImplementedError: Always, since virtual.
         """
         ...
-    
 
-
-def add_bytes_range(start, end, headers): # -> None:
+def add_bytes_range(start, end, headers):  # -> None:
     """Add a bytes range to a header dictionary.
 
     Some possible inputs and the corresponding bytes ranges::
@@ -222,7 +228,7 @@ def add_bytes_range(start, end, headers): # -> None:
     """
     ...
 
-def get_range_info(response, get_headers, callback=...): # -> tuple[int, int, int]:
+def get_range_info(response, get_headers, callback=...):  # -> tuple[int, int, int]:
     """Get the start, end and total bytes from a content range header.
 
     Args:
@@ -241,4 +247,3 @@ def get_range_info(response, get_headers, callback=...): # -> tuple[int, int, in
             ``bytes {start}-{end}/{total}``.
     """
     ...
-

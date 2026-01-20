@@ -12,7 +12,8 @@ _HASH_HEADER = ...
 _STORED_CONTENT_ENCODING_HEADER = ...
 _MISSING_CHECKSUM = ...
 _LOGGER = ...
-def do_nothing(): # -> None:
+
+def do_nothing():  # -> None:
     """Simple default callback."""
     ...
 
@@ -57,7 +58,7 @@ def require_status_code(response, status_codes, get_status_code, callback=...):
     """
     ...
 
-def prepare_checksum_digest(digest_bytestring): # -> str:
+def prepare_checksum_digest(digest_bytestring):  # -> str:
     """Convert a checksum object into a digest encoded for an HTTP header.
 
     Args:
@@ -68,7 +69,7 @@ def prepare_checksum_digest(digest_bytestring): # -> str:
     """
     ...
 
-def add_query_parameters(media_url, query_params): # -> str:
+def add_query_parameters(media_url, query_params):  # -> str:
     """Add query parameters to a base url.
 
     Args:
@@ -86,7 +87,8 @@ class _DoNothingHash:
     Intended as a stand-in for ``hashlib.md5`` or a crc32c checksum
     implementation in cases where it isn't necessary to compute the hash.
     """
-    def update(self, unused_chunk): # -> None:
+
+    def update(self, unused_chunk):  # -> None:
         """Do-nothing ``update`` method.
 
         Intended to match the interface of ``hashlib.md5`` and other checksums.
@@ -95,6 +97,3 @@ class _DoNothingHash:
             unused_chunk (bytes): A chunk of data.
         """
         ...
-    
-
-

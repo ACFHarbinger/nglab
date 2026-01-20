@@ -13,14 +13,16 @@ Engine in the standard environment using the `App Identity API`_.
 .. _App Identity API:
     https://cloud.google.com/appengine/docs/python/appidentity/
 """
+
 class Signer(crypt.Signer):
     """Signs messages using the App Engine App Identity service.
 
     This can be used in place of :class:`google.auth.crypt.Signer` when
     running in the App Engine standard environment.
     """
+
     @property
-    def key_id(self): # -> None:
+    def key_id(self):  # -> None:
         """Optional[str]: The key ID used to identify this private key.
 
         .. warning::
@@ -28,12 +30,9 @@ class Signer(crypt.Signer):
            be reliably determined ahead of time.
         """
         ...
-    
-    @_helpers.copy_docstring(crypt.Signer)
-    def sign(self, message):
-        ...
-    
 
+    @_helpers.copy_docstring(crypt.Signer)
+    def sign(self, message): ...
 
 def get_project_id():
     """Gets the project ID for the current App Engine application.
@@ -46,13 +45,22 @@ def get_project_id():
     """
     ...
 
-class Credentials(credentials.Scoped, credentials.Signing, credentials.CredentialsWithQuotaProject):
+class Credentials(
+    credentials.Scoped, credentials.Signing, credentials.CredentialsWithQuotaProject
+):
     """App Engine standard environment credentials.
 
     These credentials use the App Engine App Identity API to obtain access
     tokens.
     """
-    def __init__(self, scopes=..., default_scopes=..., service_account_id=..., quota_project_id=...) -> None:
+
+    def __init__(
+        self,
+        scopes=...,
+        default_scopes=...,
+        service_account_id=...,
+        quota_project_id=...,
+    ) -> None:
         """
         Args:
             scopes (Sequence[str]): Scopes to request from the App Identity
@@ -70,46 +78,39 @@ class Credentials(credentials.Scoped, credentials.Signing, credentials.Credentia
             google.auth.exceptions.OSError: If the App Engine APIs are unavailable.
         """
         ...
-    
+
     @_helpers.copy_docstring(credentials.Credentials)
-    def refresh(self, request): # -> None:
+    def refresh(self, request):  # -> None:
         ...
-    
+
     @property
     def service_account_email(self):
         """The service account email."""
         ...
-    
+
     @property
-    def requires_scopes(self): # -> bool:
+    def requires_scopes(self):  # -> bool:
         """Checks if the credentials requires scopes.
 
         Returns:
             bool: True if there are no scopes set otherwise False.
         """
         ...
-    
+
     @_helpers.copy_docstring(credentials.Scoped)
-    def with_scopes(self, scopes, default_scopes=...): # -> Self:
+    def with_scopes(self, scopes, default_scopes=...):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
-    def with_quota_project(self, quota_project_id): # -> Self:
+    def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.Signing)
-    def sign_bytes(self, message):
-        ...
-    
+    def sign_bytes(self, message): ...
     @property
     @_helpers.copy_docstring(credentials.Signing)
-    def signer_email(self):
-        ...
-    
+    def signer_email(self): ...
     @property
     @_helpers.copy_docstring(credentials.Signing)
-    def signer(self): # -> Signer:
+    def signer(self):  # -> Signer:
         ...
-    
-
-

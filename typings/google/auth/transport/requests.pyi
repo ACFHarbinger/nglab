@@ -10,28 +10,21 @@ from google.auth import transport
 """Transport adapter for Requests."""
 _LOGGER = ...
 _DEFAULT_TIMEOUT = ...
+
 class _Response(transport.Response):
     """Requests transport response adapter.
 
     Args:
         response (requests.Response): The raw Requests response.
     """
-    def __init__(self, response) -> None:
-        ...
-    
-    @property
-    def status(self):
-        ...
-    
-    @property
-    def headers(self):
-        ...
-    
-    @property
-    def data(self):
-        ...
-    
 
+    def __init__(self, response) -> None: ...
+    @property
+    def status(self): ...
+    @property
+    def headers(self): ...
+    @property
+    def data(self): ...
 
 class TimeoutGuard:
     """A context manager raising an error if the suite execution took too long.
@@ -46,16 +39,13 @@ class TimeoutGuard:
             The type of the error to raise on timeout. Defaults to
             :class:`requests.exceptions.Timeout`.
     """
-    def __init__(self, timeout, timeout_error_type=...) -> None:
-        ...
-    
-    def __enter__(self): # -> Self:
-        ...
-    
-    def __exit__(self, exc_type, exc_value, traceback): # -> None:
-        ...
-    
 
+    def __init__(self, timeout, timeout_error_type=...) -> None: ...
+    def __enter__(self):  # -> Self:
+        ...
+
+    def __exit__(self, exc_type, exc_value, traceback):  # -> None:
+        ...
 
 class Request(transport.Request):
     """Requests request adapter.
@@ -80,13 +70,14 @@ class Request(transport.Request):
 
     .. automethod:: __call__
     """
-    def __init__(self, session: Optional[requests.Session] = ...) -> None:
+
+    def __init__(self, session: Optional[requests.Session] = ...) -> None: ...
+    def __del__(self):  # -> None:
         ...
-    
-    def __del__(self): # -> None:
-        ...
-    
-    def __call__(self, url, method=..., body=..., headers=..., timeout=..., **kwargs): # -> _Response:
+
+    def __call__(
+        self, url, method=..., body=..., headers=..., timeout=..., **kwargs
+    ):  # -> _Response:
         """Make an HTTP request using requests.
 
         Args:
@@ -108,8 +99,6 @@ class Request(transport.Request):
             google.auth.exceptions.TransportError: If any exception occurred.
         """
         ...
-    
-
 
 class _MutualTlsAdapter(requests.adapters.HTTPAdapter):
     """
@@ -123,16 +112,12 @@ class _MutualTlsAdapter(requests.adapters.HTTPAdapter):
         ImportError: if certifi or pyOpenSSL is not installed
         OpenSSL.crypto.Error: if client cert or key is invalid
     """
-    def __init__(self, cert, key) -> None:
-        ...
-    
-    def init_poolmanager(self, *args, **kwargs): # -> None:
-        ...
-    
-    def proxy_manager_for(self, *args, **kwargs):
-        ...
-    
 
+    def __init__(self, cert, key) -> None: ...
+    def init_poolmanager(self, *args, **kwargs):  # -> None:
+        ...
+
+    def proxy_manager_for(self, *args, **kwargs): ...
 
 class _MutualTlsOffloadAdapter(requests.adapters.HTTPAdapter):
     """
@@ -155,16 +140,12 @@ class _MutualTlsOffloadAdapter(requests.adapters.HTTPAdapter):
         google.auth.exceptions.MutualTLSChannelError: If mutual TLS channel
             creation failed for any reason.
     """
-    def __init__(self, enterprise_cert_file_path) -> None:
-        ...
-    
-    def init_poolmanager(self, *args, **kwargs): # -> None:
-        ...
-    
-    def proxy_manager_for(self, *args, **kwargs):
-        ...
-    
 
+    def __init__(self, enterprise_cert_file_path) -> None: ...
+    def init_poolmanager(self, *args, **kwargs):  # -> None:
+        ...
+
+    def proxy_manager_for(self, *args, **kwargs): ...
 
 class AuthorizedSession(requests.Session):
     """A Requests Session class with credentials.
@@ -252,10 +233,17 @@ class AuthorizedSession(requests.Session):
             This is used when a self-signed JWT is created from service
             account credentials.
     """
-    def __init__(self, credentials, refresh_status_codes=..., max_refresh_attempts=..., refresh_timeout=..., auth_request=..., default_host=...) -> None:
-        ...
-    
-    def configure_mtls_channel(self, client_cert_callback=...): # -> None:
+
+    def __init__(
+        self,
+        credentials,
+        refresh_status_codes=...,
+        max_refresh_attempts=...,
+        refresh_timeout=...,
+        auth_request=...,
+        default_host=...,
+    ) -> None: ...
+    def configure_mtls_channel(self, client_cert_callback=...):  # -> None:
         """Configure the client certificate and key for SSL connection.
 
         The function does nothing unless `GOOGLE_API_USE_CLIENT_CERTIFICATE` is
@@ -276,8 +264,17 @@ class AuthorizedSession(requests.Session):
                 creation failed for any reason.
         """
         ...
-    
-    def request(self, method, url, data=..., headers=..., max_allowed_time=..., timeout=..., **kwargs): # -> Response:
+
+    def request(
+        self,
+        method,
+        url,
+        data=...,
+        headers=...,
+        max_allowed_time=...,
+        timeout=...,
+        **kwargs,
+    ):  # -> Response:
         """Implementation of Requests' request.
 
         Args:
@@ -304,14 +301,11 @@ class AuthorizedSession(requests.Session):
             ValueError: If the client certificate is invalid.
         """
         ...
-    
+
     @property
-    def is_mtls(self): # -> bool:
+    def is_mtls(self):  # -> bool:
         """Indicates if the created SSL channel is mutual TLS."""
         ...
-    
-    def close(self): # -> None:
+
+    def close(self):  # -> None:
         ...
-    
-
-

@@ -12,6 +12,7 @@ _BPO_LOCK_TIME_MESSAGE = ...
 _LOCATION_SETTER_MESSAGE = ...
 _FROM_STRING_MESSAGE = ...
 _IP_FILTER_PROPERTY = ...
+
 class LifecycleRuleConditions(dict):
     """Map a single lifecycle rule for a bucket.
 
@@ -75,11 +76,24 @@ class LifecycleRuleConditions(dict):
 
     :raises ValueError: if no arguments are passed.
     """
-    def __init__(self, age=..., created_before=..., is_live=..., matches_storage_class=..., number_of_newer_versions=..., days_since_custom_time=..., custom_time_before=..., days_since_noncurrent_time=..., noncurrent_time_before=..., matches_prefix=..., matches_suffix=..., _factory=...) -> None:
-        ...
-    
+
+    def __init__(
+        self,
+        age=...,
+        created_before=...,
+        is_live=...,
+        matches_storage_class=...,
+        number_of_newer_versions=...,
+        days_since_custom_time=...,
+        custom_time_before=...,
+        days_since_noncurrent_time=...,
+        noncurrent_time_before=...,
+        matches_prefix=...,
+        matches_suffix=...,
+        _factory=...,
+    ) -> None: ...
     @classmethod
-    def from_api_repr(cls, resource): # -> Self:
+    def from_api_repr(cls, resource):  # -> Self:
         """Factory:  construct instance from resource.
 
         :type resource: dict
@@ -89,63 +103,61 @@ class LifecycleRuleConditions(dict):
         :returns: Instance created from resource.
         """
         ...
-    
+
     @property
-    def age(self): # -> None:
+    def age(self):  # -> None:
         """Conditon's age value."""
         ...
-    
+
     @property
-    def created_before(self): # -> _Date | None:
+    def created_before(self):  # -> _Date | None:
         """Conditon's created_before value."""
         ...
-    
+
     @property
-    def is_live(self): # -> None:
+    def is_live(self):  # -> None:
         """Conditon's 'is_live' value."""
         ...
-    
+
     @property
-    def matches_prefix(self): # -> None:
+    def matches_prefix(self):  # -> None:
         """Conditon's 'matches_prefix' value."""
         ...
-    
+
     @property
-    def matches_storage_class(self): # -> None:
+    def matches_storage_class(self):  # -> None:
         """Conditon's 'matches_storage_class' value."""
         ...
-    
+
     @property
-    def matches_suffix(self): # -> None:
+    def matches_suffix(self):  # -> None:
         """Conditon's 'matches_suffix' value."""
         ...
-    
+
     @property
-    def number_of_newer_versions(self): # -> None:
+    def number_of_newer_versions(self):  # -> None:
         """Conditon's 'number_of_newer_versions' value."""
         ...
-    
+
     @property
-    def days_since_custom_time(self): # -> None:
+    def days_since_custom_time(self):  # -> None:
         """Conditon's 'days_since_custom_time' value."""
         ...
-    
+
     @property
-    def custom_time_before(self): # -> _Date | None:
+    def custom_time_before(self):  # -> _Date | None:
         """Conditon's 'custom_time_before' value."""
         ...
-    
+
     @property
-    def days_since_noncurrent_time(self): # -> None:
+    def days_since_noncurrent_time(self):  # -> None:
         """Conditon's 'days_since_noncurrent_time' value."""
         ...
-    
+
     @property
-    def noncurrent_time_before(self): # -> _Date | None:
+    def noncurrent_time_before(self):  # -> _Date | None:
         """Conditon's 'noncurrent_time_before' value."""
         ...
-    
-
 
 class LifecycleRuleDelete(dict):
     """Map a lifecycle rule deleting matching items.
@@ -153,11 +165,10 @@ class LifecycleRuleDelete(dict):
     :type kw: dict
     :params kw: arguments passed to :class:`LifecycleRuleConditions`.
     """
-    def __init__(self, **kw) -> None:
-        ...
-    
+
+    def __init__(self, **kw) -> None: ...
     @classmethod
-    def from_api_repr(cls, resource): # -> Self:
+    def from_api_repr(cls, resource):  # -> Self:
         """Factory:  construct instance from resource.
 
         :type resource: dict
@@ -167,8 +178,6 @@ class LifecycleRuleDelete(dict):
         :returns: Instance created from resource.
         """
         ...
-    
-
 
 class LifecycleRuleSetStorageClass(dict):
     """Map a lifecycle rule updating storage class of matching items.
@@ -179,11 +188,10 @@ class LifecycleRuleSetStorageClass(dict):
     :type kw: dict
     :params kw: arguments passed to :class:`LifecycleRuleConditions`.
     """
-    def __init__(self, storage_class, **kw) -> None:
-        ...
-    
+
+    def __init__(self, storage_class, **kw) -> None: ...
     @classmethod
-    def from_api_repr(cls, resource): # -> Self:
+    def from_api_repr(cls, resource):  # -> Self:
         """Factory:  construct instance from resource.
 
         :type resource: dict
@@ -193,8 +201,6 @@ class LifecycleRuleSetStorageClass(dict):
         :returns: Instance created from resource.
         """
         ...
-    
-
 
 class LifecycleRuleAbortIncompleteMultipartUpload(dict):
     """Map a rule aborting incomplete multipart uploads of matching items.
@@ -204,11 +210,10 @@ class LifecycleRuleAbortIncompleteMultipartUpload(dict):
     :type kw: dict
     :params kw: arguments passed to :class:`LifecycleRuleConditions`.
     """
-    def __init__(self, **kw) -> None:
-        ...
-    
+
+    def __init__(self, **kw) -> None: ...
     @classmethod
-    def from_api_repr(cls, resource): # -> Self:
+    def from_api_repr(cls, resource):  # -> Self:
         """Factory:  construct instance from resource.
 
         :type resource: dict
@@ -218,10 +223,9 @@ class LifecycleRuleAbortIncompleteMultipartUpload(dict):
         :returns: Instance created from resource.
         """
         ...
-    
-
 
 _default = ...
+
 class IAMConfiguration(dict):
     """Map a bucket's IAM configuration.
 
@@ -250,11 +254,18 @@ class IAMConfiguration(dict):
     :params bucket_policy_only_locked_time:
         Deprecated alias for :data:`uniform_bucket_level_access_locked_time`.
     """
-    def __init__(self, bucket, public_access_prevention=..., uniform_bucket_level_access_enabled=..., uniform_bucket_level_access_locked_time=..., bucket_policy_only_enabled=..., bucket_policy_only_locked_time=...) -> None:
-        ...
-    
+
+    def __init__(
+        self,
+        bucket,
+        public_access_prevention=...,
+        uniform_bucket_level_access_enabled=...,
+        uniform_bucket_level_access_locked_time=...,
+        bucket_policy_only_enabled=...,
+        bucket_policy_only_locked_time=...,
+    ) -> None: ...
     @classmethod
-    def from_api_repr(cls, resource, bucket): # -> Self:
+    def from_api_repr(cls, resource, bucket):  # -> Self:
         """Factory:  construct instance from resource.
 
         :type bucket: :class:`Bucket`
@@ -267,16 +278,16 @@ class IAMConfiguration(dict):
         :returns: Instance created from resource.
         """
         ...
-    
+
     @property
-    def bucket(self): # -> Any:
+    def bucket(self):  # -> Any:
         """Bucket for which this instance is the policy.
 
         :rtype: :class:`Bucket`
         :returns: the instance's bucket.
         """
         ...
-    
+
     @property
     def public_access_prevention(self):
         """Setting for public access prevention policy. Options are 'inherited' (default) or 'enforced'.
@@ -287,11 +298,11 @@ class IAMConfiguration(dict):
         :returns: the public access prevention status, either 'enforced' or 'inherited'.
         """
         ...
-    
+
     @public_access_prevention.setter
-    def public_access_prevention(self, value): # -> None:
+    def public_access_prevention(self, value):  # -> None:
         ...
-    
+
     @property
     def uniform_bucket_level_access_enabled(self):
         """If set, access checks only use bucket-level IAM policies or above.
@@ -300,13 +311,13 @@ class IAMConfiguration(dict):
         :returns: whether the bucket is configured to allow only IAM.
         """
         ...
-    
+
     @uniform_bucket_level_access_enabled.setter
-    def uniform_bucket_level_access_enabled(self, value): # -> None:
+    def uniform_bucket_level_access_enabled(self, value):  # -> None:
         ...
-    
+
     @property
-    def uniform_bucket_level_access_locked_time(self): # -> datetime:
+    def uniform_bucket_level_access_locked_time(self):  # -> datetime:
         """Deadline for changing :attr:`uniform_bucket_level_access_enabled` from true to false.
 
         If the bucket's :attr:`uniform_bucket_level_access_enabled` is true, this property
@@ -320,7 +331,7 @@ class IAMConfiguration(dict):
                    be frozen as true.
         """
         ...
-    
+
     @property
     def bucket_policy_only_enabled(self):
         """Deprecated alias for :attr:`uniform_bucket_level_access_enabled`.
@@ -329,13 +340,13 @@ class IAMConfiguration(dict):
         :returns: whether the bucket is configured to allow only IAM.
         """
         ...
-    
+
     @bucket_policy_only_enabled.setter
-    def bucket_policy_only_enabled(self, value): # -> None:
+    def bucket_policy_only_enabled(self, value):  # -> None:
         ...
-    
+
     @property
-    def bucket_policy_only_locked_time(self): # -> datetime:
+    def bucket_policy_only_locked_time(self):  # -> datetime:
         """Deprecated alias for :attr:`uniform_bucket_level_access_locked_time`.
 
         :rtype: Union[:class:`datetime.datetime`, None]
@@ -344,8 +355,6 @@ class IAMConfiguration(dict):
             be frozen as true.
         """
         ...
-    
-
 
 class Bucket(_PropertyMixin):
     """A class representing a Bucket on Cloud Storage.
@@ -366,6 +375,7 @@ class Bucket(_PropertyMixin):
     :param generation: (Optional) If present, selects a specific revision of
                        this bucket.
     """
+
     _MAX_OBJECTS_FOR_ITERATION = ...
     STORAGE_CLASSES = ...
     _LOCATION_TYPES = ...
@@ -375,17 +385,17 @@ class Bucket(_PropertyMixin):
             Get the bucket's name.
         """
         ...
-    
-    def __repr__(self): # -> str:
+
+    def __repr__(self):  # -> str:
         ...
-    
+
     @property
-    def client(self): # -> Any:
+    def client(self):  # -> Any:
         """The client bound to this bucket."""
         ...
-    
+
     @property
-    def rpo(self): # -> None:
+    def rpo(self):  # -> None:
         """Get the RPO (Recovery Point Objective) of this bucket
 
         See: https://cloud.google.com/storage/docs/managing-turbo-replication
@@ -394,9 +404,9 @@ class Bucket(_PropertyMixin):
         :rtype: str
         """
         ...
-    
+
     @rpo.setter
-    def rpo(self, value): # -> None:
+    def rpo(self, value):  # -> None:
         """
         Set the RPO (Recovery Point Objective) of this bucket.
 
@@ -406,9 +416,9 @@ class Bucket(_PropertyMixin):
         :param value: "ASYNC_TURBO" or "DEFAULT"
         """
         ...
-    
+
     @property
-    def user_project(self): # -> None:
+    def user_project(self):  # -> None:
         """Project ID to be billed for API requests made via this bucket.
 
         If unset, API requests are billed to the bucket owner.
@@ -420,9 +430,9 @@ class Bucket(_PropertyMixin):
         :rtype: str
         """
         ...
-    
+
     @property
-    def generation(self): # -> int | None:
+    def generation(self):  # -> int | None:
         """Retrieve the generation for the bucket.
 
         :rtype: int or ``NoneType``
@@ -430,9 +440,9 @@ class Bucket(_PropertyMixin):
                   resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def soft_delete_time(self): # -> datetime | None:
+    def soft_delete_time(self):  # -> datetime | None:
         """If this bucket has been soft-deleted, returns the time at which it became soft-deleted.
 
         :rtype: :class:`datetime.datetime` or ``NoneType``
@@ -441,9 +451,9 @@ class Bucket(_PropertyMixin):
              Note this property is only set for soft-deleted buckets.
         """
         ...
-    
+
     @property
-    def hard_delete_time(self): # -> datetime | None:
+    def hard_delete_time(self):  # -> datetime | None:
         """If this bucket has been soft-deleted, returns the time at which it will be permanently deleted.
 
         :rtype: :class:`datetime.datetime` or ``NoneType``
@@ -452,9 +462,9 @@ class Bucket(_PropertyMixin):
             Note this property is only set for soft-deleted buckets.
         """
         ...
-    
+
     @classmethod
-    def from_uri(cls, uri, client=...): # -> Self:
+    def from_uri(cls, uri, client=...):  # -> Self:
         """Get a constructor for bucket object by URI.
 
         .. code-block:: python
@@ -476,9 +486,9 @@ class Bucket(_PropertyMixin):
         :returns: The bucket object created.
         """
         ...
-    
+
     @classmethod
-    def from_string(cls, uri, client=...): # -> Bucket:
+    def from_string(cls, uri, client=...):  # -> Bucket:
         """Get a constructor for bucket object by URI.
 
         .. note::
@@ -503,8 +513,15 @@ class Bucket(_PropertyMixin):
         :returns: The bucket object created.
         """
         ...
-    
-    def blob(self, blob_name, chunk_size=..., encryption_key=..., kms_key_name=..., generation=...): # -> Blob:
+
+    def blob(
+        self,
+        blob_name,
+        chunk_size=...,
+        encryption_key=...,
+        kms_key_name=...,
+        generation=...,
+    ):  # -> Blob:
         """Factory constructor for blob object.
 
         .. note::
@@ -543,8 +560,17 @@ class Bucket(_PropertyMixin):
         :returns: The blob object created.
         """
         ...
-    
-    def notification(self, topic_name=..., topic_project=..., custom_attributes=..., event_types=..., blob_name_prefix=..., payload_format=..., notification_id=...): # -> BucketNotification:
+
+    def notification(
+        self,
+        topic_name=...,
+        topic_project=...,
+        custom_attributes=...,
+        event_types=...,
+        blob_name_prefix=...,
+        payload_format=...,
+        notification_id=...,
+    ):  # -> BucketNotification:
         """Factory:  create a notification resource for the bucket.
 
         See: :class:`.BucketNotification` for parameters.
@@ -552,8 +578,17 @@ class Bucket(_PropertyMixin):
         :rtype: :class:`.BucketNotification`
         """
         ...
-    
-    def exists(self, client=..., timeout=..., if_etag_match=..., if_etag_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., retry=...): # -> bool:
+
+    def exists(
+        self,
+        client=...,
+        timeout=...,
+        if_etag_match=...,
+        if_etag_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        retry=...,
+    ):  # -> bool:
         """Determines whether or not this bucket exists.
 
         If :attr:`user_project` is set, bills the API request to that project.
@@ -592,8 +627,18 @@ class Bucket(_PropertyMixin):
         :returns: True if the bucket exists in Cloud Storage.
         """
         ...
-    
-    def create(self, client=..., project=..., location=..., predefined_acl=..., predefined_default_object_acl=..., enable_object_retention=..., timeout=..., retry=...): # -> None:
+
+    def create(
+        self,
+        client=...,
+        project=...,
+        location=...,
+        predefined_acl=...,
+        predefined_default_object_acl=...,
+        enable_object_retention=...,
+        timeout=...,
+        retry=...,
+    ):  # -> None:
         """Creates current bucket.
 
         If the bucket already exists, will raise
@@ -645,8 +690,15 @@ class Bucket(_PropertyMixin):
             (Optional) How to retry the RPC. See: :ref:`configuring_retries`
         """
         ...
-    
-    def update(self, client=..., timeout=..., if_metageneration_match=..., if_metageneration_not_match=..., retry=...): # -> None:
+
+    def update(
+        self,
+        client=...,
+        timeout=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        retry=...,
+    ):  # -> None:
         """Sends all properties in a PUT request.
 
         Updates the ``_properties`` with the response from the backend.
@@ -676,8 +728,19 @@ class Bucket(_PropertyMixin):
             (Optional) How to retry the RPC. See: :ref:`configuring_retries`
         """
         ...
-    
-    def reload(self, client=..., projection=..., timeout=..., if_etag_match=..., if_etag_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., retry=..., soft_deleted=...): # -> None:
+
+    def reload(
+        self,
+        client=...,
+        projection=...,
+        timeout=...,
+        if_etag_match=...,
+        if_etag_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        retry=...,
+        soft_deleted=...,
+    ):  # -> None:
         """Reload properties from Cloud Storage.
 
         If :attr:`user_project` is set, bills the API request to that project.
@@ -725,8 +788,15 @@ class Bucket(_PropertyMixin):
             See: https://cloud.google.com/storage/docs/soft-delete
         """
         ...
-    
-    def patch(self, client=..., timeout=..., if_metageneration_match=..., if_metageneration_not_match=..., retry=...): # -> None:
+
+    def patch(
+        self,
+        client=...,
+        timeout=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        retry=...,
+    ):  # -> None:
         """Sends all changed properties in a PATCH request.
 
         Updates the ``_properties`` with the response from the backend.
@@ -756,17 +826,17 @@ class Bucket(_PropertyMixin):
             (Optional) How to retry the RPC. See: :ref:`configuring_retries`
         """
         ...
-    
+
     @property
-    def acl(self): # -> BucketACL:
+    def acl(self):  # -> BucketACL:
         """Create our ACL on demand."""
         ...
-    
+
     @property
-    def default_object_acl(self): # -> DefaultObjectACL:
+    def default_object_acl(self):  # -> DefaultObjectACL:
         """Create our defaultObjectACL on demand."""
         ...
-    
+
     @staticmethod
     def path_helper(bucket_name):
         """Relative URL path for a bucket.
@@ -778,13 +848,29 @@ class Bucket(_PropertyMixin):
         :returns: The relative URL path for ``bucket_name``.
         """
         ...
-    
+
     @property
     def path(self):
         """The URL path to this bucket."""
         ...
-    
-    def get_blob(self, blob_name, client=..., encryption_key=..., generation=..., if_etag_match=..., if_etag_not_match=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., retry=..., soft_deleted=..., **kwargs): # -> Blob | None:
+
+    def get_blob(
+        self,
+        blob_name,
+        client=...,
+        encryption_key=...,
+        generation=...,
+        if_etag_match=...,
+        if_etag_not_match=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+        soft_deleted=...,
+        **kwargs,
+    ):  # -> Blob | None:
         """Get a blob object by name.
 
         See a [code sample](https://cloud.google.com/storage/docs/samples/storage-get-metadata#storage_get_metadata-python)
@@ -857,8 +943,27 @@ class Bucket(_PropertyMixin):
         :returns: The blob object if it exists, otherwise None.
         """
         ...
-    
-    def list_blobs(self, max_results=..., page_token=..., prefix=..., delimiter=..., start_offset=..., end_offset=..., include_trailing_delimiter=..., versions=..., projection=..., fields=..., client=..., timeout=..., retry=..., match_glob=..., include_folders_as_prefixes=..., soft_deleted=..., page_size=...):
+
+    def list_blobs(
+        self,
+        max_results=...,
+        page_token=...,
+        prefix=...,
+        delimiter=...,
+        start_offset=...,
+        end_offset=...,
+        include_trailing_delimiter=...,
+        versions=...,
+        projection=...,
+        fields=...,
+        client=...,
+        timeout=...,
+        retry=...,
+        match_glob=...,
+        include_folders_as_prefixes=...,
+        soft_deleted=...,
+        page_size=...,
+    ):
         """Return an iterator used to find blobs in the bucket.
 
         If :attr:`user_project` is set, bills the API request to that project.
@@ -961,7 +1066,7 @@ class Bucket(_PropertyMixin):
                   in this bucket matching the arguments.
         """
         ...
-    
+
     def list_notifications(self, client=..., timeout=..., retry=...):
         """List Pub / Sub notifications for this bucket.
 
@@ -987,8 +1092,10 @@ class Bucket(_PropertyMixin):
         :returns: notification instances
         """
         ...
-    
-    def get_notification(self, notification_id, client=..., timeout=..., retry=...): # -> BucketNotification:
+
+    def get_notification(
+        self, notification_id, client=..., timeout=..., retry=...
+    ):  # -> BucketNotification:
         """Get Pub / Sub notification for this bucket.
 
         See [API reference docs](https://cloud.google.com/storage/docs/json_api/v1/notifications/get)
@@ -1016,8 +1123,16 @@ class Bucket(_PropertyMixin):
         :returns: notification instance.
         """
         ...
-    
-    def delete(self, force=..., client=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., retry=...): # -> None:
+
+    def delete(
+        self,
+        force=...,
+        client=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+    ):  # -> None:
         """Delete this bucket.
 
         The bucket **must** be empty in order to submit a delete request. If
@@ -1065,8 +1180,19 @@ class Bucket(_PropertyMixin):
                  contains more than 256 objects / blobs.
         """
         ...
-    
-    def delete_blob(self, blob_name, client=..., generation=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., retry=...): # -> None:
+
+    def delete_blob(
+        self,
+        blob_name,
+        client=...,
+        generation=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+    ):  # -> None:
         """Deletes a blob from the current bucket.
 
         If :attr:`user_project` is set, bills the API request to that project.
@@ -1127,8 +1253,20 @@ class Bucket(_PropertyMixin):
                  ``on_error`` callback.
         """
         ...
-    
-    def delete_blobs(self, blobs, on_error=..., client=..., preserve_generation=..., timeout=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., retry=...): # -> None:
+
+    def delete_blobs(
+        self,
+        blobs,
+        on_error=...,
+        client=...,
+        preserve_generation=...,
+        timeout=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        retry=...,
+    ):  # -> None:
         """Deletes a list of blobs from the current bucket.
 
         Uses :meth:`delete_blob` to delete each individual blob.
@@ -1207,8 +1345,26 @@ class Bucket(_PropertyMixin):
                  `on_error` is not passed).
         """
         ...
-    
-    def copy_blob(self, blob, destination_bucket, new_name=..., client=..., preserve_acl=..., source_generation=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., if_source_generation_match=..., if_source_generation_not_match=..., if_source_metageneration_match=..., if_source_metageneration_not_match=..., timeout=..., retry=...): # -> Blob:
+
+    def copy_blob(
+        self,
+        blob,
+        destination_bucket,
+        new_name=...,
+        client=...,
+        preserve_acl=...,
+        source_generation=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        if_source_generation_match=...,
+        if_source_generation_not_match=...,
+        if_source_metageneration_match=...,
+        if_source_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+    ):  # -> Blob:
         """Copy the given blob to the given bucket, optionally with a new name.
 
         If :attr:`user_project` is set, bills the API request to that project.
@@ -1305,8 +1461,23 @@ class Bucket(_PropertyMixin):
         :returns: The new Blob.
         """
         ...
-    
-    def rename_blob(self, blob, new_name, client=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., if_source_generation_match=..., if_source_generation_not_match=..., if_source_metageneration_match=..., if_source_metageneration_not_match=..., timeout=..., retry=...): # -> Blob:
+
+    def rename_blob(
+        self,
+        blob,
+        new_name,
+        client=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        if_source_generation_match=...,
+        if_source_generation_not_match=...,
+        if_source_metageneration_match=...,
+        if_source_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+    ):  # -> Blob:
         """Rename the given blob using copy and delete operations.
 
         If :attr:`user_project` is set, bills the API request to that project.
@@ -1404,8 +1575,23 @@ class Bucket(_PropertyMixin):
         :returns: The newly-renamed blob.
         """
         ...
-    
-    def move_blob(self, blob, new_name, client=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., if_source_generation_match=..., if_source_generation_not_match=..., if_source_metageneration_match=..., if_source_metageneration_not_match=..., timeout=..., retry=...): # -> Blob:
+
+    def move_blob(
+        self,
+        blob,
+        new_name,
+        client=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        if_source_generation_match=...,
+        if_source_generation_not_match=...,
+        if_source_metageneration_match=...,
+        if_source_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+    ):  # -> Blob:
         """Move a blob to a new name atomically.
 
         If :attr:`user_project` is set on the bucket, bills the API request to that project.
@@ -1479,8 +1665,21 @@ class Bucket(_PropertyMixin):
         :returns: The newly-moved blob.
         """
         ...
-    
-    def restore_blob(self, blob_name, client=..., generation=..., copy_source_acl=..., projection=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., retry=...): # -> Blob:
+
+    def restore_blob(
+        self,
+        blob_name,
+        client=...,
+        generation=...,
+        copy_source_acl=...,
+        projection=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+    ):  # -> Blob:
         """Restores a soft-deleted object.
 
         If :attr:`user_project` is set on the bucket, bills the API request to that project.
@@ -1541,9 +1740,9 @@ class Bucket(_PropertyMixin):
         :returns: The restored Blob.
         """
         ...
-    
+
     @property
-    def cors(self): # -> list[Any]:
+    def cors(self):  # -> list[Any]:
         """Retrieve or set CORS policies configured for this bucket.
 
         See http://www.w3.org/TR/cors/ and
@@ -1570,9 +1769,9 @@ class Bucket(_PropertyMixin):
         :returns: A sequence of mappings describing each CORS policy.
         """
         ...
-    
+
     @cors.setter
-    def cors(self, entries): # -> None:
+    def cors(self, entries):  # -> None:
         """Set CORS policies configured for this bucket.
 
         See http://www.w3.org/TR/cors/ and
@@ -1582,7 +1781,6 @@ class Bucket(_PropertyMixin):
         :param entries: A sequence of mappings describing each CORS policy.
         """
         ...
-    
     default_event_based_hold = ...
     @property
     def default_kms_key_name(self):
@@ -1597,18 +1795,18 @@ class Bucket(_PropertyMixin):
         :returns: Default KMS encryption key, or ``None`` if not set.
         """
         ...
-    
+
     @default_kms_key_name.setter
-    def default_kms_key_name(self, value): # -> None:
+    def default_kms_key_name(self, value):  # -> None:
         """Set default KMS encryption key for objects in the bucket.
 
         :type value: str or None
         :param value: new KMS key name (None to clear any existing key).
         """
         ...
-    
+
     @property
-    def labels(self): # -> dict[Any, Any]:
+    def labels(self):  # -> dict[Any, Any]:
         """Retrieve or set labels assigned to this bucket.
 
         See
@@ -1633,9 +1831,9 @@ class Bucket(_PropertyMixin):
         :returns: Name-value pairs (string->string) labelling the bucket.
         """
         ...
-    
+
     @labels.setter
-    def labels(self, mapping): # -> None:
+    def labels(self, mapping):  # -> None:
         """Set labels assigned to this bucket.
 
         See
@@ -1645,9 +1843,9 @@ class Bucket(_PropertyMixin):
         :param mapping: Name-value pairs (string->string) labelling the bucket.
         """
         ...
-    
+
     @property
-    def etag(self): # -> None:
+    def etag(self):  # -> None:
         """Retrieve the ETag for the bucket.
 
         See https://tools.ietf.org/html/rfc2616#section-3.11 and
@@ -1658,9 +1856,9 @@ class Bucket(_PropertyMixin):
                   resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def id(self): # -> None:
+    def id(self):  # -> None:
         """Retrieve the ID for the bucket.
 
         See https://cloud.google.com/storage/docs/json_api/v1/buckets
@@ -1670,18 +1868,18 @@ class Bucket(_PropertyMixin):
                   resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def iam_configuration(self): # -> IAMConfiguration:
+    def iam_configuration(self):  # -> IAMConfiguration:
         """Retrieve IAM configuration for this bucket.
 
         :rtype: :class:`IAMConfiguration`
         :returns: an instance for managing the bucket's IAM configuration.
         """
         ...
-    
+
     @property
-    def soft_delete_policy(self): # -> SoftDeletePolicy:
+    def soft_delete_policy(self):  # -> SoftDeletePolicy:
         """Retrieve the soft delete policy for this bucket.
 
         See https://cloud.google.com/storage/docs/soft-delete
@@ -1690,9 +1888,11 @@ class Bucket(_PropertyMixin):
         :returns: an instance for managing the bucket's soft delete policy.
         """
         ...
-    
+
     @property
-    def lifecycle_rules(self): # -> Generator[LifecycleRuleDelete | LifecycleRuleSetStorageClass | LifecycleRuleAbortIncompleteMultipartUpload, Any, None]:
+    def lifecycle_rules(
+        self,
+    ):  # -> Generator[LifecycleRuleDelete | LifecycleRuleSetStorageClass | LifecycleRuleAbortIncompleteMultipartUpload, Any, None]:
         """Retrieve or set lifecycle rules configured for this bucket.
 
         See https://cloud.google.com/storage/docs/lifecycle and
@@ -1719,9 +1919,9 @@ class Bucket(_PropertyMixin):
         :returns: A sequence of mappings describing each lifecycle rule.
         """
         ...
-    
+
     @lifecycle_rules.setter
-    def lifecycle_rules(self, rules): # -> None:
+    def lifecycle_rules(self, rules):  # -> None:
         """Set lifecycle rules configured for this bucket.
 
         See https://cloud.google.com/storage/docs/lifecycle and
@@ -1731,20 +1931,20 @@ class Bucket(_PropertyMixin):
         :param rules: A sequence of mappings describing each lifecycle rule.
         """
         ...
-    
-    def clear_lifecycle_rules(self): # -> None:
+
+    def clear_lifecycle_rules(self):  # -> None:
         """Clear lifecycle rules configured for this bucket.
 
         See https://cloud.google.com/storage/docs/lifecycle and
              https://cloud.google.com/storage/docs/json_api/v1/buckets
         """
         ...
-    
-    def clear_lifecyle_rules(self): # -> None:
+
+    def clear_lifecyle_rules(self):  # -> None:
         """Deprecated alias for clear_lifecycle_rules."""
         ...
-    
-    def add_lifecycle_delete_rule(self, **kw): # -> None:
+
+    def add_lifecycle_delete_rule(self, **kw):  # -> None:
         """Add a "delete" rule to lifecycle rules configured for this bucket.
 
         This defines a [lifecycle configuration](https://cloud.google.com/storage/docs/lifecycle),
@@ -1756,8 +1956,8 @@ class Bucket(_PropertyMixin):
         :params kw: arguments passed to :class:`LifecycleRuleConditions`.
         """
         ...
-    
-    def add_lifecycle_set_storage_class_rule(self, storage_class, **kw): # -> None:
+
+    def add_lifecycle_set_storage_class_rule(self, storage_class, **kw):  # -> None:
         """Add a "set storage class" rule to lifecycle rules.
 
         This defines a [lifecycle configuration](https://cloud.google.com/storage/docs/lifecycle),
@@ -1771,8 +1971,8 @@ class Bucket(_PropertyMixin):
         :params kw: arguments passed to :class:`LifecycleRuleConditions`.
         """
         ...
-    
-    def add_lifecycle_abort_incomplete_multipart_upload_rule(self, **kw): # -> None:
+
+    def add_lifecycle_abort_incomplete_multipart_upload_rule(self, **kw):  # -> None:
         """Add a "abort incomplete multipart upload" rule to lifecycle rules.
 
         .. note::
@@ -1787,10 +1987,9 @@ class Bucket(_PropertyMixin):
         :params kw: arguments passed to :class:`LifecycleRuleConditions`.
         """
         ...
-    
     _location = ...
     @property
-    def location(self): # -> Any:
+    def location(self):  # -> Any:
         """Retrieve location configured for this bucket.
 
         See https://cloud.google.com/storage/docs/json_api/v1/buckets and
@@ -1801,9 +2000,9 @@ class Bucket(_PropertyMixin):
         :rtype: str or ``NoneType``
         """
         ...
-    
+
     @location.setter
-    def location(self, value): # -> None:
+    def location(self, value):  # -> None:
         """(Deprecated) Set `Bucket.location`
 
         This can only be set at bucket **creation** time.
@@ -1818,7 +2017,7 @@ class Bucket(_PropertyMixin):
             to `Bucket.create`.
         """
         ...
-    
+
     @property
     def data_locations(self):
         """Retrieve the list of regional locations for custom dual-region buckets.
@@ -1832,9 +2031,9 @@ class Bucket(_PropertyMixin):
         :rtype: list of str or ``NoneType``
         """
         ...
-    
+
     @property
-    def location_type(self): # -> None:
+    def location_type(self):  # -> None:
         """Retrieve the location type for the bucket.
 
         See https://cloud.google.com/storage/docs/storage-classes
@@ -1850,8 +2049,8 @@ class Bucket(_PropertyMixin):
             else ``None``.
         """
         ...
-    
-    def get_logging(self): # -> None:
+
+    def get_logging(self):  # -> None:
         """Return info about access logging for this bucket.
 
         See https://cloud.google.com/storage/docs/access-logs#status
@@ -1861,8 +2060,8 @@ class Bucket(_PropertyMixin):
                   (if logging is enabled), or None (if not).
         """
         ...
-    
-    def enable_logging(self, bucket_name, object_prefix=...): # -> None:
+
+    def enable_logging(self, bucket_name, object_prefix=...):  # -> None:
         """Enable access logging for this bucket.
 
         See https://cloud.google.com/storage/docs/access-logs
@@ -1874,16 +2073,16 @@ class Bucket(_PropertyMixin):
         :param object_prefix: prefix for access log filenames
         """
         ...
-    
-    def disable_logging(self): # -> None:
+
+    def disable_logging(self):  # -> None:
         """Disable access logging for this bucket.
 
         See https://cloud.google.com/storage/docs/access-logs#disabling
         """
         ...
-    
+
     @property
-    def metageneration(self): # -> int | None:
+    def metageneration(self):  # -> int | None:
         """Retrieve the metageneration for the bucket.
 
         See https://cloud.google.com/storage/docs/json_api/v1/buckets
@@ -1893,9 +2092,9 @@ class Bucket(_PropertyMixin):
                   resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def owner(self): # -> None:
+    def owner(self):  # -> None:
         """Retrieve info about the owner of the bucket.
 
         See https://cloud.google.com/storage/docs/json_api/v1/buckets
@@ -1905,9 +2104,9 @@ class Bucket(_PropertyMixin):
                   resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def project_number(self): # -> int | None:
+    def project_number(self):  # -> int | None:
         """Retrieve the number of the project to which the bucket is assigned.
 
         See https://cloud.google.com/storage/docs/json_api/v1/buckets
@@ -1917,9 +2116,9 @@ class Bucket(_PropertyMixin):
                   the bucket's resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def retention_policy_effective_time(self): # -> datetime | None:
+    def retention_policy_effective_time(self):  # -> datetime | None:
         """Retrieve the effective time of the bucket's retention policy.
 
         :rtype: datetime.datetime or ``NoneType``
@@ -1928,9 +2127,9 @@ class Bucket(_PropertyMixin):
                   set locally.
         """
         ...
-    
+
     @property
-    def retention_policy_locked(self): # -> None:
+    def retention_policy_locked(self):  # -> None:
         """Retrieve whthere the bucket's retention policy is locked.
 
         :rtype: bool
@@ -1939,9 +2138,9 @@ class Bucket(_PropertyMixin):
                   set locally.
         """
         ...
-    
+
     @property
-    def retention_period(self): # -> int | None:
+    def retention_period(self):  # -> int | None:
         """Retrieve or set the retention period for items in the bucket.
 
         :rtype: int or ``NoneType``
@@ -1950,9 +2149,9 @@ class Bucket(_PropertyMixin):
                   set locally.
         """
         ...
-    
+
     @retention_period.setter
-    def retention_period(self, value): # -> None:
+    def retention_period(self, value):  # -> None:
         """Set the retention period for items in the bucket.
 
         :type value: int
@@ -1963,9 +2162,9 @@ class Bucket(_PropertyMixin):
         :raises ValueError: if the bucket's retention policy is locked.
         """
         ...
-    
+
     @property
-    def self_link(self): # -> None:
+    def self_link(self):  # -> None:
         """Retrieve the URI for the bucket.
 
         See https://cloud.google.com/storage/docs/json_api/v1/buckets
@@ -1975,9 +2174,9 @@ class Bucket(_PropertyMixin):
                   the bucket's resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def storage_class(self): # -> None:
+    def storage_class(self):  # -> None:
         """Retrieve or set the storage class for the bucket.
 
         See https://cloud.google.com/storage/docs/storage-classes
@@ -1999,9 +2198,9 @@ class Bucket(_PropertyMixin):
             else ``None``.
         """
         ...
-    
+
     @storage_class.setter
-    def storage_class(self, value): # -> None:
+    def storage_class(self, value):  # -> None:
         """Set the storage class for the bucket.
 
         See https://cloud.google.com/storage/docs/storage-classes
@@ -2019,9 +2218,9 @@ class Bucket(_PropertyMixin):
             :attr:`~google.cloud.storage.constants.DURABLE_REDUCED_AVAILABILITY_LEGACY_STORAGE_CLASS`,
         """
         ...
-    
+
     @property
-    def time_created(self): # -> datetime | None:
+    def time_created(self):  # -> datetime | None:
         """Retrieve the timestamp at which the bucket was created.
 
         See https://cloud.google.com/storage/docs/json_api/v1/buckets
@@ -2032,9 +2231,9 @@ class Bucket(_PropertyMixin):
                   from the server.
         """
         ...
-    
+
     @property
-    def updated(self): # -> datetime | None:
+    def updated(self):  # -> datetime | None:
         """Retrieve the timestamp at which the bucket was last updated.
 
         See https://cloud.google.com/storage/docs/json_api/v1/buckets
@@ -2045,7 +2244,7 @@ class Bucket(_PropertyMixin):
                   from the server.
         """
         ...
-    
+
     @property
     def versioning_enabled(self):
         """Is versioning enabled for this bucket?
@@ -2060,9 +2259,9 @@ class Bucket(_PropertyMixin):
         :returns: True if enabled, else False.
         """
         ...
-    
+
     @versioning_enabled.setter
-    def versioning_enabled(self, value): # -> None:
+    def versioning_enabled(self, value):  # -> None:
         """Enable versioning for this bucket.
 
         See  https://cloud.google.com/storage/docs/object-versioning for
@@ -2072,7 +2271,7 @@ class Bucket(_PropertyMixin):
         :param value: should versioning be enabled for the bucket?
         """
         ...
-    
+
     @property
     def requester_pays(self):
         """Does the requester pay for API requests for this bucket?
@@ -2088,9 +2287,9 @@ class Bucket(_PropertyMixin):
                   else False.
         """
         ...
-    
+
     @requester_pays.setter
-    def requester_pays(self, value): # -> None:
+    def requester_pays(self, value):  # -> None:
         """Update whether requester pays for API requests for this bucket.
 
         See https://cloud.google.com/storage/docs/using-requester-pays for
@@ -2100,7 +2299,7 @@ class Bucket(_PropertyMixin):
         :param value: should requester pay for API requests for the bucket?
         """
         ...
-    
+
     @property
     def autoclass_enabled(self):
         """Whether Autoclass is enabled for this bucket.
@@ -2114,9 +2313,9 @@ class Bucket(_PropertyMixin):
         :returns: True if enabled, else False.
         """
         ...
-    
+
     @autoclass_enabled.setter
-    def autoclass_enabled(self, value): # -> None:
+    def autoclass_enabled(self, value):  # -> None:
         """Enable or disable Autoclass at the bucket-level.
 
         See https://cloud.google.com/storage/docs/using-autoclass for details.
@@ -2126,15 +2325,15 @@ class Bucket(_PropertyMixin):
                       If false, disable Autoclass for this bucket.
         """
         ...
-    
+
     @property
-    def autoclass_toggle_time(self): # -> datetime | None:
+    def autoclass_toggle_time(self):  # -> datetime | None:
         """Retrieve the toggle time when Autoclaass was last enabled or disabled for the bucket.
         :rtype: datetime.datetime or ``NoneType``
         :returns: point-in time at which the bucket's autoclass is toggled, or ``None`` if the property is not set locally.
         """
         ...
-    
+
     @property
     def autoclass_terminal_storage_class(self):
         """The storage class that objects in an Autoclass bucket eventually transition to if
@@ -2149,9 +2348,9 @@ class Bucket(_PropertyMixin):
         :returns: The terminal storage class if Autoclass is enabled, else ``None``.
         """
         ...
-    
+
     @autoclass_terminal_storage_class.setter
-    def autoclass_terminal_storage_class(self, value): # -> None:
+    def autoclass_terminal_storage_class(self, value):  # -> None:
         """The storage class that objects in an Autoclass bucket eventually transition to if
         they are not read for a certain length of time. Valid values are NEARLINE and ARCHIVE.
 
@@ -2161,17 +2360,17 @@ class Bucket(_PropertyMixin):
         :param value: The only valid values are `"NEARLINE"` and `"ARCHIVE"`.
         """
         ...
-    
+
     @property
-    def autoclass_terminal_storage_class_update_time(self): # -> datetime | None:
+    def autoclass_terminal_storage_class_update_time(self):  # -> datetime | None:
         """The time at which the Autoclass terminal_storage_class field was last updated for this bucket
         :rtype: datetime.datetime or ``NoneType``
         :returns: point-in time at which the bucket's terminal_storage_class is last updated, or ``None`` if the property is not set locally.
         """
         ...
-    
+
     @property
-    def object_retention_mode(self): # -> None:
+    def object_retention_mode(self):  # -> None:
         """Retrieve the object retention mode set on the bucket.
 
         :rtype: str
@@ -2179,7 +2378,7 @@ class Bucket(_PropertyMixin):
                   set on objects in the bucket.
         """
         ...
-    
+
     @property
     def hierarchical_namespace_enabled(self):
         """Whether hierarchical namespace is enabled for this bucket.
@@ -2191,9 +2390,9 @@ class Bucket(_PropertyMixin):
         :returns: True if enabled, else False.
         """
         ...
-    
+
     @hierarchical_namespace_enabled.setter
-    def hierarchical_namespace_enabled(self, value): # -> None:
+    def hierarchical_namespace_enabled(self, value):  # -> None:
         """Enable or disable hierarchical namespace at the bucket-level.
 
         :type value: convertible to boolean
@@ -2205,8 +2404,8 @@ class Bucket(_PropertyMixin):
           Currently, hierarchical namespace configuration cannot be changed after bucket creation.
         """
         ...
-    
-    def configure_website(self, main_page_suffix=..., not_found_page=...): # -> None:
+
+    def configure_website(self, main_page_suffix=..., not_found_page=...):  # -> None:
         """Configure website-related properties.
 
         See https://cloud.google.com/storage/docs/static-website
@@ -2227,16 +2426,18 @@ class Bucket(_PropertyMixin):
         :param not_found_page: The file to use when a page isn't found.
         """
         ...
-    
-    def disable_website(self): # -> None:
+
+    def disable_website(self):  # -> None:
         """Disable the website configuration for this bucket.
 
         This is really just a shortcut for setting the website-related
         attributes to ``None``.
         """
         ...
-    
-    def get_iam_policy(self, client=..., requested_policy_version=..., timeout=..., retry=...): # -> Policy:
+
+    def get_iam_policy(
+        self, client=..., requested_policy_version=..., timeout=..., retry=...
+    ):  # -> Policy:
         """Retrieve the IAM policy for the bucket.
 
         See [API reference docs](https://cloud.google.com/storage/docs/json_api/v1/buckets/getIamPolicy)
@@ -2275,8 +2476,8 @@ class Bucket(_PropertyMixin):
                   the ``getIamPolicy`` API request.
         """
         ...
-    
-    def set_iam_policy(self, policy, client=..., timeout=..., retry=...): # -> Policy:
+
+    def set_iam_policy(self, policy, client=..., timeout=..., retry=...):  # -> Policy:
         """Update the IAM policy for the bucket.
 
         See
@@ -2306,7 +2507,7 @@ class Bucket(_PropertyMixin):
                   the ``setIamPolicy`` API request.
         """
         ...
-    
+
     def test_iam_permissions(self, permissions, client=..., timeout=..., retry=...):
         """API call:  test permissions
 
@@ -2337,8 +2538,17 @@ class Bucket(_PropertyMixin):
                   request.
         """
         ...
-    
-    def make_public(self, recursive=..., future=..., client=..., timeout=..., if_metageneration_match=..., if_metageneration_not_match=..., retry=...): # -> None:
+
+    def make_public(
+        self,
+        recursive=...,
+        future=...,
+        client=...,
+        timeout=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        retry=...,
+    ):  # -> None:
         """Update bucket's ACL, granting read access to anonymous users.
 
         :type recursive: bool
@@ -2379,8 +2589,17 @@ class Bucket(_PropertyMixin):
             for each blob.
         """
         ...
-    
-    def make_private(self, recursive=..., future=..., client=..., timeout=..., if_metageneration_match=..., if_metageneration_not_match=..., retry=...): # -> None:
+
+    def make_private(
+        self,
+        recursive=...,
+        future=...,
+        client=...,
+        timeout=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        retry=...,
+    ):  # -> None:
         """Update bucket's ACL, revoking read access for anonymous users.
 
         :type recursive: bool
@@ -2420,8 +2639,10 @@ class Bucket(_PropertyMixin):
             for each blob.
         """
         ...
-    
-    def generate_upload_policy(self, conditions, expiration=..., client=...): # -> dict[str, Any]:
+
+    def generate_upload_policy(
+        self, conditions, expiration=..., client=...
+    ):  # -> dict[str, Any]:
         """Create a signed upload policy for uploading objects.
 
         This method generates and signs a policy document. You can use
@@ -2448,8 +2669,8 @@ class Bucket(_PropertyMixin):
                   to attach the signature.
         """
         ...
-    
-    def lock_retention_policy(self, client=..., timeout=..., retry=...): # -> None:
+
+    def lock_retention_policy(self, client=..., timeout=..., retry=...):  # -> None:
         """Lock the bucket's retention policy.
 
         :type client: :class:`~google.cloud.storage.client.Client` or
@@ -2472,8 +2693,21 @@ class Bucket(_PropertyMixin):
             if the bucket's retention policy is already locked.
         """
         ...
-    
-    def generate_signed_url(self, expiration=..., api_access_endpoint=..., method=..., headers=..., query_parameters=..., client=..., credentials=..., version=..., virtual_hosted_style=..., bucket_bound_hostname=..., scheme=...): # -> str:
+
+    def generate_signed_url(
+        self,
+        expiration=...,
+        api_access_endpoint=...,
+        method=...,
+        headers=...,
+        query_parameters=...,
+        client=...,
+        credentials=...,
+        version=...,
+        virtual_hosted_style=...,
+        bucket_bound_hostname=...,
+        scheme=...,
+    ):  # -> str:
         """Generates a signed URL for this bucket.
 
         .. note::
@@ -2562,9 +2796,9 @@ class Bucket(_PropertyMixin):
                   until expiration.
         """
         ...
-    
+
     @property
-    def ip_filter(self): # -> IPFilter | None:
+    def ip_filter(self):  # -> IPFilter | None:
         """Retrieve or set the IP Filter configuration for this bucket.
 
         See https://cloud.google.com/storage/docs/ip-filtering-overview and
@@ -2603,12 +2837,10 @@ class Bucket(_PropertyMixin):
             if no filter is configured.
         """
         ...
-    
-    @ip_filter.setter
-    def ip_filter(self, value): # -> None:
-        ...
-    
 
+    @ip_filter.setter
+    def ip_filter(self, value):  # -> None:
+        ...
 
 class SoftDeletePolicy(dict):
     """Map a bucket's soft delete policy.
@@ -2628,11 +2860,10 @@ class SoftDeletePolicy(dict):
         (Optional) When the bucket's soft delete policy is effective.
         This value should normally only be set by the back-end API.
     """
-    def __init__(self, bucket, **kw) -> None:
-        ...
-    
+
+    def __init__(self, bucket, **kw) -> None: ...
     @classmethod
-    def from_api_repr(cls, resource, bucket): # -> Self:
+    def from_api_repr(cls, resource, bucket):  # -> Self:
         """Factory:  construct instance from resource.
 
         :type resource: dict
@@ -2645,18 +2876,18 @@ class SoftDeletePolicy(dict):
         :returns: Instance created from resource.
         """
         ...
-    
+
     @property
-    def bucket(self): # -> Any:
+    def bucket(self):  # -> Any:
         """Bucket for which this instance is the policy.
 
         :rtype: :class:`Bucket`
         :returns: the instance's bucket.
         """
         ...
-    
+
     @property
-    def retention_duration_seconds(self): # -> int | None:
+    def retention_duration_seconds(self):  # -> int | None:
         """Get the retention duration of the bucket's soft delete policy.
 
         :rtype: int or ``NoneType``
@@ -2665,9 +2896,9 @@ class SoftDeletePolicy(dict):
                   property is not set.
         """
         ...
-    
+
     @retention_duration_seconds.setter
-    def retention_duration_seconds(self, value): # -> None:
+    def retention_duration_seconds(self, value):  # -> None:
         """Set the retention duration of the bucket's soft delete policy.
 
         :type value: int
@@ -2676,9 +2907,9 @@ class SoftDeletePolicy(dict):
             will be retained and cannot be permanently deleted.
         """
         ...
-    
+
     @property
-    def effective_time(self): # -> datetime | None:
+    def effective_time(self):  # -> datetime | None:
         """Get the effective time of the bucket's soft delete policy.
 
         :rtype: datetime.datetime or ``NoneType``
@@ -2686,6 +2917,3 @@ class SoftDeletePolicy(dict):
                   effective, or ``None`` if the property is not set.
         """
         ...
-    
-
-

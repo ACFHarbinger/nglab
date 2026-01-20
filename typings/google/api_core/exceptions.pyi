@@ -15,15 +15,16 @@ _GRPC_CODE_TO_EXCEPTION: Dict[int, Exception] = ...
 _INT_TO_GRPC_CODE = ...
 if grpc is not None:
     ...
+
 class GoogleAPIError(Exception):
     """Base class for all exceptions raised by Google API Clients."""
-    ...
 
+    ...
 
 class DuplicateCredentialArgs(GoogleAPIError):
     """Raised when multiple credentials are passed."""
-    ...
 
+    ...
 
 class RetryError(GoogleAPIError):
     """Raised when a function has exhausted all of its available retries.
@@ -33,25 +34,20 @@ class RetryError(GoogleAPIError):
         cause (Exception): The last exception raised when retrying the
             function.
     """
-    def __init__(self, message, cause) -> None:
-        ...
-    
+
+    def __init__(self, message, cause) -> None: ...
     @property
-    def cause(self): # -> Any:
+    def cause(self):  # -> Any:
         """The last exception raised when retrying the function."""
         ...
-    
-    def __str__(self) -> str:
-        ...
-    
 
+    def __str__(self) -> str: ...
 
 class _GoogleAPICallErrorMeta(type):
     """Metaclass for registering GoogleAPICallError subclasses."""
-    def __new__(mcs, name, bases, class_dict): # -> Self:
-        ...
-    
 
+    def __new__(mcs, name, bases, class_dict):  # -> Self:
+        ...
 
 class GoogleAPICallError(GoogleAPIError, metaclass=_GoogleAPICallErrorMeta):
     """Base class for exceptions raised by calling API methods.
@@ -65,16 +61,15 @@ class GoogleAPICallError(GoogleAPIError, metaclass=_GoogleAPICallErrorMeta):
         error_info (Union[error_details_pb2.ErrorInfo, None]): An optional object containing error info
             (google.rpc.error_details.ErrorInfo).
     """
+
     code: Union[int, None] = ...
     grpc_status_code = ...
-    def __init__(self, message, errors=..., details=..., response=..., error_info=...) -> None:
-        ...
-    
-    def __str__(self) -> str:
-        ...
-    
+    def __init__(
+        self, message, errors=..., details=..., response=..., error_info=...
+    ) -> None: ...
+    def __str__(self) -> str: ...
     @property
-    def reason(self): # -> None:
+    def reason(self):  # -> None:
         """The reason of the error.
 
         Reference:
@@ -84,9 +79,9 @@ class GoogleAPICallError(GoogleAPIError, metaclass=_GoogleAPICallErrorMeta):
             Union[str, None]: An optional string containing reason of the error.
         """
         ...
-    
+
     @property
-    def domain(self): # -> None:
+    def domain(self):  # -> None:
         """The logical grouping to which the "reason" belongs.
 
         Reference:
@@ -96,9 +91,9 @@ class GoogleAPICallError(GoogleAPIError, metaclass=_GoogleAPICallErrorMeta):
             Union[str, None]: An optional string containing a logical grouping to which the "reason" belongs.
         """
         ...
-    
+
     @property
-    def metadata(self): # -> None:
+    def metadata(self):  # -> None:
         """Additional structured details about this error.
 
         Reference:
@@ -108,18 +103,18 @@ class GoogleAPICallError(GoogleAPIError, metaclass=_GoogleAPICallErrorMeta):
             Union[Dict[str, str], None]: An optional object containing structured details about the error.
         """
         ...
-    
+
     @property
-    def errors(self): # -> list[Any]:
+    def errors(self):  # -> list[Any]:
         """Detailed error information.
 
         Returns:
             Sequence[Any]: A list of additional error details.
         """
         ...
-    
+
     @property
-    def details(self): # -> list[Any]:
+    def details(self):  # -> list[Any]:
         """Information contained in google.rpc.status.details.
 
         Reference:
@@ -130,34 +125,32 @@ class GoogleAPICallError(GoogleAPIError, metaclass=_GoogleAPICallErrorMeta):
             Sequence[Any]: A list of structured objects from error_details.proto
         """
         ...
-    
+
     @property
-    def response(self): # -> None:
+    def response(self):  # -> None:
         """Optional[Union[requests.Request, grpc.Call]]: The response or
         gRPC call metadata."""
         ...
-    
-
 
 class Redirection(GoogleAPICallError):
     """Base class for for all redirection (HTTP 3xx) responses."""
-    ...
 
+    ...
 
 class MovedPermanently(Redirection):
     """Exception mapping a ``301 Moved Permanently`` response."""
-    code = ...
 
+    code = ...
 
 class NotModified(Redirection):
     """Exception mapping a ``304 Not Modified`` response."""
-    code = ...
 
+    code = ...
 
 class TemporaryRedirect(Redirection):
     """Exception mapping a ``307 Temporary Redirect`` response."""
-    code = ...
 
+    code = ...
 
 class ResumeIncomplete(Redirection):
     """Exception mapping a ``308 Resume Incomplete`` response.
@@ -165,170 +158,172 @@ class ResumeIncomplete(Redirection):
     .. note:: :attr:`http.client.PERMANENT_REDIRECT` is ``308``, but Google
         APIs differ in their use of this status code.
     """
-    code = ...
 
+    code = ...
 
 class ClientError(GoogleAPICallError):
     """Base class for all client error (HTTP 4xx) responses."""
-    ...
 
+    ...
 
 class BadRequest(ClientError):
     """Exception mapping a ``400 Bad Request`` response."""
-    code = ...
 
+    code = ...
 
 class InvalidArgument(BadRequest):
     """Exception mapping a :attr:`grpc.StatusCode.INVALID_ARGUMENT` error."""
-    grpc_status_code = ...
 
+    grpc_status_code = ...
 
 class FailedPrecondition(BadRequest):
     """Exception mapping a :attr:`grpc.StatusCode.FAILED_PRECONDITION`
     error."""
-    grpc_status_code = ...
 
+    grpc_status_code = ...
 
 class OutOfRange(BadRequest):
     """Exception mapping a :attr:`grpc.StatusCode.OUT_OF_RANGE` error."""
-    grpc_status_code = ...
 
+    grpc_status_code = ...
 
 class Unauthorized(ClientError):
     """Exception mapping a ``401 Unauthorized`` response."""
-    code = ...
 
+    code = ...
 
 class Unauthenticated(Unauthorized):
     """Exception mapping a :attr:`grpc.StatusCode.UNAUTHENTICATED` error."""
-    grpc_status_code = ...
 
+    grpc_status_code = ...
 
 class Forbidden(ClientError):
     """Exception mapping a ``403 Forbidden`` response."""
-    code = ...
 
+    code = ...
 
 class PermissionDenied(Forbidden):
     """Exception mapping a :attr:`grpc.StatusCode.PERMISSION_DENIED` error."""
-    grpc_status_code = ...
 
+    grpc_status_code = ...
 
 class NotFound(ClientError):
     """Exception mapping a ``404 Not Found`` response or a
     :attr:`grpc.StatusCode.NOT_FOUND` error."""
+
     code = ...
     grpc_status_code = ...
-
 
 class MethodNotAllowed(ClientError):
     """Exception mapping a ``405 Method Not Allowed`` response."""
-    code = ...
 
+    code = ...
 
 class Conflict(ClientError):
     """Exception mapping a ``409 Conflict`` response."""
-    code = ...
 
+    code = ...
 
 class AlreadyExists(Conflict):
     """Exception mapping a :attr:`grpc.StatusCode.ALREADY_EXISTS` error."""
-    grpc_status_code = ...
 
+    grpc_status_code = ...
 
 class Aborted(Conflict):
     """Exception mapping a :attr:`grpc.StatusCode.ABORTED` error."""
-    grpc_status_code = ...
 
+    grpc_status_code = ...
 
 class LengthRequired(ClientError):
     """Exception mapping a ``411 Length Required`` response."""
-    code = ...
 
+    code = ...
 
 class PreconditionFailed(ClientError):
     """Exception mapping a ``412 Precondition Failed`` response."""
-    code = ...
 
+    code = ...
 
 class RequestRangeNotSatisfiable(ClientError):
     """Exception mapping a ``416 Request Range Not Satisfiable`` response."""
-    code = ...
 
+    code = ...
 
 class TooManyRequests(ClientError):
     """Exception mapping a ``429 Too Many Requests`` response."""
-    code = ...
 
+    code = ...
 
 class ResourceExhausted(TooManyRequests):
     """Exception mapping a :attr:`grpc.StatusCode.RESOURCE_EXHAUSTED` error."""
-    grpc_status_code = ...
 
+    grpc_status_code = ...
 
 class Cancelled(ClientError):
     """Exception mapping a :attr:`grpc.StatusCode.CANCELLED` error."""
+
     code = ...
     grpc_status_code = ...
 
-
 class ServerError(GoogleAPICallError):
     """Base for 5xx responses."""
-    ...
 
+    ...
 
 class InternalServerError(ServerError):
     """Exception mapping a ``500 Internal Server Error`` response. or a
     :attr:`grpc.StatusCode.INTERNAL` error."""
+
     code = ...
     grpc_status_code = ...
 
-
 class Unknown(ServerError):
     """Exception mapping a :attr:`grpc.StatusCode.UNKNOWN` error."""
-    grpc_status_code = ...
 
+    grpc_status_code = ...
 
 class DataLoss(ServerError):
     """Exception mapping a :attr:`grpc.StatusCode.DATA_LOSS` error."""
-    grpc_status_code = ...
 
+    grpc_status_code = ...
 
 class MethodNotImplemented(ServerError):
     """Exception mapping a ``501 Not Implemented`` response or a
     :attr:`grpc.StatusCode.UNIMPLEMENTED` error."""
+
     code = ...
     grpc_status_code = ...
 
-
 class BadGateway(ServerError):
     """Exception mapping a ``502 Bad Gateway`` response."""
-    code = ...
 
+    code = ...
 
 class ServiceUnavailable(ServerError):
     """Exception mapping a ``503 Service Unavailable`` response or a
     :attr:`grpc.StatusCode.UNAVAILABLE` error."""
+
     code = ...
     grpc_status_code = ...
-
 
 class GatewayTimeout(ServerError):
     """Exception mapping a ``504 Gateway Timeout`` response."""
-    code = ...
 
+    code = ...
 
 class DeadlineExceeded(GatewayTimeout):
     """Exception mapping a :attr:`grpc.StatusCode.DEADLINE_EXCEEDED` error."""
-    grpc_status_code = ...
 
+    grpc_status_code = ...
 
 class AsyncRestUnsupportedParameterError(NotImplementedError):
     """Raised when an unsupported parameter is configured against async rest transport."""
+
     ...
 
-
-def exception_class_for_http_status(status_code): # -> Exception | type[GoogleAPICallError]:
+def exception_class_for_http_status(
+    status_code,
+):  # -> Exception | type[GoogleAPICallError]:
     """Return the exception class for a specific HTTP status code.
 
     Args:
@@ -339,7 +334,7 @@ def exception_class_for_http_status(status_code): # -> Exception | type[GoogleAP
     """
     ...
 
-def from_http_status(status_code, message, **kwargs): # -> GoogleAPICallError:
+def from_http_status(status_code, message, **kwargs):  # -> GoogleAPICallError:
     """Create a :class:`GoogleAPICallError` from an HTTP status code.
 
     Args:
@@ -354,7 +349,9 @@ def from_http_status(status_code, message, **kwargs): # -> GoogleAPICallError:
     """
     ...
 
-def format_http_response_error(response, method: str, url: str, payload: Optional[Dict] = ...): # -> GoogleAPICallError:
+def format_http_response_error(
+    response, method: str, url: str, payload: Optional[Dict] = ...
+):  # -> GoogleAPICallError:
     """Create a :class:`GoogleAPICallError` from a google auth rest response.
 
     Args:
@@ -370,7 +367,7 @@ def format_http_response_error(response, method: str, url: str, payload: Optiona
     """
     ...
 
-def from_http_response(response): # -> GoogleAPICallError:
+def from_http_response(response):  # -> GoogleAPICallError:
     """Create a :class:`GoogleAPICallError` from a :class:`requests.Response`.
 
     Args:
@@ -383,7 +380,9 @@ def from_http_response(response): # -> GoogleAPICallError:
     """
     ...
 
-def exception_class_for_grpc_status(status_code): # -> Exception | type[GoogleAPICallError]:
+def exception_class_for_grpc_status(
+    status_code,
+):  # -> Exception | type[GoogleAPICallError]:
     """Return the exception class for a specific :class:`grpc.StatusCode`.
 
     Args:
@@ -394,7 +393,7 @@ def exception_class_for_grpc_status(status_code): # -> Exception | type[GoogleAP
     """
     ...
 
-def from_grpc_status(status_code, message, **kwargs): # -> GoogleAPICallError:
+def from_grpc_status(status_code, message, **kwargs):  # -> GoogleAPICallError:
     """Create a :class:`GoogleAPICallError` from a :class:`grpc.StatusCode`.
 
     Args:
@@ -409,7 +408,7 @@ def from_grpc_status(status_code, message, **kwargs): # -> GoogleAPICallError:
     """
     ...
 
-def from_grpc_error(rpc_exc): # -> GoogleAPICallError:
+def from_grpc_error(rpc_exc):  # -> GoogleAPICallError:
     """Create a :class:`GoogleAPICallError` from a :class:`grpc.RpcError`.
 
     Args:
@@ -420,4 +419,3 @@ def from_grpc_error(rpc_exc): # -> GoogleAPICallError:
             :class:`GoogleAPICallError`.
     """
     ...
-

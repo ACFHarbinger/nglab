@@ -19,7 +19,8 @@ _METADATA_HEADERS = ...
 _METADATA_DEFAULT_TIMEOUT = ...
 _GOOGLE = ...
 _GCE_PRODUCT_NAME_FILE = ...
-def is_on_gce(request): # -> bool:
+
+def is_on_gce(request):  # -> bool:
     """Checks to see if the code runs on Google Compute Engine
 
     Args:
@@ -31,7 +32,7 @@ def is_on_gce(request): # -> bool:
     """
     ...
 
-def detect_gce_residency_linux(): # -> bool:
+def detect_gce_residency_linux():  # -> bool:
     """Detect Google Compute Engine residency by smbios check on Linux
 
     Returns:
@@ -39,7 +40,7 @@ def detect_gce_residency_linux(): # -> bool:
     """
     ...
 
-def ping(request, timeout=..., retry_count=...): # -> Literal[False]:
+def ping(request, timeout=..., retry_count=...):  # -> Literal[False]:
     """Checks to see if the metadata server is available.
 
     Args:
@@ -54,7 +55,17 @@ def ping(request, timeout=..., retry_count=...): # -> Literal[False]:
     """
     ...
 
-def get(request, path, root=..., params=..., recursive=..., retry_count=..., headers=..., return_none_for_not_found_error=..., timeout=...): # -> Any | str | None:
+def get(
+    request,
+    path,
+    root=...,
+    params=...,
+    recursive=...,
+    retry_count=...,
+    headers=...,
+    return_none_for_not_found_error=...,
+    timeout=...,
+):  # -> Any | str | None:
     """Fetch a resource from the metadata server.
 
     Args:
@@ -91,7 +102,7 @@ def get(request, path, root=..., params=..., recursive=..., retry_count=..., hea
     """
     ...
 
-def get_project_id(request): # -> Any | str | None:
+def get_project_id(request):  # -> Any | str | None:
     """Get the Google Cloud Project ID from the metadata server.
 
     Args:
@@ -107,7 +118,7 @@ def get_project_id(request): # -> Any | str | None:
     """
     ...
 
-def get_universe_domain(request): # -> Any | str:
+def get_universe_domain(request):  # -> Any | str:
     """Get the universe domain value from the metadata server.
 
     Args:
@@ -124,7 +135,7 @@ def get_universe_domain(request): # -> Any | str:
     """
     ...
 
-def get_service_account_info(request, service_account=...): # -> Any | str | None:
+def get_service_account_info(request, service_account=...):  # -> Any | str | None:
     """Get information about a service account from the metadata server.
 
     Args:
@@ -149,7 +160,9 @@ def get_service_account_info(request, service_account=...): # -> Any | str | Non
     """
     ...
 
-def get_service_account_token(request, service_account=..., scopes=...): # -> tuple[Any | str, datetime]:
+def get_service_account_token(
+    request, service_account=..., scopes=...
+):  # -> tuple[Any | str, datetime]:
     """Get the OAuth 2.0 access token for a service account.
 
     Args:
@@ -168,4 +181,3 @@ def get_service_account_token(request, service_account=..., scopes=...): # -> tu
             retrieving metadata.
     """
     ...
-

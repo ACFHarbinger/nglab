@@ -39,7 +39,8 @@ Signer = base.Signer
 Verifier = base.Verifier
 RSASigner = rsa.RSASigner
 RSAVerifier = rsa.RSAVerifier
-def verify_signature(message, signature, certs, verifier_cls=...): # -> bool:
+
+def verify_signature(message, signature, certs, verifier_cls=...):  # -> bool:
     """Verify an RSA or ECDSA cryptographic signature.
 
     Checks that the provided ``signature`` was generated from ``bytes`` using
@@ -58,4 +59,3 @@ def verify_signature(message, signature, certs, verifier_cls=...): # -> bool:
         bool: True if the signature is valid, otherwise False.
     """
     ...
-

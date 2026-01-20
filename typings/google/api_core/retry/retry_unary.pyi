@@ -50,7 +50,19 @@ if TYPE_CHECKING:
     _P = ParamSpec("_P")
     _R = TypeVar("_R")
 _ASYNC_RETRY_WARNING = ...
-def retry_target(target: Callable[[], _R], predicate: Callable[[Exception], bool], sleep_generator: Iterable[float], timeout: float | None = ..., on_error: Callable[[Exception], None] | None = ..., exception_factory: Callable[[list[Exception], RetryFailureReason, float | None], tuple[Exception, Exception | None],] = ..., **kwargs): # -> Awaitable[Any] | object:
+
+def retry_target(
+    target: Callable[[], _R],
+    predicate: Callable[[Exception], bool],
+    sleep_generator: Iterable[float],
+    timeout: float | None = ...,
+    on_error: Callable[[Exception], None] | None = ...,
+    exception_factory: Callable[
+        [list[Exception], RetryFailureReason, float | None],
+        tuple[Exception, Exception | None],
+    ] = ...,
+    **kwargs,
+):  # -> Awaitable[Any] | object:
     """Call a function and retry if it fails.
 
     This is the lowest-level retry helper. Generally, you'll use the
@@ -186,7 +198,10 @@ class Retry(_BaseRetry):
         deadline (float): DEPRECATED: use `timeout` instead. For backward
             compatibility, if specified it will override the ``timeout`` parameter.
     """
-    def __call__(self, func: Callable[_P, _R], on_error: Callable[[Exception], Any] | None = ...) -> Callable[_P, _R]:
+
+    def __call__(
+        self, func: Callable[_P, _R], on_error: Callable[[Exception], Any] | None = ...
+    ) -> Callable[_P, _R]:
         """Wrap a callable with retry behavior.
 
         Args:
@@ -202,6 +217,3 @@ class Retry(_BaseRetry):
                 behavior.
         """
         ...
-    
-
-

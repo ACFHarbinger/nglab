@@ -25,6 +25,7 @@ Authorization Code grant flow.
 _LOGGER = ...
 _GOOGLE_OAUTH2_TOKEN_ENDPOINT = ...
 _GOOGLE_OAUTH2_TOKEN_INFO_ENDPOINT = ...
+
 class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaProject):
     """Credentials using OAuth 2.0 access and refresh tokens.
 
@@ -41,7 +42,27 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
     key reauth feature. Dependency can be installed via `pip install pyu2f` or `pip install
     google-auth[reauth]`.
     """
-    def __init__(self, token, refresh_token=..., id_token=..., token_uri=..., client_id=..., client_secret=..., scopes=..., default_scopes=..., quota_project_id=..., expiry=..., rapt_token=..., refresh_handler=..., enable_reauth_refresh=..., granted_scopes=..., trust_boundary=..., universe_domain=..., account=...) -> None:
+
+    def __init__(
+        self,
+        token,
+        refresh_token=...,
+        id_token=...,
+        token_uri=...,
+        client_id=...,
+        client_secret=...,
+        scopes=...,
+        default_scopes=...,
+        quota_project_id=...,
+        expiry=...,
+        rapt_token=...,
+        refresh_handler=...,
+        enable_reauth_refresh=...,
+        granted_scopes=...,
+        trust_boundary=...,
+        universe_domain=...,
+        account=...,
+    ) -> None:
         """
         Args:
             token (Optional(str)): The OAuth 2.0 access token. Can be None
@@ -88,42 +109,42 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             account (Optional[str]): The account associated with the credential.
         """
         ...
-    
-    def __getstate__(self): # -> dict[str, Any]:
+
+    def __getstate__(self):  # -> dict[str, Any]:
         """A __getstate__ method must exist for the __setstate__ to be called
         This is identical to the default implementation.
         See https://docs.python.org/3.7/library/pickle.html#object.__setstate__
         """
         ...
-    
-    def __setstate__(self, d): # -> None:
+
+    def __setstate__(self, d):  # -> None:
         """Credentials pickled with older versions of the class do not have
         all the attributes."""
         ...
-    
+
     @property
-    def refresh_token(self): # -> None:
+    def refresh_token(self):  # -> None:
         """Optional[str]: The OAuth 2.0 refresh token."""
         ...
-    
+
     @property
-    def scopes(self): # -> list[Any] | None:
+    def scopes(self):  # -> list[Any] | None:
         """Optional[Sequence[str]]: The OAuth 2.0 permission scopes."""
         ...
-    
+
     @property
-    def granted_scopes(self): # -> None:
+    def granted_scopes(self):  # -> None:
         """Optional[Sequence[str]]: The OAuth 2.0 permission scopes that were granted by the user."""
         ...
-    
+
     @property
-    def token_uri(self): # -> None:
+    def token_uri(self):  # -> None:
         """Optional[str]: The OAuth 2.0 authorization server's token endpoint
         URI."""
         ...
-    
+
     @property
-    def id_token(self): # -> None:
+    def id_token(self):  # -> None:
         """Optional[str]: The Open ID Connect ID Token.
 
         Depending on the authorization server and the scopes requested, this
@@ -132,30 +153,30 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
         and decoded using :func:`google.oauth2.id_token.verify_oauth2_token`.
         """
         ...
-    
+
     @property
-    def client_id(self): # -> None:
+    def client_id(self):  # -> None:
         """Optional[str]: The OAuth 2.0 client ID."""
         ...
-    
+
     @property
-    def client_secret(self): # -> None:
+    def client_secret(self):  # -> None:
         """Optional[str]: The OAuth 2.0 client secret."""
         ...
-    
+
     @property
-    def requires_scopes(self): # -> Literal[False]:
+    def requires_scopes(self):  # -> Literal[False]:
         """False: OAuth 2.0 credentials have their scopes set when
         the initial token is requested and can not be changed."""
         ...
-    
+
     @property
-    def rapt_token(self): # -> Any | None:
+    def rapt_token(self):  # -> Any | None:
         """Optional[str]: The reauth Proof Token."""
         ...
-    
+
     @property
-    def refresh_handler(self): # -> Callable[..., object] | None:
+    def refresh_handler(self):  # -> Callable[..., object] | None:
         """Returns the refresh handler if available.
 
         Returns:
@@ -163,9 +184,9 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
                The current refresh handler.
         """
         ...
-    
+
     @refresh_handler.setter
-    def refresh_handler(self, value): # -> None:
+    def refresh_handler(self, value):  # -> None:
         """Updates the current refresh handler.
 
         Args:
@@ -176,25 +197,25 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             TypeError: If the value is not a callable or None.
         """
         ...
-    
+
     @property
-    def account(self): # -> str:
+    def account(self):  # -> str:
         """str: The user account associated with the credential. If the account is unknown an empty string is returned."""
         ...
-    
+
     @_helpers.copy_docstring(credentials.Credentials)
-    def get_cred_info(self): # -> dict[str, Any] | None:
+    def get_cred_info(self):  # -> dict[str, Any] | None:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
-    def with_quota_project(self, quota_project_id): # -> Self:
+    def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithTokenUri)
-    def with_token_uri(self, token_uri): # -> Self:
+    def with_token_uri(self, token_uri):  # -> Self:
         ...
-    
-    def with_account(self, account): # -> Self:
+
+    def with_account(self, account):  # -> Self:
         """Returns a copy of these credentials with a modified account.
 
         Args:
@@ -204,17 +225,17 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             google.oauth2.credentials.Credentials: A new credentials instance.
         """
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithUniverseDomain)
-    def with_universe_domain(self, universe_domain): # -> Self:
+    def with_universe_domain(self, universe_domain):  # -> Self:
         ...
-    
+
     @_helpers.copy_docstring(credentials.Credentials)
-    def refresh(self, request): # -> None:
+    def refresh(self, request):  # -> None:
         ...
-    
+
     @classmethod
-    def from_authorized_user_info(cls, info, scopes=...): # -> Self:
+    def from_authorized_user_info(cls, info, scopes=...):  # -> Self:
         """Creates a Credentials instance from parsed authorized user info.
 
         Args:
@@ -231,9 +252,9 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             ValueError: If the info is not in the expected format.
         """
         ...
-    
+
     @classmethod
-    def from_authorized_user_file(cls, filename, scopes=...): # -> Self:
+    def from_authorized_user_file(cls, filename, scopes=...):  # -> Self:
         """Creates a Credentials instance from an authorized user json file.
 
         Args:
@@ -249,8 +270,8 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             ValueError: If the file is not in the expected format.
         """
         ...
-    
-    def to_json(self, strip=...): # -> str:
+
+    def to_json(self, strip=...):  # -> str:
         """Utility function that creates a JSON representation of a Credentials
         object.
 
@@ -264,8 +285,6 @@ class Credentials(credentials.ReadOnlyScoped, credentials.CredentialsWithQuotaPr
             to create a new credential instance.
         """
         ...
-    
-
 
 class UserAccessTokenCredentials(credentials.CredentialsWithQuotaProject):
     """Access token credentials for user account.
@@ -279,10 +298,9 @@ class UserAccessTokenCredentials(credentials.CredentialsWithQuotaProject):
         quota_project_id (Optional[str]): The project ID used for quota
             and billing.
     """
-    def __init__(self, account=..., quota_project_id=...) -> None:
-        ...
-    
-    def with_account(self, account): # -> Self:
+
+    def __init__(self, account=..., quota_project_id=...) -> None: ...
+    def with_account(self, account):  # -> Self:
         """Create a new instance with the given account.
 
         Args:
@@ -293,12 +311,12 @@ class UserAccessTokenCredentials(credentials.CredentialsWithQuotaProject):
                 credentials with the given account.
         """
         ...
-    
+
     @_helpers.copy_docstring(credentials.CredentialsWithQuotaProject)
-    def with_quota_project(self, quota_project_id): # -> Self:
+    def with_quota_project(self, quota_project_id):  # -> Self:
         ...
-    
-    def refresh(self, request): # -> None:
+
+    def refresh(self, request):  # -> None:
         """Refreshes the access token.
 
         Args:
@@ -311,10 +329,7 @@ class UserAccessTokenCredentials(credentials.CredentialsWithQuotaProject):
                 refresh failed.
         """
         ...
-    
+
     @_helpers.copy_docstring(credentials.Credentials)
-    def before_request(self, request, method, url, headers): # -> None:
+    def before_request(self, request, method, url, headers):  # -> None:
         ...
-    
-
-

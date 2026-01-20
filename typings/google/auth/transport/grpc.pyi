@@ -6,6 +6,7 @@ import grpc
 
 """Authorization support for gRPC."""
 _LOGGER = ...
+
 class AuthMetadataPlugin(grpc.AuthMetadataPlugin):
     """A `gRPC AuthMetadataPlugin`_ that inserts the credentials into each
     request.
@@ -22,10 +23,9 @@ class AuthMetadataPlugin(grpc.AuthMetadataPlugin):
             This is used when a self-signed JWT is created from service
             account credentials.
     """
-    def __init__(self, credentials, request, default_host=...) -> None:
-        ...
-    
-    def __call__(self, context, callback): # -> None:
+
+    def __init__(self, credentials, request, default_host=...) -> None: ...
+    def __call__(self, context, callback):  # -> None:
         """Passes authorization metadata into the given callback.
 
         Args:
@@ -34,10 +34,15 @@ class AuthMetadataPlugin(grpc.AuthMetadataPlugin):
                 be invoked to pass in the authorization metadata.
         """
         ...
-    
 
-
-def secure_authorized_channel(credentials, request, target, ssl_credentials=..., client_cert_callback=..., **kwargs): # -> Channel:
+def secure_authorized_channel(
+    credentials,
+    request,
+    target,
+    ssl_credentials=...,
+    client_cert_callback=...,
+    **kwargs,
+):  # -> Channel:
     """Creates a secure authorized gRPC channel.
 
     This creates a channel with SSL and :class:`AuthMetadataPlugin`. This
@@ -192,11 +197,10 @@ class SslCredentials:
     be established.
     See https://cloud.google.com/endpoint-verification/docs/overview.
     """
-    def __init__(self) -> None:
-        ...
-    
+
+    def __init__(self) -> None: ...
     @property
-    def ssl_credentials(self): # -> ChannelCredentials:
+    def ssl_credentials(self):  # -> ChannelCredentials:
         """Get the created SSL channel credentials.
 
         For devices with endpoint verification support, if the device certificate
@@ -212,11 +216,8 @@ class SslCredentials:
                 creation failed for any reason.
         """
         ...
-    
+
     @property
-    def is_mtls(self): # -> bool:
+    def is_mtls(self):  # -> bool:
         """Indicates if the created SSL channel credentials is mutual TLS."""
         ...
-    
-
-

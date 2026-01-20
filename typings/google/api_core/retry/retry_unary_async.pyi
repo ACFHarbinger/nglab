@@ -51,7 +51,19 @@ _DEFAULT_MAXIMUM_DELAY = ...
 _DEFAULT_DELAY_MULTIPLIER = ...
 _DEFAULT_DEADLINE = ...
 _DEFAULT_TIMEOUT = ...
-async def retry_target(target: Callable[[], Awaitable[_R]], predicate: Callable[[Exception], bool], sleep_generator: Iterable[float], timeout: float | None = ..., on_error: Callable[[Exception], None] | None = ..., exception_factory: Callable[[list[Exception], RetryFailureReason, float | None], tuple[Exception, Exception | None],] = ..., **kwargs): # -> _R:
+
+async def retry_target(
+    target: Callable[[], Awaitable[_R]],
+    predicate: Callable[[Exception], bool],
+    sleep_generator: Iterable[float],
+    timeout: float | None = ...,
+    on_error: Callable[[Exception], None] | None = ...,
+    exception_factory: Callable[
+        [list[Exception], RetryFailureReason, float | None],
+        tuple[Exception, Exception | None],
+    ] = ...,
+    **kwargs,
+):  # -> _R:
     """Await a coroutine and retry if it fails.
 
     This is the lowest-level retry helper. Generally, you'll use the
@@ -118,7 +130,12 @@ class AsyncRetry(_BaseRetry):
         deadline (float): DEPRECATED use ``timeout`` instead. If set it will
         override ``timeout`` parameter.
     """
-    def __call__(self, func: Callable[..., Awaitable[_R]], on_error: Callable[[Exception], Any] | None = ...) -> Callable[_P, Awaitable[_R]]:
+
+    def __call__(
+        self,
+        func: Callable[..., Awaitable[_R]],
+        on_error: Callable[[Exception], Any] | None = ...,
+    ) -> Callable[_P, Awaitable[_R]]:
         """Wrap a callable with retry behavior.
 
         Args:
@@ -134,6 +151,3 @@ class AsyncRetry(_BaseRetry):
                 behavior.
         """
         ...
-    
-
-

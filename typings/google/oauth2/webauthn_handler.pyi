@@ -10,13 +10,11 @@ class WebAuthnHandler(abc.ABC):
     def is_available(self) -> bool:
         """Check whether this WebAuthn handler is available"""
         ...
-    
+
     @abc.abstractmethod
     def get(self, get_request: GetRequest) -> GetResponse:
         """WebAuthn get (assertion)"""
         ...
-    
-
 
 class PluginHandler(WebAuthnHandler):
     """Offloads WebAuthn get request to a pluggable command-line tool.
@@ -32,12 +30,7 @@ class PluginHandler(WebAuthnHandler):
 
     [4 bytes - payload size (little-endian)][variable bytes - json payload]
     """
+
     _ENV_VAR = ...
-    def is_available(self) -> bool:
-        ...
-    
-    def get(self, get_request: GetRequest) -> GetResponse:
-        ...
-    
-
-
+    def is_available(self) -> bool: ...
+    def get(self, get_request: GetRequest) -> GetResponse: ...

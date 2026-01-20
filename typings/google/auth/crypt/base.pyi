@@ -7,8 +7,10 @@ import abc
 """Base classes for cryptographic signers and verifiers."""
 _JSON_FILE_PRIVATE_KEY = ...
 _JSON_FILE_PRIVATE_KEY_ID = ...
+
 class Verifier(metaclass=abc.ABCMeta):
     """Abstract base class for crytographic signature verifiers."""
+
     @abc.abstractmethod
     def verify(self, message, signature):
         """Verifies a message against a cryptographic signature.
@@ -22,16 +24,15 @@ class Verifier(metaclass=abc.ABCMeta):
             with the public key that this object was constructed with.
         """
         ...
-    
-
 
 class Signer(metaclass=abc.ABCMeta):
     """Abstract base class for cryptographic signers."""
+
     @abc.abstractproperty
     def key_id(self):
         """Optional[str]: The key ID used to identify this private key."""
         ...
-    
+
     @abc.abstractmethod
     def sign(self, message):
         """Signs a message.
@@ -43,11 +44,10 @@ class Signer(metaclass=abc.ABCMeta):
             bytes: The signature of the message.
         """
         ...
-    
-
 
 class FromServiceAccountMixin(metaclass=abc.ABCMeta):
     """Mix-in to enable factory constructors for a Signer."""
+
     @abc.abstractmethod
     def from_string(cls, key, key_id=...):
         """Construct an Signer instance from a private key string.
@@ -63,7 +63,7 @@ class FromServiceAccountMixin(metaclass=abc.ABCMeta):
             ValueError: If the key cannot be parsed.
         """
         ...
-    
+
     @classmethod
     def from_service_account_info(cls, info):
         """Creates a Signer instance instance from a dictionary containing
@@ -80,7 +80,7 @@ class FromServiceAccountMixin(metaclass=abc.ABCMeta):
             ValueError: If the info is not in the expected format.
         """
         ...
-    
+
     @classmethod
     def from_service_account_file(cls, filename):
         """Creates a Signer instance from a service account .json file
@@ -93,6 +93,3 @@ class FromServiceAccountMixin(metaclass=abc.ABCMeta):
             google.auth.crypt.Signer: The constructed signer.
         """
         ...
-    
-
-

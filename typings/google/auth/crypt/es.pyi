@@ -14,6 +14,7 @@ from google.auth.crypt import base
 _CERTIFICATE_MARKER = ...
 _BACKEND = ...
 _PADDING = ...
+
 @dataclass
 class _ESAttributes:
     """A class that models ECDSA attributes.
@@ -23,18 +24,19 @@ class _ESAttributes:
         sha_algo (hashes.HashAlgorithm): Hash algorithm.
         algorithm (str): Algorithm name.
     """
+
     rs_size: int
     sha_algo: hashes.HashAlgorithm
     algorithm: str
     @classmethod
-    def from_key(cls, key: Union[ec.EllipticCurvePublicKey, ec.EllipticCurvePrivateKey]): # -> Self:
+    def from_key(
+        cls, key: Union[ec.EllipticCurvePublicKey, ec.EllipticCurvePrivateKey]
+    ):  # -> Self:
         ...
-    
-    @classmethod
-    def from_curve(cls, curve: ec.EllipticCurve): # -> Self:
-        ...
-    
 
+    @classmethod
+    def from_curve(cls, curve: ec.EllipticCurve):  # -> Self:
+        ...
 
 class EsVerifier(base.Verifier):
     """Verifies ECDSA cryptographic signatures using public keys.
@@ -44,13 +46,10 @@ class EsVerifier(base.Verifier):
                 cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePublicKey):
             The public key used to verify signatures.
     """
-    def __init__(self, public_key: ec.EllipticCurvePublicKey) -> None:
-        ...
-    
+
+    def __init__(self, public_key: ec.EllipticCurvePublicKey) -> None: ...
     @_helpers.copy_docstring(base.Verifier)
-    def verify(self, message: bytes, signature: bytes) -> bool:
-        ...
-    
+    def verify(self, message: bytes, signature: bytes) -> bool: ...
     @classmethod
     def from_string(cls, public_key: Union[str, bytes]) -> EsVerifier:
         """Construct an Verifier instance from a public key or public
@@ -67,8 +66,6 @@ class EsVerifier(base.Verifier):
             ValueError: If the public key can't be parsed.
         """
         ...
-    
-
 
 class EsSigner(base.Signer, base.FromServiceAccountMixin):
     """Signs messages with an ECDSA private key.
@@ -81,9 +78,10 @@ class EsSigner(base.Signer, base.FromServiceAccountMixin):
             can be useful to associate the private key with its associated
             public key or certificate.
     """
-    def __init__(self, private_key: ec.EllipticCurvePrivateKey, key_id: Optional[str] = ...) -> None:
-        ...
-    
+
+    def __init__(
+        self, private_key: ec.EllipticCurvePrivateKey, key_id: Optional[str] = ...
+    ) -> None: ...
     @property
     def algorithm(self) -> str:
         """Name of the algorithm used to sign messages.
@@ -91,18 +89,16 @@ class EsSigner(base.Signer, base.FromServiceAccountMixin):
             str: The algorithm name.
         """
         ...
-    
+
     @property
     @_helpers.copy_docstring(base.Signer)
-    def key_id(self) -> Optional[str]:
-        ...
-    
+    def key_id(self) -> Optional[str]: ...
     @_helpers.copy_docstring(base.Signer)
-    def sign(self, message: bytes) -> bytes:
-        ...
-    
+    def sign(self, message: bytes) -> bytes: ...
     @classmethod
-    def from_string(cls, key: Union[bytes, str], key_id: Optional[str] = ...) -> EsSigner:
+    def from_string(
+        cls, key: Union[bytes, str], key_id: Optional[str] = ...
+    ) -> EsSigner:
         """Construct a RSASigner from a private key in PEM format.
 
         Args:
@@ -120,14 +116,11 @@ class EsSigner(base.Signer, base.FromServiceAccountMixin):
             ValueError: If ``cryptography`` "Could not deserialize key data."
         """
         ...
-    
+
     def __getstate__(self) -> Dict[str, Any]:
         """Pickle helper that serializes the _key attribute."""
         ...
-    
+
     def __setstate__(self, state: Dict[str, Any]) -> None:
         """Pickle helper that deserializes the _key attribute."""
         ...
-    
-
-

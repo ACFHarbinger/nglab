@@ -17,43 +17,44 @@ CRED_TYPE_SA_ASSERTION = ...
 CRED_TYPE_SA_JWT = ...
 CRED_TYPE_SA_MDS = ...
 CRED_TYPE_SA_IMPERSONATE = ...
-def python_and_auth_lib_version(): # -> str:
+
+def python_and_auth_lib_version():  # -> str:
     ...
 
-def token_request_access_token_mds(): # -> str:
+def token_request_access_token_mds():  # -> str:
     ...
 
-def token_request_id_token_mds(): # -> str:
+def token_request_id_token_mds():  # -> str:
     ...
 
-def token_request_access_token_impersonate(): # -> str:
+def token_request_access_token_impersonate():  # -> str:
     ...
 
-def token_request_id_token_impersonate(): # -> str:
+def token_request_id_token_impersonate():  # -> str:
     ...
 
-def token_request_access_token_sa_assertion(): # -> str:
+def token_request_access_token_sa_assertion():  # -> str:
     ...
 
-def token_request_id_token_sa_assertion(): # -> str:
+def token_request_id_token_sa_assertion():  # -> str:
     ...
 
-def token_request_user(): # -> str:
+def token_request_user():  # -> str:
     ...
 
-def mds_ping(): # -> str:
+def mds_ping():  # -> str:
     ...
 
-def reauth_start(): # -> str:
+def reauth_start():  # -> str:
     ...
 
-def reauth_continue(): # -> str:
+def reauth_continue():  # -> str:
     ...
 
-def byoid_metrics_header(metrics_options): # -> str:
+def byoid_metrics_header(metrics_options):  # -> str:
     ...
 
-def add_metric_header(headers, metric_header_value): # -> None:
+def add_metric_header(headers, metric_header_value):  # -> None:
     """Add x-goog-api-client header with the given value.
 
     Args:
@@ -65,4 +66,3 @@ def add_metric_header(headers, metric_header_value): # -> None:
             header with the given value.
     """
     ...
-

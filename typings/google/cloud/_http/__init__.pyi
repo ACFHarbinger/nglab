@@ -21,6 +21,7 @@ CLIENT_INFO_TEMPLATE = ...
 _USER_AGENT_ALL_CAPS_DEPRECATED = ...
 _EXTRA_HEADERS_ALL_CAPS_DEPRECATED = ...
 _DEFAULT_TIMEOUT = ...
+
 class Connection:
     """A generic connection to Google Cloud Platform.
 
@@ -30,49 +31,48 @@ class Connection:
     :type client_info: :class:`~google.api_core.client_info.ClientInfo`
     :param client_info: (Optional) instance used to generate user agent.
     """
+
     _user_agent = ...
-    def __init__(self, client, client_info=...) -> None:
-        ...
-    
+    def __init__(self, client, client_info=...) -> None: ...
     @property
-    def USER_AGENT(self): # -> str:
+    def USER_AGENT(self):  # -> str:
         """Deprecated:  get / set user agent sent by connection.
 
         :rtype: str
         :returns: user agent
         """
         ...
-    
+
     @USER_AGENT.setter
-    def USER_AGENT(self, value): # -> None:
+    def USER_AGENT(self, value):  # -> None:
         ...
-    
+
     @property
-    def user_agent(self): # -> str:
+    def user_agent(self):  # -> str:
         """Get / set user agent sent by connection.
 
         :rtype: str
         :returns: user agent
         """
         ...
-    
+
     @user_agent.setter
-    def user_agent(self, value): # -> None:
+    def user_agent(self, value):  # -> None:
         ...
-    
+
     @property
-    def extra_headers(self): # -> dict[Any, Any]:
+    def extra_headers(self):  # -> dict[Any, Any]:
         """Get / set extra headers sent by connection.
 
         :rtype: dict
         :returns: header keys / values
         """
         ...
-    
+
     @extra_headers.setter
-    def extra_headers(self, value): # -> None:
+    def extra_headers(self, value):  # -> None:
         ...
-    
+
     @property
     def credentials(self):
         """Getter for current credentials.
@@ -82,7 +82,7 @@ class Connection:
         :returns: The credentials object associated with this connection.
         """
         ...
-    
+
     @property
     def http(self):
         """A getter for the HTTP transport used in talking to the API.
@@ -92,8 +92,6 @@ class Connection:
                 A :class:`requests.Session` instance.
         """
         ...
-    
-
 
 class JSONConnection(Connection):
     """A connection to a Google JSON-based API.
@@ -111,12 +109,13 @@ class JSONConnection(Connection):
 
     must be updated by subclasses.
     """
+
     API_BASE_URL: Optional[str] = ...
     API_BASE_MTLS_URL: Optional[str] = ...
     ALLOW_AUTO_SWITCH_TO_MTLS_URL = ...
     API_VERSION: Optional[str] = ...
     API_URL_TEMPLATE: Optional[str] = ...
-    def get_api_base_url_for_mtls(self, api_base_url=...): # -> str | None:
+    def get_api_base_url_for_mtls(self, api_base_url=...):  # -> str | None:
         """Return the api base url for mutual TLS.
 
         Typically, you shouldn't need to use this method.
@@ -140,8 +139,10 @@ class JSONConnection(Connection):
         :returns: The api base url used for mTLS.
         """
         ...
-    
-    def build_api_url(self, path, query_params=..., api_base_url=..., api_version=...): # -> str:
+
+    def build_api_url(
+        self, path, query_params=..., api_base_url=..., api_version=...
+    ):  # -> str:
         """Construct an API url given a few components, some optional.
 
         Typically, you shouldn't need to use this method.
@@ -167,8 +168,22 @@ class JSONConnection(Connection):
         :returns: The URL assembled from the pieces provided.
         """
         ...
-    
-    def api_request(self, method, path, query_params=..., data=..., content_type=..., headers=..., api_base_url=..., api_version=..., expect_json=..., _target_object=..., timeout=..., extra_api_info=...):
+
+    def api_request(
+        self,
+        method,
+        path,
+        query_params=...,
+        data=...,
+        content_type=...,
+        headers=...,
+        api_base_url=...,
+        api_version=...,
+        expect_json=...,
+        _target_object=...,
+        timeout=...,
+        extra_api_info=...,
+    ):
         """Make a request over the HTTP transport to the API.
 
         You shouldn't need to use this method, but if you plan to
@@ -241,6 +256,3 @@ class JSONConnection(Connection):
                   a dictionary if the response is valid JSON.
         """
         ...
-    
-
-

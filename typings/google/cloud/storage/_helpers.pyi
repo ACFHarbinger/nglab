@@ -18,6 +18,7 @@ _ETAG_MATCH_PARAMETERS = ...
 _GENERATION_MATCH_PARAMETERS = ...
 _NOW = ...
 _UTC = ...
+
 class _PropertyMixin:
     """Abstract mixin for cloud storage classes with associated properties.
 
@@ -30,25 +31,37 @@ class _PropertyMixin:
     :param name: The name of the object. Bucket names must start and end with a
                  number or letter.
     """
-    def __init__(self, name=...) -> None:
-        ...
-    
+
+    def __init__(self, name=...) -> None: ...
     @property
     def path(self):
         """Abstract getter for the object path."""
         ...
-    
+
     @property
     def client(self):
         """Abstract getter for the object client."""
         ...
-    
+
     @property
     def user_project(self):
         """Abstract getter for the object user_project."""
         ...
-    
-    def reload(self, client=..., projection=..., if_etag_match=..., if_etag_not_match=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., retry=..., soft_deleted=...): # -> None:
+
+    def reload(
+        self,
+        client=...,
+        projection=...,
+        if_etag_match=...,
+        if_etag_not_match=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+        soft_deleted=...,
+    ):  # -> None:
         """Reload properties from Cloud Storage.
 
         If :attr:`user_project` is set, bills the API request to that project.
@@ -102,8 +115,18 @@ class _PropertyMixin:
             See: https://cloud.google.com/storage/docs/soft-delete
         """
         ...
-    
-    def patch(self, client=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., retry=..., override_unlocked_retention=...): # -> None:
+
+    def patch(
+        self,
+        client=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+        override_unlocked_retention=...,
+    ):  # -> None:
         """Sends all changed properties in a PATCH request.
 
         Updates the ``_properties`` with the response from the backend.
@@ -148,8 +171,18 @@ class _PropertyMixin:
             https://cloud.google.com/storage/docs/json_api/v1/objects/patch
         """
         ...
-    
-    def update(self, client=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., retry=..., override_unlocked_retention=...): # -> None:
+
+    def update(
+        self,
+        client=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+        override_unlocked_retention=...,
+    ):  # -> None:
         """Sends all properties in a PUT request.
 
         Updates the ``_properties`` with the response from the backend.
@@ -194,10 +227,8 @@ class _PropertyMixin:
             https://cloud.google.com/storage/docs/json_api/v1/objects/patch
         """
         ...
-    
 
-
-def generate_random_56_bit_integer(): # -> int:
+def generate_random_56_bit_integer():  # -> int:
     """Generates a secure 56 bit random integer.
 
 
@@ -209,4 +240,3 @@ def generate_random_56_bit_integer(): # -> int:
     :returns: A secure random 56 bit integer.
     """
     ...
-

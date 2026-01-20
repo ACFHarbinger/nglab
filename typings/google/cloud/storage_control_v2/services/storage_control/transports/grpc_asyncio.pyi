@@ -15,11 +15,12 @@ from .base import StorageControlTransport
 
 CLIENT_LOGGING_SUPPORTED = ...
 _LOGGER = ...
-class _LoggingClientAIOInterceptor(grpc.aio.UnaryUnaryClientInterceptor):
-    async def intercept_unary_unary(self, continuation, client_call_details, request): # -> UnaryUnaryCall[Any, Any]:
-        ...
-    
 
+class _LoggingClientAIOInterceptor(grpc.aio.UnaryUnaryClientInterceptor):
+    async def intercept_unary_unary(
+        self, continuation, client_call_details, request
+    ):  # -> UnaryUnaryCall[Any, Any]:
+        ...
 
 class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
     """gRPC AsyncIO backend transport for StorageControl.
@@ -34,10 +35,19 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
     It sends protocol buffers over the wire using gRPC (which is built on
     top of HTTP/2); the ``grpcio`` package must be installed.
     """
+
     _grpc_channel: aio.Channel
     _stubs: Dict[str, Callable] = ...
     @classmethod
-    def create_channel(cls, host: str = ..., credentials: Optional[ga_credentials.Credentials] = ..., credentials_file: Optional[str] = ..., scopes: Optional[Sequence[str]] = ..., quota_project_id: Optional[str] = ..., **kwargs) -> aio.Channel:
+    def create_channel(
+        cls,
+        host: str = ...,
+        credentials: Optional[ga_credentials.Credentials] = ...,
+        credentials_file: Optional[str] = ...,
+        scopes: Optional[Sequence[str]] = ...,
+        quota_project_id: Optional[str] = ...,
+        **kwargs,
+    ) -> aio.Channel:
         """Create and return a gRPC AsyncIO channel object.
         Args:
             host (Optional[str]): The host for the channel to use.
@@ -60,8 +70,24 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
             aio.Channel: A gRPC AsyncIO channel object.
         """
         ...
-    
-    def __init__(self, *, host: str = ..., credentials: Optional[ga_credentials.Credentials] = ..., credentials_file: Optional[str] = ..., scopes: Optional[Sequence[str]] = ..., channel: Optional[Union[aio.Channel, Callable[..., aio.Channel]]] = ..., api_mtls_endpoint: Optional[str] = ..., client_cert_source: Optional[Callable[[], Tuple[bytes, bytes]]] = ..., ssl_channel_credentials: Optional[grpc.ChannelCredentials] = ..., client_cert_source_for_mtls: Optional[Callable[[], Tuple[bytes, bytes]]] = ..., quota_project_id: Optional[str] = ..., client_info: gapic_v1.client_info.ClientInfo = ..., always_use_jwt_access: Optional[bool] = ..., api_audience: Optional[str] = ...) -> None:
+
+    def __init__(
+        self,
+        *,
+        host: str = ...,
+        credentials: Optional[ga_credentials.Credentials] = ...,
+        credentials_file: Optional[str] = ...,
+        scopes: Optional[Sequence[str]] = ...,
+        channel: Optional[Union[aio.Channel, Callable[..., aio.Channel]]] = ...,
+        api_mtls_endpoint: Optional[str] = ...,
+        client_cert_source: Optional[Callable[[], Tuple[bytes, bytes]]] = ...,
+        ssl_channel_credentials: Optional[grpc.ChannelCredentials] = ...,
+        client_cert_source_for_mtls: Optional[Callable[[], Tuple[bytes, bytes]]] = ...,
+        quota_project_id: Optional[str] = ...,
+        client_info: gapic_v1.client_info.ClientInfo = ...,
+        always_use_jwt_access: Optional[bool] = ...,
+        api_audience: Optional[str] = ...,
+    ) -> None:
         """Instantiate the transport.
 
         Args:
@@ -116,7 +142,7 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
               and ``credentials_file`` are passed.
         """
         ...
-    
+
     @property
     def grpc_channel(self) -> aio.Channel:
         """Create the channel designed to connect to this service.
@@ -125,7 +151,7 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         the same channel.
         """
         ...
-    
+
     @property
     def operations_client(self) -> operations_v1.OperationsAsyncClient:
         """Create the client designed to process long-running operations.
@@ -134,9 +160,13 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
         client.
         """
         ...
-    
+
     @property
-    def create_folder(self) -> Callable[[storage_control.CreateFolderRequest], Awaitable[storage_control.Folder]]:
+    def create_folder(
+        self,
+    ) -> Callable[
+        [storage_control.CreateFolderRequest], Awaitable[storage_control.Folder]
+    ]:
         r"""Return a callable for the create folder method over gRPC.
 
         Creates a new folder. This operation is only
@@ -149,9 +179,11 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def delete_folder(self) -> Callable[[storage_control.DeleteFolderRequest], Awaitable[empty_pb2.Empty]]:
+    def delete_folder(
+        self,
+    ) -> Callable[[storage_control.DeleteFolderRequest], Awaitable[empty_pb2.Empty]]:
         r"""Return a callable for the delete folder method over gRPC.
 
         Permanently deletes an empty folder. This operation
@@ -165,9 +197,13 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def get_folder(self) -> Callable[[storage_control.GetFolderRequest], Awaitable[storage_control.Folder]]:
+    def get_folder(
+        self,
+    ) -> Callable[
+        [storage_control.GetFolderRequest], Awaitable[storage_control.Folder]
+    ]:
         r"""Return a callable for the get folder method over gRPC.
 
         Returns metadata for the specified folder. This
@@ -181,9 +217,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def list_folders(self) -> Callable[[storage_control.ListFoldersRequest], Awaitable[storage_control.ListFoldersResponse],]:
+    def list_folders(self) -> Callable[
+        [storage_control.ListFoldersRequest],
+        Awaitable[storage_control.ListFoldersResponse],
+    ]:
         r"""Return a callable for the list folders method over gRPC.
 
         Retrieves a list of folders. This operation is only
@@ -196,9 +235,13 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def rename_folder(self) -> Callable[[storage_control.RenameFolderRequest], Awaitable[operations_pb2.Operation]]:
+    def rename_folder(
+        self,
+    ) -> Callable[
+        [storage_control.RenameFolderRequest], Awaitable[operations_pb2.Operation]
+    ]:
         r"""Return a callable for the rename folder method over gRPC.
 
         Renames a source folder to a destination folder. This
@@ -214,9 +257,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def get_storage_layout(self) -> Callable[[storage_control.GetStorageLayoutRequest], Awaitable[storage_control.StorageLayout],]:
+    def get_storage_layout(self) -> Callable[
+        [storage_control.GetStorageLayoutRequest],
+        Awaitable[storage_control.StorageLayout],
+    ]:
         r"""Return a callable for the get storage layout method over gRPC.
 
         Returns the storage layout configuration for a given
@@ -229,9 +275,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def create_managed_folder(self) -> Callable[[storage_control.CreateManagedFolderRequest], Awaitable[storage_control.ManagedFolder],]:
+    def create_managed_folder(self) -> Callable[
+        [storage_control.CreateManagedFolderRequest],
+        Awaitable[storage_control.ManagedFolder],
+    ]:
         r"""Return a callable for the create managed folder method over gRPC.
 
         Creates a new managed folder.
@@ -243,9 +292,13 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def delete_managed_folder(self) -> Callable[[storage_control.DeleteManagedFolderRequest], Awaitable[empty_pb2.Empty]]:
+    def delete_managed_folder(
+        self,
+    ) -> Callable[
+        [storage_control.DeleteManagedFolderRequest], Awaitable[empty_pb2.Empty]
+    ]:
         r"""Return a callable for the delete managed folder method over gRPC.
 
         Permanently deletes an empty managed folder.
@@ -257,9 +310,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def get_managed_folder(self) -> Callable[[storage_control.GetManagedFolderRequest], Awaitable[storage_control.ManagedFolder],]:
+    def get_managed_folder(self) -> Callable[
+        [storage_control.GetManagedFolderRequest],
+        Awaitable[storage_control.ManagedFolder],
+    ]:
         r"""Return a callable for the get managed folder method over gRPC.
 
         Returns metadata for the specified managed folder.
@@ -271,9 +327,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def list_managed_folders(self) -> Callable[[storage_control.ListManagedFoldersRequest], Awaitable[storage_control.ListManagedFoldersResponse],]:
+    def list_managed_folders(self) -> Callable[
+        [storage_control.ListManagedFoldersRequest],
+        Awaitable[storage_control.ListManagedFoldersResponse],
+    ]:
         r"""Return a callable for the list managed folders method over gRPC.
 
         Retrieves a list of managed folders for a given
@@ -286,9 +345,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def create_anywhere_cache(self) -> Callable[[storage_control.CreateAnywhereCacheRequest], Awaitable[operations_pb2.Operation],]:
+    def create_anywhere_cache(self) -> Callable[
+        [storage_control.CreateAnywhereCacheRequest],
+        Awaitable[operations_pb2.Operation],
+    ]:
         r"""Return a callable for the create anywhere cache method over gRPC.
 
         Creates an Anywhere Cache instance.
@@ -300,9 +362,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def update_anywhere_cache(self) -> Callable[[storage_control.UpdateAnywhereCacheRequest], Awaitable[operations_pb2.Operation],]:
+    def update_anywhere_cache(self) -> Callable[
+        [storage_control.UpdateAnywhereCacheRequest],
+        Awaitable[operations_pb2.Operation],
+    ]:
         r"""Return a callable for the update anywhere cache method over gRPC.
 
         Updates an Anywhere Cache instance. Mutable fields include
@@ -315,9 +380,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def disable_anywhere_cache(self) -> Callable[[storage_control.DisableAnywhereCacheRequest], Awaitable[storage_control.AnywhereCache],]:
+    def disable_anywhere_cache(self) -> Callable[
+        [storage_control.DisableAnywhereCacheRequest],
+        Awaitable[storage_control.AnywhereCache],
+    ]:
         r"""Return a callable for the disable anywhere cache method over gRPC.
 
         Disables an Anywhere Cache instance. A disabled
@@ -333,9 +401,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def pause_anywhere_cache(self) -> Callable[[storage_control.PauseAnywhereCacheRequest], Awaitable[storage_control.AnywhereCache],]:
+    def pause_anywhere_cache(self) -> Callable[
+        [storage_control.PauseAnywhereCacheRequest],
+        Awaitable[storage_control.AnywhereCache],
+    ]:
         r"""Return a callable for the pause anywhere cache method over gRPC.
 
         Pauses an Anywhere Cache instance.
@@ -347,9 +418,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def resume_anywhere_cache(self) -> Callable[[storage_control.ResumeAnywhereCacheRequest], Awaitable[storage_control.AnywhereCache],]:
+    def resume_anywhere_cache(self) -> Callable[
+        [storage_control.ResumeAnywhereCacheRequest],
+        Awaitable[storage_control.AnywhereCache],
+    ]:
         r"""Return a callable for the resume anywhere cache method over gRPC.
 
         Resumes a disabled or paused Anywhere Cache instance.
@@ -361,9 +435,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def get_anywhere_cache(self) -> Callable[[storage_control.GetAnywhereCacheRequest], Awaitable[storage_control.AnywhereCache],]:
+    def get_anywhere_cache(self) -> Callable[
+        [storage_control.GetAnywhereCacheRequest],
+        Awaitable[storage_control.AnywhereCache],
+    ]:
         r"""Return a callable for the get anywhere cache method over gRPC.
 
         Gets an Anywhere Cache instance.
@@ -375,9 +452,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def list_anywhere_caches(self) -> Callable[[storage_control.ListAnywhereCachesRequest], Awaitable[storage_control.ListAnywhereCachesResponse],]:
+    def list_anywhere_caches(self) -> Callable[
+        [storage_control.ListAnywhereCachesRequest],
+        Awaitable[storage_control.ListAnywhereCachesResponse],
+    ]:
         r"""Return a callable for the list anywhere caches method over gRPC.
 
         Lists Anywhere Cache instances for a given bucket.
@@ -389,9 +469,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def get_project_intelligence_config(self) -> Callable[[storage_control.GetProjectIntelligenceConfigRequest], Awaitable[storage_control.IntelligenceConfig],]:
+    def get_project_intelligence_config(self) -> Callable[
+        [storage_control.GetProjectIntelligenceConfigRequest],
+        Awaitable[storage_control.IntelligenceConfig],
+    ]:
         r"""Return a callable for the get project intelligence
         config method over gRPC.
 
@@ -405,9 +488,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def update_project_intelligence_config(self) -> Callable[[storage_control.UpdateProjectIntelligenceConfigRequest], Awaitable[storage_control.IntelligenceConfig],]:
+    def update_project_intelligence_config(self) -> Callable[
+        [storage_control.UpdateProjectIntelligenceConfigRequest],
+        Awaitable[storage_control.IntelligenceConfig],
+    ]:
         r"""Return a callable for the update project intelligence
         config method over gRPC.
 
@@ -421,9 +507,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def get_folder_intelligence_config(self) -> Callable[[storage_control.GetFolderIntelligenceConfigRequest], Awaitable[storage_control.IntelligenceConfig],]:
+    def get_folder_intelligence_config(self) -> Callable[
+        [storage_control.GetFolderIntelligenceConfigRequest],
+        Awaitable[storage_control.IntelligenceConfig],
+    ]:
         r"""Return a callable for the get folder intelligence config method over gRPC.
 
         Returns the Folder scoped singleton
@@ -436,9 +525,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def update_folder_intelligence_config(self) -> Callable[[storage_control.UpdateFolderIntelligenceConfigRequest], Awaitable[storage_control.IntelligenceConfig],]:
+    def update_folder_intelligence_config(self) -> Callable[
+        [storage_control.UpdateFolderIntelligenceConfigRequest],
+        Awaitable[storage_control.IntelligenceConfig],
+    ]:
         r"""Return a callable for the update folder intelligence
         config method over gRPC.
 
@@ -452,9 +544,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def get_organization_intelligence_config(self) -> Callable[[storage_control.GetOrganizationIntelligenceConfigRequest], Awaitable[storage_control.IntelligenceConfig],]:
+    def get_organization_intelligence_config(self) -> Callable[
+        [storage_control.GetOrganizationIntelligenceConfigRequest],
+        Awaitable[storage_control.IntelligenceConfig],
+    ]:
         r"""Return a callable for the get organization intelligence
         config method over gRPC.
 
@@ -468,9 +563,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def update_organization_intelligence_config(self) -> Callable[[storage_control.UpdateOrganizationIntelligenceConfigRequest], Awaitable[storage_control.IntelligenceConfig],]:
+    def update_organization_intelligence_config(self) -> Callable[
+        [storage_control.UpdateOrganizationIntelligenceConfigRequest],
+        Awaitable[storage_control.IntelligenceConfig],
+    ]:
         r"""Return a callable for the update organization
         intelligence config method over gRPC.
 
@@ -484,9 +582,11 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def get_iam_policy(self) -> Callable[[iam_policy_pb2.GetIamPolicyRequest], Awaitable[policy_pb2.Policy]]:
+    def get_iam_policy(
+        self,
+    ) -> Callable[[iam_policy_pb2.GetIamPolicyRequest], Awaitable[policy_pb2.Policy]]:
         r"""Return a callable for the get iam policy method over gRPC.
 
         Gets the IAM policy for a specified bucket. The ``resource``
@@ -502,9 +602,11 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def set_iam_policy(self) -> Callable[[iam_policy_pb2.SetIamPolicyRequest], Awaitable[policy_pb2.Policy]]:
+    def set_iam_policy(
+        self,
+    ) -> Callable[[iam_policy_pb2.SetIamPolicyRequest], Awaitable[policy_pb2.Policy]]:
         r"""Return a callable for the set iam policy method over gRPC.
 
         Updates an IAM policy for the specified bucket. The ``resource``
@@ -520,9 +622,12 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
+
     @property
-    def test_iam_permissions(self) -> Callable[[iam_policy_pb2.TestIamPermissionsRequest], Awaitable[iam_policy_pb2.TestIamPermissionsResponse],]:
+    def test_iam_permissions(self) -> Callable[
+        [iam_policy_pb2.TestIamPermissionsRequest],
+        Awaitable[iam_policy_pb2.TestIamPermissionsResponse],
+    ]:
         r"""Return a callable for the test iam permissions method over gRPC.
 
         Tests a set of permissions on the given bucket, object, or
@@ -541,14 +646,11 @@ class StorageControlGrpcAsyncIOTransport(StorageControlTransport):
                 on the server.
         """
         ...
-    
-    def close(self): # -> CoroutineType[Any, Any, None]:
+
+    def close(self):  # -> CoroutineType[Any, Any, None]:
         ...
-    
+
     @property
-    def kind(self) -> str:
-        ...
-    
+    def kind(self) -> str: ...
 
-
-__all__ = ("StorageControlGrpcAsyncIOTransport", )
+__all__ = ("StorageControlGrpcAsyncIOTransport",)

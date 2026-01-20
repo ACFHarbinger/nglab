@@ -7,11 +7,5 @@ from google.oauth2.webauthn_handler import WebAuthnHandler
 
 class WebauthnHandlerFactory:
     handlers: List[WebAuthnHandler]
-    def __init__(self) -> None:
-        ...
-    
-    def get_handler(self) -> Optional[WebAuthnHandler]:
-        ...
-    
-
-
+    def __init__(self) -> None: ...
+    def get_handler(self) -> Optional[WebAuthnHandler]: ...

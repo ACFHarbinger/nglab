@@ -6,32 +6,30 @@ from google.auth import transport
 
 """Transport adapter for http.client, for internal use only."""
 _LOGGER = ...
+
 class Response(transport.Response):
     """http.client transport response adapter.
 
     Args:
         response (http.client.HTTPResponse): The raw http client response.
     """
-    def __init__(self, response) -> None:
-        ...
-    
-    @property
-    def status(self):
-        ...
-    
-    @property
-    def headers(self): # -> dict[Any, Any]:
-        ...
-    
-    @property
-    def data(self):
-        ...
-    
 
+    def __init__(self, response) -> None: ...
+    @property
+    def status(self): ...
+    @property
+    def headers(self):  # -> dict[Any, Any]:
+        ...
+
+    @property
+    def data(self): ...
 
 class Request(transport.Request):
     """http.client transport request adapter."""
-    def __call__(self, url, method=..., body=..., headers=..., timeout=..., **kwargs): # -> Response:
+
+    def __call__(
+        self, url, method=..., body=..., headers=..., timeout=..., **kwargs
+    ):  # -> Response:
         """Make an HTTP request using http.client.
 
         Args:
@@ -53,6 +51,3 @@ class Request(transport.Request):
             google.auth.exceptions.TransportError: If any exception occurred.
         """
         ...
-    
-
-

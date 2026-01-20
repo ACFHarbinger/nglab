@@ -34,6 +34,7 @@ _MPU_PART_QUERY_TEMPLATE = ...
 _S3_COMPAT_XML_NAMESPACE = ...
 _UPLOAD_ID_NODE = ...
 _MPU_FINAL_QUERY_TEMPLATE = ...
+
 class UploadBase:
     """Base class for upload helpers.
 
@@ -55,15 +56,12 @@ class UploadBase:
     Attributes:
         upload_url (str): The URL where the content will be uploaded.
     """
-    def __init__(self, upload_url, headers=..., retry=...) -> None:
-        ...
-    
+
+    def __init__(self, upload_url, headers=..., retry=...) -> None: ...
     @property
-    def finished(self): # -> bool:
+    def finished(self):  # -> bool:
         """bool: Flag indicating if the upload has completed."""
         ...
-    
-
 
 class SimpleUpload(UploadBase):
     """Upload a resource to a Google API.
@@ -87,6 +85,7 @@ class SimpleUpload(UploadBase):
     Attributes:
         upload_url (str): The URL where the content will be uploaded.
     """
+
     def transmit(self, transport, data, content_type, timeout=...):
         """Transmit the resource to be uploaded.
 
@@ -108,8 +107,6 @@ class SimpleUpload(UploadBase):
             NotImplementedError: Always, since virtual.
         """
         ...
-    
-
 
 class MultipartUpload(UploadBase):
     """Upload a resource with metadata to a Google API.
@@ -140,9 +137,8 @@ class MultipartUpload(UploadBase):
     Attributes:
         upload_url (str): The URL where the content will be uploaded.
     """
-    def __init__(self, upload_url, headers=..., checksum=..., retry=...) -> None:
-        ...
-    
+
+    def __init__(self, upload_url, headers=..., checksum=..., retry=...) -> None: ...
     def transmit(self, transport, data, metadata, content_type, timeout=...):
         """Transmit the resource to be uploaded.
 
@@ -166,8 +162,6 @@ class MultipartUpload(UploadBase):
             NotImplementedError: Always, since virtual.
         """
         ...
-    
-
 
 class ResumableUpload(UploadBase):
     """Initiate and fulfill a resumable upload to a Google API.
@@ -206,35 +200,36 @@ class ResumableUpload(UploadBase):
         ValueError: If ``chunk_size`` is not a multiple of
             :data:`.UPLOAD_CHUNK_SIZE`.
     """
-    def __init__(self, upload_url, chunk_size, checksum=..., headers=..., retry=...) -> None:
-        ...
-    
+
+    def __init__(
+        self, upload_url, chunk_size, checksum=..., headers=..., retry=...
+    ) -> None: ...
     @property
-    def invalid(self): # -> bool:
+    def invalid(self):  # -> bool:
         """bool: Indicates if the upload is in an invalid state.
 
         This will occur if a call to :meth:`transmit_next_chunk` fails.
         To recover from such a failure, call :meth:`recover`.
         """
         ...
-    
+
     @property
-    def chunk_size(self): # -> Any:
+    def chunk_size(self):  # -> Any:
         """int: The size of each chunk used to upload the resource."""
         ...
-    
+
     @property
-    def resumable_url(self): # -> None:
+    def resumable_url(self):  # -> None:
         """Optional[str]: The URL of the in-progress resumable upload."""
         ...
-    
+
     @property
-    def bytes_uploaded(self): # -> int:
+    def bytes_uploaded(self):  # -> int:
         """int: Number of bytes that have been uploaded."""
         ...
-    
+
     @property
-    def total_bytes(self): # -> None:
+    def total_bytes(self):  # -> None:
         """Optional[int]: The total number of bytes to be uploaded.
 
         If this upload is initiated (via :meth:`initiate`) with
@@ -246,8 +241,17 @@ class ResumableUpload(UploadBase):
         determined from the stream.
         """
         ...
-    
-    def initiate(self, transport, stream, metadata, content_type, total_bytes=..., stream_final=..., timeout=...):
+
+    def initiate(
+        self,
+        transport,
+        stream,
+        metadata,
+        content_type,
+        total_bytes=...,
+        stream_final=...,
+        timeout=...,
+    ):
         """Initiate a resumable upload.
 
         By default, this method assumes your ``stream`` is in a "final"
@@ -290,7 +294,7 @@ class ResumableUpload(UploadBase):
             NotImplementedError: Always, since virtual.
         """
         ...
-    
+
     def transmit_next_chunk(self, transport, timeout=...):
         """Transmit the next chunk of the resource to be uploaded.
 
@@ -314,7 +318,7 @@ class ResumableUpload(UploadBase):
             NotImplementedError: Always, since virtual.
         """
         ...
-    
+
     def recover(self, transport):
         """Recover from a failure.
 
@@ -333,8 +337,6 @@ class ResumableUpload(UploadBase):
             NotImplementedError: Always, since virtual.
         """
         ...
-    
-
 
 class XMLMPUContainer(UploadBase):
     """Initiate and close an upload using the XML MPU API.
@@ -376,14 +378,15 @@ class XMLMPUContainer(UploadBase):
         upload_id (Optional(str)): The ID of the upload from the initialization
             response.
     """
-    def __init__(self, upload_url, filename, headers=..., upload_id=..., retry=...) -> None:
-        ...
-    
+
+    def __init__(
+        self, upload_url, filename, headers=..., upload_id=..., retry=...
+    ) -> None: ...
     @property
-    def upload_id(self): # -> str | None:
+    def upload_id(self):  # -> str | None:
         ...
-    
-    def register_part(self, part_number, etag): # -> None:
+
+    def register_part(self, part_number, etag):  # -> None:
         """Register an uploaded part by part number and corresponding etag.
 
         XMLMPUPart objects represent individual parts, and their part number
@@ -401,7 +404,7 @@ class XMLMPUContainer(UploadBase):
             etag (str): The etag included in the server response after upload.
         """
         ...
-    
+
     def initiate(self, transport, content_type, timeout=...):
         """Initiate an MPU and record the upload ID.
 
@@ -422,7 +425,7 @@ class XMLMPUContainer(UploadBase):
             NotImplementedError: Always, since virtual.
         """
         ...
-    
+
     def finalize(self, transport, timeout=...):
         """Finalize an MPU request with all the parts.
 
@@ -441,7 +444,7 @@ class XMLMPUContainer(UploadBase):
             NotImplementedError: Always, since virtual.
         """
         ...
-    
+
     def cancel(self, transport, timeout=...):
         """Cancel an MPU request and permanently delete any uploaded parts.
 
@@ -462,8 +465,6 @@ class XMLMPUContainer(UploadBase):
             NotImplementedError: Always, since virtual.
         """
         ...
-    
-
 
 class XMLMPUPart(UploadBase):
     """Upload a single part of an existing XML MPU container.
@@ -518,33 +519,43 @@ class XMLMPUPart(UploadBase):
             sequential order when the container is finalized.
         etag (Optional(str)): The etag returned by the service after upload.
     """
-    def __init__(self, upload_url, upload_id, filename, start, end, part_number, headers=..., checksum=..., retry=...) -> None:
-        ...
-    
+
+    def __init__(
+        self,
+        upload_url,
+        upload_id,
+        filename,
+        start,
+        end,
+        part_number,
+        headers=...,
+        checksum=...,
+        retry=...,
+    ) -> None: ...
     @property
-    def part_number(self): # -> Any:
+    def part_number(self):  # -> Any:
         ...
-    
+
     @property
-    def upload_id(self): # -> Any:
+    def upload_id(self):  # -> Any:
         ...
-    
+
     @property
-    def filename(self): # -> Any:
+    def filename(self):  # -> Any:
         ...
-    
+
     @property
-    def etag(self): # -> None:
+    def etag(self):  # -> None:
         ...
-    
+
     @property
-    def start(self): # -> Any:
+    def start(self):  # -> Any:
         ...
-    
+
     @property
-    def end(self): # -> Any:
+    def end(self):  # -> Any:
         ...
-    
+
     def upload(self, transport, timeout=...):
         """Upload the part.
 
@@ -563,10 +574,8 @@ class XMLMPUPart(UploadBase):
             NotImplementedError: Always, since virtual.
         """
         ...
-    
 
-
-def get_boundary(): # -> bytes:
+def get_boundary():  # -> bytes:
     """Get a random boundary for a multipart request.
 
     Returns:
@@ -574,7 +583,7 @@ def get_boundary(): # -> bytes:
     """
     ...
 
-def construct_multipart_request(data, metadata, content_type): # -> tuple[Any, bytes]:
+def construct_multipart_request(data, metadata, content_type):  # -> tuple[Any, bytes]:
     """Construct a multipart request body.
 
     Args:
@@ -602,7 +611,7 @@ def get_total_bytes(stream):
     """
     ...
 
-def get_next_chunk(stream, chunk_size, total_bytes): # -> tuple[Any, Any, str]:
+def get_next_chunk(stream, chunk_size, total_bytes):  # -> tuple[Any, Any, str]:
     """Get a chunk from an I/O stream.
 
     The ``stream`` may have fewer bytes remaining than ``chunk_size``
@@ -631,7 +640,7 @@ def get_next_chunk(stream, chunk_size, total_bytes): # -> tuple[Any, Any, str]:
     """
     ...
 
-def get_content_range(start_byte, end_byte, total_bytes): # -> str:
+def get_content_range(start_byte, end_byte, total_bytes):  # -> str:
     """Convert start, end and total into content range header.
 
     If ``total_bytes`` is not known, uses "bytes {start}-{end}/*".
@@ -651,4 +660,3 @@ def get_content_range(start_byte, end_byte, total_bytes): # -> str:
         str: The content range header.
     """
     ...
-

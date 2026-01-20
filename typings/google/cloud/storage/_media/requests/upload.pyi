@@ -10,6 +10,7 @@ from google.cloud.storage._media.requests import _request_helpers
 Also supported here are simple (media) uploads and multipart
 uploads that contain both metadata and a small file as payload.
 """
+
 class SimpleUpload(_request_helpers.RequestsMixin, _upload.SimpleUpload):
     """Upload a resource to a Google API.
 
@@ -24,6 +25,7 @@ class SimpleUpload(_request_helpers.RequestsMixin, _upload.SimpleUpload):
     Attributes:
         upload_url (str): The URL where the content will be uploaded.
     """
+
     def transmit(self, transport, data, content_type, timeout=...):
         """Transmit the resource to be uploaded.
 
@@ -45,8 +47,6 @@ class SimpleUpload(_request_helpers.RequestsMixin, _upload.SimpleUpload):
             ~requests.Response: The HTTP response returned by ``transport``.
         """
         ...
-    
-
 
 class MultipartUpload(_request_helpers.RequestsMixin, _upload.MultipartUpload):
     """Upload a resource with metadata to a Google API.
@@ -77,6 +77,7 @@ class MultipartUpload(_request_helpers.RequestsMixin, _upload.MultipartUpload):
     Attributes:
         upload_url (str): The URL where the content will be uploaded.
     """
+
     def transmit(self, transport, data, metadata, content_type, timeout=...):
         """Transmit the resource to be uploaded.
 
@@ -100,8 +101,6 @@ class MultipartUpload(_request_helpers.RequestsMixin, _upload.MultipartUpload):
             ~requests.Response: The HTTP response returned by ``transport``.
         """
         ...
-    
-
 
 class ResumableUpload(_request_helpers.RequestsMixin, _upload.ResumableUpload):
     """Initiate and fulfill a resumable upload to a Google API.
@@ -301,7 +300,17 @@ class ResumableUpload(_request_helpers.RequestsMixin, _upload.ResumableUpload):
         ValueError: If ``chunk_size`` is not a multiple of
             :data:`.UPLOAD_CHUNK_SIZE`.
     """
-    def initiate(self, transport, stream, metadata, content_type, total_bytes=..., stream_final=..., timeout=...):
+
+    def initiate(
+        self,
+        transport,
+        stream,
+        metadata,
+        content_type,
+        total_bytes=...,
+        stream_final=...,
+        timeout=...,
+    ):
         """Initiate a resumable upload.
 
         By default, this method assumes your ``stream`` is in a "final"
@@ -344,7 +353,7 @@ class ResumableUpload(_request_helpers.RequestsMixin, _upload.ResumableUpload):
             ~requests.Response: The HTTP response returned by ``transport``.
         """
         ...
-    
+
     def transmit_next_chunk(self, transport, timeout=...):
         """Transmit the next chunk of the resource to be uploaded.
 
@@ -418,7 +427,7 @@ class ResumableUpload(_request_helpers.RequestsMixin, _upload.ResumableUpload):
                 does not match or is not available.
         """
         ...
-    
+
     def recover(self, transport):
         """Recover from a failure and check the status of the current upload.
 
@@ -438,8 +447,6 @@ class ResumableUpload(_request_helpers.RequestsMixin, _upload.ResumableUpload):
             ~requests.Response: The HTTP response returned by ``transport``.
         """
         ...
-    
-
 
 class XMLMPUContainer(_request_helpers.RequestsMixin, _upload.XMLMPUContainer):
     """Initiate and close an upload using the XML MPU API.
@@ -482,6 +489,7 @@ class XMLMPUContainer(_request_helpers.RequestsMixin, _upload.XMLMPUContainer):
         upload_id (Optional(int)): The ID of the upload from the initialization
             response.
     """
+
     def initiate(self, transport, content_type, timeout=...):
         """Initiate an MPU and record the upload ID.
 
@@ -502,7 +510,7 @@ class XMLMPUContainer(_request_helpers.RequestsMixin, _upload.XMLMPUContainer):
             ~requests.Response: The HTTP response returned by ``transport``.
         """
         ...
-    
+
     def finalize(self, transport, timeout=...):
         """Finalize an MPU request with all the parts.
 
@@ -521,7 +529,7 @@ class XMLMPUContainer(_request_helpers.RequestsMixin, _upload.XMLMPUContainer):
             ~requests.Response: The HTTP response returned by ``transport``.
         """
         ...
-    
+
     def cancel(self, transport, timeout=...):
         """Cancel an MPU request and permanently delete any uploaded parts.
 
@@ -542,8 +550,6 @@ class XMLMPUContainer(_request_helpers.RequestsMixin, _upload.XMLMPUContainer):
             ~requests.Response: The HTTP response returned by ``transport``.
         """
         ...
-    
-
 
 class XMLMPUPart(_request_helpers.RequestsMixin, _upload.XMLMPUPart):
     def upload(self, transport, timeout=...):
@@ -564,6 +570,3 @@ class XMLMPUPart(_request_helpers.RequestsMixin, _upload.XMLMPUPart):
             ~requests.Response: The HTTP response returned by ``transport``.
         """
         ...
-    
-
-

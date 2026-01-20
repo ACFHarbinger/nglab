@@ -16,6 +16,7 @@ _IAM_ENDPOINT = ...
 _IAM_SIGN_ENDPOINT = ...
 _IAM_SIGNJWT_ENDPOINT = ...
 _IAM_IDTOKEN_ENDPOINT = ...
+
 class Signer(crypt.Signer):
     """Signs messages using the IAM `signBlob API`_.
 
@@ -26,6 +27,7 @@ class Signer(crypt.Signer):
         https://cloud.google.com/iam/reference/rest/v1/projects.serviceAccounts
         /signBlob
     """
+
     def __init__(self, request, credentials, service_account_email) -> None:
         """
         Args:
@@ -43,9 +45,9 @@ class Signer(crypt.Signer):
                 credentials.
         """
         ...
-    
+
     @property
-    def key_id(self): # -> None:
+    def key_id(self):  # -> None:
         """Optional[str]: The key ID used to identify this private key.
 
         .. warning::
@@ -53,10 +55,7 @@ class Signer(crypt.Signer):
            be reliably determined ahead of time.
         """
         ...
-    
+
     @_helpers.copy_docstring(crypt.Signer)
-    def sign(self, message): # -> bytes:
+    def sign(self, message):  # -> bytes:
         ...
-    
-
-

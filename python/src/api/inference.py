@@ -36,8 +36,10 @@ tracer = trace.get_tracer(__name__)
 
 # Ray Serve Imports
 import os
+
 try:
     from ray import serve as ray_serve
+
     RAY_AVAILABLE = True
 except ImportError:
     ray_serve = None
@@ -213,6 +215,7 @@ def get_model(model_path: Optional[str] = None) -> torch.nn.Module:
 # Ray Serve Deployment
 # =============================================================================
 
+
 class RayModelDeployment:
     def __init__(self) -> None:
         # Load model on init to warm up the actor
@@ -221,11 +224,15 @@ class RayModelDeployment:
     async def __call__(self, request: PredictionRequest) -> List[List[float]]:
         return await batch_handler.predict(request)
 
+
 if RAY_AVAILABLE and ray_serve is not None:
-    RayModelDeployment = ray_serve.deployment( # type: ignore
+    RayModelDeployment = ray_serve.deployment(  # type: ignore
         name="nglab-prediction",
         num_replicas=int(os.getenv("NGLAB_API_REPLICAS", "2")),
-        ray_actor_options={"num_cpus": 1, "num_gpus": 0.5 if torch.cuda.is_available() else 0}
+        ray_actor_options={
+            "num_cpus": 1,
+            "num_gpus": 0.5 if torch.cuda.is_available() else 0,
+        },
     )(RayModelDeployment)
 
 
@@ -233,22 +240,23 @@ if RAY_AVAILABLE and ray_serve is not None:
 # OpenTelemetry Instrumentation
 # =============================================================================
 
+
 def setup_telemetry(app: FastAPI):
-    resource = Resource(attributes={
-        "service.name": "nglab-inference-api"
-    })
-    
+    resource = Resource(attributes={"service.name": "nglab-inference-api"})
+
     # Trace Sampling: 10% sampling rate for production
     sampler = ParentBased(root=TraceIdRatioBased(0.1))
-    
+
     provider = TracerProvider(resource=resource, sampler=sampler)
-    processor = BatchSpanProcessor(OTLPSpanExporter(
-        endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://jaeger:4317"),
-        insecure=True
-    ))
+    processor = BatchSpanProcessor(
+        OTLPSpanExporter(
+            endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://jaeger:4317"),
+            insecure=True,
+        )
+    )
     provider.add_span_processor(processor)
     trace.set_tracer_provider(provider)
-    
+
     FastAPIInstrumentor.instrument_app(app)
 
 

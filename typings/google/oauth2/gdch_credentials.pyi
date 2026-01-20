@@ -10,6 +10,7 @@ TOKEN_EXCHANGE_TYPE = ...
 ACCESS_TOKEN_TOKEN_TYPE = ...
 SERVICE_ACCOUNT_TOKEN_TYPE = ...
 JWT_LIFETIME = ...
+
 class ServiceAccountCredentials(credentials.Credentials):
     """Credentials for GDCH (`Google Distributed Cloud Hosted`_) for service
     account users.
@@ -58,7 +59,10 @@ class ServiceAccountCredentials(credentials.Credentials):
     It then sends the JWT to the `token_uri` to exchange a final token for
     `audience`.
     """
-    def __init__(self, signer, service_identity_name, project, audience, token_uri, ca_cert_path) -> None:
+
+    def __init__(
+        self, signer, service_identity_name, project, audience, token_uri, ca_cert_path
+    ) -> None:
         """
         Args:
             signer (google.auth.crypt.Signer): The signer used to sign JWTs.
@@ -72,21 +76,21 @@ class ServiceAccountCredentials(credentials.Credentials):
                 CA, then this parameter can be `None`.
         """
         ...
-    
+
     @_helpers.copy_docstring(credentials.Credentials)
-    def refresh(self, request): # -> None:
+    def refresh(self, request):  # -> None:
         ...
-    
-    def with_gdch_audience(self, audience): # -> Self:
+
+    def with_gdch_audience(self, audience):  # -> Self:
         """Create a copy of GDCH credentials with the specified audience.
 
         Args:
             audience (str): The intended audience for GDCH credentials.
         """
         ...
-    
+
     @classmethod
-    def from_service_account_info(cls, info): # -> Self:
+    def from_service_account_info(cls, info):  # -> Self:
         """Creates a Credentials instance from parsed service account info.
 
         Args:
@@ -102,9 +106,9 @@ class ServiceAccountCredentials(credentials.Credentials):
             ValueError: If the info is not in the expected format.
         """
         ...
-    
+
     @classmethod
-    def from_service_account_file(cls, filename): # -> Self:
+    def from_service_account_file(cls, filename):  # -> Self:
         """Creates a Credentials instance from a service account json file.
 
         Args:
@@ -116,6 +120,3 @@ class ServiceAccountCredentials(credentials.Credentials):
                 credentials.
         """
         ...
-    
-
-

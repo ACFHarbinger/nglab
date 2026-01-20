@@ -24,6 +24,7 @@ Examples of situations when you might want to use the Batch module:
 ``bucket.patch()``
 ``bucket.update()``
 """
+
 class MIMEApplicationHTTP(MIMEApplication):
     """MIME type for ``application/http``.
 
@@ -42,16 +43,15 @@ class MIMEApplicationHTTP(MIMEApplication):
     :param body: (Optional) HTTP payload
 
     """
-    def __init__(self, method, uri, headers, body) -> None:
-        ...
-    
 
+    def __init__(self, method, uri, headers, body) -> None: ...
 
 class _FutureDict:
     """Class to hold a future value for a deferred request.
 
     Used by for requests that get sent in a :class:`Batch`.
     """
+
     @staticmethod
     def get(key, default=...):
         """Stand-in for dict.get.
@@ -66,7 +66,7 @@ class _FutureDict:
                  as a dictionary.
         """
         ...
-    
+
     def __getitem__(self, key):
         """Stand-in for dict[key].
 
@@ -77,7 +77,7 @@ class _FutureDict:
                  as a dictionary.
         """
         ...
-    
+
     def __setitem__(self, key, value):
         """Stand-in for dict[key] = value.
 
@@ -91,22 +91,17 @@ class _FutureDict:
                  as a dictionary.
         """
         ...
-    
-
 
 class _FutureResponse(requests.Response):
     """Reponse that returns a placeholder dictionary for a batched requests."""
-    def __init__(self, future_dict) -> None:
-        ...
-    
-    def json(self): # -> Any:
-        ...
-    
-    @property
-    def content(self): # -> Any:
-        ...
-    
 
+    def __init__(self, future_dict) -> None: ...
+    def json(self):  # -> Any:
+        ...
+
+    @property
+    def content(self):  # -> Any:
+        ...
 
 class Batch(Connection):
     """Proxy an underlying connection, batching up change operations.
@@ -127,11 +122,10 @@ class Batch(Connection):
         Note that exceptions are unwrapped after all operations are complete
         in success or failure, and only the last exception is raised.
     """
+
     _MAX_BATCH_SIZE = ...
-    def __init__(self, client, raise_exception=...) -> None:
-        ...
-    
-    def finish(self, raise_exception=...): # -> list[Response]:
+    def __init__(self, client, raise_exception=...) -> None: ...
+    def finish(self, raise_exception=...):  # -> list[Response]:
         """Submit a single `multipart/mixed` request with deferred requests.
 
         :type raise_exception: bool
@@ -145,16 +139,13 @@ class Batch(Connection):
         :returns: one ``(headers, payload)`` tuple per deferred request.
         """
         ...
-    
+
     def current(self):
         """Return the topmost batch, or None."""
         ...
-    
-    def __enter__(self): # -> Self:
-        ...
-    
-    def __exit__(self, exc_type, exc_val, exc_tb): # -> None:
-        ...
-    
 
+    def __enter__(self):  # -> Self:
+        ...
 
+    def __exit__(self, exc_type, exc_val, exc_tb):  # -> None:
+        ...

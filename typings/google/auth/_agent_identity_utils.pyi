@@ -13,7 +13,8 @@ _SLOW_POLL_INTERVAL = ...
 _TOTAL_TIMEOUT = ...
 _SLOW_POLL_CYCLES = ...
 _POLLING_INTERVALS = ...
-def get_agent_identity_certificate_path(): # -> Any | LiteralString | None:
+
+def get_agent_identity_certificate_path():  # -> Any | LiteralString | None:
     """Gets the certificate path from the certificate config file.
 
     The path to the certificate config file is read from the
@@ -30,7 +31,7 @@ def get_agent_identity_certificate_path(): # -> Any | LiteralString | None:
     """
     ...
 
-def get_and_parse_agent_identity_certificate(): # -> Certificate | None:
+def get_and_parse_agent_identity_certificate():  # -> Certificate | None:
     """Gets and parses the agent identity certificate if not opted out.
 
     Checks if the user has opted out of certificate-bound tokens. If not,
@@ -41,7 +42,7 @@ def get_and_parse_agent_identity_certificate(): # -> Certificate | None:
     """
     ...
 
-def parse_certificate(cert_bytes): # -> Certificate:
+def parse_certificate(cert_bytes):  # -> Certificate:
     """Parses a PEM-encoded certificate.
 
     Args:
@@ -52,7 +53,7 @@ def parse_certificate(cert_bytes): # -> Certificate:
     """
     ...
 
-def calculate_certificate_fingerprint(cert): # -> str:
+def calculate_certificate_fingerprint(cert):  # -> str:
     """Calculates the URL-encoded, unpadded, base64-encoded SHA256 hash of a
     DER-encoded certificate.
 
@@ -64,7 +65,7 @@ def calculate_certificate_fingerprint(cert): # -> str:
     """
     ...
 
-def should_request_bound_token(cert): # -> bool:
+def should_request_bound_token(cert):  # -> bool:
     """Determines if a bound token should be requested.
 
     This is based on the GOOGLE_API_PREVENT_AGENT_TOKEN_SHARING_FOR_GCP_SERVICES
@@ -78,11 +79,10 @@ def should_request_bound_token(cert): # -> bool:
     """
     ...
 
-def call_client_cert_callback(): # -> tuple[Any | None, Any | None]:
+def call_client_cert_callback():  # -> tuple[Any | None, Any | None]:
     """Calls the client cert callback and returns the certificate and key."""
     ...
 
-def get_cached_cert_fingerprint(cached_cert): # -> str:
+def get_cached_cert_fingerprint(cached_cert):  # -> str:
     """Returns the fingerprint of the cached certificate."""
     ...
-

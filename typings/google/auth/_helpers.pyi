@@ -10,7 +10,8 @@ _BASE_LOGGER_NAME = ...
 _LOGGING_INITIALIZED = ...
 REFRESH_THRESHOLD = ...
 _SENSITIVE_FIELDS = ...
-def copy_docstring(source_class): # -> Callable[..., Any]:
+
+def copy_docstring(source_class):  # -> Callable[..., Any]:
     """Decorator that copies a method's docstring from another class.
 
     Args:
@@ -22,7 +23,7 @@ def copy_docstring(source_class): # -> Callable[..., Any]:
     """
     ...
 
-def parse_content_type(header_value): # -> str:
+def parse_content_type(header_value):  # -> str:
     """Parse a 'content-type' header value to get just the plain media-type (without parameters).
 
     This is done using the class Message from email.message as suggested in PEP 594
@@ -39,7 +40,7 @@ def parse_content_type(header_value): # -> str:
     """
     ...
 
-def utcnow(): # -> datetime:
+def utcnow():  # -> datetime:
     """Returns the current UTC datetime.
 
     Returns:
@@ -47,7 +48,7 @@ def utcnow(): # -> datetime:
     """
     ...
 
-def datetime_to_secs(value): # -> int:
+def datetime_to_secs(value):  # -> int:
     """Convert a datetime object to the number of seconds since the UNIX epoch.
 
     Args:
@@ -58,7 +59,7 @@ def datetime_to_secs(value): # -> int:
     """
     ...
 
-def to_bytes(value, encoding=...): # -> bytes:
+def to_bytes(value, encoding=...):  # -> bytes:
     """Converts a string value to bytes, if necessary.
 
     Args:
@@ -75,7 +76,7 @@ def to_bytes(value, encoding=...): # -> bytes:
     """
     ...
 
-def from_bytes(value): # -> str:
+def from_bytes(value):  # -> str:
     """Converts bytes to a string value, if necessary.
 
     Args:
@@ -117,7 +118,7 @@ def update_query(url, params, remove=...):
     """
     ...
 
-def scopes_to_string(scopes): # -> str:
+def scopes_to_string(scopes):  # -> str:
     """Converts scope value to a string suitable for sending to OAuth 2.0
     authorization servers.
 
@@ -129,7 +130,7 @@ def scopes_to_string(scopes): # -> str:
     """
     ...
 
-def string_to_scopes(scopes): # -> list[Any]:
+def string_to_scopes(scopes):  # -> list[Any]:
     """Converts stringifed scopes value to a list.
 
     Args:
@@ -140,7 +141,7 @@ def string_to_scopes(scopes): # -> list[Any]:
     """
     ...
 
-def padded_urlsafe_b64decode(value): # -> bytes:
+def padded_urlsafe_b64decode(value):  # -> bytes:
     """Decodes base64 strings lacking padding characters.
 
     Google infrastructure tends to omit the base64 padding characters.
@@ -153,7 +154,7 @@ def padded_urlsafe_b64decode(value): # -> bytes:
     """
     ...
 
-def unpadded_urlsafe_b64encode(value): # -> bytes:
+def unpadded_urlsafe_b64encode(value):  # -> bytes:
     """Encodes base64 strings removing any padding characters.
 
     `rfc 7515`_ defines Base64url to NOT include any padding
@@ -169,7 +170,7 @@ def unpadded_urlsafe_b64encode(value): # -> bytes:
     """
     ...
 
-def get_bool_from_env(variable_name, default=...): # -> bool:
+def get_bool_from_env(variable_name, default=...):  # -> bool:
     """Gets a boolean value from an environment variable.
 
     The environment variable is interpreted as a boolean with the following
@@ -192,7 +193,7 @@ def get_bool_from_env(variable_name, default=...): # -> bool:
     """
     ...
 
-def is_python_3(): # -> bool:
+def is_python_3():  # -> bool:
     """Check if the Python interpreter is Python 2 or 3.
 
     Returns:
@@ -212,7 +213,13 @@ def is_logging_enabled(logger: logging.Logger) -> bool:
     """
     ...
 
-def request_log(logger: logging.Logger, method: str, url: str, body: Optional[bytes], headers: Optional[Mapping[str, str]]) -> None:
+def request_log(
+    logger: logging.Logger,
+    method: str,
+    url: str,
+    body: Optional[bytes],
+    headers: Optional[Mapping[str, str]],
+) -> None:
     """
     Logs an HTTP request at the DEBUG level if logging is enabled.
 
@@ -234,4 +241,3 @@ def response_log(logger: logging.Logger, response: Any) -> None:
         response: The HTTP response object to log.
     """
     ...
-

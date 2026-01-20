@@ -24,6 +24,7 @@ _GS_URL_REGEX_PATTERN = ...
 _DEFAULT_CHUNKSIZE = ...
 _MAX_MULTIPART_SIZE = ...
 _logger = ...
+
 class Blob(_PropertyMixin):
     """A wrapper around Cloud Storage's concept of an ``Object``.
 
@@ -58,36 +59,45 @@ class Blob(_PropertyMixin):
     :param generation:
         (Optional) If present, selects a specific revision of this object.
     """
+
     _chunk_size = ...
     _CHUNK_SIZE_MULTIPLE = ...
     STORAGE_CLASSES = ...
-    def __init__(self, name, bucket, chunk_size=..., encryption_key=..., kms_key_name=..., generation=...) -> None:
+    def __init__(
+        self,
+        name,
+        bucket,
+        chunk_size=...,
+        encryption_key=...,
+        kms_key_name=...,
+        generation=...,
+    ) -> None:
         """
         property :attr:`name`
             Get the blob's name.
         """
         ...
-    
+
     @property
-    def bucket(self): # -> Any:
+    def bucket(self):  # -> Any:
         """Bucket which contains the object.
 
         :rtype: :class:`~google.cloud.storage.bucket.Bucket`
         :returns: The object's bucket.
         """
         ...
-    
+
     @property
-    def chunk_size(self): # -> None:
+    def chunk_size(self):  # -> None:
         """Get the blob's default chunk size.
 
         :rtype: int or ``NoneType``
         :returns: The current blob's chunk size, if it is set.
         """
         ...
-    
+
     @chunk_size.setter
-    def chunk_size(self, value): # -> None:
+    def chunk_size(self, value):  # -> None:
         """Set the blob's default chunk size.
 
         :type value: int
@@ -97,9 +107,9 @@ class Blob(_PropertyMixin):
                  multiple of 256 KB.
         """
         ...
-    
+
     @property
-    def encryption_key(self): # -> None:
+    def encryption_key(self):  # -> None:
         """Retrieve the customer-supplied encryption key for the object.
 
         :rtype: bytes or ``NoneType``
@@ -108,9 +118,9 @@ class Blob(_PropertyMixin):
             or the blob's resource has not been loaded from the server.
         """
         ...
-    
+
     @encryption_key.setter
-    def encryption_key(self, value): # -> None:
+    def encryption_key(self, value):  # -> None:
         """Set the blob's encryption key.
 
         See https://cloud.google.com/storage/docs/encryption#customer-supplied
@@ -122,7 +132,7 @@ class Blob(_PropertyMixin):
         :param value: 32 byte encryption key for customer-supplied encryption.
         """
         ...
-    
+
     @staticmethod
     def path_helper(bucket_path, blob_name):
         """Relative URL path for a blob.
@@ -137,15 +147,15 @@ class Blob(_PropertyMixin):
         :returns: The relative URL path for ``blob_name``.
         """
         ...
-    
+
     @property
-    def acl(self): # -> ObjectACL:
+    def acl(self):  # -> ObjectACL:
         """Create our ACL on demand."""
         ...
-    
-    def __repr__(self): # -> str:
+
+    def __repr__(self):  # -> str:
         ...
-    
+
     @property
     def path(self):
         """Getter property for the URL path to this Blob.
@@ -154,12 +164,12 @@ class Blob(_PropertyMixin):
         :returns: The URL path to this Blob.
         """
         ...
-    
+
     @property
     def client(self):
         """The client bound to this blob."""
         ...
-    
+
     @property
     def user_project(self):
         """Project ID billed for API requests made via this blob.
@@ -169,9 +179,9 @@ class Blob(_PropertyMixin):
         :rtype: str
         """
         ...
-    
+
     @property
-    def public_url(self): # -> str:
+    def public_url(self):  # -> str:
         """The public URL for this blob.
 
         Use :meth:`make_public` to enable anonymous access via the returned
@@ -181,9 +191,9 @@ class Blob(_PropertyMixin):
         :returns: The public URL for this blob.
         """
         ...
-    
+
     @classmethod
-    def from_uri(cls, uri, client=...): # -> Self:
+    def from_uri(cls, uri, client=...):  # -> Self:
         """Get a constructor for blob object by URI.
 
         .. code-block:: python
@@ -206,9 +216,9 @@ class Blob(_PropertyMixin):
         :returns: The blob object created.
         """
         ...
-    
+
     @classmethod
-    def from_string(cls, uri, client=...): # -> Blob:
+    def from_string(cls, uri, client=...):  # -> Blob:
         """(Deprecated) Get a constructor for blob object by URI.
 
         .. note::
@@ -234,8 +244,28 @@ class Blob(_PropertyMixin):
         :returns: The blob object created.
         """
         ...
-    
-    def generate_signed_url(self, expiration=..., api_access_endpoint=..., method=..., content_md5=..., content_type=..., response_disposition=..., response_type=..., generation=..., headers=..., query_parameters=..., client=..., credentials=..., version=..., service_account_email=..., access_token=..., virtual_hosted_style=..., bucket_bound_hostname=..., scheme=...): # -> str:
+
+    def generate_signed_url(
+        self,
+        expiration=...,
+        api_access_endpoint=...,
+        method=...,
+        content_md5=...,
+        content_type=...,
+        response_disposition=...,
+        response_type=...,
+        generation=...,
+        headers=...,
+        query_parameters=...,
+        client=...,
+        credentials=...,
+        version=...,
+        service_account_email=...,
+        access_token=...,
+        virtual_hosted_style=...,
+        bucket_bound_hostname=...,
+        scheme=...,
+    ):  # -> str:
         """Generates a signed URL for this blob.
 
         .. note::
@@ -366,8 +396,20 @@ class Blob(_PropertyMixin):
                   until expiration.
         """
         ...
-    
-    def exists(self, client=..., if_etag_match=..., if_etag_not_match=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., retry=..., soft_deleted=...): # -> bool:
+
+    def exists(
+        self,
+        client=...,
+        if_etag_match=...,
+        if_etag_not_match=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+        soft_deleted=...,
+    ):  # -> bool:
         """Determines whether or not this blob exists.
 
         If :attr:`user_project` is set on the bucket, bills the API request
@@ -422,8 +464,17 @@ class Blob(_PropertyMixin):
         :returns: True if the blob exists in Cloud Storage.
         """
         ...
-    
-    def delete(self, client=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., retry=...): # -> None:
+
+    def delete(
+        self,
+        client=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+    ):  # -> None:
         """Deletes a blob from Cloud Storage.
 
         If :attr:`user_project` is set on the bucket, bills the API request
@@ -477,8 +528,25 @@ class Blob(_PropertyMixin):
                  :meth:`google.cloud.storage.bucket.Bucket.delete_blob`).
         """
         ...
-    
-    def download_to_file(self, file_obj, client=..., start=..., end=..., raw_download=..., if_etag_match=..., if_etag_not_match=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., checksum=..., retry=..., single_shot_download=...): # -> None:
+
+    def download_to_file(
+        self,
+        file_obj,
+        client=...,
+        start=...,
+        end=...,
+        raw_download=...,
+        if_etag_match=...,
+        if_etag_not_match=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        checksum=...,
+        retry=...,
+        single_shot_download=...,
+    ):  # -> None:
         """Download the contents of this blob into a file-like object.
 
         .. note::
@@ -582,8 +650,25 @@ class Blob(_PropertyMixin):
         :raises: :class:`google.cloud.exceptions.NotFound`
         """
         ...
-    
-    def download_to_filename(self, filename, client=..., start=..., end=..., raw_download=..., if_etag_match=..., if_etag_not_match=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., checksum=..., retry=..., single_shot_download=...): # -> None:
+
+    def download_to_filename(
+        self,
+        filename,
+        client=...,
+        start=...,
+        end=...,
+        raw_download=...,
+        if_etag_match=...,
+        if_etag_not_match=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        checksum=...,
+        retry=...,
+        single_shot_download=...,
+    ):  # -> None:
         """Download the contents of this blob into a named file.
 
         If :attr:`user_project` is set on the bucket, bills the API request
@@ -677,8 +762,24 @@ class Blob(_PropertyMixin):
         :raises: :class:`google.cloud.exceptions.NotFound`
         """
         ...
-    
-    def download_as_bytes(self, client=..., start=..., end=..., raw_download=..., if_etag_match=..., if_etag_not_match=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., checksum=..., retry=..., single_shot_download=...): # -> bytes:
+
+    def download_as_bytes(
+        self,
+        client=...,
+        start=...,
+        end=...,
+        raw_download=...,
+        if_etag_match=...,
+        if_etag_not_match=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        checksum=...,
+        retry=...,
+        single_shot_download=...,
+    ):  # -> bytes:
         """Download the contents of this blob as a bytes object.
 
         If :attr:`user_project` is set on the bucket, bills the API request
@@ -769,8 +870,23 @@ class Blob(_PropertyMixin):
         :raises: :class:`google.cloud.exceptions.NotFound`
         """
         ...
-    
-    def download_as_string(self, client=..., start=..., end=..., raw_download=..., if_etag_match=..., if_etag_not_match=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., retry=..., single_shot_download=...): # -> bytes:
+
+    def download_as_string(
+        self,
+        client=...,
+        start=...,
+        end=...,
+        raw_download=...,
+        if_etag_match=...,
+        if_etag_not_match=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+        single_shot_download=...,
+    ):  # -> bytes:
         """(Deprecated) Download the contents of this blob as a bytes object.
 
         If :attr:`user_project` is set on the bucket, bills the API request
@@ -852,8 +968,24 @@ class Blob(_PropertyMixin):
         :raises: :class:`google.cloud.exceptions.NotFound`
         """
         ...
-    
-    def download_as_text(self, client=..., start=..., end=..., raw_download=..., encoding=..., if_etag_match=..., if_etag_not_match=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., retry=..., single_shot_download=...): # -> str:
+
+    def download_as_text(
+        self,
+        client=...,
+        start=...,
+        end=...,
+        raw_download=...,
+        encoding=...,
+        if_etag_match=...,
+        if_etag_not_match=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+        single_shot_download=...,
+    ):  # -> str:
         """Download the contents of this blob as text (*not* bytes).
 
         If :attr:`user_project` is set on the bucket, bills the API request
@@ -935,8 +1067,24 @@ class Blob(_PropertyMixin):
         :returns: The data stored in this blob, decoded to text.
         """
         ...
-    
-    def upload_from_file(self, file_obj, rewind=..., size=..., content_type=..., client=..., predefined_acl=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., checksum=..., retry=..., crc32c_checksum_value=...): # -> None:
+
+    def upload_from_file(
+        self,
+        file_obj,
+        rewind=...,
+        size=...,
+        content_type=...,
+        client=...,
+        predefined_acl=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        checksum=...,
+        retry=...,
+        crc32c_checksum_value=...,
+    ):  # -> None:
         """Upload the contents of this blob from a file-like object.
 
         The content type of the upload will be determined in order
@@ -1080,8 +1228,22 @@ class Blob(_PropertyMixin):
                  if the upload response returns an error status.
         """
         ...
-    
-    def upload_from_filename(self, filename, content_type=..., client=..., predefined_acl=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., checksum=..., retry=..., crc32c_checksum_value=...): # -> None:
+
+    def upload_from_filename(
+        self,
+        filename,
+        content_type=...,
+        client=...,
+        predefined_acl=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        checksum=...,
+        retry=...,
+        crc32c_checksum_value=...,
+    ):  # -> None:
         """Upload this blob's contents from the content of a named file.
 
         The content type of the upload will be determined in order
@@ -1209,8 +1371,22 @@ class Blob(_PropertyMixin):
             base64: https://datatracker.ietf.org/doc/html/rfc4648#section-4
         """
         ...
-    
-    def upload_from_string(self, data, content_type=..., client=..., predefined_acl=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., timeout=..., checksum=..., retry=..., crc32c_checksum_value=...): # -> None:
+
+    def upload_from_string(
+        self,
+        data,
+        content_type=...,
+        client=...,
+        predefined_acl=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        timeout=...,
+        checksum=...,
+        retry=...,
+        crc32c_checksum_value=...,
+    ):  # -> None:
         """Upload contents of this blob from the provided string.
 
         .. note::
@@ -1330,8 +1506,22 @@ class Blob(_PropertyMixin):
             base64: https://datatracker.ietf.org/doc/html/rfc4648#section-4
         """
         ...
-    
-    def create_resumable_upload_session(self, content_type=..., size=..., origin=..., client=..., timeout=..., checksum=..., predefined_acl=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., retry=...): # -> None:
+
+    def create_resumable_upload_session(
+        self,
+        content_type=...,
+        size=...,
+        origin=...,
+        client=...,
+        timeout=...,
+        checksum=...,
+        predefined_acl=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        retry=...,
+    ):  # -> None:
         """Create a resumable upload session.
 
         Resumable upload sessions allow you to start an upload session from
@@ -1451,8 +1641,10 @@ class Blob(_PropertyMixin):
                  if the session creation response returns an error status.
         """
         ...
-    
-    def get_iam_policy(self, client=..., requested_policy_version=..., timeout=..., retry=...): # -> Policy:
+
+    def get_iam_policy(
+        self, client=..., requested_policy_version=..., timeout=..., retry=...
+    ):  # -> Policy:
         """Retrieve the IAM policy for the object.
 
         .. note::
@@ -1496,8 +1688,8 @@ class Blob(_PropertyMixin):
                   the ``getIamPolicy`` API request.
         """
         ...
-    
-    def set_iam_policy(self, policy, client=..., timeout=..., retry=...): # -> Policy:
+
+    def set_iam_policy(self, policy, client=..., timeout=..., retry=...):  # -> Policy:
         """Update the IAM policy for the bucket.
 
         .. note::
@@ -1533,7 +1725,7 @@ class Blob(_PropertyMixin):
                   the ``setIamPolicy`` API request.
         """
         ...
-    
+
     def test_iam_permissions(self, permissions, client=..., timeout=..., retry=...):
         """API call:  test permissions
 
@@ -1570,8 +1762,17 @@ class Blob(_PropertyMixin):
                   request.
         """
         ...
-    
-    def make_public(self, client=..., timeout=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., retry=...): # -> None:
+
+    def make_public(
+        self,
+        client=...,
+        timeout=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        retry=...,
+    ):  # -> None:
         """Update blob's ACL, granting read access to anonymous users.
 
         :type client: :class:`~google.cloud.storage.client.Client` or
@@ -1605,8 +1806,17 @@ class Blob(_PropertyMixin):
             (Optional) How to retry the RPC. See: :ref:`configuring_retries`
         """
         ...
-    
-    def make_private(self, client=..., timeout=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., retry=...): # -> None:
+
+    def make_private(
+        self,
+        client=...,
+        timeout=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        retry=...,
+    ):  # -> None:
         """Update blob's ACL, revoking read access for anonymous users.
 
         :type client: :class:`~google.cloud.storage.client.Client` or
@@ -1640,8 +1850,17 @@ class Blob(_PropertyMixin):
             (Optional) How to retry the RPC. See: :ref:`configuring_retries`
         """
         ...
-    
-    def compose(self, sources, client=..., timeout=..., if_generation_match=..., if_metageneration_match=..., if_source_generation_match=..., retry=...): # -> None:
+
+    def compose(
+        self,
+        sources,
+        client=...,
+        timeout=...,
+        if_generation_match=...,
+        if_metageneration_match=...,
+        if_source_generation_match=...,
+        retry=...,
+    ):  # -> None:
         """Concatenate source blobs into this one.
 
         If :attr:`user_project` is set on the bucket, bills the API request
@@ -1702,8 +1921,23 @@ class Blob(_PropertyMixin):
             See [Configuring Retries](https://cloud.google.com/python/docs/reference/storage/latest/retry_timeout).
         """
         ...
-    
-    def rewrite(self, source, token=..., client=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., if_source_generation_match=..., if_source_generation_not_match=..., if_source_metageneration_match=..., if_source_metageneration_not_match=..., timeout=..., retry=...): # -> tuple[None, int, int] | tuple[Any, int, int]:
+
+    def rewrite(
+        self,
+        source,
+        token=...,
+        client=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        if_source_generation_match=...,
+        if_source_generation_not_match=...,
+        if_source_metageneration_match=...,
+        if_source_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+    ):  # -> tuple[None, int, int] | tuple[Any, int, int]:
         """Rewrite source blob into this one.
 
         If :attr:`user_project` is set on the bucket, bills the API request
@@ -1794,8 +2028,22 @@ class Blob(_PropertyMixin):
                   rewritten.
         """
         ...
-    
-    def update_storage_class(self, new_class, client=..., if_generation_match=..., if_generation_not_match=..., if_metageneration_match=..., if_metageneration_not_match=..., if_source_generation_match=..., if_source_generation_not_match=..., if_source_metageneration_match=..., if_source_metageneration_not_match=..., timeout=..., retry=...): # -> None:
+
+    def update_storage_class(
+        self,
+        new_class,
+        client=...,
+        if_generation_match=...,
+        if_generation_not_match=...,
+        if_metageneration_match=...,
+        if_metageneration_not_match=...,
+        if_source_generation_match=...,
+        if_source_generation_not_match=...,
+        if_source_metageneration_match=...,
+        if_source_metageneration_not_match=...,
+        timeout=...,
+        retry=...,
+    ):  # -> None:
         """Update blob's storage class via a rewrite-in-place. This helper will
         wait for the rewrite to complete before returning, so it may take some
         time for large files.
@@ -1882,8 +2130,17 @@ class Blob(_PropertyMixin):
             See [Configuring Retries](https://cloud.google.com/python/docs/reference/storage/latest/retry_timeout).
         """
         ...
-    
-    def open(self, mode=..., chunk_size=..., ignore_flush=..., encoding=..., errors=..., newline=..., **kwargs): # -> BlobReader | BlobWriter | TextIOWrapper[_WrappedBuffer]:
+
+    def open(
+        self,
+        mode=...,
+        chunk_size=...,
+        ignore_flush=...,
+        encoding=...,
+        errors=...,
+        newline=...,
+        **kwargs,
+    ):  # -> BlobReader | BlobWriter | TextIOWrapper[_WrappedBuffer]:
         r"""Create a file handler for file-like I/O to or from this blob.
 
         This method can be used as a context manager, just like Python's
@@ -1985,7 +2242,6 @@ class Blob(_PropertyMixin):
             of those classes, depending on the 'mode' argument.
         """
         ...
-    
     cache_control = ...
     content_disposition = ...
     content_encoding = ...
@@ -1993,7 +2249,7 @@ class Blob(_PropertyMixin):
     content_type = ...
     crc32c = ...
     @property
-    def component_count(self): # -> int | None:
+    def component_count(self):  # -> int | None:
         """Number of underlying components that make up this object.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2005,9 +2261,9 @@ class Blob(_PropertyMixin):
                   not created via ``compose``.
         """
         ...
-    
+
     @property
-    def etag(self): # -> None:
+    def etag(self):  # -> None:
         """Retrieve the ETag for the object.
 
         See [`RFC 2616 (etags)`](https://tools.ietf.org/html/rfc2616#section-3.11) and
@@ -2018,10 +2274,9 @@ class Blob(_PropertyMixin):
                   been loaded from the server.
         """
         ...
-    
     event_based_hold = ...
     @property
-    def generation(self): # -> int | None:
+    def generation(self):  # -> int | None:
         """Retrieve the generation for the object.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2031,9 +2286,9 @@ class Blob(_PropertyMixin):
                   resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def id(self): # -> None:
+    def id(self):  # -> None:
         """Retrieve the ID for the object.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2045,10 +2300,9 @@ class Blob(_PropertyMixin):
                   resource has not been loaded from the server.
         """
         ...
-    
     md5_hash = ...
     @property
-    def media_link(self): # -> None:
+    def media_link(self):  # -> None:
         """Retrieve the media download URI for the object.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2058,9 +2312,9 @@ class Blob(_PropertyMixin):
                   resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def metadata(self): # -> None:
+    def metadata(self):  # -> None:
         """Retrieve arbitrary/application specific metadata for the object.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2075,9 +2329,9 @@ class Blob(_PropertyMixin):
                   property is not set.
         """
         ...
-    
+
     @metadata.setter
-    def metadata(self, value): # -> None:
+    def metadata(self, value):  # -> None:
         """Update arbitrary/application specific metadata for the object.
 
         Values are stored to GCS as strings. To delete a key, set its value to
@@ -2089,9 +2343,9 @@ class Blob(_PropertyMixin):
         :param value: The blob metadata to set.
         """
         ...
-    
+
     @property
-    def metageneration(self): # -> int | None:
+    def metageneration(self):  # -> int | None:
         """Retrieve the metageneration for the object.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2101,9 +2355,9 @@ class Blob(_PropertyMixin):
                   resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def owner(self): # -> None:
+    def owner(self):  # -> None:
         """Retrieve info about the owner of the object.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2113,9 +2367,9 @@ class Blob(_PropertyMixin):
                   resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def retention_expiration_time(self): # -> datetime | None:
+    def retention_expiration_time(self):  # -> datetime | None:
         """Retrieve timestamp at which the object's retention period expires.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2125,9 +2379,9 @@ class Blob(_PropertyMixin):
                   ``None`` if the property is not set locally.
         """
         ...
-    
+
     @property
-    def self_link(self): # -> None:
+    def self_link(self):  # -> None:
         """Retrieve the URI for the object.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2137,9 +2391,9 @@ class Blob(_PropertyMixin):
                   resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def size(self): # -> int | None:
+    def size(self):  # -> int | None:
         """Size of the object, in bytes.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2149,9 +2403,9 @@ class Blob(_PropertyMixin):
                   resource has not been loaded from the server.
         """
         ...
-    
+
     @property
-    def kms_key_name(self): # -> None:
+    def kms_key_name(self):  # -> None:
         """Resource name of Cloud KMS key used to encrypt the blob's contents.
 
         :rtype: str or ``NoneType``
@@ -2160,20 +2414,19 @@ class Blob(_PropertyMixin):
             or the blob's resource has not been loaded from the server.
         """
         ...
-    
+
     @kms_key_name.setter
-    def kms_key_name(self, value): # -> None:
+    def kms_key_name(self, value):  # -> None:
         """Set KMS encryption key for object.
 
         :type value: str or ``NoneType``
         :param value: new KMS key name (None to clear any existing key).
         """
         ...
-    
     storage_class = ...
     temporary_hold = ...
     @property
-    def time_deleted(self): # -> datetime | None:
+    def time_deleted(self):  # -> datetime | None:
         """Retrieve the timestamp at which the object was deleted.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2185,9 +2438,9 @@ class Blob(_PropertyMixin):
                   not been deleted, this will never be set.
         """
         ...
-    
+
     @property
-    def time_created(self): # -> datetime | None:
+    def time_created(self):  # -> datetime | None:
         """Retrieve the timestamp at which the object was created.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2198,9 +2451,9 @@ class Blob(_PropertyMixin):
                   the server (see :meth:`reload`).
         """
         ...
-    
+
     @property
-    def updated(self): # -> datetime | None:
+    def updated(self):  # -> datetime | None:
         """Retrieve the timestamp at which the object was updated.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2211,9 +2464,9 @@ class Blob(_PropertyMixin):
                   the server (see :meth:`reload`).
         """
         ...
-    
+
     @property
-    def custom_time(self): # -> datetime | None:
+    def custom_time(self):  # -> datetime | None:
         """Retrieve the custom time for the object.
 
         See https://cloud.google.com/storage/docs/json_api/v1/objects
@@ -2224,9 +2477,9 @@ class Blob(_PropertyMixin):
                   the server (see :meth:`reload`).
         """
         ...
-    
+
     @custom_time.setter
-    def custom_time(self, value): # -> None:
+    def custom_time(self, value):  # -> None:
         """Set the custom time for the object.
 
         Once set on the server side object, this value can't be unset, but may
@@ -2241,18 +2494,18 @@ class Blob(_PropertyMixin):
         :param value: new value
         """
         ...
-    
+
     @property
-    def retention(self): # -> Retention:
+    def retention(self):  # -> Retention:
         """Retrieve the retention configuration for this object.
 
         :rtype: :class:`Retention`
         :returns: an instance for managing the object's retention configuration.
         """
         ...
-    
+
     @property
-    def soft_delete_time(self): # -> datetime | None:
+    def soft_delete_time(self):  # -> datetime | None:
         """If this object has been soft-deleted, returns the time at which it became soft-deleted.
 
         :rtype: :class:`datetime.datetime` or ``NoneType``
@@ -2261,9 +2514,9 @@ class Blob(_PropertyMixin):
              Note this property is only set for soft-deleted objects.
         """
         ...
-    
+
     @property
-    def hard_delete_time(self): # -> datetime | None:
+    def hard_delete_time(self):  # -> datetime | None:
         """If this object has been soft-deleted, returns the time at which it will be permanently deleted.
 
         :rtype: :class:`datetime.datetime` or ``NoneType``
@@ -2272,8 +2525,6 @@ class Blob(_PropertyMixin):
             Note this property is only set for soft-deleted objects.
         """
         ...
-    
-
 
 class Retention(dict):
     """Map an object's retention configuration.
@@ -2297,11 +2548,12 @@ class Retention(dict):
         retention configuration set for the object and any retention policy set for the bucket
         that contains the object. This value should normally only be set by the back-end API.
     """
-    def __init__(self, blob, mode=..., retain_until_time=..., retention_expiration_time=...) -> None:
-        ...
-    
+
+    def __init__(
+        self, blob, mode=..., retain_until_time=..., retention_expiration_time=...
+    ) -> None: ...
     @classmethod
-    def from_api_repr(cls, resource, blob): # -> Self:
+    def from_api_repr(cls, resource, blob):  # -> Self:
         """Factory:  construct instance from resource.
 
         :type blob: :class:`Blob`
@@ -2314,31 +2566,31 @@ class Retention(dict):
         :returns: Retention configuration created from resource.
         """
         ...
-    
+
     @property
-    def blob(self): # -> Any:
+    def blob(self):  # -> Any:
         """Blob for which this retention configuration applies to.
 
         :rtype: :class:`Blob`
         :returns: the instance's blob.
         """
         ...
-    
+
     @property
-    def mode(self): # -> None:
+    def mode(self):  # -> None:
         """The mode of the retention configuration. Options are 'Unlocked' or 'Locked'.
 
         :rtype: string
         :returns: The mode of the retention configuration, which can be either set to 'Unlocked' or 'Locked'.
         """
         ...
-    
+
     @mode.setter
-    def mode(self, value): # -> None:
+    def mode(self, value):  # -> None:
         ...
-    
+
     @property
-    def retain_until_time(self): # -> datetime | None:
+    def retain_until_time(self):  # -> datetime | None:
         """The earliest time that the object can be deleted or replaced, which is the
         retention configuration set for this object.
 
@@ -2348,18 +2600,18 @@ class Retention(dict):
                   the server (see :meth:`reload`).
         """
         ...
-    
+
     @retain_until_time.setter
-    def retain_until_time(self, value): # -> None:
+    def retain_until_time(self, value):  # -> None:
         """Set the retain_until_time for the object retention configuration.
 
         :type value: :class:`datetime.datetime`
         :param value: The earliest time that the object can be deleted or replaced.
         """
         ...
-    
+
     @property
-    def retention_expiration_time(self): # -> datetime | None:
+    def retention_expiration_time(self):  # -> datetime | None:
         """The earliest time that the object can be deleted, which depends on any
         retention configuration set for the object and any retention policy set for
         the bucket that contains the object.
@@ -2369,6 +2621,3 @@ class Retention(dict):
             (readonly) The earliest time that the object can be deleted.
         """
         ...
-    
-
-

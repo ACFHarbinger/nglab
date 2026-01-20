@@ -16,10 +16,12 @@ from .transports.base import DEFAULT_CLIENT_INFO, StorageControlTransport
 OptionalRetry = ...
 CLIENT_LOGGING_SUPPORTED = ...
 _LOGGER = ...
+
 class StorageControlAsyncClient:
     """StorageControl service includes selected control plane
     operations.
     """
+
     _client: StorageControlClient
     DEFAULT_ENDPOINT = ...
     DEFAULT_MTLS_ENDPOINT = StorageControlClient.DEFAULT_MTLS_ENDPOINT
@@ -46,7 +48,7 @@ class StorageControlAsyncClient:
     common_location_path = ...
     parse_common_location_path = ...
     @classmethod
-    def from_service_account_info(cls, info: dict, *args, **kwargs): # -> Any:
+    def from_service_account_info(cls, info: dict, *args, **kwargs):  # -> Any:
         """Creates an instance of this client using the provided credentials
             info.
 
@@ -59,9 +61,9 @@ class StorageControlAsyncClient:
             StorageControlAsyncClient: The constructed client.
         """
         ...
-    
+
     @classmethod
-    def from_service_account_file(cls, filename: str, *args, **kwargs): # -> Any:
+    def from_service_account_file(cls, filename: str, *args, **kwargs):  # -> Any:
         """Creates an instance of this client using the provided credentials
             file.
 
@@ -75,10 +77,11 @@ class StorageControlAsyncClient:
             StorageControlAsyncClient: The constructed client.
         """
         ...
-    
     from_service_account_json = ...
     @classmethod
-    def get_mtls_endpoint_and_cert_source(cls, client_options: Optional[ClientOptions] = ...): # -> tuple[Any | Literal['storage.googleapis.com'], Any | None]:
+    def get_mtls_endpoint_and_cert_source(
+        cls, client_options: Optional[ClientOptions] = ...
+    ):  # -> tuple[Any | Literal['storage.googleapis.com'], Any | None]:
         """Return the API endpoint and client cert source for mutual TLS.
 
         The client cert source is determined in the following order:
@@ -110,7 +113,7 @@ class StorageControlAsyncClient:
             google.auth.exceptions.MutualTLSChannelError: If any errors happen.
         """
         ...
-    
+
     @property
     def transport(self) -> StorageControlTransport:
         """Returns the transport used by the client instance.
@@ -119,16 +122,16 @@ class StorageControlAsyncClient:
             StorageControlTransport: The transport used by the client instance.
         """
         ...
-    
+
     @property
-    def api_endpoint(self): # -> str | Any | None:
+    def api_endpoint(self):  # -> str | Any | None:
         """Return the API endpoint used by the client instance.
 
         Returns:
             str: The API endpoint used by the client instance.
         """
         ...
-    
+
     @property
     def universe_domain(self) -> str:
         """Return the universe domain used by the client instance.
@@ -138,9 +141,17 @@ class StorageControlAsyncClient:
                 by the client instance.
         """
         ...
-    
     get_transport_class = ...
-    def __init__(self, *, credentials: Optional[ga_credentials.Credentials] = ..., transport: Optional[Union[str, StorageControlTransport, Callable[..., StorageControlTransport]]] = ..., client_options: Optional[ClientOptions] = ..., client_info: gapic_v1.client_info.ClientInfo = ...) -> None:
+    def __init__(
+        self,
+        *,
+        credentials: Optional[ga_credentials.Credentials] = ...,
+        transport: Optional[
+            Union[str, StorageControlTransport, Callable[..., StorageControlTransport]]
+        ] = ...,
+        client_options: Optional[ClientOptions] = ...,
+        client_info: gapic_v1.client_info.ClientInfo = ...,
+    ) -> None:
         """Instantiates the storage control async client.
 
         Args:
@@ -191,8 +202,18 @@ class StorageControlAsyncClient:
                 creation failed for any reason.
         """
         ...
-    
-    async def create_folder(self, request: Optional[Union[storage_control.CreateFolderRequest, dict]] = ..., *, parent: Optional[str] = ..., folder: Optional[storage_control.Folder] = ..., folder_id: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.Folder:
+
+    async def create_folder(
+        self,
+        request: Optional[Union[storage_control.CreateFolderRequest, dict]] = ...,
+        *,
+        parent: Optional[str] = ...,
+        folder: Optional[storage_control.Folder] = ...,
+        folder_id: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.Folder:
         r"""Creates a new folder. This operation is only
         applicable to a hierarchical namespace enabled bucket.
 
@@ -273,8 +294,16 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def delete_folder(self, request: Optional[Union[storage_control.DeleteFolderRequest, dict]] = ..., *, name: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> None:
+
+    async def delete_folder(
+        self,
+        request: Optional[Union[storage_control.DeleteFolderRequest, dict]] = ...,
+        *,
+        name: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> None:
         r"""Permanently deletes an empty folder. This operation
         is only applicable to a hierarchical namespace enabled
         bucket.
@@ -323,8 +352,16 @@ class StorageControlAsyncClient:
                 be of type `bytes`.
         """
         ...
-    
-    async def get_folder(self, request: Optional[Union[storage_control.GetFolderRequest, dict]] = ..., *, name: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.Folder:
+
+    async def get_folder(
+        self,
+        request: Optional[Union[storage_control.GetFolderRequest, dict]] = ...,
+        *,
+        name: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.Folder:
         r"""Returns metadata for the specified folder. This
         operation is only applicable to a hierarchical namespace
         enabled bucket.
@@ -383,8 +420,16 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def list_folders(self, request: Optional[Union[storage_control.ListFoldersRequest, dict]] = ..., *, parent: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> pagers.ListFoldersAsyncPager:
+
+    async def list_folders(
+        self,
+        request: Optional[Union[storage_control.ListFoldersRequest, dict]] = ...,
+        *,
+        parent: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> pagers.ListFoldersAsyncPager:
         r"""Retrieves a list of folders. This operation is only
         applicable to a hierarchical namespace enabled bucket.
 
@@ -446,8 +491,17 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def rename_folder(self, request: Optional[Union[storage_control.RenameFolderRequest, dict]] = ..., *, name: Optional[str] = ..., destination_folder_id: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> operation_async.AsyncOperation:
+
+    async def rename_folder(
+        self,
+        request: Optional[Union[storage_control.RenameFolderRequest, dict]] = ...,
+        *,
+        name: Optional[str] = ...,
+        destination_folder_id: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> operation_async.AsyncOperation:
         r"""Renames a source folder to a destination folder. This
         operation is only applicable to a hierarchical namespace
         enabled bucket. During a rename, the source and
@@ -520,8 +574,16 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def get_storage_layout(self, request: Optional[Union[storage_control.GetStorageLayoutRequest, dict]] = ..., *, name: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.StorageLayout:
+
+    async def get_storage_layout(
+        self,
+        request: Optional[Union[storage_control.GetStorageLayoutRequest, dict]] = ...,
+        *,
+        name: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.StorageLayout:
         r"""Returns the storage layout configuration for a given
         bucket.
 
@@ -577,8 +639,20 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def create_managed_folder(self, request: Optional[Union[storage_control.CreateManagedFolderRequest, dict]] = ..., *, parent: Optional[str] = ..., managed_folder: Optional[storage_control.ManagedFolder] = ..., managed_folder_id: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.ManagedFolder:
+
+    async def create_managed_folder(
+        self,
+        request: Optional[
+            Union[storage_control.CreateManagedFolderRequest, dict]
+        ] = ...,
+        *,
+        parent: Optional[str] = ...,
+        managed_folder: Optional[storage_control.ManagedFolder] = ...,
+        managed_folder_id: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.ManagedFolder:
         r"""Creates a new managed folder.
 
         .. code-block:: python
@@ -650,8 +724,18 @@ class StorageControlAsyncClient:
                 A managed folder.
         """
         ...
-    
-    async def delete_managed_folder(self, request: Optional[Union[storage_control.DeleteManagedFolderRequest, dict]] = ..., *, name: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> None:
+
+    async def delete_managed_folder(
+        self,
+        request: Optional[
+            Union[storage_control.DeleteManagedFolderRequest, dict]
+        ] = ...,
+        *,
+        name: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> None:
         r"""Permanently deletes an empty managed folder.
 
         .. code-block:: python
@@ -697,8 +781,16 @@ class StorageControlAsyncClient:
                 be of type `bytes`.
         """
         ...
-    
-    async def get_managed_folder(self, request: Optional[Union[storage_control.GetManagedFolderRequest, dict]] = ..., *, name: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.ManagedFolder:
+
+    async def get_managed_folder(
+        self,
+        request: Optional[Union[storage_control.GetManagedFolderRequest, dict]] = ...,
+        *,
+        name: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.ManagedFolder:
         r"""Returns metadata for the specified managed folder.
 
         .. code-block:: python
@@ -750,8 +842,16 @@ class StorageControlAsyncClient:
                 A managed folder.
         """
         ...
-    
-    async def list_managed_folders(self, request: Optional[Union[storage_control.ListManagedFoldersRequest, dict]] = ..., *, parent: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> pagers.ListManagedFoldersAsyncPager:
+
+    async def list_managed_folders(
+        self,
+        request: Optional[Union[storage_control.ListManagedFoldersRequest, dict]] = ...,
+        *,
+        parent: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> pagers.ListManagedFoldersAsyncPager:
         r"""Retrieves a list of managed folders for a given
         bucket.
 
@@ -811,8 +911,19 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def create_anywhere_cache(self, request: Optional[Union[storage_control.CreateAnywhereCacheRequest, dict]] = ..., *, parent: Optional[str] = ..., anywhere_cache: Optional[storage_control.AnywhereCache] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> operation_async.AsyncOperation:
+
+    async def create_anywhere_cache(
+        self,
+        request: Optional[
+            Union[storage_control.CreateAnywhereCacheRequest, dict]
+        ] = ...,
+        *,
+        parent: Optional[str] = ...,
+        anywhere_cache: Optional[storage_control.AnywhereCache] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> operation_async.AsyncOperation:
         r"""Creates an Anywhere Cache instance.
 
         .. code-block:: python
@@ -884,8 +995,19 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def update_anywhere_cache(self, request: Optional[Union[storage_control.UpdateAnywhereCacheRequest, dict]] = ..., *, anywhere_cache: Optional[storage_control.AnywhereCache] = ..., update_mask: Optional[field_mask_pb2.FieldMask] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> operation_async.AsyncOperation:
+
+    async def update_anywhere_cache(
+        self,
+        request: Optional[
+            Union[storage_control.UpdateAnywhereCacheRequest, dict]
+        ] = ...,
+        *,
+        anywhere_cache: Optional[storage_control.AnywhereCache] = ...,
+        update_mask: Optional[field_mask_pb2.FieldMask] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> operation_async.AsyncOperation:
         r"""Updates an Anywhere Cache instance. Mutable fields include
         ``ttl`` and ``admission_policy``.
 
@@ -963,8 +1085,18 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def disable_anywhere_cache(self, request: Optional[Union[storage_control.DisableAnywhereCacheRequest, dict]] = ..., *, name: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.AnywhereCache:
+
+    async def disable_anywhere_cache(
+        self,
+        request: Optional[
+            Union[storage_control.DisableAnywhereCacheRequest, dict]
+        ] = ...,
+        *,
+        name: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.AnywhereCache:
         r"""Disables an Anywhere Cache instance. A disabled
         instance is read-only. The disablement could be revoked
         by calling ResumeAnywhereCache. The cache instance will
@@ -1021,8 +1153,16 @@ class StorageControlAsyncClient:
                 An Anywhere Cache Instance.
         """
         ...
-    
-    async def pause_anywhere_cache(self, request: Optional[Union[storage_control.PauseAnywhereCacheRequest, dict]] = ..., *, name: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.AnywhereCache:
+
+    async def pause_anywhere_cache(
+        self,
+        request: Optional[Union[storage_control.PauseAnywhereCacheRequest, dict]] = ...,
+        *,
+        name: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.AnywhereCache:
         r"""Pauses an Anywhere Cache instance.
 
         .. code-block:: python
@@ -1075,8 +1215,18 @@ class StorageControlAsyncClient:
                 An Anywhere Cache Instance.
         """
         ...
-    
-    async def resume_anywhere_cache(self, request: Optional[Union[storage_control.ResumeAnywhereCacheRequest, dict]] = ..., *, name: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.AnywhereCache:
+
+    async def resume_anywhere_cache(
+        self,
+        request: Optional[
+            Union[storage_control.ResumeAnywhereCacheRequest, dict]
+        ] = ...,
+        *,
+        name: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.AnywhereCache:
         r"""Resumes a disabled or paused Anywhere Cache instance.
 
         .. code-block:: python
@@ -1129,8 +1279,16 @@ class StorageControlAsyncClient:
                 An Anywhere Cache Instance.
         """
         ...
-    
-    async def get_anywhere_cache(self, request: Optional[Union[storage_control.GetAnywhereCacheRequest, dict]] = ..., *, name: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.AnywhereCache:
+
+    async def get_anywhere_cache(
+        self,
+        request: Optional[Union[storage_control.GetAnywhereCacheRequest, dict]] = ...,
+        *,
+        name: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.AnywhereCache:
         r"""Gets an Anywhere Cache instance.
 
         .. code-block:: python
@@ -1182,8 +1340,16 @@ class StorageControlAsyncClient:
                 An Anywhere Cache Instance.
         """
         ...
-    
-    async def list_anywhere_caches(self, request: Optional[Union[storage_control.ListAnywhereCachesRequest, dict]] = ..., *, parent: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> pagers.ListAnywhereCachesAsyncPager:
+
+    async def list_anywhere_caches(
+        self,
+        request: Optional[Union[storage_control.ListAnywhereCachesRequest, dict]] = ...,
+        *,
+        parent: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> pagers.ListAnywhereCachesAsyncPager:
         r"""Lists Anywhere Cache instances for a given bucket.
 
         .. code-block:: python
@@ -1242,8 +1408,18 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def get_project_intelligence_config(self, request: Optional[Union[storage_control.GetProjectIntelligenceConfigRequest, dict]] = ..., *, name: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.IntelligenceConfig:
+
+    async def get_project_intelligence_config(
+        self,
+        request: Optional[
+            Union[storage_control.GetProjectIntelligenceConfigRequest, dict]
+        ] = ...,
+        *,
+        name: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.IntelligenceConfig:
         r"""Returns the Project scoped singleton
         IntelligenceConfig resource.
 
@@ -1308,8 +1484,19 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def update_project_intelligence_config(self, request: Optional[Union[storage_control.UpdateProjectIntelligenceConfigRequest, dict]] = ..., *, intelligence_config: Optional[storage_control.IntelligenceConfig] = ..., update_mask: Optional[field_mask_pb2.FieldMask] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.IntelligenceConfig:
+
+    async def update_project_intelligence_config(
+        self,
+        request: Optional[
+            Union[storage_control.UpdateProjectIntelligenceConfigRequest, dict]
+        ] = ...,
+        *,
+        intelligence_config: Optional[storage_control.IntelligenceConfig] = ...,
+        update_mask: Optional[field_mask_pb2.FieldMask] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.IntelligenceConfig:
         r"""Updates the Project scoped singleton
         IntelligenceConfig resource.
 
@@ -1379,8 +1566,18 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def get_folder_intelligence_config(self, request: Optional[Union[storage_control.GetFolderIntelligenceConfigRequest, dict]] = ..., *, name: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.IntelligenceConfig:
+
+    async def get_folder_intelligence_config(
+        self,
+        request: Optional[
+            Union[storage_control.GetFolderIntelligenceConfigRequest, dict]
+        ] = ...,
+        *,
+        name: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.IntelligenceConfig:
         r"""Returns the Folder scoped singleton
         IntelligenceConfig resource.
 
@@ -1445,8 +1642,19 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def update_folder_intelligence_config(self, request: Optional[Union[storage_control.UpdateFolderIntelligenceConfigRequest, dict]] = ..., *, intelligence_config: Optional[storage_control.IntelligenceConfig] = ..., update_mask: Optional[field_mask_pb2.FieldMask] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.IntelligenceConfig:
+
+    async def update_folder_intelligence_config(
+        self,
+        request: Optional[
+            Union[storage_control.UpdateFolderIntelligenceConfigRequest, dict]
+        ] = ...,
+        *,
+        intelligence_config: Optional[storage_control.IntelligenceConfig] = ...,
+        update_mask: Optional[field_mask_pb2.FieldMask] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.IntelligenceConfig:
         r"""Updates the Folder scoped singleton
         IntelligenceConfig resource.
 
@@ -1516,8 +1724,18 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def get_organization_intelligence_config(self, request: Optional[Union[storage_control.GetOrganizationIntelligenceConfigRequest, dict]] = ..., *, name: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.IntelligenceConfig:
+
+    async def get_organization_intelligence_config(
+        self,
+        request: Optional[
+            Union[storage_control.GetOrganizationIntelligenceConfigRequest, dict]
+        ] = ...,
+        *,
+        name: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.IntelligenceConfig:
         r"""Returns the Organization scoped singleton
         IntelligenceConfig resource.
 
@@ -1582,8 +1800,19 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def update_organization_intelligence_config(self, request: Optional[Union[storage_control.UpdateOrganizationIntelligenceConfigRequest, dict]] = ..., *, intelligence_config: Optional[storage_control.IntelligenceConfig] = ..., update_mask: Optional[field_mask_pb2.FieldMask] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> storage_control.IntelligenceConfig:
+
+    async def update_organization_intelligence_config(
+        self,
+        request: Optional[
+            Union[storage_control.UpdateOrganizationIntelligenceConfigRequest, dict]
+        ] = ...,
+        *,
+        intelligence_config: Optional[storage_control.IntelligenceConfig] = ...,
+        update_mask: Optional[field_mask_pb2.FieldMask] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> storage_control.IntelligenceConfig:
         r"""Updates the Organization scoped singleton
         IntelligenceConfig resource.
 
@@ -1653,8 +1882,16 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def get_iam_policy(self, request: Optional[Union[iam_policy_pb2.GetIamPolicyRequest, dict]] = ..., *, resource: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> policy_pb2.Policy:
+
+    async def get_iam_policy(
+        self,
+        request: Optional[Union[iam_policy_pb2.GetIamPolicyRequest, dict]] = ...,
+        *,
+        resource: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> policy_pb2.Policy:
         r"""Gets the IAM policy for a specified bucket. The ``resource``
         field in the request should be ``projects/_/buckets/{bucket}``
         for a bucket, or
@@ -1743,8 +1980,16 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def set_iam_policy(self, request: Optional[Union[iam_policy_pb2.SetIamPolicyRequest, dict]] = ..., *, resource: Optional[str] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> policy_pb2.Policy:
+
+    async def set_iam_policy(
+        self,
+        request: Optional[Union[iam_policy_pb2.SetIamPolicyRequest, dict]] = ...,
+        *,
+        resource: Optional[str] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> policy_pb2.Policy:
         r"""Updates an IAM policy for the specified bucket. The ``resource``
         field in the request should be ``projects/_/buckets/{bucket}``
         for a bucket, or
@@ -1833,8 +2078,17 @@ class StorageControlAsyncClient:
 
         """
         ...
-    
-    async def test_iam_permissions(self, request: Optional[Union[iam_policy_pb2.TestIamPermissionsRequest, dict]] = ..., *, resource: Optional[str] = ..., permissions: Optional[MutableSequence[str]] = ..., retry: OptionalRetry = ..., timeout: Union[float, object] = ..., metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...) -> iam_policy_pb2.TestIamPermissionsResponse:
+
+    async def test_iam_permissions(
+        self,
+        request: Optional[Union[iam_policy_pb2.TestIamPermissionsRequest, dict]] = ...,
+        *,
+        resource: Optional[str] = ...,
+        permissions: Optional[MutableSequence[str]] = ...,
+        retry: OptionalRetry = ...,
+        timeout: Union[float, object] = ...,
+        metadata: Sequence[Tuple[str, Union[str, bytes]]] = ...,
+    ) -> iam_policy_pb2.TestIamPermissionsResponse:
         r"""Tests a set of permissions on the given bucket, object, or
         managed folder to see which, if any, are held by the caller. The
         ``resource`` field in the request should be
@@ -1906,16 +2160,12 @@ class StorageControlAsyncClient:
                 Response message for TestIamPermissions method.
         """
         ...
-    
-    async def __aenter__(self) -> StorageControlAsyncClient:
-        ...
-    
-    async def __aexit__(self, exc_type, exc, tb): # -> None:
-        ...
-    
 
+    async def __aenter__(self) -> StorageControlAsyncClient: ...
+    async def __aexit__(self, exc_type, exc, tb):  # -> None:
+        ...
 
 DEFAULT_CLIENT_INFO = ...
 if hasattr(DEFAULT_CLIENT_INFO, "protobuf_runtime_version"):
     ...
-__all__ = ("StorageControlAsyncClient", )
+__all__ = ("StorageControlAsyncClient",)

@@ -9,6 +9,7 @@ See [Retry Strategy for Google Cloud Storage](https://cloud.google.com/storage/d
 _RETRYABLE_TYPES = ...
 _RETRYABLE_STATUS_CODES = ...
 DEFAULT_RETRY = ...
+
 class ConditionalRetryPolicy:
     """A class for use when an API call is only conditionally safe to retry.
 
@@ -37,23 +38,22 @@ class ConditionalRetryPolicy:
         and passed into the ``conditional predicate`` in order. For example,
         ``["query_params"]`` is commmonly used for preconditions in query_params.
     """
-    def __init__(self, retry_policy, conditional_predicate, required_kwargs) -> None:
-        ...
-    
-    def get_retry_policy_if_conditions_met(self, **kwargs): # -> Any | None:
-        ...
-    
 
+    def __init__(
+        self, retry_policy, conditional_predicate, required_kwargs
+    ) -> None: ...
+    def get_retry_policy_if_conditions_met(self, **kwargs):  # -> Any | None:
+        ...
 
-def is_generation_specified(query_params): # -> bool:
+def is_generation_specified(query_params):  # -> bool:
     """Return True if generation or if_generation_match is specified."""
     ...
 
-def is_metageneration_specified(query_params): # -> bool:
+def is_metageneration_specified(query_params):  # -> bool:
     """Return True if if_metageneration_match is specified."""
     ...
 
-def is_etag_in_data(data): # -> bool:
+def is_etag_in_data(data):  # -> bool:
     """Return True if an etag is contained in the request body.
 
     :type data: dict or None
@@ -61,7 +61,7 @@ def is_etag_in_data(data): # -> bool:
     """
     ...
 
-def is_etag_in_json(data): # -> bool:
+def is_etag_in_json(data):  # -> bool:
     """
     ``is_etag_in_json`` is supported for backwards-compatibility reasons only;
     please use ``is_etag_in_data`` instead.

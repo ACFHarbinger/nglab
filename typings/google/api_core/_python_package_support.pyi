@@ -15,6 +15,7 @@ DependencyConstraint = ...
 _PACKAGE_DEPENDENCY_WARNINGS = ...
 DependencyVersion = ...
 UNKNOWN_VERSION_STRING = ...
+
 def parse_version_to_tuple(version_string: str) -> ParsedVersion:
     """Safely converts a semantic version string to a comparable tuple of integers.
 
@@ -48,7 +49,13 @@ def get_dependency_version(dependency_name: str) -> DependencyVersion:
     """
     ...
 
-def warn_deprecation_for_versions_less_than(consumer_import_package: str, dependency_import_package: str, minimum_fully_supported_version: str, recommended_version: Optional[str] = ..., message_template: Optional[str] = ...): # -> None:
+def warn_deprecation_for_versions_less_than(
+    consumer_import_package: str,
+    dependency_import_package: str,
+    minimum_fully_supported_version: str,
+    recommended_version: Optional[str] = ...,
+    message_template: Optional[str] = ...,
+):  # -> None:
     """Issue any needed deprecation warnings for `dependency_import_package`.
 
     If `dependency_import_package` is installed at a version less than
@@ -83,7 +90,9 @@ def warn_deprecation_for_versions_less_than(consumer_import_package: str, depend
     """
     ...
 
-def check_dependency_versions(consumer_import_package: str, *package_dependency_warnings: DependencyConstraint): # -> None:
+def check_dependency_versions(
+    consumer_import_package: str, *package_dependency_warnings: DependencyConstraint
+):  # -> None:
     """Bundle checks for all package dependencies.
 
     This function can be called by all consumers of google.api_core,
@@ -99,4 +108,3 @@ def check_dependency_versions(consumer_import_package: str, *package_dependency_
         objects, each specifying a dependency to check.
     """
     ...
-

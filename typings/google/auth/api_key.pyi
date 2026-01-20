@@ -9,10 +9,12 @@ This module provides authentication using the `API key`_.
 .. _API key:
     https://cloud.google.com/docs/authentication/api-keys/
 """
+
 class Credentials(credentials.Credentials):
     """API key credentials.
     These credentials use API key to provide authorization to applications.
     """
+
     def __init__(self, token) -> None:
         """
         Args:
@@ -21,20 +23,20 @@ class Credentials(credentials.Credentials):
             ValueError: If the provided API key is not a non-empty string.
         """
         ...
-    
+
     @property
-    def expired(self): # -> Literal[False]:
+    def expired(self):  # -> Literal[False]:
         ...
-    
+
     @property
-    def valid(self): # -> Literal[True]:
+    def valid(self):  # -> Literal[True]:
         ...
-    
+
     @_helpers.copy_docstring(credentials.Credentials)
-    def refresh(self, request): # -> None:
+    def refresh(self, request):  # -> None:
         ...
-    
-    def apply(self, headers, token=...): # -> None:
+
+    def apply(self, headers, token=...):  # -> None:
         """Apply the API key token to the x-goog-api-key header.
         Args:
             headers (Mapping): The HTTP request headers.
@@ -42,8 +44,8 @@ class Credentials(credentials.Credentials):
                 token.
         """
         ...
-    
-    def before_request(self, request, method, url, headers): # -> None:
+
+    def before_request(self, request, method, url, headers):  # -> None:
         """Performs credential-specific before request logic.
         Refreshes the credentials if necessary, then calls :meth:`apply` to
         apply the token to the x-goog-api-key header.
@@ -56,6 +58,3 @@ class Credentials(credentials.Credentials):
             headers (Mapping): The request's headers.
         """
         ...
-    
-
-

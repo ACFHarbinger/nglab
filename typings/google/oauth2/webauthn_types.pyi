@@ -15,12 +15,11 @@ class PublicKeyCredentialDescriptor:
         id: <url-safe base64-encoded> credential id (key handle).
         transports: <'usb'|'nfc'|'ble'|'internal'> List of supported transports.
     """
+
     id: str
     transports: Optional[List[str]] = ...
-    def to_dict(self): # -> dict[str, str]:
+    def to_dict(self):  # -> dict[str, str]:
         ...
-    
-
 
 @dataclass
 class AuthenticationExtensionsClientInputs:
@@ -30,11 +29,10 @@ class AuthenticationExtensionsClientInputs:
         appid: app id that can be asserted with in addition to rpid.
             https://www.w3.org/TR/webauthn-3/#sctn-appid-extension
     """
-    appid: Optional[str] = ...
-    def to_dict(self): # -> dict[Any, Any]:
-        ...
-    
 
+    appid: Optional[str] = ...
+    def to_dict(self):  # -> dict[Any, Any]:
+        ...
 
 @dataclass
 class GetRequest:
@@ -49,6 +47,7 @@ class GetRequest:
         user_verification: <'required'|'preferred'|'discouraged'> User verification requirement.
         extensions: WebAuthn authentication extensions inputs.
     """
+
     origin: str
     rpid: str
     challenge: str
@@ -56,10 +55,7 @@ class GetRequest:
     allow_credentials: Optional[List[PublicKeyCredentialDescriptor]] = ...
     user_verification: Optional[str] = ...
     extensions: Optional[AuthenticationExtensionsClientInputs] = ...
-    def to_json(self) -> str:
-        ...
-    
-
+    def to_json(self) -> str: ...
 
 @dataclass(frozen=True)
 class AuthenticatorAssertionResponse:
@@ -73,12 +69,12 @@ class AuthenticatorAssertionResponse:
         signature: <url-safe base64-encoded> signature.
         user_handle: <url-safe base64-encoded> user handle.
     """
+
     client_data_json: str
     authenticator_data: str
     signature: str
     user_handle: Optional[str]
     ...
-
 
 @dataclass(frozen=True)
 class GetResponse:
@@ -90,14 +86,12 @@ class GetResponse:
         authenticator_attachment: <'cross-platform'|'platform'> The attachment status of the authenticator.
         client_extension_results: WebAuthn authentication extensions output results in a dictionary.
     """
+
     id: str
     response: AuthenticatorAssertionResponse
     authenticator_attachment: Optional[str]
     client_extension_results: Optional[Dict]
     @staticmethod
-    def from_json(json_str: str): # -> GetResponse:
+    def from_json(json_str: str):  # -> GetResponse:
         """Verify and construct GetResponse from a JSON string."""
         ...
-    
-
-

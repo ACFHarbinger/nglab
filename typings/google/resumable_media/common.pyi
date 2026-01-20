@@ -13,6 +13,7 @@ TOO_MANY_REQUESTS = ...
 MAX_SLEEP = ...
 MAX_CUMULATIVE_RETRY = ...
 RETRYABLE = ...
+
 class InvalidResponse(Exception):
     """Error class for responses which are not in the correct state.
 
@@ -21,10 +22,8 @@ class InvalidResponse(Exception):
         args (tuple): The positional arguments typically passed to an
             exception class.
     """
-    def __init__(self, response, *args) -> None:
-        ...
-    
 
+    def __init__(self, response, *args) -> None: ...
 
 class DataCorruption(Exception):
     """Error class for corrupt media transfers.
@@ -34,10 +33,8 @@ class DataCorruption(Exception):
         args (tuple): The positional arguments typically passed to an
             exception class.
     """
-    def __init__(self, response, *args) -> None:
-        ...
-    
 
+    def __init__(self, response, *args) -> None: ...
 
 class RetryStrategy:
     """Configuration class for retrying failed requests.
@@ -68,9 +65,15 @@ class RetryStrategy:
         ValueError: If both of ``max_cumulative_retry`` and ``max_retries``
             are passed.
     """
-    def __init__(self, max_sleep=..., max_cumulative_retry=..., max_retries=..., initial_delay=..., multiplier=...) -> None:
-        ...
-    
+
+    def __init__(
+        self,
+        max_sleep=...,
+        max_cumulative_retry=...,
+        max_retries=...,
+        initial_delay=...,
+        multiplier=...,
+    ) -> None: ...
     def retry_allowed(self, total_sleep, num_retries):
         """Check if another retry is allowed.
 
@@ -86,6 +89,3 @@ class RetryStrategy:
             allowed.
         """
         ...
-    
-
-
