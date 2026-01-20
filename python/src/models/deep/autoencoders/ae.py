@@ -2,9 +2,10 @@
 AutoEncoder (AE) implementation.
 """
 
+from typing import Any, List, Optional, cast
+
 import torch
 from torch import nn
-from typing import Any, List, Optional
 
 
 class AutoEncoder(nn.Module):
@@ -12,7 +13,13 @@ class AutoEncoder(nn.Module):
     Standard AutoEncoder (AE).
     """
 
-    def __init__(self, input_dim: int, hidden_dims: List[int], latent_dim: int, output_type: str = "prediction") -> None:
+    def __init__(
+        self,
+        input_dim: int,
+        hidden_dims: List[int],
+        latent_dim: int,
+        output_type: str = "prediction",
+    ) -> None:
         """Initialize AutoEncoder."""
         super().__init__()
         self.output_type = output_type
@@ -39,22 +46,30 @@ class AutoEncoder(nn.Module):
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
         """Encode input to latent space."""
-        return self.encoder(x)
+        return cast(torch.Tensor, self.encoder(x))
 
     def decode(self, z: torch.Tensor) -> torch.Tensor:
         """Decode latent vector to input space."""
-        return self.decoder(z)
+        return cast(torch.Tensor, self.decoder(z))
 
-    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: Optional[bool] = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """Forward pass."""
         # Handle sequence
+        z: torch.Tensor
+        recon: torch.Tensor
+
         if x.dim() == 3:
             b, s, f = x.shape
             x_flat = x.view(b * s, f)
-            z = self.encode(x_flat)
-            recon = self.decode(z)
-            z = z.view(b, s, -1)
-            recon = recon.view(b, s, -1)
+            z_flat = self.encode(x_flat)
+            recon_flat = self.decode(z_flat)
+            z = z_flat.view(b, s, -1)
+            recon = recon_flat.view(b, s, -1)
         else:
             z = self.encode(x)
             recon = self.decode(z)

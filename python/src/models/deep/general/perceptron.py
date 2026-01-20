@@ -2,6 +2,8 @@
 Perceptron implementation.
 """
 
+from typing import Any, Optional
+
 import torch
 from torch import nn
 
@@ -13,8 +15,12 @@ class Perceptron(nn.Module):
     """
 
     def __init__(
-        self, input_dim, output_dim, activation="sigmoid", output_type="prediction"
-    ):
+        self,
+        input_dim: int,
+        output_dim: int,
+        activation: str = "sigmoid",
+        output_type: str = "prediction",
+    ) -> None:
         """Initialize Perceptron."""
         super().__init__()
         self.input_dim = input_dim
@@ -30,7 +36,12 @@ class Perceptron(nn.Module):
             "step": lambda x: (x > 0).float(),
         }.get(activation.lower(), torch.sigmoid)
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: Optional[bool] = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """Forward pass."""
         # Handle sequence
         if x.dim() == 3:

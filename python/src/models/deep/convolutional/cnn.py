@@ -3,10 +3,11 @@ Rolling Price Window CNN for Time Series.
 Inspired by "S&P 500 Stock's Movement Prediction using CNN".
 """
 
+from typing import Optional, cast
+
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
-from typing import Optional
 
 
 class RollingWindowCNN(nn.Module):
@@ -71,34 +72,36 @@ class RollingWindowCNN(nn.Module):
         self.fc1 = nn.Linear(flat_dim, hidden_dim)
         self.fc2 = nn.Linear(hidden_dim, output_dim)
 
-    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None) -> torch.Tensor:
+    def forward(
+        self, x: torch.Tensor, return_embedding: Optional[bool] = None
+    ) -> torch.Tensor:
         """
         Forward pass.
         x: (Batch, Seq_Len, Features)
         """
         # Add channel dimension: (B, 1, L, F)
-        x = x.unsqueeze(1)
+        x_in = x.unsqueeze(1)
 
         # Block 1
-        x = self.conv1(x)  # (B, 16, L, F)
-        x = self.bn1(x)
-        x = F.relu(x)
-        x = self.pool_both(x)  # (B, 16, L/2, F/2)
+        x_in = self.conv1(x_in)  # (B, 16, L, F)
+        x_in = self.bn1(x_in)
+        x_in = F.relu(x_in)
+        x_in = self.pool_both(x_in)  # (B, 16, L/2, F/2)
 
         # Block 2
-        x = self.conv2(x)  # (B, 32, L/2, F/2)
-        x = self.bn2(x)
-        x = F.relu(x)
+        x_in = self.conv2(x_in)  # (B, 32, L/2, F/2)
+        x_in = self.bn2(x_in)
+        x_in = F.relu(x_in)
 
         # Adaptive Pool to ensure fixed size regardless of input L or F slightly varying
-        x = self.adaptive_pool(x)  # (B, 32, 4, 4)
+        x_in = self.adaptive_pool(x_in)  # (B, 32, 4, 4)
 
         # Flatten
-        x = torch.flatten(x, 1)  # (B, 512)
+        x_flat = torch.flatten(x_in, 1)  # (B, 512)
 
         # FC
-        x = self.fc1(x)  # (B, Hidden)
-        x = F.relu(x)
+        x_emb = self.fc1(x_flat)  # (B, Hidden)
+        x_emb = F.relu(x_emb)
 
         should_return_embedding = (
             return_embedding
@@ -107,6 +110,6 @@ class RollingWindowCNN(nn.Module):
         )
 
         if should_return_embedding:
-            return x
+            return x_emb
 
-        return self.fc2(x)
+        return cast(torch.Tensor, self.fc2(x_emb))

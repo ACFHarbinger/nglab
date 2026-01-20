@@ -2,6 +2,9 @@
 Multi-Layer Perceptron (MLP) implementation.
 """
 
+from typing import Any, List, Optional, Type, cast
+
+import torch
 from torch import nn
 
 
@@ -13,13 +16,13 @@ class MLP(nn.Module):
 
     def __init__(  # noqa: PLR0913
         self,
-        input_dim,
-        hidden_dims,
-        output_dim,
-        dropout=0.0,
-        activation="relu",
-        output_type="prediction",
-    ):
+        input_dim: int,
+        hidden_dims: List[int],
+        output_dim: int,
+        dropout: float = 0.0,
+        activation: str = "relu",
+        output_type: str = "prediction",
+    ) -> None:
         """
         Args:
             input_dim (int): Dimension of input features.
@@ -32,20 +35,23 @@ class MLP(nn.Module):
         super().__init__()
         self.output_type = output_type
 
-        layers = []
+        layers: List[nn.Module] = []
         last_dim = input_dim
 
         # Select activation
-        act_fn = {
-            "relu": nn.ReLU,
-            "tanh": nn.Tanh,
-            "gelu": nn.GELU,
-            "sigmoid": nn.Sigmoid,
-        }.get(activation.lower(), nn.ReLU)
+        act_fn_cls: Type[nn.Module] = cast(
+            Type[nn.Module],
+            {
+                "relu": nn.ReLU,
+                "tanh": nn.Tanh,
+                "gelu": nn.GELU,
+                "sigmoid": nn.Sigmoid,
+            }.get(activation.lower(), nn.ReLU),
+        )
 
         for h_dim in hidden_dims:
             layers.append(nn.Linear(last_dim, h_dim))
-            layers.append(act_fn())
+            layers.append(act_fn_cls())
             if dropout > 0:
                 layers.append(nn.Dropout(dropout))
             last_dim = h_dim
@@ -53,21 +59,27 @@ class MLP(nn.Module):
         self.backbone = nn.Sequential(*layers)
         self.head = nn.Linear(last_dim, output_dim)
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: Optional[bool] = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         x: (Batch, Features) or (Batch, Seq, Features)
         """
+        emb: torch.Tensor
         if x.dim() == 3:
             # Apply per time step or flatten?
             # Existing backbone pattern usually handles per-step in RNNs,
             # but MLPs usually flatten or apply to last step.
             # Let's apply to all steps if 3D.
             b, s, f = x.shape
-            x = x.view(b * s, f)
-            emb = self.backbone(x)
-            emb = emb.view(b, s, -1)
+            x_flat = x.view(b * s, f)
+            emb_flat = cast(torch.Tensor, self.backbone(x_flat))
+            emb = emb_flat.view(b, s, -1)
         else:
-            emb = self.backbone(x)
+            emb = cast(torch.Tensor, self.backbone(x))
 
         should_return_embedding = (
             return_embedding
@@ -80,7 +92,7 @@ class MLP(nn.Module):
                 return emb[:, -1, :]
             return emb
 
-        out = self.head(emb)
+        out = cast(torch.Tensor, self.head(emb))
         if not return_sequence and out.dim() == 3:
             return out[:, -1, :]
         return out

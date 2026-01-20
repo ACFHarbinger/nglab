@@ -2,9 +2,10 @@
 Stacked AutoEncoder (StackedAE) implementation.
 """
 
+from typing import List, Optional, cast
+
 import torch
 from torch import nn
-from typing import Optional
 
 from .ae import AutoEncoder
 
@@ -14,7 +15,7 @@ class StackedAutoEncoder(nn.Module):
     Stacked AutoEncoder - A stack of individual AutoEncoders trained layer-wise.
     """
 
-    def __init__(self, layer_sizes: list[int], output_type: str = "prediction") -> None:
+    def __init__(self, layer_sizes: List[int], output_type: str = "prediction") -> None:
         """
         Args:
             layer_sizes (list[int]): Sizes of the layers [input, h1, h2, ..., latent].
@@ -37,7 +38,12 @@ class StackedAutoEncoder(nn.Module):
             )
             self.aes.append(ae)
 
-    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: Optional[bool] = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         Forward pass.
         If return_embedding is True (or output_type="embedding"), returns the latent code.
@@ -45,18 +51,17 @@ class StackedAutoEncoder(nn.Module):
         """
         # Handle sequence input similar to AutoEncoder base
         is_sequence = x.dim() == 3
+        b, s, f = 0, 0, 0
         if is_sequence:
             b, s, f = x.shape
-            x_flat = x.view(b * s, f)
-            current = x_flat
+            current = x.view(b * s, f)
         else:
             current = x
 
         # Encode path
-        encoded_features = []  # Store intermediate activations if needed
-        for ae in self.aes:
+        for ae_module in self.aes:
+            ae = cast(AutoEncoder, ae_module)
             current = ae.encode(current)
-            encoded_features.append(current)
 
         latent = current
 
@@ -77,12 +82,13 @@ class StackedAutoEncoder(nn.Module):
         # Decode path (reverse order)
         decoded = latent
         for i in reversed(range(len(self.aes))):
-            decoded = self.aes[i].decode(decoded)
+            ae_back = cast(AutoEncoder, self.aes[i])
+            decoded = ae_back.decode(decoded)
 
-        out = decoded
+        out_final = decoded
         if is_sequence:
-            out = out.view(b, s, -1)
+            out_final = out_final.view(b, s, -1)
             if not return_sequence:
-                return out[:, -1, :]
+                return out_final[:, -1, :]
 
-        return out
+        return out_final

@@ -2,7 +2,8 @@
 Deconvolutional Network (DN) implementation.
 """
 
-from typing import Optional, List, Any
+from typing import Any, List, Optional, cast
+
 import torch
 from torch import nn
 
@@ -45,7 +46,12 @@ class DeconvNet(nn.Module):
         self.decoder = nn.Sequential(*layers)
         self.final_conv = nn.Conv1d(last_channels, output_dim, kernel_size=1)
 
-    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: Optional[bool] = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         Forward pass.
         x: (Batch, Input_Dim) (latent/bottleneck) or (Batch, Units, Seq)
@@ -53,15 +59,15 @@ class DeconvNet(nn.Module):
         if x.dim() == 2:
             x = x.unsqueeze(-1)  # (Batch, Input_Dim, 1)
 
-        out = self.decoder(x)
-        out = self.final_conv(out)
+        out = cast(torch.Tensor, self.decoder(x))
+        out = cast(torch.Tensor, self.final_conv(out))
 
         # (Batch, Output_Dim, Seq_out) -> (Batch, Seq_out, Output_Dim)
         out = out.transpose(1, 2)
 
         if not return_sequence:
-            return out[:, -1, :]
-        return out
+            return cast(torch.Tensor, out[:, -1, :])
+        return cast(torch.Tensor, out)
 
 
 class AutoDeconvNet(nn.Module):
@@ -100,11 +106,17 @@ class AutoDeconvNet(nn.Module):
         self.fc_latent = nn.Linear(last_channels, latent_dim)
 
         # Decoder
-        self.decoder = DeconvNet(
+        self.decoder: DeconvNet = DeconvNet(
             latent_dim, list(reversed(hidden_channels)), input_dim, output_type
         )
 
-    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False, **kwargs: Any) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: Optional[bool] = None,
+        return_sequence: bool = False,
+        **kwargs: Any,
+    ) -> torch.Tensor:
         """Forward pass."""
         # x: (Batch, Seq, Input_Dim) -> (Batch, Input_Dim, Seq)
         if x.dim() == 2:
@@ -112,8 +124,8 @@ class AutoDeconvNet(nn.Module):
 
         x_in = x.transpose(1, 2)
 
-        e = self.encoder(x_in)
-        z = self.fc_latent(self.pool(e).squeeze(-1))
+        e = cast(torch.Tensor, self.encoder(x_in))
+        z = cast(torch.Tensor, self.fc_latent(self.pool(e).squeeze(-1)))
 
         should_return_embedding = (
             return_embedding

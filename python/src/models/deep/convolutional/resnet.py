@@ -2,7 +2,7 @@
 Deep Residual Network (ResNet) - Network with skip connections
 """
 
-from typing import Literal
+from typing import Any, Literal, cast
 
 import torch
 from torch import nn
@@ -27,7 +27,7 @@ class ResidualBlock(nn.Module):
         use_conv: bool = False,
         dropout: float = 0.1,
         kernel_size: int = 3,
-    ):
+    ) -> None:
         """Initialize Residual Block."""
         super().__init__()
         self.use_conv = use_conv
@@ -74,9 +74,9 @@ class ResidualBlock(nn.Module):
             Output with skip connection applied
         """
         residual = x
-        out = self.block(x)
+        out = cast(torch.Tensor, self.block(x))
         out = out + residual  # Skip connection
-        out = self.activation(out)
+        out = cast(torch.Tensor, self.activation(out))
         return out
 
 
@@ -107,7 +107,7 @@ class DeepResNet(nn.Module):
         dropout: float = 0.1,
         kernel_size: int = 3,
         output_type: Literal["prediction", "embedding"] = "prediction",
-    ):
+    ) -> None:
         """
         Initialize DeepResNet.
         """
@@ -177,18 +177,18 @@ class DeepResNet(nn.Module):
             pass
 
         # Initial projection
-        x = self.input_proj(x)
+        x = cast(torch.Tensor, self.input_proj(x))
 
         # Pass through residual blocks
         for block in self.res_blocks:
-            x = block(x)
+            x = cast(torch.Tensor, block(x))
 
         if self.output_type == "embedding":
             if self.use_conv:
                 if return_sequence:
                     return x.transpose(1, 2)
                 else:
-                    x = self.global_pool(x).squeeze(-1)
+                    x = cast(torch.Tensor, self.global_pool(x)).squeeze(-1)
                     return x
             elif return_sequence:
                 return x
@@ -196,20 +196,21 @@ class DeepResNet(nn.Module):
                 return x[:, -1, :]
 
         # Apply output projection
+        out: torch.Tensor
         if self.use_conv:
             if return_sequence:
                 # Transpose to (batch, seq, hidden_dim) for output projection
                 x = x.transpose(1, 2)
-                out = self.output_proj(x)
+                out = cast(torch.Tensor, self.output_proj(x))
             else:
                 # Global pooling
-                x = self.global_pool(x).squeeze(-1)
-                out = self.output_proj(x)
+                x = cast(torch.Tensor, self.global_pool(x)).squeeze(-1)
+                out = cast(torch.Tensor, self.output_proj(x))
         # Fully connected case
         elif return_sequence:
-            out = self.output_proj(x)
+            out = cast(torch.Tensor, self.output_proj(x))
         else:
-            out = self.output_proj(x[:, -1, :])
+            out = cast(torch.Tensor, self.output_proj(x[:, -1, :]))
 
         return out
 
@@ -236,10 +237,11 @@ class ResNetBottleneck(nn.Module):
         out_dim: int,
         use_conv: bool = False,
         dropout: float = 0.1,
-    ):
+    ) -> None:
         """Initialize Bottleneck Block."""
         super().__init__()
         self.use_conv = use_conv
+        self.shortcut: nn.Module
 
         if use_conv:
             self.block = nn.Sequential(
@@ -281,8 +283,8 @@ class ResNetBottleneck(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward pass with bottleneck skip connection."""
-        residual = self.shortcut(x)
-        out = self.block(x)
+        residual = cast(torch.Tensor, self.shortcut(x))
+        out = cast(torch.Tensor, self.block(x))
         out = out + residual
-        out = self.activation(out)
+        out = cast(torch.Tensor, self.activation(out))
         return out

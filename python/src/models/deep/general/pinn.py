@@ -6,6 +6,8 @@ that is designed to compute gradients with respect to its inputs (space/time)
 to solve partial differential equations (PDEs).
 """
 
+from typing import Any, Dict, List, Optional, cast
+
 import torch
 from torch import nn
 
@@ -33,7 +35,7 @@ class PINN(nn.Module):
         num_layers: int = 4,
         activation: str = "tanh",
         output_type: str = "prediction",
-    ):
+    ) -> None:
         """
         Initialize PINN.
         """
@@ -43,6 +45,7 @@ class PINN(nn.Module):
         self.output_type = output_type
 
         # Activation
+        act_fn: nn.Module
         if activation == "tanh":
             act_fn = nn.Tanh()
         elif activation == "sigmoid":
@@ -54,7 +57,7 @@ class PINN(nn.Module):
         else:
             raise ValueError(f"Unknown activation: {activation}")
 
-        layers = []
+        layers: List[nn.Module] = []
         layers.append(nn.Linear(input_dim, hidden_dim))
         layers.append(act_fn)
 
@@ -74,7 +77,7 @@ class PINN(nn.Module):
             x: Collocation points (batch_size, input_dim).
                Requires requires_grad=True if computing physics loss outside.
         """
-        return self.net(x)
+        return cast(torch.Tensor, self.net(x))
 
     def gradient(self, u: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
         """
@@ -99,7 +102,7 @@ class PINN(nn.Module):
             retain_graph=True,
             only_inputs=True,
         )[0]
-        return grads
+        return cast(torch.Tensor, grads)
 
     def laplacian(self, u: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
         """
@@ -108,27 +111,28 @@ class PINN(nn.Module):
         For input_dim=1 (time), it is just d^2u/dt^2.
         """
         grad = self.gradient(u, x)
-        lap = 0.0
+        lap = torch.zeros(x.shape[0], 1, device=x.device)
         for i in range(x.shape[1]):
             grad_i = grad[:, i : i + 1]  # Keep dim
+            grad_outputs = torch.ones_like(grad_i)
             grad_2 = torch.autograd.grad(
                 grad_i,
                 x,
-                grad_outputs=torch.ones_like(grad_i),
+                grad_outputs=grad_outputs,
                 create_graph=True,
                 retain_graph=True,
             )[0]
             lap += grad_2[:, i : i + 1]
-        return lap
+        return cast(torch.Tensor, lap)
 
 
 def pinn_loss(
     u_pred: torch.Tensor,
-    u_target: torch.Tensor | None,
+    u_target: Optional[torch.Tensor],
     f_pred: torch.Tensor,  # Physics residual (e.g., u_t + u*u_x - u_xx)
     data_weight: float = 1.0,
     physics_weight: float = 1.0,
-) -> dict[str, torch.Tensor]:
+) -> Dict[str, torch.Tensor]:
     """
     Compute PINN loss = MSE_data + MSE_physics.
 

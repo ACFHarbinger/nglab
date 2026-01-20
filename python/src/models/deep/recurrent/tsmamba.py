@@ -2,7 +2,7 @@
 Time Series Mamba implementation.
 """
 
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import torch
 from torch import nn
@@ -63,19 +63,20 @@ class TSMamba(nn.Module):
             return_sequence (bool): If True, return full sequence.
         """
         # x shape: (Batch, Seq_Len, Input_Dim)
-        x = self.encoder(x)
+        x_enc = cast(torch.Tensor, self.encoder(x))
 
-        for layer in self.layers:
-            x = x + layer(x)  # Residual connection per block
+        for layer_module in self.layers:
+            layer = cast(MambaBlock, layer_module)
+            x_enc = x_enc + cast(torch.Tensor, layer(x_enc))  # Residual connection per block
 
-        x = self.norm(x)
+        x_norm = cast(torch.Tensor, self.norm(x_enc))
 
         # Determine state to use (Full sequence or Last step)
         state: torch.Tensor
         if return_sequence:
-            state = x
+            state = x_norm
         else:
-            state = x[:, -1, :]
+            state = x_norm[:, -1, :]
 
         should_return_embedding = (
             return_embedding
@@ -87,4 +88,4 @@ class TSMamba(nn.Module):
             return state
 
         # Apply head
-        return self.head(state)
+        return cast(torch.Tensor, self.head(state))

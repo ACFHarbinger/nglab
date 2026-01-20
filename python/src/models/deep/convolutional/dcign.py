@@ -2,9 +2,10 @@
 Deep Convolutional Inverse Graphics Network (DCIGN).
 """
 
+from typing import Any, List, Optional, Tuple, cast
+
 import torch
 from torch import nn
-from typing import Any, Optional, Tuple, Union
 
 
 class DCIGN(nn.Module):
@@ -18,7 +19,7 @@ class DCIGN(nn.Module):
         self,
         input_dim: int,
         latent_dim: int = 128,
-        hidden_channels: Optional[list[int]] = None,
+        hidden_channels: Optional[List[int]] = None,
         num_intrinsic: int = 32,
         num_extrinsic: int = 96,
         output_type: str = "prediction",
@@ -34,7 +35,7 @@ class DCIGN(nn.Module):
         self.output_type = output_type
 
         # Encoder (Hierarchical feature learning)
-        enc_layers = []
+        enc_layers: List[nn.Module] = []
         last_channels = input_dim
         for h_channels in hidden_channels:
             enc_layers.append(
@@ -49,7 +50,7 @@ class DCIGN(nn.Module):
         self.fc_latent = nn.Linear(last_channels, latent_dim)
 
         # Decoder (Generation)
-        dec_layers = []
+        dec_layers: List[nn.Module] = []
         last_channels = latent_dim
         for h_channels in reversed(hidden_channels):
             dec_layers.append(
@@ -67,9 +68,9 @@ class DCIGN(nn.Module):
     def encode(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Encode input into intrinsic and extrinsic features."""
         # x: (Batch, Seq, Input_Dim) -> (Batch, Input_Dim, Seq)
-        x = x.transpose(1, 2)
-        feat = self.encoder(x)
-        z = self.fc_latent(self.pool(feat).squeeze(-1))
+        x_in = x.transpose(1, 2)
+        feat = cast(torch.Tensor, self.encoder(x_in))
+        z = cast(torch.Tensor, self.fc_latent(self.pool(feat).squeeze(-1)))
 
         # Split latent vector into intrinsic and extrinsic
         intrinsic = z[:, : self.num_intrinsic]
@@ -80,11 +81,17 @@ class DCIGN(nn.Module):
         """Decode intrinsic and extrinsic features to reconstruct input."""
         z = torch.cat([intrinsic, extrinsic], dim=1)
         z = z.unsqueeze(-1)  # (Batch, Latent, 1)
-        recon = self.decoder_body(z)
-        recon = self.final_conv(recon)
+        recon = cast(torch.Tensor, self.decoder_body(z))
+        recon = cast(torch.Tensor, self.final_conv(recon))
         return recon.transpose(1, 2)  # (Batch, Seq_out, Input_Dim)
 
-    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False, **kwargs: Any) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: Optional[bool] = None,
+        return_sequence: bool = False,
+        **kwargs: Any,
+    ) -> torch.Tensor:
         """Forward pass."""
         intrinsic, extrinsic = self.encode(x)
 

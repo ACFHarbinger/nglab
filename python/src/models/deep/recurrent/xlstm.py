@@ -2,9 +2,10 @@
 xLSTM Model wrapping xLSTMBlocks.
 """
 
+from typing import Any, List, Optional, Union, cast
+
 import torch
 from torch import nn
-from typing import Optional, Union, List
 
 from python.src.models.deep.modules.xlstm_block import xLSTMBlock
 
@@ -44,6 +45,7 @@ class xLSTM(nn.Module):  # noqa: N801
         self.n_layers = n_layers
 
         # Determine cell types per layer
+        cell_types: List[str]
         if isinstance(cell_type, str):
             cell_types = [cell_type] * n_layers
         else:
@@ -69,7 +71,12 @@ class xLSTM(nn.Module):  # noqa: N801
         self.norm = nn.LayerNorm(hidden_dim)
         self.fc = nn.Linear(hidden_dim, output_dim)
 
-    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: Optional[bool] = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         Forward pass.
 
@@ -80,21 +87,24 @@ class xLSTM(nn.Module):  # noqa: N801
         """
         # x is [Batch, Seq, Feat] (since batch_first=True in blocks)
 
-        current_state_list = [None] * self.n_layers
+        current_state_list: List[Any] = [None] * self.n_layers
 
-        for i, layer in enumerate(self.layers):
-            x, state = layer(x, current_state_list[i])
-            # x is output sequence of this layer
-            current_state_list[i] = state
+        x_out = x
+        for i, layer_module in enumerate(self.layers):
+            layer = cast(xLSTMBlock, layer_module)
+            x_out, state_val = layer(x_out, current_state_list[i])
+            # x_out is output sequence of this layer
+            current_state_list[i] = state_val
 
-        # x is now the output sequence of the last layer
-        x = self.norm(x)
+        # x_out is now the output sequence of the last layer
+        x_norm = cast(torch.Tensor, self.norm(x_out))
 
-        # Determine state
+        # Determine output state
+        out_state: torch.Tensor
         if return_sequence:
-            state = x
+            out_state = x_norm
         else:
-            state = x[:, -1, :]
+            out_state = x_norm[:, -1, :]
 
         should_return_embedding = (
             return_embedding
@@ -103,6 +113,6 @@ class xLSTM(nn.Module):  # noqa: N801
         )
 
         if should_return_embedding:
-            return state
+            return out_state
 
-        return self.fc(state)
+        return cast(torch.Tensor, self.fc(out_state))

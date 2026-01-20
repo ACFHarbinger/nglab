@@ -2,6 +2,9 @@
 Deep Convolutional Network (DCN).
 """
 
+from typing import Any, List, Optional, cast
+
+import torch
 from torch import nn
 
 
@@ -13,11 +16,11 @@ class DeepConvNet(nn.Module):
 
     def __init__(
         self,
-        input_dim,
-        hidden_channels=None,
-        output_dim=1,
-        output_type="prediction",
-    ):
+        input_dim: int,
+        hidden_channels: Optional[List[int]] = None,
+        output_dim: int = 1,
+        output_type: str = "prediction",
+    ) -> None:
         """Initialize DCN."""
         if hidden_channels is None:
             hidden_channels = [32, 64, 128]
@@ -26,7 +29,7 @@ class DeepConvNet(nn.Module):
         self.output_dim = output_dim
         self.output_type = output_type
 
-        layers = []
+        layers: List[nn.Module] = []
 
         # Handle input_dim if we treat it as (Channels, Seq) or similar
         # For simplicity, we assume input is (Batch, Seq, Features) and we treat Features as channels
@@ -45,15 +48,20 @@ class DeepConvNet(nn.Module):
         self.pool = nn.AdaptiveAvgPool1d(1)
         self.classifier = nn.Linear(last_channels, output_dim)
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: Optional[bool] = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         x: (Batch, Seq, Features) -> (Batch, Features, Seq)
         """
         # Conv1d expects (Batch, Channels, Length)
-        x = x.transpose(1, 2)
+        x_in = x.transpose(1, 2)
 
-        feat = self.features(x)
-        pooled = self.pool(feat).squeeze(-1)
+        feat = cast(torch.Tensor, self.features(x_in))
+        pooled = cast(torch.Tensor, self.pool(feat)).squeeze(-1)
 
         should_return_embedding = (
             return_embedding
@@ -64,4 +72,4 @@ class DeepConvNet(nn.Module):
         if should_return_embedding:
             return pooled
 
-        return self.classifier(pooled)
+        return cast(torch.Tensor, self.classifier(pooled))

@@ -2,9 +2,10 @@
 Liquid State Machine (LSM) model.
 """
 
+from typing import Any, List, Optional, Tuple, cast
+
 import torch
 from torch import nn
-from typing import Optional
 
 from python.src.models.deep.spiking.snn import LIFCell, surrogate_heaviside
 
@@ -66,33 +67,39 @@ class LiquidStateMachine(nn.Module):
         # Trainable readout
         self.readout = nn.Linear(liquid_size, output_dim)
 
-    def forward(self, x: torch.Tensor, return_embedding: Optional[bool] = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: Optional[bool] = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         x: (Batch, Seq, Feat)
         """
         batch_size, seq_len, _ = x.shape
-        state = None  # (u, s)
-        outputs = []
+        state: Optional[Tuple[torch.Tensor, torch.Tensor]] = None  # (u, s)
+        outputs: List[torch.Tensor] = []
 
         device = x.device
+        win = cast(torch.Tensor, self.win)
+        wliquid = cast(torch.Tensor, self.wliquid)
 
         for t in range(seq_len):
             u_in = x[:, t, :]
 
+            mem: torch.Tensor
+            spk: torch.Tensor
             if state is None:
                 mem = torch.zeros(batch_size, self.liquid_size, device=device)
                 spk = torch.zeros(batch_size, self.liquid_size, device=device)
             else:
                 mem, spk = state
-                # Ensure they are seen as tensors
-                assert isinstance(mem, torch.Tensor)
-                assert isinstance(spk, torch.Tensor)
 
             # Recurrent injection: W_liquid @ previous spikes
-            i_rec = torch.mm(spk, self.wliquid.t())
+            i_rec = torch.mm(spk, wliquid.t())
 
             # Input injection: W_in @ input
-            i_inj = torch.mm(u_in, self.win.t())
+            i_inj = torch.mm(u_in, win.t())
 
             # Potential update: decay * (mem - spk * threshold) + i_inj + i_rec
             mem = (
@@ -121,7 +128,7 @@ class LiquidStateMachine(nn.Module):
                 return stacked
             return stacked[:, -1, :]
 
-        out = self.readout(stacked)
+        out = cast(torch.Tensor, self.readout(stacked))
         if return_sequence:
             return out
         return out[:, -1, :]
