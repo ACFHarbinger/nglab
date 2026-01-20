@@ -1,4 +1,4 @@
-"""One-Class SVM Model."""
+from typing import Any
 
 import numpy as np
 import torch
@@ -13,11 +13,16 @@ class OneClassSVMModel(ClassicalModel):
     Output is usually -1 (outlier) or 1 (inlier).
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__()
         self.model = OneClassSVM(**kwargs)
 
-    def forward(self, x, **kwargs):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         if not self._is_fitted:
             return torch.zeros((x.size(0), 1), device=x.device, dtype=torch.float32)
 

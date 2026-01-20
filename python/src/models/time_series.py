@@ -2,6 +2,9 @@
 Unified Backbone for Time Series Models.
 """
 
+from typing import Any, Dict, Union
+
+import torch
 from torch import nn
 
 from .deep_factory import DEEP_MODEL_NAMES, create_deep_model
@@ -14,7 +17,7 @@ class TimeSeriesBackbone(nn.Module):
     Wraps specific implementations (Transformer, LSTM, etc).
     """
 
-    def __init__(self, cfg):
+    def __init__(self, cfg: Dict[str, Any]) -> None:
         """
         Initialize TimeSeriesBackbone.
 
@@ -38,7 +41,7 @@ class TimeSeriesBackbone(nn.Module):
 
         self.model = model
 
-    def forward(self, x):
+    def forward(self, x: Union[torch.Tensor, Dict[str, torch.Tensor]]) -> torch.Tensor:
         """
         Forward pass.
 
@@ -48,10 +51,13 @@ class TimeSeriesBackbone(nn.Module):
         Returns:
             Model output.
         """
-        if hasattr(x, "get"):
-            x = x.get("observation")
+        obs: torch.Tensor
+        if isinstance(x, dict):
+            obs = x["observation"]
+        else:
+            obs = x
 
-        kwargs = {}
+        kwargs: Dict[str, Any] = {}
         if self.cfg.get("return_sequence", False):
             kwargs["return_sequence"] = True
 
@@ -63,5 +69,8 @@ class TimeSeriesBackbone(nn.Module):
         elif "return_sequence" in kwargs:
             del kwargs["return_sequence"]
 
-        out = self.model(x, **kwargs)
+        out = self.model(obs, **kwargs)
+        if isinstance(out, tuple):
+            # Some models might return (output, hidden_state)
+            return out[0]
         return out

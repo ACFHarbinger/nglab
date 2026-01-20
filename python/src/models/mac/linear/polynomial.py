@@ -1,5 +1,8 @@
 """Polynomial Regression Model."""
 
+from typing import Any
+
+import torch
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
@@ -8,7 +11,7 @@ from ..base import ClassicalModel
 
 
 class PolynomialRegressionModel(ClassicalModel):
-    def __init__(self, degree=2, **kwargs):
+    def __init__(self, degree: int = 2, **kwargs: Any) -> None:
         super().__init__()
         self.model = Pipeline(
             [
@@ -18,5 +21,5 @@ class PolynomialRegressionModel(ClassicalModel):
         )
         self._is_fitted = False
 
-    def fit(self, X, y):  # noqa: N803
+    def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
         super().fit(X, y)

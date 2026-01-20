@@ -1,4 +1,4 @@
-"""Bayesian Network Model."""
+from typing import Any
 
 import numpy as np
 import torch
@@ -13,28 +13,39 @@ class BayesianNetworkModel(ClassicalModel):
     Simplified implementation using Gaussian Naive Bayes.
     """
 
-    def __init__(self, structure="naive", **kwargs):
+    def __init__(self, structure: str = "naive", **kwargs: Any) -> None:
         super().__init__()
         self.model = GaussianNB(**kwargs)
 
-    def fit(self, X, y):  # noqa: N803
-        if isinstance(X, torch.Tensor):
-            X = X.detach().cpu().numpy()
-        if isinstance(y, torch.Tensor):
-            y = y.detach().cpu().numpy()
-        self.model.fit(X, y.ravel())
+    def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        if y is None:
+            raise ValueError("BayesianNetworkModel requires y for fitting.")
+
+        X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
+        y_np = y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
+        self.model.fit(X_np, y_np.ravel())
         self._is_fitted = True
 
-    def predict(self, X):  # noqa: N803
-        if isinstance(X, torch.Tensor):
-            X = X.detach().cpu().numpy()
+    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+        X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 
         if not self._is_fitted:
-            return np.zeros((X.shape[0], 1))
+            return np.zeros((X_np.shape[0], 1))
 
-        return self.model.predict(X).reshape(-1, 1)
+        out_np = np.asarray(self.model.predict(X_np))
+        return out_np.reshape(-1, 1)
 
-    def forward(self, x, **kwargs):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
+        if not self._is_fitted:
+            return super().forward(
+                x, return_embedding=return_embedding, return_sequence=return_sequence
+            )
+
         device = x.device
         x_np = x.detach().cpu().numpy()
         if x_np.ndim == 3:

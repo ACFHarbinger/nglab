@@ -1,4 +1,4 @@
-"""Stacking Model."""
+from typing import Any
 
 from sklearn.ensemble import StackingClassifier, StackingRegressor
 from sklearn.linear_model import LinearRegression, LogisticRegression
@@ -14,7 +14,7 @@ class StackingModel(ClassicalModel):
     or defaults to simple Linear+Tree stack.
     """
 
-    def __init__(self, task="regression", **kwargs):
+    def __init__(self, task: str = "regression", **kwargs: Any) -> None:
         super().__init__()
 
         if "estimators" not in kwargs:

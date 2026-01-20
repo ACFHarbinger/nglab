@@ -1,4 +1,4 @@
-"""LS-SVM Model."""
+from typing import Any
 
 from sklearn.kernel_ridge import KernelRidge
 
@@ -11,6 +11,6 @@ class LSSVMModel(ClassicalModel):
     Mathematically equivalent to Kernel Ridge Regression.
     """
 
-    def __init__(self, alpha=1.0, kernel="rbf", **kwargs):
+    def __init__(self, alpha: float = 1.0, kernel: str = "rbf", **kwargs: Any) -> None:
         super().__init__()
         self.model = KernelRidge(alpha=alpha, kernel=kernel, **kwargs)

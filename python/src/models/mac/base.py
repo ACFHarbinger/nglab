@@ -3,11 +3,11 @@ Base class for classical machine learning models.
 """
 
 from abc import ABC
+from typing import Any, Dict, Mapping, cast
 
 import numpy as np
 import torch
 from torch import nn
-from typing import Any, Mapping
 
 
 class ClassicalModel(nn.Module, ABC):
@@ -26,18 +26,23 @@ class ClassicalModel(nn.Module, ABC):
         """
         super().__init__()
         self.output_type = output_type
-        self.model = None  # To be initialized by subclasses
+        self.model: Any = None  # To be initialized by subclasses
         self._is_fitted = False
 
         # Dummy parameter to ensure optimizer/device placement works if needed
         # though classical models typically run on CPU via sklearn.
         self.dummy_param = nn.Parameter(torch.empty(0))
 
-    def _create_model(self, **kwargs):
+    def _create_model(self, **kwargs: Any) -> Any:
         """Optional: Create the underlying classical model instance."""
         return None
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         Forward pass for inference.
         x: (Batch, Features) or (Batch, Seq, Features)
@@ -65,7 +70,7 @@ class ClassicalModel(nn.Module, ABC):
             batch_size = x_np.shape[0]
             out_np = np.zeros((batch_size, 1), dtype=np.float32)
         else:
-            out_np = self.model.predict(x_np)
+            out_np = np.asarray(self.model.predict(x_np))
             if out_np.ndim == 1:
                 out_np = out_np[:, np.newaxis]
 
@@ -78,41 +83,41 @@ class ClassicalModel(nn.Module, ABC):
 
         return out
 
-    def fit(self, X, y):  # noqa: N803
+    def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
         """Fit the underlying model."""
-        if isinstance(X, torch.Tensor):
-            X = X.detach().cpu().numpy()
-        if isinstance(y, torch.Tensor):
-            y = y.detach().cpu().numpy()
+        X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
+        y_np = y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
 
-        if X.ndim == 3:
+        if X_np.ndim == 3:
             # Flatten sequence for fitting classical models
-            b, s, f = X.shape
-            X = X.reshape(b * s, f)
-            if y is not None:
-                y = y.reshape(b * s, -1)
+            b, s, f = X_np.shape
+            X_np = X_np.reshape(b * s, f)
+            if y_np is not None:
+                y_np = y_np.reshape(b * s, -1)
 
         if self.model is None:
             raise RuntimeError(
                 "Model has not been initialized. Ensure a subclass sets `self.model`."
             )
 
-        if y is not None:
-            if y.ndim == 2 and y.shape[1] == 1:
-                y = y.ravel()
-            self.model.fit(X, y)
+        if y_np is not None:
+            if y_np.ndim == 2 and y_np.shape[1] == 1:
+                y_np = y_np.ravel()
+            self.model.fit(X_np, y_np)
         else:
-            self.model.fit(X)
+            self.model.fit(X_np)
         self._is_fitted = True
 
-    def state_dict(self, *args, **kwargs):
+    def state_dict(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:  # type: ignore[override]
         """Override to include the classical model state if needed."""
-        sd = super().state_dict(*args, **kwargs)
+        sd = cast(Dict[str, Any], super().state_dict(*args, **kwargs))
         if self.model is not None and self._is_fitted:
             sd["_classical_model"] = self.model
         return sd
 
-    def load_state_dict(self, state_dict: Mapping[str, Any], strict: bool = True, assign: bool = False):
+    def load_state_dict(
+        self, state_dict: Mapping[str, Any], strict: bool = True, assign: bool = False
+    ) -> Any:
         """Override to load the classical model state."""
         state_dict_copy = dict(state_dict)
         if "_classical_model" in state_dict_copy:

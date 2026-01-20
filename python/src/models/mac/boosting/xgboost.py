@@ -1,4 +1,4 @@
-"""XGBoost Model."""
+from typing import Any
 
 import xgboost as xgb
 
@@ -10,7 +10,7 @@ class XGBoostModel(ClassicalModel):
     XGBoost wrapper for classification or regression.
     """
 
-    def __init__(self, task="regression", **kwargs):
+    def __init__(self, task: str = "regression", **kwargs: Any) -> None:
         """
         Initialize the XGBoost model.
 

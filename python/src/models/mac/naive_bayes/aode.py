@@ -1,4 +1,4 @@
-"""AODE Model."""
+from typing import Any, List
 
 import numpy as np
 import torch
@@ -13,48 +13,58 @@ class AODEModel(ClassicalModel):
     Approximated by averaging multiple Naive Bayes models.
     """
 
-    def __init__(self, n_estimators=10, **kwargs):
+    def __init__(self, n_estimators: int = 10, **kwargs: Any) -> None:
         super().__init__()
         self.n_estimators = n_estimators
-        self.models = []
-        self.feature_subsets = []
+        self.models: List[GaussianNB] = []
+        self.feature_subsets: List[List[int]] = []
 
-    def fit(self, X, y):  # noqa: N803
-        if isinstance(X, torch.Tensor):
-            X = X.detach().cpu().numpy()
-        if isinstance(y, torch.Tensor):
-            y = y.detach().cpu().numpy()
+    def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        if y is None:
+            raise ValueError("AODEModel requires y for fitting.")
 
-        n_features = X.shape[1]
+        X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
+        y_np = y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
+
+        n_features = X_np.shape[1]
         self.models = []
         self.feature_subsets = []
 
         candidates = list(range(n_features))
         if n_features > self.n_estimators:
-            candidates = np.random.choice(candidates, self.n_estimators, replace=False)
+            candidates = list(np.random.choice(candidates, self.n_estimators, replace=False))
 
         for _ in candidates:
             clf = GaussianNB()
-            clf.fit(X, y.ravel())
+            clf.fit(X_np, y_np.ravel())
             self.models.append(clf)
 
         self._is_fitted = True
 
-    def predict(self, X):  # noqa: N803
-        if isinstance(X, torch.Tensor):
-            X = X.detach().cpu().numpy()
+    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+        X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 
         if not self._is_fitted:
-            return np.zeros((X.shape[0], 1))
+            return np.zeros((X_np.shape[0], 1))
 
         preds = []
         for model in self.models:
-            preds.append(model.predict_proba(X))
+            preds.append(model.predict_proba(X_np))
 
         avg_proba = np.mean(preds, axis=0)
-        return np.argmax(avg_proba, axis=1).reshape(-1, 1)
+        return np.asarray(np.argmax(avg_proba, axis=1).reshape(-1, 1))
 
-    def forward(self, x, **kwargs):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
+        if not self._is_fitted:
+            return super().forward(
+                x, return_embedding=return_embedding, return_sequence=return_sequence
+            )
+
         device = x.device
         x_np = x.detach().cpu().numpy()
         if x_np.ndim == 3:

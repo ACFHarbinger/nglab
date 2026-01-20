@@ -1,4 +1,4 @@
-"""Twin SVM Model."""
+from typing import Any, Optional
 
 import numpy as np
 import torch
@@ -13,38 +13,42 @@ class TWSVMModel(ClassicalModel):
     Simplified implementation for binary classification.
     """
 
-    def __init__(self, c1=1.0, c2=1.0, epsilon=1e-5, **kwargs):
+    def __init__(
+        self, c1: float = 1.0, c2: float = 1.0, epsilon: float = 1e-5, **kwargs: Any
+    ) -> None:
         super().__init__()
         self.c1 = c1
         self.c2 = c2
         self.epsilon = epsilon
-        self.weights1 = None
-        self.weights2 = None
-        self.bias1 = None
-        self.bias2 = None
+        self.weights1: Optional[np.ndarray[Any, Any]] = None
+        self.weights2: Optional[np.ndarray[Any, Any]] = None
+        self.bias1: Optional[float] = None
+        self.bias2: Optional[float] = None
+        self.fallback: Optional[LinearSVC] = None
 
-    def fit(self, X, y):  # noqa: N803
-        if isinstance(X, torch.Tensor):
-            X = X.detach().cpu().numpy()
-        if isinstance(y, torch.Tensor):
-            y = y.detach().cpu().numpy()
+    def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        if y is None:
+            raise ValueError("TWSVMModel requires y for fitting.")
 
-        if X.ndim == 3:
-            X = X.reshape(X.shape[0] * X.shape[1], -1)
-            y = y.reshape(y.shape[0] * y.shape[1], -1)
+        X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
+        y_np = y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
 
-        y = y.ravel()
-        classes = np.unique(y)
+        if X_np.ndim == 3:
+            X_np = X_np.reshape(X_np.shape[0] * X_np.shape[1], -1)
+            y_np = y_np.reshape(y_np.shape[0] * y_np.shape[1], -1)
+
+        target = y_np.ravel()
+        classes = np.unique(target)
         if len(classes) != 2:
             self.fallback = LinearSVC(C=self.c1)
-            self.fallback.fit(X, y)
+            self.fallback.fit(X_np, target)
             self._is_fitted = True
             return
 
         self.fallback = None
 
-        A = X[y == classes[0]]
-        B = X[y == classes[1]]
+        A = X_np[target == classes[0]]
+        B = X_np[target == classes[1]]
 
         m1 = A.shape[0]
         m2 = B.shape[0]
@@ -62,7 +66,7 @@ class TWSVMModel(ClassicalModel):
         )
         z1 = pseudo_inv1 @ X_full.T @ y_1
         self.weights1 = z1[:-1]
-        self.bias1 = z1[-1]
+        self.bias1 = float(z1[-1])
 
         X_full2 = np.vstack((G, H))
         y_2 = np.vstack((np.zeros((m2, 1)), np.ones((m1, 1))))
@@ -72,28 +76,45 @@ class TWSVMModel(ClassicalModel):
         )
         z2 = pseudo_inv2 @ X_full2.T @ y_2
         self.weights2 = z2[:-1]
-        self.bias2 = z2[-1]
+        self.bias2 = float(z2[-1])
 
         self.classes_ = classes
         self._is_fitted = True
 
-    def predict(self, X):  # noqa: N803
+    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+        X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
+
         if not self._is_fitted:
-            return np.zeros((X.shape[0], 1))
+            return np.zeros((X_np.shape[0], 1))
 
         if self.fallback:
-            return self.fallback.predict(X).reshape(-1, 1)
+            return np.asarray(self.fallback.predict(X_np).reshape(-1, 1))
 
-        if isinstance(X, torch.Tensor):
-            X = X.detach().cpu().numpy()
+        if (
+            self.weights1 is None
+            or self.bias1 is None
+            or self.weights2 is None
+            or self.bias2 is None
+        ):
+            return np.zeros((X_np.shape[0], 1))
 
-        dist1 = np.abs(X @ self.weights1 + self.bias1)
-        dist2 = np.abs(X @ self.weights2 + self.bias2)
+        dist1 = np.abs(X_np @ self.weights1 + self.bias1)
+        dist2 = np.abs(X_np @ self.weights2 + self.bias2)
 
         preds_idx = (dist1 > dist2).astype(int).ravel()
-        return self.classes_[preds_idx].reshape(-1, 1)
+        return np.asarray(self.classes_[preds_idx].reshape(-1, 1))
 
-    def forward(self, x, **kwargs):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
+        if not self._is_fitted:
+            return super().forward(
+                x, return_embedding=return_embedding, return_sequence=return_sequence
+            )
+
         device = x.device
         x_np = x.detach().cpu().numpy()
         if x_np.ndim == 3:

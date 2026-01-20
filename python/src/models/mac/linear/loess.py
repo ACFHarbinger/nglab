@@ -1,5 +1,7 @@
 """LOESS Model."""
 
+from typing import Any, Optional
+
 import numpy as np
 import torch
 
@@ -14,30 +16,33 @@ except ImportError:
 class LOESSModel(ClassicalModel):
     """Locally Estimated Scatterplot Smoothing (LOESS)."""
 
-    def __init__(self, frac=0.66, it=3, **kwargs):
+    def __init__(self, frac: float = 0.66, it: int = 3, **kwargs: Any) -> None:
         super().__init__()
         self.frac = frac
         self.it = it
         self.kwargs = kwargs
+        self.X_train: Optional[np.ndarray[Any, Any]] = None
+        self.y_train: Optional[np.ndarray[Any, Any]] = None
 
-    def fit(self, X, y):  # noqa: N803
+    def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        if y is None:
+            raise ValueError("LOESSModel requires y for fitting.")
         if lowess is None:
             raise ImportError("statsmodels is required for LOESSModel")
 
-        if isinstance(X, torch.Tensor):
-            X = X.detach().cpu().numpy()
-        if isinstance(y, torch.Tensor):
-            y = y.detach().cpu().numpy()
+        X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
+        y_np = y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
 
-        if X.ndim == 3:
-            X = X.reshape(X.shape[0] * X.shape[1], -1)
-            y = y.reshape(y.shape[0] * y.shape[1], -1)
+        if X_np.ndim == 3:
+            X_np = X_np.reshape(X_np.shape[0] * X_np.shape[1], -1)
+            if y_np is not None:
+                y_np = y_np.reshape(y_np.shape[0] * y_np.shape[1], -1)
 
-        self.X_train = X
-        self.y_train = y
+        self.X_train = X_np
+        self.y_train = y_np
         self._is_fitted = True
 
-    def predict(self, X):  # noqa: N803
+    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
         if not self._is_fitted:
             return np.zeros((X.shape[0], 1))
 
@@ -45,6 +50,9 @@ class LOESSModel(ClassicalModel):
             X_np = X.detach().cpu().numpy()
         else:
             X_np = X
+
+        if self.X_train is None or self.y_train is None:
+            return np.zeros((X_np.shape[0], 1))
 
         x_axis = self.X_train[:, 0]
         y_axis = self.y_train.ravel()
@@ -65,14 +73,24 @@ class LOESSModel(ClassicalModel):
             res[:, 1],
             bounds_error=False,
             fill_value="extrapolate",
-        )  # pyright: ignore[reportArgumentType]
+        )
 
-        out = f(X_np[:, 0])
+        out = np.asarray(f(X_np[:, 0]))
         if out.ndim == 1:
             out = out[:, np.newaxis]
         return out
 
-    def forward(self, x, **kwargs):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
+        if not self._is_fitted:
+            return super().forward(
+                x, return_embedding=return_embedding, return_sequence=return_sequence
+            )
+
         device = x.device
         x_np = x.detach().cpu().numpy()
         if x_np.ndim == 3:

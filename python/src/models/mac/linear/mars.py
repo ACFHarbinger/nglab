@@ -1,4 +1,4 @@
-"""MARS Model."""
+from typing import Any
 
 import numpy as np
 import torch
@@ -12,7 +12,7 @@ from ..base import ClassicalModel
 class MARSModel(ClassicalModel):
     """Simplified Multivariate Adaptive Regression Splines (Piecewise Linear)."""
 
-    def __init__(self, n_segments=5, **kwargs):
+    def __init__(self, n_segments: int = 5, **kwargs: Any) -> None:
         super().__init__()
         self.n_segments = n_segments
         self.model = Pipeline(
@@ -22,13 +22,13 @@ class MARSModel(ClassicalModel):
             ]
         )
 
-    def fit(self, X, y):  # noqa: N803
-        if isinstance(X, torch.Tensor):
-            X = X.detach().cpu().numpy()
+    def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 
         hinges = []
-        for i in range(X.shape[1]):
-            feat = X[:, i]
+        knots = np.array([])
+        for i in range(X_np.shape[1]):
+            feat = X_np[:, i]
             knots = np.linspace(feat.min(), feat.max(), self.n_segments)
             for knot in knots:
                 hinges.append(np.maximum(0, feat - knot))
@@ -36,19 +36,25 @@ class MARSModel(ClassicalModel):
 
         X_hinge = np.column_stack(hinges)
         self.model = LinearRegression()
-        if isinstance(y, torch.Tensor):
-            y = y.detach().cpu().numpy()
+        y_np = y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
 
-        if y is not None and y.ndim == 2 and y.shape[1] == 1:
-            y = y.ravel()
+        if y_np is not None and y_np.ndim == 2 and y_np.shape[1] == 1:
+            y_np = y_np.ravel()
 
-        self.model.fit(X_hinge, y)
+        self.model.fit(X_hinge, y_np)
         self.knots_ = knots
         self._is_fitted = True
 
-    def forward(self, x, **kwargs):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         if not self._is_fitted:
-            return super().forward(x, **kwargs)
+            return super().forward(
+                x, return_embedding=return_embedding, return_sequence=return_sequence
+            )
 
         device = x.device
         x_np = x.detach().cpu().numpy()
@@ -70,17 +76,19 @@ class MARSModel(ClassicalModel):
 
         return torch.from_numpy(out_np).to(device).to(torch.float32)
 
-    def predict(self, X):  # noqa: N803
+    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+        X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
+
         if not self._is_fitted:
-            return np.zeros((X.shape[0], 1))
+            return np.zeros((X_np.shape[0], 1))
 
         hinges = []
-        for i in range(X.shape[1]):
-            feat = X[:, i]
+        for i in range(X_np.shape[1]):
+            feat = X_np[:, i]
             knots = np.linspace(feat.min(), feat.max(), self.n_segments)
             for knot in knots:
                 hinges.append(np.maximum(0, feat - knot))
                 hinges.append(np.maximum(0, knot - feat))
 
         X_hinge = np.column_stack(hinges)
-        return self.model.predict(X_hinge)
+        return np.asarray(self.model.predict(X_hinge))

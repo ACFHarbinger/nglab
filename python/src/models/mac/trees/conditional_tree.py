@@ -1,4 +1,4 @@
-"""Conditional Decision Tree Model."""
+from typing import Any
 
 from .decision_tree import DecisionTreeModel
 
@@ -9,6 +9,8 @@ class ConditionalDecisionTreeModel(DecisionTreeModel):
     Approximated by requiring a minimum impurity decrease for splits.
     """
 
-    def __init__(self, task="regression", min_impurity_decrease=0.05, **kwargs):
+    def __init__(
+        self, task: str = "regression", min_impurity_decrease: float = 0.05, **kwargs: Any
+    ) -> None:
         kwargs["min_impurity_decrease"] = min_impurity_decrease
         super().__init__(task=task, **kwargs)

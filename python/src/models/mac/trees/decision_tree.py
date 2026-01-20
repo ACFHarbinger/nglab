@@ -1,4 +1,4 @@
-"""Decision Tree Model."""
+from typing import Any
 
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
@@ -10,7 +10,7 @@ class DecisionTreeModel(ClassicalModel):
     Decision Tree wrapper for classification or regression.
     """
 
-    def __init__(self, task="regression", **kwargs):
+    def __init__(self, task: str = "regression", **kwargs: Any) -> None:
         """
         Initialize the Decision Tree model.
 

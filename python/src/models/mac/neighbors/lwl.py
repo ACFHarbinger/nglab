@@ -1,4 +1,4 @@
-"""Locally Weighted Learning Model."""
+from typing import Any, Literal, cast
 
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 
@@ -11,9 +11,18 @@ class LWLModel(ClassicalModel):
     Implemented as k-Nearest Neighbors with distance-based weighting.
     """
 
-    def __init__(self, task="regression", n_neighbors=5, kernel="distance", **kwargs):
+    def __init__(
+        self,
+        task: str = "regression",
+        n_neighbors: int = 5,
+        kernel: str = "distance",
+        **kwargs: Any,
+    ) -> None:
         super().__init__()
-        weights = kernel if kernel in ["distance", "uniform"] else "distance"
+        weights = cast(
+            Literal["uniform", "distance"],
+            kernel if kernel in ["distance", "uniform"] else "distance",
+        )
 
         if task == "regression":
             self.model = KNeighborsRegressor(

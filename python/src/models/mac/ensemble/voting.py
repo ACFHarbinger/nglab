@@ -1,4 +1,4 @@
-"""Voting Model."""
+from typing import Any
 
 from sklearn.ensemble import VotingClassifier, VotingRegressor
 from sklearn.linear_model import LinearRegression, LogisticRegression
@@ -10,7 +10,7 @@ from ..base import ClassicalModel
 class VotingModel(ClassicalModel):
     """Voting Ensemble (Soft/Hard Voting or Weighted Average)."""
 
-    def __init__(self, task="regression", **kwargs):
+    def __init__(self, task: str = "regression", **kwargs: Any) -> None:
         super().__init__()
 
         if "estimators" not in kwargs:
