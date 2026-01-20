@@ -7,6 +7,7 @@ mutation and crossover strategies for global optimization of hyperparameters.
 
 import ConfigSpace as CS  # noqa: N817
 import numpy as np
+from typing import Any, Dict, List, Optional, Union
 from distributed import Client
 
 from .de_base import DifferentialEvolutionBase
@@ -37,20 +38,20 @@ class DifferentialEvolution(DifferentialEvolutionBase):
 
     def __init__(  # noqa: PLR0913
         self,
-        cs=None,
-        f=None,
-        dimensions=None,
-        pop_size=20,
-        max_age=np.inf,
-        mutation_factor=None,
-        crossover_prob=None,
-        strategy="rand1_bin",
-        encoding=False,
-        dim_map=None,
-        seed=None,
-        config_repository=None,
-        **kwargs,
-    ):
+        cs: Optional[Any] = None,
+        f: Optional[Any] = None,
+        dimensions: Optional[int] = None,
+        pop_size: int = 20,
+        max_age: float = np.inf,
+        mutation_factor: Optional[float] = None,
+        crossover_prob: Optional[float] = None,
+        strategy: str = "rand1_bin",
+        encoding: bool = False,
+        dim_map: Optional[Dict[str, Any]] = None,
+        seed: Optional[Union[int, np.random.Generator]] = None,
+        config_repository: Optional[Any] = None,
+        **kwargs: Any,
+    ) -> None:
         """Initialize a synchronous DE optimizer with optional encoding support."""
         super().__init__(
             cs=cs,
@@ -108,30 +109,36 @@ class DifferentialEvolution(DifferentialEvolutionBase):
 
         return self._min_pop_size
 
-    def map_to_original(self, vector):
+    def map_to_original(self, vector: np.ndarray) -> np.ndarray:
         """Map an encoded vector to original dimensions using the dimension map."""
+        assert self.dim_map is not None
         dimensions = len(self.dim_map.keys())
         new_vector = self.rng.uniform(size=dimensions)
         for i in range(dimensions):
             new_vector[i] = np.max(np.array(vector)[self.dim_map[i]])
         return new_vector
 
-    def f_objective(self, x, fidelity=None, **kwargs):
+    def f_objective(self, x: Union[np.ndarray, CS.Configuration], fidelity: Optional[float] = None, **kwargs: Any) -> Dict[str, Any]:
         """Evaluate the objective for a given config or vector."""
         if self.f is None:
             raise NotImplementedError("An objective function needs to be passed.")
         if self.encoding:
+            assert isinstance(x, np.ndarray)
             x = self.map_to_original(x)
 
         # Only convert config if configspace is used + configuration has not been converted yet
         if self.configspace:
             if not isinstance(x, CS.Configuration):
                 # converts [0, 1] vector to a CS object
+                assert isinstance(x, np.ndarray)
                 config = self.vector_to_configspace(x)
             else:
                 config = x
         else:
-            config = x.copy()
+            if isinstance(x, np.ndarray):
+                config = x.copy()
+            else:
+                config = x
 
         if (
             fidelity is not None
@@ -139,12 +146,14 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             res = self.f(config, fidelity=fidelity, **kwargs)
         else:
             res = self.f(config, **kwargs)
+        assert isinstance(res, dict)
         assert "fitness" in res
         assert "cost" in res
         return res
 
-    def init_eval_pop(self, fidelity=None, eval=True, **kwargs):
+    def init_eval_pop(self, fidelity: Optional[float] = None, eval: bool = True, **kwargs: Any) -> Tuple[List[float], List[float], List[Any]]:
         """Creates new population of 'pop_size' and evaluates individuals."""
+        assert self.pop_size is not None
         self.population = self.init_population(self.pop_size)
         self.population_ids = self.config_repository.announce_population(
             self.population, fidelity

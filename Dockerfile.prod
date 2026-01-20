@@ -45,6 +45,7 @@ RUN uv pip install --system --no-cache \
     --extra-index-url https://pypi.org/simple \
     . \
     && find /usr/local/lib/python3.11/site-packages -name "nvidia*" -type d -exec rm -rf {} + \
+    && find /usr/local/lib/python3.11/site-packages -name "libcu*" -exec rm -rf {} + \
     && rm -rf /root/.cargo /root/.rustup /tmp/*
 
 # =============================================================================

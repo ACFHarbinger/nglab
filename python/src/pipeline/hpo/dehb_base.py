@@ -13,6 +13,7 @@ from pathlib import Path
 import ConfigSpace as CS  # noqa: N817
 import numpy as np
 from loguru import logger
+from typing import Any, List
 
 from .dehb_config_repo import ConfigRepository
 
@@ -94,6 +95,7 @@ class DifferentialEvolutionHyperbandBase:
             True if isinstance(self.cs, CS.ConfigurationSpace) else False
         )
         if self.use_configspace:
+            assert self.cs is not None
             self.cs.seed(self._original_seed)
             self.dimensions = len(list(self.cs.values()))
         elif dimensions is None or not isinstance(dimensions, (int, np.integer)):
@@ -196,8 +198,8 @@ class DifferentialEvolutionHyperbandBase:
         self.inc_config = None
         self.population = None
         self.fitness = None
-        self.traj = []
-        self.runtime = []
+        self.traj: List[float] = []
+        self.runtime: List[float] = []
         self.history = []
         if reset_seeds:
             if isinstance(self.cs, CS.ConfigurationSpace):
@@ -209,7 +211,7 @@ class DifferentialEvolutionHyperbandBase:
         """Initialize the DEHB population; implemented in subclasses."""
         raise NotImplementedError("Redefine!")
 
-    def _get_next_iteration(self, iteration: int) -> tuple[np.array, np.array]:
+    def _get_next_iteration(self, iteration: int) -> tuple[np.ndarray[Any, Any], np.ndarray[Any, Any]]:
         """Computes the Successive Halving spacing.
 
         Given the iteration index, computes the fidelity spacing to be used and
@@ -223,7 +225,8 @@ class DifferentialEvolutionHyperbandBase:
             and the respective fidelities
         """
         if self.max_SH_iter == 0 or self.eta is None:
-            return 1, [self.max_fidelity]
+            assert self.max_fidelity is not None
+            return np.array([1]), np.array([self.max_fidelity])
 
         # number of 'SH runs'
         s = self.max_SH_iter - 1 - (iteration % self.max_SH_iter)
@@ -237,7 +240,15 @@ class DifferentialEvolutionHyperbandBase:
         elif self.min_clip is not None:
             ns = np.clip(ns, a_min=self.min_clip, a_max=np.max(ns))
 
-        return ns, fidelities
+        return np.array(ns), np.array(fidelities)
+
+    def vector_to_configspace(self, vector: np.ndarray) -> CS.Configuration:
+        """Converts vector to CS configuration; must be implemented in subclasses."""
+        raise NotImplementedError("Redefine!")
+
+    def configspace_to_vector(self, config: CS.Configuration) -> np.ndarray:
+        """Converts CS configuration to vector; must be implemented in subclasses."""
+        raise NotImplementedError("Redefine!")
 
     def get_incumbents(self) -> tuple[dict | CS.Configuration | None, float]:
         """Retrieve current incumbent configuration and score.
@@ -245,6 +256,8 @@ class DifferentialEvolutionHyperbandBase:
         Returns:
             Tuple containing incumbent configuration and score.
         """
+        if self.inc_config is None:
+            return None, self.inc_score
         if self.use_configspace:
             return self.vector_to_configspace(self.inc_config), self.inc_score
         return self.inc_config, self.inc_score

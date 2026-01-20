@@ -19,6 +19,9 @@ import time
 from copy import deepcopy
 from pathlib import Path
 from threading import Timer
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from numpy.typing import NDArray
+
 
 import ConfigSpace as CS  # noqa: N817
 import ConfigSpace.hyperparameters as CSHP  # noqa: N812
@@ -39,7 +42,7 @@ _logger_props = {
 }
 
 
-def get_config_space(opts):
+def get_config_space(opts: Dict[str, Any]) -> CS.ConfigurationSpace:
     """Build the ConfigSpace for the given optimization options."""
     cs = CS.ConfigurationSpace()
     if opts["problem"] == "wcvrp":
@@ -101,7 +104,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         save_freq="incumbent",
         resume=False,
         **kwargs,
-    ):
+    ) -> None:
         """Initialize a multi-worker DEHB optimizer with Dask support."""
         super().__init__(
             cs=cs,
@@ -124,15 +127,15 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         )
         self.de_params.update({"async_strategy": async_strategy})
         self.iteration_counter = -1
-        self.de = {}
-        self._max_pop_size = None
-        self.active_brackets = []  # list of SynchronousHalvingBracketManager objects
-        self.traj = []
-        self.runtime = []
-        self.history = []
+        self.de: Dict[float, AsyncDifferentialEvolution] = {}
+        self._max_pop_size: Optional[Dict[float, int]] = None
+        self.active_brackets: List[SynchronousHalvingBracketManager] = []  # list of SynchronousHalvingBracketManager objects
+        self.traj: List[Any] = []
+        self.runtime: List[Any] = []
+        self.history: List[Any] = []
         self._ask_counter = 0
         self._tell_counter = 0
-        self.start = None
+        self.start: Optional[float] = None
         if save_freq not in ["incumbent", "step", "end"] and save_freq is not None:
             self.logger.warning(
                 f"Save frequency {save_freq} unknown. Resorting to using 'end'."
@@ -146,8 +149,8 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
                 "Need to specify either 'n_workers'(>0) or 'client' (a Dask client)!"
             )
         if client is not None and isinstance(client, Client):
-            self.client = client
-            self.n_workers = len(client.ncores())
+            self.client: Optional[Client] = client
+            self.n_workers = len(client.scheduler_info().get("workers", []))
         else:
             self.n_workers = n_workers if n_workers is not None else 0
             if self.n_workers > 1:
@@ -159,26 +162,25 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
                 )  # port 0 makes Dask select a random free port
             else:
                 self.client = None
-        self.futures = []
-        self.shared_data = None
+        self.futures: List[Any] = []
+        self.shared_data: Any = None
 
         # Initializing DE subpopulations
         self._get_pop_sizes()
         self._init_subpop()
         self.config_repository.initial_configs = self.config_repository.configs.copy()
 
-        # Misc.
-        self.available_gpus = None
-        self.gpu_usage = None
-        self.single_node_with_gpus = None
+        self.available_gpus: Optional[List[int]] = None
+        self.gpu_usage: Optional[Any] = None
+        self.single_node_with_gpus: Optional[bool] = None
 
-        self._time_budget_exhausted = False
-        self._runtime_budget_timer = None
+        self._time_budget_exhausted: bool = False
+        self._runtime_budget_timer: Optional[Timer] = None
 
         # Setup logging and potentially reload state
         if resume:
             self.logger.info("Loading checkpoint...")
-            success = self._load_checkpoint(self.output_path)
+            success = self._load_checkpoint(str(self.output_path))
             if not success:
                 self.logger.error(
                     "Checkpoint could not be loaded. "
@@ -208,7 +210,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         if hasattr(self, "client") and isinstance(self.client, Client):
             self.client.close()
 
-    def _f_objective(self, job_info):
+    def _f_objective(self, job_info: Dict[str, Any]) -> Dict[str, Any]:  # type: ignore[override]
         """Wrapper to call DE's objective function."""
         # check if job_info appended during job submission self.submit_job() includes "gpu_devices"
         if "gpu_devices" in job_info and self.single_node_with_gpus:
@@ -261,7 +263,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         final_variable = ",".join(final_variable)
         return final_variable
 
-    def _distribute_gpus(self):
+    def _distribute_gpus(self) -> None:
         """Function to create a GPU usage tracker dict.
 
         The idea is to extract the exact GPU device IDs available. During job submission, each
@@ -292,33 +294,33 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         # Important to set this flag to true after saving
         self._time_budget_exhausted = True
 
-    def vector_to_configspace(self, config: np.array) -> CS.Configuration:
+    def vector_to_configspace(self, vector: np.ndarray) -> CS.Configuration:
         """Converts numpy representation to `Configuration`.
 
         Args:
-            config (np.array): Configuration to convert.
+            vector (np.ndarray): Configuration vector to convert.
 
         Returns:
             CS.Configuration: Converted configuration
         """
         assert hasattr(self, "de")
         assert len(self.fidelities) > 0
-        return self.de[self.fidelities[0]].vector_to_configspace(config)
+        return self.de[self.fidelities[0]].vector_to_configspace(vector)
 
-    def configspace_to_vector(self, config: CS.Configuration) -> np.array:
+    def configspace_to_vector(self, config: CS.Configuration) -> np.ndarray:
         """Converts `Configuration` to numpy array.
 
         Args:
             config (CS.Configuration): Configuration to convert
 
         Returns:
-            np.array: Converted configuration
+            np.ndarray: Converted configuration
         """
         assert hasattr(self, "de")
         assert len(self.fidelities) > 0
         return self.de[self.fidelities[0]].configspace_to_vector(config)
 
-    def reset(self, *, reset_seeds: bool = True):
+    def reset(self, *, reset_seeds: bool = True) -> None:
         """Reset DEHB state, subpopulations, and Dask client."""
         super().reset(reset_seeds=reset_seeds)
         if (
@@ -347,14 +349,17 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         self.available_gpus = None
         self.gpu_usage = None
         self._time_budget_exhausted = False
-        self._runtime_budget_timer = None
+        self._runtime_budget_timer: Optional[Timer] = None
 
-    def _init_population(self, pop_size):
+    def _init_population(self, pop_size: int) -> Union[List[np.ndarray], np.ndarray]:  # type: ignore[override]
         """Initialize a population in vector form for a given size."""
         if self.use_configspace:
-            population = self.cs.sample_configuration(size=pop_size)
+            assert self.cs is not None
+            population_configs = self.cs.sample_configuration(size=pop_size)
+            if not isinstance(population_configs, list):
+                population_configs = [population_configs]
             population = [
-                self.configspace_to_vector(individual) for individual in population
+                self.configspace_to_vector(individual) for individual in population_configs
             ]
         else:
             population = self.rng.uniform(
@@ -362,7 +367,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             )
         return population
 
-    def _clean_inactive_brackets(self):
+    def _clean_inactive_brackets(self) -> None:
         """Removes brackets from the active list if it is done as communicated by Bracket Manager."""
         if len(self.active_brackets) == 0:
             return
@@ -371,19 +376,19 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         ]
         return
 
-    def _update_trackers(self, traj, runtime, history):
+    def _update_trackers(self, traj: float, runtime: float, history: Tuple[Any, ...]) -> None:
         """Append trajectory, runtime, and history entries."""
         self.traj.append(traj)
         self.runtime.append(runtime)
         self.history.append(history)
 
-    def _update_incumbents(self, config, score, info):
+    def _update_incumbents(self, config: np.ndarray, score: float, info: Dict[str, Any]) -> None:
         """Update the incumbent configuration and score."""
         self.inc_config = config
         self.inc_score = score
         self.inc_info = info
 
-    def _get_pop_sizes(self):
+    def _get_pop_sizes(self) -> None:
         """Determines maximum pop size for each fidelity."""
         self._max_pop_size = {}
         for i in range(self.max_SH_iter):
@@ -395,9 +400,12 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
                     else n[j]
                 )
 
-    def _init_subpop(self):
+    def _init_subpop(self) -> None:
         """List of DE objects corresponding to the fidelities."""
         self.de = {}
+        if self._max_pop_size is None:
+             self._get_pop_sizes()
+        assert self._max_pop_size is not None
         seeds = self.rng.integers(0, 2**32 - 1, size=len(self._max_pop_size))
         for (_i, f), _seed in zip(
             enumerate(self._max_pop_size.keys()), seeds, strict=False
@@ -411,8 +419,9 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             self.de[f].population = self.de[f].init_population(
                 pop_size=self._max_pop_size[f]
             )
+            assert self.de[f].population is not None
             self.de[f].population_ids = self.config_repository.announce_population(
-                self.de[f].population, f
+                cast(np.ndarray, self.de[f].population), float(f)
             )
             self.de[f].fitness = np.array([np.inf] * self._max_pop_size[f])
             # adding attributes to DEHB objects to allow communication across subpopulations
@@ -421,17 +430,19 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             self.de[f].promotion_pop_ids = None
             self.de[f].promotion_fitness = None
 
-    def _concat_pops(self, exclude_fidelity=None):
+    def _concat_pops(self, exclude_fidelity: Optional[float] = None) -> np.ndarray:
         """Concatenates all subpopulations."""
         fidelities = list(self.fidelities)
         if exclude_fidelity is not None:
             fidelities.remove(exclude_fidelity)
         pop = []
         for fidelity in fidelities:
-            pop.extend(self.de[fidelity].population.tolist())
+            de_pop = self.de[fidelity].population
+            if de_pop is not None:
+                 pop.extend(de_pop.tolist())
         return np.array(pop)
 
-    def _start_new_bracket(self):
+    def _start_new_bracket(self) -> SynchronousHalvingBracketManager:
         """Starts a new bracket based on Hyperband."""
         # start new bracket
         self.iteration_counter += (
@@ -446,14 +457,16 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         self.active_brackets.append(bracket)
         return bracket
 
-    def _get_worker_count(self):
-        """Return the number of active workers available for execution."""
+    def _get_worker_count(self) -> int:
         if isinstance(self.client, Client):
-            return len(self.client.ncores())
-        else:
-            return 1
+            return len(self.client.scheduler_info()["workers"])
+        elif isinstance(self.client, list):
+             return len(self.client) # type: ignore[arg-type]
+        elif self.n_workers is not None:
+             return self.n_workers
+        return 1
 
-    def _is_worker_available(self):
+    def _is_worker_available(self) -> bool:
         """Checks if at least one worker is available to run a job."""
         if (
             self.n_workers == 1
@@ -471,27 +484,31 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             return False
         return True
 
-    def _get_promotion_candidate(self, low_fidelity, high_fidelity, n_configs):
+    def _get_promotion_candidate(self, low_fidelity: float, high_fidelity: float, n_configs: int) -> Tuple[np.ndarray, Union[int, np.int64]]:
         """Manages the population to be promoted from the lower to the higher fidelity.
 
         This is triggered or in action only during the first full HB bracket, which is equivalent
         to the number of brackets <= max_SH_iter.
         """
         # finding the individuals that have been evaluated (fitness < np.inf)
-        evaluated_configs = np.where(self.de[low_fidelity].fitness != np.inf)[0]
-        promotion_candidate_pop = self.de[low_fidelity].population[evaluated_configs]
-        promotion_candidate_pop_ids = self.de[low_fidelity].population_ids[
-            evaluated_configs
-        ]
-        promotion_candidate_fitness = self.de[low_fidelity].fitness[evaluated_configs]
+        fitness_arr = self.de[low_fidelity].fitness
+        assert fitness_arr is not None
+        evaluated_configs = np.where(fitness_arr != np.inf)[0]
+        
+        pop_arr = self.de[low_fidelity].population
+        assert pop_arr is not None
+        promotion_candidate_pop = pop_arr[evaluated_configs]
+        
+        pop_ids_arr = np.array(self.de[low_fidelity].population_ids)
+        assert pop_ids_arr is not None
+        promotion_candidate_pop_ids = pop_ids_arr[evaluated_configs]
+        
+        promotion_candidate_fitness = fitness_arr[evaluated_configs]
         # ordering the evaluated individuals based on their fitness values
         pop_idx = np.argsort(promotion_candidate_fitness)
-
-        # creating population for promotion if none promoted yet or nothing to promote
-        if (
-            self.de[high_fidelity].promotion_pop is None
-            or len(self.de[high_fidelity].promotion_pop) == 0
-        ):
+        # best individual in the high_fidelity population for promotion if none promoted yet or nothing to promote
+        promotion_pop_current = self.de[high_fidelity].promotion_pop
+        if promotion_pop_current is None or len(promotion_pop_current) == 0:
             self.de[high_fidelity].promotion_pop = np.empty((0, self.dimensions))
             self.de[high_fidelity].promotion_pop_ids = np.array([], dtype=np.int64)
             self.de[high_fidelity].promotion_fitness = np.array([])
@@ -508,6 +525,9 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
                 ):
                     # skipping already present individual to allow diversity and reduce redundancy
                     continue
+                assert self.de[high_fidelity].promotion_pop is not None
+                assert self.de[high_fidelity].promotion_pop_ids is not None
+                assert self.de[high_fidelity].promotion_fitness is not None
                 self.de[high_fidelity].promotion_pop = np.append(
                     self.de[high_fidelity].promotion_pop, [individual], axis=0
                 )
@@ -515,10 +535,13 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
                     self.de[high_fidelity].promotion_pop_ids, individual_id
                 )
                 self.de[high_fidelity].promotion_fitness = np.append(
-                    self.de[high_fidelity].promotion_pop,
-                    promotion_candidate_fitness[pop_idx],
+                    self.de[high_fidelity].promotion_fitness,
+                    promotion_candidate_fitness[idx],
                 )
             # retaining only n_configs
+            assert self.de[high_fidelity].promotion_pop is not None
+            assert self.de[high_fidelity].promotion_pop_ids is not None
+            assert self.de[high_fidelity].promotion_fitness is not None
             self.de[high_fidelity].promotion_pop = self.de[high_fidelity].promotion_pop[
                 :n_configs
             ]
@@ -529,28 +552,33 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
                 high_fidelity
             ].promotion_fitness[:n_configs]
 
-        if len(self.de[high_fidelity].promotion_pop) > 0:
-            config = self.de[high_fidelity].promotion_pop[0]
-            config_id = self.de[high_fidelity].promotion_pop_ids[0]
+        promotion_pop = self.de[high_fidelity].promotion_pop
+        promotion_pop_ids = self.de[high_fidelity].promotion_pop_ids
+        promotion_fitness = self.de[high_fidelity].promotion_fitness
+
+        if promotion_pop is not None and len(promotion_pop) > 0:
+            assert promotion_pop_ids is not None
+            assert promotion_fitness is not None
+            config = promotion_pop[0]
+            config_id = promotion_pop_ids[0]
             # removing selected configuration from population
-            self.de[high_fidelity].promotion_pop = self.de[high_fidelity].promotion_pop[
-                1:
-            ]
-            self.de[high_fidelity].promotion_pop_ids = self.de[
-                high_fidelity
-            ].promotion_pop_ids[1:]
-            self.de[high_fidelity].promotion_fitness = self.de[
-                high_fidelity
-            ].promotion_fitness[1:]
+            self.de[high_fidelity].promotion_pop = promotion_pop[1:]
+            self.de[high_fidelity].promotion_pop_ids = promotion_pop_ids[1:]
+            self.de[high_fidelity].promotion_fitness = promotion_fitness[1:]
         else:
             # in case of an edge failure case where all high fidelity individuals are same
             # just choose the best performing individual from the lower fidelity (again)
-            config = self.de[low_fidelity].population[pop_idx[0]]
-            config_id = self.de[low_fidelity].population_ids[pop_idx[0]]
-        return config, config_id
+            low_pop = self.de[low_fidelity].population
+            low_pop_ids = self.de[low_fidelity].population_ids
+            assert low_pop is not None
+            assert low_pop_ids is not None
+            config = low_pop[pop_idx[0]]
+            config_id = int(low_pop_ids[pop_idx[0]])
+        return config, int(config_id)
 
-    def _get_next_parent_for_subpop(self, fidelity):
+    def _get_next_parent_for_subpop(self, fidelity: float) -> int:
         """Maintains a looping counter over a subpopulation, to iteratively select a parent."""
+        assert self._max_pop_size is not None
         parent_id = self.de[fidelity].parent_counter
         self.de[fidelity].parent_counter += 1
         self.de[fidelity].parent_counter = (
@@ -558,10 +586,11 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         )
         return parent_id
 
-    def _acquire_config(self, bracket, fidelity):
+    def _acquire_config(self, bracket: SynchronousHalvingBracketManager, fidelity: float) -> Tuple[Union[np.ndarray, CS.Configuration], Union[int, np.int64], int]:
         """Generates/chooses a configuration based on the fidelity and iteration number."""
         # select a parent/target
         parent_id = self._get_next_parent_for_subpop(fidelity)
+        assert self.de[fidelity].population is not None
         target = self.de[fidelity].population[parent_id]
         # identify lower fidelity to transfer information from
         lower_fidelity, num_configs = bracket.get_lower_fidelity_promotions(fidelity)
@@ -583,7 +612,9 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         # iteration_counter <= max_SH_iter but certainly never when iteration_counter > max_SH_iter
 
         # a single DE evolution --- (mutation + crossover) occurs here
+        assert self.de[lower_fidelity].fitness is not None
         mutation_pop_idx = np.argsort(self.de[lower_fidelity].fitness)[:num_configs]
+        assert self.de[lower_fidelity].population is not None
         mutation_pop = self.de[lower_fidelity].population[mutation_pop_idx]
         # generate mutants from previous fidelity subpopulation or global population
         if len(mutation_pop) < self.de[fidelity]._min_pop_size:
@@ -607,7 +638,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         config_id = self.config_repository.announce_config(config, fidelity)
         return config, config_id, parent_id
 
-    def _get_next_bracket(self, only_id=False):
+    def _get_next_bracket(self, only_id: bool = False) -> Union[SynchronousHalvingBracketManager, int, None]:
         """Used to retrieve what bracket the bracket for the next job.
 
         Optionally, a new bracket is started, if there are no more pending jobs or
@@ -640,21 +671,26 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
                 start_new_bracket = True
 
         if only_id:
+            assert bracket is not None
             return (
                 self.iteration_counter + 1 if start_new_bracket else bracket.bracket_id
             )
 
         return self._start_new_bracket() if start_new_bracket else bracket
 
-    def _get_next_job(self):
+    def _get_next_job(self) -> Dict[str, Any]:
         """Loads a configuration and fidelity to be evaluated next.
 
         Returns:
             dict: Dicitonary containing all necessary information of the next job.
         """
         bracket = self._get_next_bracket()
+        if bracket is None or isinstance(bracket, int):
+             raise ValueError("No valid bracket available")
         # fidelity that the SH bracket allots
         fidelity = bracket.get_next_job_fidelity()
+        if fidelity is None:
+             raise ValueError("Bracket returned None fidelity")
         config, config_id, parent_id = self._acquire_config(bracket, fidelity)
 
         # transform config to proper representation
@@ -703,14 +739,16 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
 
         return jobs
 
-    def _get_gpu_id_with_low_load(self):
+    def _get_gpu_id_with_low_load(self) -> str:
         """Select a GPU with minimal load and update usage counters."""
+        assert self.gpu_usage is not None
         candidates = []
         for k, v in self.gpu_usage.items():
             if v == min(self.gpu_usage.values()):
                 candidates.append(k)
         device_id = self.rng.choice(candidates)
         # creating string for setting environment variable CUDA_VISIBLE_DEVICES
+        assert self.available_gpus is not None
         gpu_ids = self._create_cuda_visible_devices(
             self.available_gpus,
             device_id,
@@ -721,7 +759,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         self.logger.debug(f"GPU device usage: {self.gpu_usage}")
         return gpu_ids
 
-    def _submit_job(self, job_info, **kwargs):
+    def _submit_job(self, job_info: Dict[str, Any], **kwargs: Any) -> None:
         """Asks a free worker to run the objective function on config and fidelity."""
         job_info["kwargs"] = (
             self.shared_data if self.shared_data is not None else kwargs
@@ -736,8 +774,10 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             # skipping scheduling to Dask worker to avoid added overheads in the synchronous case
             self.futures.append(self._f_objective(job_info))
 
-    def _fetch_results_from_workers(self):
+    def _fetch_results_from_workers(self) -> None:
         """Iterate over futures and collect results from finished workers."""
+        if self.futures is None:
+            return
         if self.n_workers > 1 or isinstance(self.client, Client):
             done_list = [
                 (i, future) for i, future in enumerate(self.futures) if future.done()
@@ -753,8 +793,9 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             if self.n_workers > 1 or isinstance(self.client, Client):
                 run_info = future.result()
                 if "device_id" in run_info:
-                    # updating GPU usage
-                    self.gpu_usage[run_info["device_id"]] -= 1
+                    if self.gpu_usage is not None:
+                        # updating GPU usage
+                        self.gpu_usage[run_info["device_id"]] -= 1
                     self.logger.debug(
                         "GPU device released: {}".format(run_info["device_id"])
                     )
@@ -765,9 +806,10 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             # tell result
             self.tell(run_info["job_info"], run_info["result"])
         # remove processed future
-        self.futures = np.delete(self.futures, [i for i, _ in done_list]).tolist()
+        if self.futures is not None:
+             self.futures = np.delete(self.futures, [i for i, _ in done_list]).tolist()
 
-    def _adjust_budgets(self, fevals=None, brackets=None):
+    def _adjust_budgets(self, fevals: Optional[int] = None, brackets: Optional[int] = None) -> Tuple[Optional[int], Optional[int]]:
         """Adjust requested budgets relative to current run state."""
         # only update budgets if it is not the first run
         if fevals is not None and len(self.traj) > 0:
@@ -777,7 +819,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
 
         return fevals, brackets
 
-    def _get_state(self):
+    def _get_state(self) -> Dict[str, Any]:
         """Collect a JSON-serializable snapshot of DEHB state."""
         state = {}
         # DE parameters
@@ -805,7 +847,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         state["internals"] = dehb_internals
         return state
 
-    def _save_state(self):
+    def _save_state(self) -> None:
         """Persist the DEHB state JSON to disk."""
         # Get state
         state = self._get_state()
@@ -823,21 +865,25 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             if len(self.traj) >= fevals:
                 return True
         elif brackets is not None:
-            future_iteration_counter = self._get_next_bracket(only_id=True)
-            if future_iteration_counter >= brackets:
-                for bracket in self.active_brackets:
-                    # waits for all brackets < iteration_counter to finish by collecting results
-                    if (
-                        bracket.bracket_id < future_iteration_counter
-                        and not bracket.is_bracket_done()
-                    ):
-                        return False
-                return True
+            next_bracket_res = self._get_next_bracket(only_id=True)
+            if next_bracket_res is not None:
+                assert isinstance(next_bracket_res, int)
+                future_iteration_counter: int = next_bracket_res
+                if future_iteration_counter >= brackets:
+                    for bracket in self.active_brackets:
+                        # waits for all brackets < iteration_counter to finish by collecting results
+                        if (
+                            bracket.bracket_id is not None
+                            and bracket.bracket_id < future_iteration_counter
+                            and not bracket.is_bracket_done()
+                        ):
+                            return False
+                    return True
         else:
             return self._time_budget_exhausted
         return False
 
-    def _save_incumbent(self):
+    def _save_incumbent(self) -> None:
         """Persist the current incumbent configuration to disk."""
         # Return early if there is no incumbent yet
         if self.inc_config is None:
@@ -857,7 +903,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         except Exception as e:
             self.logger.warning(f"Incumbent not saved: {e!r}")
 
-    def _save_history(self, name="history.parquet.gzip"):
+    def _save_history(self, name: str = "history.parquet.gzip") -> None:
         """Persist optimization history to a parquet file."""
         # Return early if there is no history yet
         if self.history is None:
@@ -880,12 +926,12 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         except Exception as e:
             self.logger.warning(f"History not saved: {e!r}")
 
-    def _log_debug(self):
+    def _log_debug(self) -> None:
         """Log bracket state details at debug level."""
         for bracket in self.active_brackets:
             self.logger.debug(f"Bracket ID {bracket.bracket_id}:\n{bracket!s}")
 
-    def _log_runtime(self, fevals, brackets, total_cost):
+    def _log_runtime(self, fevals: Optional[int], brackets: Optional[int], total_cost: Optional[float]) -> None:
         """Log progress for the selected budget type."""
         if fevals is not None:
             remaining = (len(self.traj), fevals, "function evaluation(s) done")
@@ -895,13 +941,14 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             )
             remaining = (self.iteration_counter + 1, brackets, _suffix)
         else:
+            assert self.start is not None
             elapsed = np.format_float_positional(time.time() - self.start, precision=2)
             remaining = (elapsed, total_cost, "seconds elapsed")
         self.logger.info(
             f"{remaining[0]}/{remaining[1]} {remaining[2]}",
         )
 
-    def _log_job_submission(self, job_info: dict):
+    def _log_job_submission(self, job_info: Dict[str, Any]) -> None:
         """Log details of a submitted evaluation job."""
         fidelity = job_info["fidelity"]
         config_id = job_info["config_id"]
@@ -991,7 +1038,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         self._clean_inactive_brackets()
         return True
 
-    def save(self):
+    def save(self) -> None:
         """Saves the current incumbent, history and state to disk."""
         self.logger.info("Saving state to disk...")
         if self._time_budget_exhausted:
@@ -1027,9 +1074,13 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             job_info (dict): Job info returned by ask().
             result (dict): Result dictionary with mandatory keys `fitness` and `cost`.
         """
+        if isinstance(job_info, list):
+             raise TypeError("Job info must be a dictionary.")
         if replay:
             # Get job_info container from ask and update fields
             job_info_container = self.ask()
+            if isinstance(job_info_container, list):
+                 raise TypeError("Job info container should be a dictionary in replay.")
             # Update according to given history
             job_info_container["fidelity"] = job_info["fidelity"]
             job_info_container["config"] = job_info["config"]
@@ -1066,16 +1117,20 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             config = self.config_repository.get(config_id)
 
         # carry out DE selection
+        assert self.de[fidelity].fitness is not None
+        assert self.de[fidelity].population is not None
         if fitness <= self.de[fidelity].fitness[parent_id]:
             self.de[fidelity].population[parent_id] = config
             self.de[fidelity].population_ids[parent_id] = config_id
             self.de[fidelity].fitness[parent_id] = fitness
         # updating incumbents
         inc_changed = False
+        assert self.de[fidelity].fitness is not None
         if self.de[fidelity].fitness[parent_id] < self.inc_score:
+            assert self.de[fidelity].population is not None
             self._update_incumbents(
                 config=self.de[fidelity].population[parent_id],
-                score=self.de[fidelity].fitness[parent_id],
+                score=float(self.de[fidelity].fitness[parent_id]),
                 info=info,
             )
             inc_changed = True
@@ -1106,7 +1161,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         total_cost=None,
         single_node_with_gpus=False,
         **kwargs,
-    ) -> tuple[np.array, np.array, np.array]:
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Main interface to run optimization by DEHB.
 
         This function waits on workers and if a worker is free, asks for a configuration and a
@@ -1206,11 +1261,14 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         if total_cost is not None:
             self._runtime_budget_timer = Timer(total_cost, self._timeout_handler)
             self._runtime_budget_timer.start()
+        else:
+            self._runtime_budget_timer = None
         while True:
             if self._is_run_budget_exhausted(fevals, brackets):
                 break
             if self._is_worker_available():
                 next_bracket_id = self._get_next_bracket(only_id=True)
+                assert isinstance(next_bracket_id, int)
                 if brackets is not None and next_bracket_id >= brackets:
                     # ignore submission and only collect results
                     # when brackets are chosen as run budget, an extra bracket is created
@@ -1228,6 +1286,8 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
                     # Ask for new job_info
                     job_info = self.ask()
                     # Submit job_info to a worker for execution
+                    if isinstance(job_info, list):
+                        raise TypeError("Job info should be a dictionary in this context.")
                     self._submit_job(job_info, **kwargs)
                     self._log_runtime(fevals, brackets, total_cost)
                     self._log_job_submission(job_info)
@@ -1235,18 +1295,20 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
             self._fetch_results_from_workers()
             self._clean_inactive_brackets()
         # end of while
-        time_taken = time.time() - self.start
-        self.logger.info(
-            f"End of optimisation! Total duration: {time_taken}; Total fevals: {len(self.traj)}\n"
-        )
+        if self.start is not None:
+            time_taken = time.time() - self.start
+            self.logger.info(
+                f"End of optimisation! Total duration: {time_taken}; Total fevals: {len(self.traj)}\n"
+            )
         self.logger.info(f"Incumbent score: {self.inc_score}")
         self.logger.info("Incumbent config: ")
-        if self.use_configspace:
-            config = self.vector_to_configspace(self.inc_config)
-            for k, v in dict(config).items():
-                self.logger.info(f"{k}: {v}")
-        else:
-            self.logger.info(f"{self.inc_config}")
+        if self.inc_config is not None:
+             if self.use_configspace:
+                 config = self.vector_to_configspace(self.inc_config)
+                 for k, v in dict(config).items():
+                     self.logger.info(f"{k}: {v}")
+             else:
+                 self.logger.info(f"{self.inc_config}")
 
         self.save()
         # cancel timer
@@ -1264,7 +1326,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
         )
 
 
-class DEHB(DifferentialEvolutionHyperbandBase):
+class DEHB(DifferentialEvolutionHyperband):
     """
     Differential Evolution Hyperband (DEHB) optimizer.
 
@@ -1383,13 +1445,16 @@ class DEHB(DifferentialEvolutionHyperbandBase):
                 },
             )
 
+        self.opt_time = 0.0
+        self.current_total_steps = 0
+
     def _save_incumbent(self, name=None):
         """Save the incumbent configuration and its performance."""
         if name is None:
             name = "incumbent.json"
 
         res = dict()
-        if self.configspace:
+        if self.use_configspace:
             config = self.vector_to_configspace(self.inc_config)
             res["config"] = config.get_dictionary()
         else:
@@ -1417,13 +1482,13 @@ class DEHB(DifferentialEvolutionHyperbandBase):
         except Exception as e:
             logging.warning(f"Checkpointing failed: {e!r}")
 
-        if self.wandb_project:
-            stats = {
-                "optimization_time": time.time() - self.start,
-                "incumbent_performance": self.inc_score,
-                "inc_config": self.inc_config,
-            }
-            wandb.log(stats)
+            if self.start is not None:
+                stats = {
+                    "optimization_time": time.time() - self.start,
+                    "incumbent_performance": self.inc_score,
+                    "inc_config": self.inc_config,
+                }
+                wandb.log(stats)
 
     def load_dehb(self, path):
         """Load a previously saved DEHB state."""
@@ -1434,8 +1499,9 @@ class DEHB(DifferentialEvolutionHyperbandBase):
         for k in self.de:
             self.de[k].f = func
 
-    def _verbosity_runtime(self, fevals, brackets, total_cost, total_time_cost):
+    def _verbosity_runtime(self, fevals: Optional[int], brackets: Optional[int], total_cost: Optional[float], total_time_cost: Optional[float]) -> None:
         """Log runtime information."""
+        remaining: Tuple[Any, ...]
         if fevals is not None:
             remaining = (len(self.traj), fevals, "function evaluation(s) done.")
         elif brackets is not None:
@@ -1444,6 +1510,7 @@ class DEHB(DifferentialEvolutionHyperbandBase):
             )
             remaining = (self.iteration_counter + 1, brackets, _suffix)
         elif total_time_cost is not None:
+            assert self.start is not None
             elapsed = np.format_float_positional(time.time() - self.start, precision=2)
             remaining = (elapsed, total_time_cost, "seconds elapsed.")
         else:
@@ -1468,15 +1535,23 @@ class DEHB(DifferentialEvolutionHyperbandBase):
             if len(self.traj) >= fevals:
                 return True
         elif brackets is not None:
-            if self.iteration_counter >= brackets:
-                for bracket in self.active_brackets:
-                    if (
-                        bracket.bracket_id < self.iteration_counter
-                        and not bracket.is_bracket_done()
-                    ):
-                        return False
-                return True
+            assert brackets is not None
+            next_bracket_res = self._get_next_bracket(only_id=True)
+            if next_bracket_res is not None:
+                assert isinstance(next_bracket_res, int)
+                future_bracket_id: int = next_bracket_res
+                if self.iteration_counter >= brackets:
+                    for bracket in self.active_brackets:
+                        if (
+                            bracket.bracket_id is not None
+                            and bracket.bracket_id < future_bracket_id
+                            and not bracket.is_bracket_done()
+                        ):
+                            return False
+                    return True
         elif total_time_cost is not None:
+            if self.start is None:
+                 return False
             if time.time() - self.start >= total_time_cost:
                 return True
             if (
@@ -1488,7 +1563,7 @@ class DEHB(DifferentialEvolutionHyperbandBase):
             return True
         return False
 
-    def run(  # noqa: PLR0913  # noqa: PLR0915
+    def run(  # type: ignore[override]
         self,
         fevals=None,
         brackets=None,
@@ -1528,7 +1603,7 @@ class DEHB(DifferentialEvolutionHyperbandBase):
             )
             logging.info(f"Incumbent score: {np.round(self.inc_score, decimals=2)}")
             logging.info("Incumbent config: ")
-            if self.configspace:
+            if self.use_configspace:
                 config = self.vector_to_configspace(self.inc_config)
                 for k, v in config.get_dictionary().items():
                     logging.info(f"{k}: {v}")
@@ -1536,5 +1611,5 @@ class DEHB(DifferentialEvolutionHyperbandBase):
                 logging.info(f"{self.inc_config}")
 
         self._save_incumbent(name)
-        self._save_history(name)
-        return config
+        self._save_history(name if name is not None else "history.parquet.gzip")
+        return self.inc_config

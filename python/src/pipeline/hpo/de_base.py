@@ -12,6 +12,7 @@ import ConfigSpace as CS  # noqa: N817
 import ConfigSpace.util as CSU  # noqa: N812
 import numpy as np
 from numpy.typing import NDArray
+from typing import Optional, List, Any, Union
 
 from .dehb_config_repo import ConfigRepository
 
@@ -40,18 +41,18 @@ class DifferentialEvolutionBase:
 
     def __init__(  # noqa: PLR0913
         self,
-        cs=None,
-        f=None,
-        dimensions=None,
-        pop_size=None,
-        max_age=None,
-        mutation_factor=None,
-        crossover_prob=None,
-        strategy=None,
-        boundary_fix_type="random",
-        config_repository=None,
-        seed=None,
-        **kwargs,
+        cs: Optional[CS.ConfigurationSpace] = None,
+        f: Optional[Any] = None,
+        dimensions: Optional[int] = None,
+        pop_size: Optional[int] = None,
+        max_age: Optional[int] = None,
+        mutation_factor: Optional[float] = None,
+        crossover_prob: Optional[float] = None,
+        strategy: Optional[str] = None,
+        boundary_fix_type: str = "random",
+        config_repository: Optional[ConfigRepository] = None,
+        seed: Optional[Union[int, np.random.Generator]] = None,
+        **kwargs: Any,
     ):
         """Initialize the DE base optimizer with RNG and configuration space metadata."""
         if seed is None:
@@ -77,15 +78,20 @@ class DifferentialEvolutionBase:
         self.max_age = max_age
         self.mutation_factor = mutation_factor
         self.crossover_prob = crossover_prob
-        self.strategy = strategy
+        if strategy is not None:
+            self.mutation_strategy = strategy.split("_")[0]
+            self.crossover_strategy = strategy.split("_")[1]
+        else:
+            self.mutation_strategy = self.crossover_strategy = None
         self.fix_type = boundary_fix_type
 
         # Miscellaneous
         self.configspace = True if isinstance(self.cs, CS.ConfigurationSpace) else False
         self.hps = dict()
         if self.configspace:
+            assert self.cs is not None
             self.cs.seed(self._original_seed)
-            for i, hp in enumerate(list(cs.values())):
+            for i, hp in enumerate(list(self.cs.values())):
                 # maps hyperparameter name to positional index in vector form
                 self.hps[hp.name] = i
         self.output_path = (
@@ -99,14 +105,14 @@ class DifferentialEvolutionBase:
             self.config_repository = ConfigRepository()
 
         # Global trackers
-        self.inc_score: float
-        self.inc_config: NDArray[np.float64]
-        self.inc_id: int
-        self.population: NDArray[np.float64]
-        self.population_ids: NDArray[np.int64]
-        self.fitness: NDArray[np.float64]
-        self.age: NDArray[np.int64]
-        self.history: list[object]
+        self.inc_score: float = np.inf
+        self.inc_config: Optional[np.ndarray] = None
+        self.inc_id: int = -1
+        self.population: Optional[np.ndarray] = None
+        self.population_ids: Optional[np.ndarray] = None
+        self.fitness: Optional[np.ndarray] = None
+        self.age: Optional[np.ndarray] = None
+        self.history: List[Any] = []
         self.reset()
 
     def reset(self, *, reset_seeds: bool = True):
@@ -128,6 +134,9 @@ class DifferentialEvolutionBase:
 
     def _shuffle_pop(self):
         """Shuffle population members and keep fitness/age aligned."""
+        assert self.population is not None
+        assert self.fitness is not None
+        assert self.age is not None
         pop_order = np.arange(len(self.population))
         self.rng.shuffle(pop_order)
         self.population = self.population[pop_order]
@@ -136,6 +145,9 @@ class DifferentialEvolutionBase:
 
     def _sort_pop(self):
         """Sort population by fitness with randomized tie-breaking."""
+        assert self.fitness is not None
+        assert self.population is not None
+        assert self.age is not None
         pop_order = np.argsort(self.fitness)
         self.rng.shuffle(pop_order)
         self.population = self.population[pop_order]
@@ -157,54 +169,66 @@ class DifferentialEvolutionBase:
 
         return self._min_pop_size
 
-    def init_population(self, pop_size: int) -> NDArray[np.float64]:
+    def init_population(self, pop_size: Optional[int] = None) -> NDArray[np.float64]:
         """Initialize a population in unit hypercube or ConfigSpace representation."""
+        if pop_size is None:
+             assert self.pop_size is not None
+             pop_size = self.pop_size
         if self.configspace:
+            assert self.cs is not None
             # sample from CS s.t. conditional constraints (if any) are maintained
-            population = self.cs.sample_configuration(size=pop_size)
-            if not isinstance(population, list):
-                population = [population]
+            sampled_configs = self.cs.sample_configuration(size=pop_size)
+            if not isinstance(sampled_configs, list):
+                sampled_configs = [sampled_configs]
             # the population is maintained in a list-of-vector form where each CS
             # configuration is scaled to a unit hypercube, i.e., all dimensions scaled to [0,1]
-            population = [
-                self.configspace_to_vector(individual) for individual in population
+            population_list = [
+                self.configspace_to_vector(individual) for individual in sampled_configs
             ]
+            population = np.array(population_list)
         else:
             # if no CS representation available, uniformly sample from [0, 1]
+            assert self.dimensions is not None
             population = self.rng.uniform(
                 low=0.0, high=1.0, size=(pop_size, self.dimensions)
             )
 
-        return np.array(population)
+        assert population is not None
+        return population
 
     def sample_population(
-        self, size: int = 3, alt_pop: NDArray[np.float64] = None
+        self, size: int = 3, alt_pop: Optional[Union[List[Any], np.ndarray[Any, Any]]] = None
     ) -> NDArray[np.float64]:
         """Samples 'size' individuals
 
         If alt_pop is None or a list/array of None, sample from own population
         Else sample from the specified alternate population (alt_pop)
         """
-        if isinstance(alt_pop, list) or isinstance(alt_pop, np.ndarray):
-            idx = [indv is None for indv in alt_pop]
-            if any(idx):
-                selection = self.rng.choice(
-                    np.arange(len(self.population)), size, replace=False
-                )
-                return self.population[selection]
-            else:
-                if len(alt_pop) < 3:
-                    alt_pop = np.vstack((alt_pop, self.population))
-                selection = self.rng.choice(
-                    np.arange(len(alt_pop)), size, replace=False
-                )
-                alt_pop = np.stack(alt_pop)
-                return alt_pop[selection]
+        assert self.population is not None
+        
+        target_pop: Union[List[Any], np.ndarray[Any, Any]] = self.population
+        if alt_pop is not None:
+             if isinstance(alt_pop, list):
+                 if any(indv is None for indv in alt_pop):
+                     target_pop = self.population
+                 else:
+                     target_pop = alt_pop
+             elif isinstance(alt_pop, np.ndarray):
+                 target_pop = alt_pop
+
+        if isinstance(target_pop, list):
+             target_pop_arr = np.array(target_pop)
         else:
-            selection = self.rng.choice(
-                np.arange(len(self.population)), size, replace=False
-            )
-            return self.population[selection]
+             target_pop_arr = target_pop
+
+        # If target population is too small, mix with self.population
+        if len(target_pop_arr) < size:
+             target_pop_arr = np.vstack((target_pop_arr, self.population))
+
+        selection = self.rng.choice(
+            np.arange(len(target_pop_arr)), size, replace=False
+        )
+        return target_pop_arr[selection]
 
     def boundary_check(self, vector: np.ndarray) -> np.ndarray:
         """
@@ -239,11 +263,13 @@ class DifferentialEvolutionBase:
         Works when self.cs is a CS object and the input vector is in the domain [0, 1].
         """
         # creates a CS object dict with all hyperparameters present, the inactive too
+        assert self.cs is not None
         new_config = CSU.impute_inactive_values(
             self.cs.get_default_configuration()
         ).get_dictionary()
         # iterates over all hyperparameters and normalizes each based on its type
-        for i, hyper in enumerate(list(self.cs.values())):
+        for i, hyper_obj in enumerate(list(self.cs.values())):
+            hyper: Any = hyper_obj
             if isinstance(hyper, CS.OrdinalHyperparameter):
                 ranges = np.arange(start=0, stop=1, step=1 / len(hyper.sequence))
                 param_value = hyper.sequence[np.where(not (vector[i] < ranges))[0][-1]]
@@ -254,10 +280,13 @@ class DifferentialEvolutionBase:
                 param_value = hyper.default_value
             else:  # handles UniformFloatHyperparameter & UniformIntegerHyperparameter
                 # rescaling continuous values
-                if hyper.log:
+                if getattr(hyper, "log", False):
+                    # type: ignore[attr-defined]
                     log_range = np.log(hyper.upper) - np.log(hyper.lower)
+                    # type: ignore[attr-defined]
                     param_value = np.exp(np.log(hyper.lower) + vector[i] * log_range)
                 else:
+                    # type: ignore[attr-defined]
                     param_value = hyper.lower + (hyper.upper - hyper.lower) * vector[i]
                 if isinstance(hyper, CS.UniformIntegerHyperparameter):
                     param_value = int(
@@ -273,7 +302,7 @@ class DifferentialEvolutionBase:
         )
         return new_config
 
-    def configspace_to_vector(self, config: CS.Configuration) -> np.ndarray:
+    def configspace_to_vector(self, config: CS.Configuration) -> NDArray[np.float64]:
         """Converts CS object to numpy array scaled to [0,1]
 
         Works when self.cs is a CS object and the input config is a CS object.
@@ -281,12 +310,14 @@ class DifferentialEvolutionBase:
         to maintain the dimensionality of the vector.
         """
         # the imputation replaces illegal parameter values with their default
+        assert self.cs is not None
         config = CSU.impute_inactive_values(config)
         dimensions = len(list(self.cs.values()))
         vector = [np.nan for i in range(dimensions)]
         for name in config:
             i = self.hps[name]
-            hyper = self.cs[name]
+            hyper_obj = self.cs[name]
+            hyper: Any = hyper_obj
             if isinstance(hyper, CS.OrdinalHyperparameter):
                 nlevels = len(hyper.sequence)
                 vector[i] = hyper.sequence.index(config[name]) / nlevels
@@ -300,30 +331,31 @@ class DifferentialEvolutionBase:
             else:
                 bounds = (hyper.lower, hyper.upper)
                 param_value = config[name]
-                if hyper.log:
-                    vector[i] = np.log(param_value / bounds[0]) / np.log(
+                if getattr(hyper, "log", False):
+                    # type: ignore[attr-defined]
+                    vector[i] = float(np.log(param_value / bounds[0]) / np.log(
                         bounds[1] / bounds[0]
-                    )
+                    ))
                 else:
-                    vector[i] = (config[name] - bounds[0]) / (bounds[1] - bounds[0])
-        return np.array(vector)
+                    vector[i] = float((config[name] - bounds[0]) / (bounds[1] - bounds[0]))
+        return np.array(vector, dtype=np.float64)
 
-    def f_objective(self):
+    def f_objective(self, *args: Any, **kwargs: Any) -> Any:
         """Evaluate objective; must be implemented in subclasses."""
         raise NotImplementedError("The function needs to be defined in the sub class.")
 
-    def mutation(self):
+    def mutation(self, *args: Any, **kwargs: Any) -> Any:
         """Apply mutation to create a mutant vector."""
         raise NotImplementedError("The function needs to be defined in the sub class.")
 
-    def crossover(self):
+    def crossover(self, *args: Any, **kwargs: Any) -> Any:
         """Apply crossover between target and mutant vectors."""
         raise NotImplementedError("The function needs to be defined in the sub class.")
 
-    def evolve(self):
+    def evolve(self, *args: Any, **kwargs: Any) -> Any:
         """Run a single evolution step; subclasses define behavior."""
         raise NotImplementedError("The function needs to be defined in the sub class.")
 
-    def run(self):
+    def run(self, *args: Any, **kwargs: Any) -> Any:
         """Run the optimizer; subclasses define the full loop."""
         raise NotImplementedError("The function needs to be defined in the sub class.")

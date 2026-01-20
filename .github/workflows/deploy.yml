@@ -12,9 +12,7 @@ on:
         required: true
         default: 'staging'
         type: choice
-        options:
-          - staging
-          - production
+        options: [staging, production]
 
 env:
   REGISTRY: ghcr.io
@@ -22,25 +20,60 @@ env:
 
 jobs:
   # ==========================================================================
-  # Build Docker Images
+  # We split the builds into separate jobs to maximize available disk space
   # ==========================================================================
-  build:
-    name: Build Docker Images
+  build-amd64:
+    name: Build API (amd64)
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    outputs:
-      version: ${{ steps.meta.outputs.version }}
-      tags: ${{ steps.meta.outputs.tags }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ADDED: Ensure uv is available for python-builder stage if Dockerfile uses it
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push amd64
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.prod
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-arm64:
+    name: Build API (arm64)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Free Disk Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -55,98 +88,55 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for API image
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=sha,format=short
-
-      - name: Build and push API image
+      - name: Build and Push arm64
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile.prod
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          file: Dockerfile.prod
+          platforms: linux/arm64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
 
-  # ==========================================================================
-  # Deploy to Staging
-  # ==========================================================================
-  deploy-staging:
-    name: Deploy to Staging
-    needs: build
-    if: github.ref == 'refs/heads/main'
+  # This job merges the two architecture-specific images into a single manifest
+  create-manifest:
+    name: Create Multi-Arch Manifest
+    needs: [build-amd64, build-arm64]
     runs-on: ubuntu-latest
-    # NOTE: Ensure "staging" is created in Repo Settings -> Environments
-    environment: staging
+    permissions:
+      packages: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Kubeconfig
+      - name: Create manifest
         run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBECONFIG_STAGING }}" > ~/.kube/config
+          docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-amd64 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-arm64
 
-      - name: Deploy with Helm
-        run: |
-          helm upgrade --install nglab-staging ./deploy/helm/nglab \
-            --namespace nglab-staging --create-namespace \
-            --set image.tag=${{ needs.build.outputs.version }} \
-            --set secrets.postgresPassword=${{ secrets.POSTGRES_PASSWORD }} \
-            --values ./deploy/helm/nglab/values-staging.yaml \
-            --wait --timeout=10m
-
-  # ==========================================================================
-  # Deploy to Production
-  # ==========================================================================
   deploy-production:
     name: Deploy to Production
-    needs: build
+    needs: create-manifest
     if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.environment == 'production'
     runs-on: ubuntu-latest
-    # NOTE: Ensure "production" is created in Repo Settings -> Environments
     environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Kubeconfig
         run: |
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG_PROD }}" > ~/.kube/config
-
       - name: Deploy with Helm
         run: |
           helm upgrade --install nglab-prod ./deploy/helm/nglab \
             --namespace nglab-prod --create-namespace \
-            --set image.tag=${{ needs.build.outputs.version }} \
-            --set secrets.postgresPassword=${{ secrets.POSTGRES_PASSWORD }} \
-            --values ./deploy/helm/nglab/values-production.yaml \
+            --set image.tag=latest \
+            --values ./deploy/helm/nglab/values.yaml \
             --wait --timeout=10m
-
-  # ==========================================================================
-  # Notify on Failure
-  # ==========================================================================
-  notify-failure:
-    name: Notify on Failure
-    needs: [build, deploy-staging, deploy-production]
-    if: failure()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Send Slack notification
-        uses: 8398a7/action-slack@v3
-        with:
-          status: failure
-          fields: repo,message,commit,author,action,eventName,ref,workflow
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
