@@ -5,19 +5,20 @@ Provides a Gymnasium-compatible interface for simulating trading scenarios,
 serving as the primary interface between agents and the market simulator.
 """
 
-from typing import Any, ClassVar
+from typing import Any
+from numpy.typing import NDArray
 
 import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 
 
-class TradingEnv(gym.Env[np.ndarray, np.ndarray]):
+class TradingEnv(gym.Env[NDArray[Any], NDArray[Any]]):
     """
     A placeholder Trading Environment following Gymnasium API.
     """
 
-    metadata: ClassVar[dict[str, Any]] = {"render_modes": ["human"]}
+    metadata: dict[str, Any] = {"render_modes": ["human"]}
 
     def __init__(self, lookback: int = 30, max_steps: int = 1000, feature_dim: int = 12) -> None:
         """
@@ -34,16 +35,18 @@ class TradingEnv(gym.Env[np.ndarray, np.ndarray]):
         self.feature_dim = feature_dim
 
         # Action space: Buy, Sell, Hold (e.g. Discrete(3) or Continuous)
-        self.action_space = spaces.Box(low=-1, high=1, shape=(1,), dtype=np.float32)
+        self.action_space: spaces.Space[Any] = spaces.Box(low=-1, high=1, shape=(1,), dtype=np.float32)
 
         # Observation space
-        self.observation_space = spaces.Box(
+        self.observation_space: spaces.Space[Any] = spaces.Box(
             low=-np.inf, high=np.inf, shape=(feature_dim,), dtype=np.float32
         )
 
         self.current_step = 0
 
-    def reset(self, seed: int | None = None, options: dict[str, Any] | None = None) -> tuple[np.ndarray, dict[str, Any]]:
+    def reset(
+        self, *, seed: int | None = None, options: dict[str, Any] | None = None
+    ) -> tuple[NDArray[Any], dict[str, Any]]:
         """
         Reset the environment state.
         """
@@ -53,7 +56,7 @@ class TradingEnv(gym.Env[np.ndarray, np.ndarray]):
         info: dict[str, Any] = {}
         return observation, info
 
-    def step(self, action: np.ndarray) -> tuple[np.ndarray, float, bool, bool, dict[str, Any]]:
+    def step(self, action: NDArray[Any]) -> tuple[NDArray[Any], float, bool, bool, dict[str, Any]]:
         """
         Execute one step in the environment.
         """

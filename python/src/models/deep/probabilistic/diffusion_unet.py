@@ -23,9 +23,9 @@ class SinusoidalPositionEmbeddings(nn.Module):
         """Generate embeddings for time steps."""
         device = time.device
         half_dim = self.dim // 2
-        embeddings = math.log(10000) / (half_dim - 1)
-        embeddings = torch.exp(torch.arange(half_dim, device=device) * -embeddings)
-        embeddings = time[:, None].float() * embeddings[None, :]
+        emb_scale = math.log(10000) / (half_dim - 1)
+        emb_factors = torch.exp(torch.arange(half_dim, device=device) * -emb_scale)
+        embeddings = time[:, None].float() * emb_factors[None, :]
         embeddings = torch.cat((embeddings.sin(), embeddings.cos()), dim=-1)
         return embeddings
 
@@ -35,12 +35,19 @@ class ResidualBlock1D(nn.Module):
     1D Residual Block with optional time embedding injection and group norm.
     """
 
-    def __init__(self, in_channels: int, out_channels: int, time_emb_dim: int | None = None, n_groups: int = 8) -> None:
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        time_emb_dim: int | None = None,
+        n_groups: int = 8,
+    ) -> None:
         """Initialize Residual Block."""
         super().__init__()
         self.norm1 = nn.GroupNorm(n_groups, in_channels)
         self.conv1 = nn.Conv1d(in_channels, out_channels, kernel_size=3, padding=1)
 
+        self.time_proj: nn.Linear | None
         if time_emb_dim is not None:
             self.time_proj = nn.Linear(time_emb_dim, out_channels)
         else:

@@ -7,7 +7,7 @@ into model-ready features, leveraging GPU acceleration where possible.
 
 from typing import Any, cast
 
-import joblib  # type: ignore
+import joblib
 import numpy as np
 import pandas as pd
 import torch

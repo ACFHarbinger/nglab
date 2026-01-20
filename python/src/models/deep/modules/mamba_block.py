@@ -3,6 +3,7 @@ Mamba Block implementation for state-space model layers.
 """
 
 import math
+from typing import Any, cast
 
 import torch
 import torch.nn.functional as F  # noqa: N812
@@ -15,7 +16,9 @@ class MambaBlock(nn.Module):
     Ref: Section 4.3.1 of the provided text.
     """
 
-    def __init__(self, d_model, d_state=16, d_conv=4, expand=2):
+    def __init__(
+        self, d_model: int, d_state: int = 16, d_conv: int = 4, expand: int = 2
+    ) -> None:
         """
         Initialize the Mamba block.
 
@@ -59,7 +62,14 @@ class MambaBlock(nn.Module):
         # 5. Output Projection
         self.out_proj = nn.Linear(self.d_inner, d_model)
 
-    def parallel_scan_dummy(self, u, delta, A, B, C):  # noqa: N803
+    def parallel_scan_dummy(
+        self,
+        u: torch.Tensor,
+        delta: torch.Tensor,
+        A: torch.Tensor,
+        B: torch.Tensor,
+        C: torch.Tensor,
+    ) -> torch.Tensor:  # noqa: N803
         """
         A simplified sequential implementation of the SSM equation:
         h_t = A_t * h_{t-1} + B_t * x_t
@@ -91,7 +101,7 @@ class MambaBlock(nn.Module):
 
         return torch.stack(ys, dim=1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -123,4 +133,4 @@ class MambaBlock(nn.Module):
         y = y + x_branch * self.D
         y = y * F.silu(res_branch)  # Gating mechanism
 
-        return self.out_proj(y)
+        return cast(torch.Tensor, self.out_proj(y))

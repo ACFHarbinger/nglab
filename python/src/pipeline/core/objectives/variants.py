@@ -5,7 +5,7 @@ Implements specialized RL losses including DR-GRPO, GSPO, and SAPO,
 designed to improve stability and performance in financial trading tasks.
 """
 
-from typing import Any
+from typing import Any, cast
 
 import torch
 from tensordict import TensorDict
@@ -56,7 +56,7 @@ class GSPOLoss(ClipPPOLoss):
         old_log_probs = tensordict["sample_log_prob"]
         # In actual GSPO, we'd find the sequence length from tensordict metadata or shape
         seq_len = 1.0  # Placeholder
-        return (log_probs - old_log_probs) / seq_len
+        return cast(torch.Tensor, (log_probs - old_log_probs) / seq_len)
 
 
 class SAPOLoss(ClipPPOLoss):

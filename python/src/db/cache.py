@@ -42,7 +42,9 @@ def cache_key(*args: Any, **kwargs: Any) -> str:
     return hashlib.sha256(key_data.encode()).hexdigest()
 
 
-def cached_query(ttl: int = 300, key_prefix: str = "query"):
+def cached_query(
+    ttl: int = 300, key_prefix: str = "query"
+) -> Callable[[Callable[..., Coroutine[Any, Any, T]]], Callable[..., Coroutine[Any, Any, T]]]:
     """
     Decorator for caching query results in Redis.
 
@@ -111,7 +113,7 @@ async def invalidate_cache(pattern: str) -> int:
     client = await get_redis_client()
     keys = await client.keys(pattern)
     if keys:
-        count = await client.delete(*keys)
+        count = cast(int, await client.delete(*keys))
         logger.info(f"Invalidated {count} cache keys matching '{pattern}'")
         return count
     return 0

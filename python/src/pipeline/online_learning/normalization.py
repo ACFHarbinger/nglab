@@ -14,7 +14,7 @@ class OnlineNormalizer(nn.Module):
         momentum: float | None = None,
         affine: bool = True,
         eps: float = 1e-5,
-    ):
+    ) -> None:
         """
         Args:
             num_features: Number of features to normalize.
@@ -45,7 +45,7 @@ class OnlineNormalizer(nn.Module):
             self.register_parameter("weight", None)
             self.register_parameter("bias", None)
 
-    def reset(self):
+    def reset(self) -> None:
         self.running_mean.zero_()
         self.running_var.fill_(1)
         self.count.zero_()
@@ -53,7 +53,7 @@ class OnlineNormalizer(nn.Module):
             nn.init.ones_(self.weight)
             nn.init.zeros_(self.bias)
 
-    def update(self, x: torch.Tensor):
+    def update(self, x: torch.Tensor) -> None:
         """
         Update running statistics without applying normalization.
         Expects x of shape (batch_size, num_features) or (num_features,).

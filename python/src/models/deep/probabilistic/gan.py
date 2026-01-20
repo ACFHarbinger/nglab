@@ -3,6 +3,7 @@ Time Series GAN Networks (Generator and Discriminator).
 """
 
 
+from typing import cast
 import torch
 from torch import nn
 
@@ -89,4 +90,4 @@ class TimeGANDiscriminator(nn.Module):
         # Global Average Pooling over time to catch anomalies anywhere
         out_pooled = torch.mean(output, dim=1)
         logits = self.fc(out_pooled)
-        return logits
+        return cast(torch.Tensor, logits)

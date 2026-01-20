@@ -1,5 +1,6 @@
 """Static and Dynamic Hyper-Network connections."""
 
+from typing import Any, cast
 import torch
 from torch import nn
 
@@ -29,7 +30,7 @@ class StaticHyperConnection(nn.Module):
         self.input_mixer = nn.Parameter(torch.randn(self.n, 1) * 0.01)
         self.depth_mixer = nn.Parameter(torch.randn(1, self.n) * 0.01)
 
-    def forward(self, H, *args, **kwargs):  # noqa: N803
+    def forward(self, H: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:  # noqa: N803
         """
         Forward pass for static hyper connection.
         """
@@ -60,7 +61,7 @@ class DynamicHyperConnection(nn.Module):
     Uses 'streams' (n) concepts to mix information.
     """
 
-    def __init__(self, module, embed_dim, n=4):
+    def __init__(self, module: nn.Module, embed_dim: int, n: int = 4) -> None:
         """
         Initializes the dynamic hyper-connection.
 
@@ -86,12 +87,13 @@ class DynamicHyperConnection(nn.Module):
 
         self._initialize_identity_bias()
 
-    def _initialize_identity_bias(self):
+    def _initialize_identity_bias(self) -> None:
         """
         Forces the predictor to output Identity for Width and Zero for others initially.
         """
         # Set weights to near-zero so bias dominates at initialization
-        nn.init.uniform_(self.predictor[-1].weight, -0.0001, 0.0001)
+        last_layer = cast(nn.Linear, self.predictor[-1])
+        nn.init.uniform_(last_layer.weight, -0.0001, 0.0001)
 
         n = self.n
         # Width Mixer (A_r) target: Flattened Identity Matrix
@@ -100,9 +102,10 @@ class DynamicHyperConnection(nn.Module):
         target_others = torch.zeros(2 * n)
 
         initial_bias = torch.cat([target_width, target_others])
-        self.predictor[-1].bias.data.copy_(initial_bias)
+        last_layer = cast(nn.Linear, self.predictor[-1])
+        last_layer.bias.data.copy_(initial_bias)
 
-    def forward(self, H, *args, **kwargs):  # noqa: N803
+    def forward(self, H: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:  # noqa: N803
         """
         Applies the dynamic hyper-connection.
 

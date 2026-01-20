@@ -22,7 +22,7 @@ class Baseline:
     Abstract Base Class for REINFORCE baselines.
     """
 
-    def wrap_dataset(self, dataset: Dataset) -> Dataset:
+    def wrap_dataset(self, dataset: Dataset[Any]) -> Dataset[Any]:
         """
         Wrap dataset if the baseline requires extra data.
         """
@@ -87,7 +87,7 @@ class WarmupBaseline(Baseline):
         self.alpha: float = 0.0
         self.n_epochs = n_epochs
 
-    def wrap_dataset(self, dataset: Dataset) -> Dataset:
+    def wrap_dataset(self, dataset: Dataset[Any]) -> Dataset[Any]:
         """
         Wrap dataset according to the current warmup stage.
         """
@@ -243,9 +243,9 @@ class CriticBaseline(Baseline):
         Load critic state.
         """
         critic_state_dict = state_dict.get("critic", {})
-        if hasattr(critic_state_dict, 'state_dict'):
-            critic_state_dict = critic_state_dict.state_dict() # type: ignore
-        self.critic.load_state_dict({**self.critic.state_dict(), **critic_state_dict}) # type: ignore
+        if hasattr(critic_state_dict, "state_dict"):
+            critic_state_dict = critic_state_dict.state_dict()
+        self.critic.load_state_dict({**self.critic.state_dict(), **critic_state_dict})
 
 
 class RolloutBaseline(Baseline):
@@ -303,7 +303,7 @@ class RolloutBaseline(Baseline):
         self.mean = self.bl_vals.mean()
         self.epoch = epoch
 
-    def wrap_dataset(self, dataset: Dataset) -> Dataset:
+    def wrap_dataset(self, dataset: Dataset[Any]) -> Dataset[Any]:
         """
         Wrap dataset with baseline values.
         """
@@ -322,7 +322,9 @@ class RolloutBaseline(Baseline):
             -1
         )  # Flatten result to undo wrapping as 2D
 
-    def eval(self, x: torch.Tensor, c: torch.Tensor) -> tuple[torch.Tensor | float, torch.Tensor | float]:
+    def eval(
+        self, x: torch.Tensor, c: torch.Tensor
+    ) -> tuple[torch.Tensor | float, torch.Tensor | float]:
         """
         Evaluate baseline model on a batch.
         """
@@ -347,7 +349,8 @@ class RolloutBaseline(Baseline):
         )
         if candidate_mean - self.mean < 0:
             # Calc p value
-            t, p = ttest_rel(candidate_vals, self.bl_vals)
+            res: Any = ttest_rel(candidate_vals, self.bl_vals)
+            t, p = res.statistic, res.pvalue
 
             p_val = p / 2  # one-sided
             assert t < 0, "T-statistic should be negative"
@@ -374,7 +377,7 @@ class RolloutBaseline(Baseline):
         self._update_model(load_model, state_dict["epoch"], state_dict["dataset"])
 
 
-class BaselineDataset(Dataset):
+class BaselineDataset(Dataset[dict[str, Any]]):
     """
     Dataset wrapper that includes baseline values.
     """

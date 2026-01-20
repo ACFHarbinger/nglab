@@ -327,6 +327,7 @@ class NTM(nn.Module):
         # Controller (receives input + read vectors)
         controller_input_dim = input_dim + num_reads * memory_dim
 
+        self.controller: nn.Module
         if controller_type == "lstm":
             self.controller = nn.LSTM(
                 controller_input_dim, hidden_dim, batch_first=True
@@ -388,7 +389,7 @@ class NTM(nn.Module):
             h_state = torch.zeros(1, batch_size, self.hidden_dim, device=x.device)
             c_state = torch.zeros(1, batch_size, self.hidden_dim, device=x.device)
 
-        outputs = []
+        outputs_list = []
 
         for t in range(seq_len):
             # Controller input: current input + previous reads
@@ -424,9 +425,9 @@ class NTM(nn.Module):
             # Generate output
             output_input = torch.cat([controller_output, read_vectors], dim=1)
             output = self.output_net(output_input)
-            outputs.append(output)
+            outputs_list.append(output)
 
-        outputs = torch.stack(outputs, dim=1)
+        outputs = torch.stack(outputs_list, dim=1)
 
         if self.output_type == "embedding":
             if return_sequence:

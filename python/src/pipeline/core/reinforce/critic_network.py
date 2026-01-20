@@ -5,6 +5,8 @@ Estimates the value of a given state to provide a baseline for advantage
 calculation in Reinforcement Learning.
 """
 
+from typing import Any, cast
+import torch
 from torch import nn
 
 from ..models.graph_encoder import GraphAttentionEncoder
@@ -17,13 +19,13 @@ class CriticNetwork(nn.Module):
 
     def __init__(  # noqa: PLR0913
         self,
-        method,
-        input_dim,
-        embedding_dim,
-        hidden_dim,
-        n_layers,
-        encoder_normalization,
-    ):
+        method: Any,
+        input_dim: int,
+        embedding_dim: int,
+        hidden_dim: int,
+        n_layers: int,
+        encoder_normalization: Any,
+    ) -> None:
         """
         Initialize the critic network.
         """
@@ -44,7 +46,7 @@ class CriticNetwork(nn.Module):
             nn.Linear(embedding_dim, hidden_dim), nn.ReLU(), nn.Linear(hidden_dim, 1)
         )
 
-    def forward(self, inputs):
+    def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """
         Forward pass of the critic network.
 
@@ -55,4 +57,4 @@ class CriticNetwork(nn.Module):
             torch.Tensor: Estimated state values.
         """
         _, graph_embeddings = self.encoder(inputs)
-        return self.value_head(graph_embeddings)
+        return cast(torch.Tensor, self.value_head(graph_embeddings))

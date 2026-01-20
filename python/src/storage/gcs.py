@@ -4,7 +4,7 @@ Google Cloud Storage backend for models.
 
 import json
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 from python.src.storage.base import ModelMetadata, ModelStorage, StorageConfig
 
@@ -22,7 +22,7 @@ class GCSStorage(ModelStorage):
         self._prefix = config.gcs_prefix.rstrip("/") + "/"
 
     @property
-    def client(self) -> "storage.Client":  # Use string forward reference for the type
+    def client(self) -> Any:  # Use Any to avoid mandatory google-cloud-storage dependency for type checking
         """Lazy initialization of GCS client."""
         if self._client is None:
             try:
@@ -43,7 +43,7 @@ class GCSStorage(ModelStorage):
         return self._client
 
     @property
-    def bucket(self):
+    def bucket(self) -> Any:
         """Get the GCS bucket object."""
         return self.client.bucket(self._bucket_name)
 
@@ -68,7 +68,7 @@ class GCSStorage(ModelStorage):
         model_data: bytes,
         name: str,
         version: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> str:
         """Save model to GCS."""
         if version is None:
@@ -159,7 +159,7 @@ class GCSStorage(ModelStorage):
             return len(blobs) > 0
         else:
             blob = self.bucket.blob(self._model_path(name, version))
-            return blob.exists()
+            return bool(blob.exists())
 
     def delete(self, name: str, version: str | None = None) -> bool:
         """Delete model from GCS."""
@@ -231,7 +231,7 @@ class GCSStorage(ModelStorage):
         """Get the latest version string for a model."""
         blob = self.bucket.blob(self._latest_path(name))
         if blob.exists():
-            return blob.download_as_text().strip()
+            return cast(str, blob.download_as_text().strip())
 
         # Fallback: find most recent version
         versions = self.list_versions(name)

@@ -52,8 +52,8 @@ class RLLightningModule(BaseModule):
 
         # Loss Module
         self.loss_module = ClipPPOLoss(
-            actor_network=self.agent,
-            critic_network=self.critic,
+            actor_network=cast(Any, self.agent),
+            critic_network=cast(Any, self.critic),
             clip_epsilon=cfg.get("clip_epsilon", 0.2),
             entropy_bonus=bool(cfg.get("ent_coef", 0.0)),
             gamma=cfg.get("gamma", 0.99),
@@ -147,12 +147,10 @@ class RLLightningModule(BaseModule):
                 # use Automatic Optimization and just do one pass?
                 # Best practice in PL for PPO is manual optimization.
 
-                if hasattr(opt, 'optimizer'):
-                    opt.optimizer.zero_grad()
-                else:
-                    opt.zero_grad()
+                opt_any: Any = opt
+                opt_any.zero_grad()
                 self.manual_backward(loss_value)
-                opt.step()
+                opt_any.step()
 
                 total_loss += loss_value.detach()
 

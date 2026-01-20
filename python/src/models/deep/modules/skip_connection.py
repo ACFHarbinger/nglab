@@ -1,5 +1,7 @@
 """Residual skip connection implementation."""
 
+from typing import Any, cast
+import torch
 from torch import nn
 
 
@@ -8,7 +10,7 @@ class SkipConnection(nn.Module):
     Implements a residual connection: output = input + module(input).
     """
 
-    def __init__(self, module: nn.Module):
+    def __init__(self, module: nn.Module) -> None:
         """
         Initializes the skip connection.
 
@@ -18,7 +20,7 @@ class SkipConnection(nn.Module):
         super().__init__()
         self.module = module
 
-    def forward(self, input, *args, **kwargs):
+    def forward(self, input: torch.Tensor, *args: Any, **kwargs: Any) -> torch.Tensor:
         """
         Applies the residual skip connection: input + module(input).
 
@@ -30,4 +32,4 @@ class SkipConnection(nn.Module):
         Returns:
             Result of the addition.
         """
-        return input + self.module(input, *args, **kwargs)
+        return cast(torch.Tensor, input + self.module(input, *args, **kwargs))

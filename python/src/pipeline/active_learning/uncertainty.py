@@ -7,6 +7,7 @@ used to sample the most informative data points for training.
 
 import torch
 from torch import nn
+from typing import cast
 
 
 def pinball_loss(
@@ -34,13 +35,13 @@ class QuantileHead(nn.Module):
     Outputs multiple quantiles for uncertainty estimation.
     """
 
-    def __init__(self, input_dim: int, quantiles: list[float]):
+    def __init__(self, input_dim: int, quantiles: list[float]) -> None:
         super().__init__()
         self.quantiles = quantiles
         self.head = nn.Linear(input_dim, len(quantiles))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.head(x)
+        return cast(torch.Tensor, self.head(x))
 
 
 def mc_dropout_predict(

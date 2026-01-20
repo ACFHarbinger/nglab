@@ -13,7 +13,9 @@ class MarkovChain(nn.Module):
     Can generate sequences and sample next states.
     """
 
-    def __init__(self, num_states, output_type="prediction", learnable=True):
+    def __init__(
+        self, num_states: int, output_type: str = "prediction", learnable: bool = True
+    ) -> None:
         """Initialize Markov Chain."""
         super().__init__()
         self.num_states = num_states
@@ -25,11 +27,16 @@ class MarkovChain(nn.Module):
         else:
             self.register_buffer("transition_matrix", torch.eye(num_states))
 
-    def get_transition_probs(self):
+    def get_transition_probs(self) -> torch.Tensor:
         """Get transition probabilities (softmax of logits)."""
         return torch.softmax(self.transition_matrix, dim=-1)
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         x can be a sequence of states (discrete) or state probabilities.
         We assume x is (Batch, Seq, Num_States) or (Batch, Num_States).
@@ -47,7 +54,7 @@ class MarkovChain(nn.Module):
             return res[:, -1, :]
         return res
 
-    def sample_next(self, current_state_idx):
+    def sample_next(self, current_state_idx: int) -> torch.Tensor:
         """Sample next state given current state index."""
         probs = self.get_transition_probs()[current_state_idx]
         return torch.multinomial(probs, 1)

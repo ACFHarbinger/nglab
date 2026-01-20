@@ -2,6 +2,7 @@
 
 import math
 
+from typing import cast
 import torch
 from torch import nn
 from torch_geometric.utils import scatter
@@ -22,7 +23,7 @@ class DistanceAwareGraphConvolution(nn.Module):
         distance_influence: str = "inverse",  # Options: "inverse", "exponential", "learnable"
         aggregation: str = "sum",
         bias: bool = True,
-    ):
+    ) -> None:
         """
         Args:
             in_channels: Dimension of input node features.
@@ -59,14 +60,14 @@ class DistanceAwareGraphConvolution(nn.Module):
 
         self.init_parameters()
 
-    def init_parameters(self):
+    def init_parameters(self) -> None:
         """Initializes the parameters of the layer using uniform distribution."""
         for param in self.parameters():
             if param.dim() > 1:
                 stdv = 1.0 / math.sqrt(param.size(-1))
                 param.data.uniform_(-stdv, stdv)
 
-    def get_distance_weights(self, dist_matrix):
+    def get_distance_weights(self, dist_matrix: torch.Tensor) -> torch.Tensor:
         """
         Compute edge weights based on distances
 
@@ -102,7 +103,12 @@ class DistanceAwareGraphConvolution(nn.Module):
 
         return weights
 
-    def forward(self, h, adj, dist_matrix=None):
+    def forward(
+        self,
+        h: torch.Tensor,
+        adj: torch.Tensor,
+        dist_matrix: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         """
         Args:
             h: Input node features (B x V x H_1)
@@ -186,7 +192,9 @@ class DistanceAwareGraphConvolution(nn.Module):
 
         return out
 
-    def single_graph_forward(self, h, adj, dist_matrix=None):
+    def single_graph_forward(
+        self, h: torch.Tensor, adj: torch.Tensor, dist_matrix: torch.Tensor | None = None
+    ) -> torch.Tensor:
         """
         Args:
             h: Input node features (N x H_1)
@@ -242,7 +250,7 @@ class DistanceAwareGraphConvolution(nn.Module):
         if self.bias is not None:
             out += self.bias
 
-        return out
+        return cast(torch.Tensor, out)
 
 
 # Example of how to use this class:

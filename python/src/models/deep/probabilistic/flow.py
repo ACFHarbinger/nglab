@@ -6,6 +6,8 @@ It maps complex data distributions to a simple base distribution (e.g., Gaussian
 through a sequence of invertible transformations.
 """
 
+from typing import cast
+
 import torch
 from torch import nn
 
@@ -170,12 +172,11 @@ class NormalizingFlow(nn.Module):
         batch_size = z.shape[0]
 
         for i in reversed(range(len(self.layers))):
-            layer = self.layers[i]
-
             # Undo permutation if we did it in forward
             if i < len(self.layers) - 1:
                 z = torch.flip(z, [1])
 
+            layer = cast(CouplingLayer, self.layers[i])
             z = layer.inverse(z)
 
         # Reshape to sequence if needed

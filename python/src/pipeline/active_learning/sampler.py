@@ -5,6 +5,7 @@ This module provides strategies for selecting the most informative samples
 from an unlabelled pool based on uncertainty scores.
 """
 
+from typing import Any
 import numpy as np
 import torch
 
@@ -15,7 +16,7 @@ class BaseSampler:
     def __init__(self, budget: int):
         self.budget = budget
 
-    def select(self, scores: torch.Tensor) -> np.ndarray:
+    def select(self, scores: torch.Tensor) -> np.ndarray[Any, Any]:
         """
         Select indices based on scores.
 
@@ -31,7 +32,7 @@ class BaseSampler:
 class UncertaintySampler(BaseSampler):
     """Selects samples with the highest uncertainty scores."""
 
-    def select(self, scores: torch.Tensor) -> np.ndarray:
+    def select(self, scores: torch.Tensor) -> np.ndarray[Any, Any]:
         # scores: higher is more uncertain
         _, indices = torch.topk(scores.view(-1), k=self.budget)
         return indices.cpu().numpy()
@@ -43,7 +44,7 @@ class EntropySampler(BaseSampler):
     Suitable for classification tasks.
     """
 
-    def select(self, probs: torch.Tensor) -> np.ndarray:
+    def select(self, probs: torch.Tensor) -> np.ndarray[Any, Any]:
         """
         Args:
             probs: Predicted probabilities [PoolSize, NumClasses]
@@ -59,7 +60,7 @@ class BaldSampler(BaseSampler):
     Selects samples that maximize the information gain about model parameters.
     """
 
-    def select(self, mc_preds: torch.Tensor) -> np.ndarray:
+    def select(self, mc_preds: torch.Tensor) -> np.ndarray[Any, Any]:
         """
         Args:
             mc_preds: MC Dropout predictions [num_samples, pool_size, num_classes]
@@ -82,7 +83,7 @@ class BaldSampler(BaseSampler):
 class RandomSampler(BaseSampler):
     """Baseline: Selects samples randomly."""
 
-    def select(self, scores: torch.Tensor) -> np.ndarray:
+    def select(self, scores: torch.Tensor) -> np.ndarray[Any, Any]:
         pool_size = scores.size(0)
         indices = np.random.choice(pool_size, size=self.budget, replace=False)
         return indices

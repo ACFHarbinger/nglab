@@ -102,7 +102,7 @@ class PINN(nn.Module):
             retain_graph=True,
             only_inputs=True,
         )[0]
-        return cast(torch.Tensor, grads)
+        return grads
 
     def laplacian(self, u: torch.Tensor, x: torch.Tensor) -> torch.Tensor:
         """
@@ -123,7 +123,7 @@ class PINN(nn.Module):
                 retain_graph=True,
             )[0]
             lap += grad_2[:, i : i + 1]
-        return cast(torch.Tensor, lap)
+        return lap
 
 
 def pinn_loss(

@@ -109,7 +109,7 @@ class GraphConvolution(nn.Module):
 
         if self.bias is not None:
             out += self.bias
-        return cast(torch.Tensor, out)
+        return out
 
     def single_graph_forward(self, h: torch.Tensor, adj: torch.Tensor) -> torch.Tensor:
         """
@@ -134,4 +134,4 @@ class GraphConvolution(nn.Module):
 
         if self.bias is not None:
             out += self.bias
-        return cast(torch.Tensor, out)
+        return out

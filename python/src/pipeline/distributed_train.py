@@ -112,7 +112,7 @@ def train_ddp(  # noqa: PLR0913
     local_rank = setup_distributed()
     device = torch.device(f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu")
 
-    sampler = DistributedSampler(dataset, shuffle=True)
+    sampler: DistributedSampler[Any] = DistributedSampler(dataset, shuffle=True)
     train_loader = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,

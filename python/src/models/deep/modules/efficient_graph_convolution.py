@@ -4,6 +4,7 @@ from collections.abc import Iterable
 
 import torch
 from torch import Tensor
+from typing import Any, cast, Sized
 from torch.nn import Linear, Parameter
 from torch_geometric.nn import MessagePassing
 from torch_geometric.nn.conv.gcn_conv import gcn_norm
@@ -36,8 +37,8 @@ class EfficientGraphConvolution(MessagePassing):
         add_self_loops: bool = True,
         bias: bool = True,
         sigmoid: bool = False,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Args:
             in_channels: Dimension of input features.
@@ -73,7 +74,7 @@ class EfficientGraphConvolution(MessagePassing):
         self.bases_weight = Parameter(
             torch.Tensor(in_channels, (out_channels // num_heads) * num_bases)
         )
-        self.comb_weight = Linear(in_channels, num_heads * num_bases * len(aggrs))
+        self.comb_weight = Linear(in_channels, num_heads * num_bases * len(self.aggregators))
 
         if bias:
             self.bias = Parameter(torch.Tensor(out_channels))
@@ -82,7 +83,7 @@ class EfficientGraphConvolution(MessagePassing):
 
         self.reset_parameters()
 
-    def reset_parameters(self):
+    def reset_parameters(self) -> None:
         """Resets the parameters of the layer using Glorot initialization."""
         glorot(self.bases_weight)
         self.comb_weight.reset_parameters()
@@ -274,6 +275,6 @@ class EfficientGraphConvolution(MessagePassing):
 
         return torch.stack(aggregated, dim=1)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """String representation of the layer."""
         return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels}, {self.aggregators})"

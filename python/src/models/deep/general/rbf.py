@@ -4,6 +4,7 @@ Radial Basis Function (RBF) Network.
 
 import torch
 from torch import nn
+from typing import cast
 
 
 class RBF(nn.Module):
@@ -13,8 +14,13 @@ class RBF(nn.Module):
     """
 
     def __init__(
-        self, input_dim, num_centers, output_dim, sigma=1.0, output_type="prediction"
-    ):
+        self,
+        input_dim: int,
+        num_centers: int,
+        output_dim: int,
+        sigma: float = 1.0,
+        output_type: str = "prediction",
+    ) -> None:
         """
         Args:
             input_dim (int): Input feature dimension.
@@ -36,7 +42,7 @@ class RBF(nn.Module):
         # Linear weights from hidden RBF to output
         self.linear = nn.Linear(num_centers, output_dim)
 
-    def kernel_function(self, x):
+    def kernel_function(self, x: torch.Tensor) -> torch.Tensor:
         """
         Gaussian RBF kernel: exp(-||x - c||^2 / (2 * sigma^2))
         x: (Batch, Input_Dim)
@@ -46,7 +52,12 @@ class RBF(nn.Module):
         dist_sq = torch.sum(diff**2, dim=2)
         return torch.exp(-dist_sq / (2 * self.sigma**2))
 
-    def forward(self, x, return_embedding=None, return_sequence=False):
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """Forward pass."""
         # Handle sequence input
         if x.dim() == 3:
@@ -70,5 +81,5 @@ class RBF(nn.Module):
 
         out = self.linear(emb)
         if not return_sequence and out.dim() == 3:
-            return out[:, -1, :]
-        return out
+            return cast(torch.Tensor, out[:, -1, :])
+        return cast(torch.Tensor, out)

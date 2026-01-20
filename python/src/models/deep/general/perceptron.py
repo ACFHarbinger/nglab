@@ -3,6 +3,7 @@ Perceptron implementation.
 """
 
 
+from typing import Any, cast
 import torch
 from torch import nn
 
@@ -28,7 +29,7 @@ class Perceptron(nn.Module):
 
         self.linear = nn.Linear(input_dim, output_dim)
 
-        self.act_fn = {
+        self.act_fn: Any = {
             "sigmoid": torch.sigmoid,
             "relu": torch.relu,
             "tanh": torch.tanh,
@@ -52,5 +53,5 @@ class Perceptron(nn.Module):
             res = self.act_fn(self.linear(x))
 
         if not return_sequence and res.dim() == 3:
-            return res[:, -1, :]
-        return res
+            return cast(torch.Tensor, res[:, -1, :].clone())
+        return cast(torch.Tensor, res)

@@ -6,6 +6,7 @@ Extreme Learning Machine (ELM) implementation.
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
+from typing import Any
 
 
 class ELM(nn.Module):
@@ -32,7 +33,7 @@ class ELM(nn.Module):
         self.register_buffer("w", torch.randn(hidden_dim, input_dim))
         self.register_buffer("b", torch.randn(hidden_dim))
 
-        self.act_fn = {
+        self.act_fn: Any = {
             "sigmoid": torch.sigmoid,
             "relu": torch.relu,
             "tanh": torch.tanh,

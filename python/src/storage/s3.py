@@ -4,6 +4,7 @@ AWS S3 storage backend for models.
 
 import json
 from datetime import UTC, datetime
+from typing import Any, cast
 
 from python.src.storage.base import ModelMetadata, ModelStorage, StorageConfig
 
@@ -18,7 +19,7 @@ class S3Storage(ModelStorage):
         self._prefix = config.s3_prefix.rstrip("/") + "/"
 
     @property
-    def client(self):
+    def client(self) -> Any:
         """Lazy initialization of S3 client."""
         if self._client is None:
             try:
@@ -68,7 +69,7 @@ class S3Storage(ModelStorage):
         model_data: bytes,
         name: str,
         version: str | None = None,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> str:
         """Save model to S3."""
         if version is None:
@@ -166,7 +167,7 @@ class S3Storage(ModelStorage):
                     Prefix=f"{self._prefix}{name}/",
                     MaxKeys=1,
                 )
-                return response.get("KeyCount", 0) > 0
+                return bool(response.get("KeyCount", 0) > 0)
             else:
                 self.client.head_object(
                     Bucket=self._bucket,
@@ -261,7 +262,7 @@ class S3Storage(ModelStorage):
                 Bucket=self._bucket,
                 Key=self._latest_key(name),
             )
-            return response["Body"].read().decode("utf-8").strip()
+            return cast(str, response["Body"].read().decode("utf-8").strip())
         except Exception:
             # Fallback: find most recent version
             versions = self.list_versions(name)

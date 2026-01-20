@@ -4,6 +4,7 @@ import math
 
 import torch
 from torch import nn
+from typing import cast
 
 
 class FeedForward(nn.Module):
@@ -14,7 +15,7 @@ class FeedForward(nn.Module):
     Often used in Transformer architectures.
     """
 
-    def __init__(self, input_dim: int, output_dim: int, bias: bool = True):
+    def __init__(self, input_dim: int, output_dim: int, bias: bool = True) -> None:
         """
         Initializes the feed-forward layer.
 
@@ -46,4 +47,4 @@ class FeedForward(nn.Module):
         Returns:
             Output tensor.
         """
-        return self.linear(input)
+        return cast(torch.Tensor, self.linear(input))

@@ -66,8 +66,8 @@ class DeconvNet(nn.Module):
         out = out.transpose(1, 2)
 
         if not return_sequence:
-            return cast(torch.Tensor, out[:, -1, :])
-        return cast(torch.Tensor, out)
+            return out[:, -1, :]
+        return out
 
 
 class AutoDeconvNet(nn.Module):
@@ -136,4 +136,4 @@ class AutoDeconvNet(nn.Module):
         if should_return_embedding:
             return z
 
-        return self.decoder(z, return_sequence=return_sequence)
+        return cast(torch.Tensor, self.decoder(z, return_sequence=return_sequence))

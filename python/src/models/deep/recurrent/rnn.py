@@ -6,6 +6,7 @@ Recurrent Neural Network (RNN) implementations (LSTM, GRU).
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
+from typing import cast
 
 
 class LSTM(nn.Module):
@@ -61,14 +62,14 @@ class LSTM(nn.Module):
         )
 
         if should_return_embedding:
-            return state
+            return cast(torch.Tensor, state)
 
         output = self.fc(state)
 
         if self.apply_softmax and self.output_type == "prediction":
             output = F.softmax(output, dim=-1)
 
-        return output
+        return cast(torch.Tensor, output)
 
 
 class GRU(nn.Module):
@@ -122,6 +123,6 @@ class GRU(nn.Module):
         )
 
         if should_return_embedding:
-            return state
+            return cast(torch.Tensor, state)
 
-        return self.fc(state)
+        return cast(torch.Tensor, self.fc(state))

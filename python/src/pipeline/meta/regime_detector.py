@@ -8,6 +8,8 @@ model adaptation.
 import numpy as np
 import torch
 from sklearn.cluster import KMeans
+from typing import Any, Dict
+from numpy.typing import NDArray
 
 
 class RegimeDetector:
@@ -17,7 +19,7 @@ class RegimeDetector:
     Uses clustering on volatility, trend, and volume features.
     """
 
-    def __init__(self, n_regimes: int = 3, window_size: int = 50):
+    def __init__(self, n_regimes: int = 3, window_size: int = 50) -> None:
         """
         Initialize regime detector.
 
@@ -30,7 +32,7 @@ class RegimeDetector:
         self.kmeans: KMeans | None = None
         self.regime_labels = ["Volatile", "Trending", "Ranging"][:n_regimes]
 
-    def extract_features(self, prices: np.ndarray) -> np.ndarray:
+    def extract_features(self, prices: NDArray[Any]) -> NDArray[Any]:
         """
         Extract market features for regime classification.
 
@@ -60,7 +62,7 @@ class RegimeDetector:
 
         return np.array(features)
 
-    def fit(self, prices: np.ndarray):
+    def fit(self, prices: NDArray[Any]) -> None:
         """
         Fit regime detector on historical price data.
 
@@ -71,7 +73,7 @@ class RegimeDetector:
         self.kmeans = KMeans(n_clusters=self.n_regimes, random_state=42)
         self.kmeans.fit(features)
 
-    def predict(self, prices: np.ndarray) -> int:
+    def predict(self, prices: NDArray[Any]) -> int:
         """
         Predict current market regime.
 
@@ -100,7 +102,9 @@ class RegimeDetector:
         """Get human-readable name for regime."""
         return self.regime_labels[regime_id]
 
-    def partition_by_regime(self, prices: np.ndarray, data: torch.Tensor) -> dict:
+    def partition_by_regime(
+        self, prices: NDArray[Any], data: torch.Tensor
+    ) -> Dict[int, torch.Tensor]:
         """
         Partition data by detected regimes.
 
@@ -115,9 +119,12 @@ class RegimeDetector:
         if self.kmeans is None:
             self.fit(prices)
 
+        if self.kmeans is None:
+            raise ValueError("KMeans failed to initialize")
+
         regimes = self.kmeans.predict(features)
 
-        partitions = {}
+        partitions: Dict[int, torch.Tensor] = {}
         for regime_id in range(self.n_regimes):
             mask = regimes == regime_id
             partitions[regime_id] = data[mask]

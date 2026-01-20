@@ -4,6 +4,7 @@ import math
 
 import torch
 from torch import nn
+from typing import cast
 
 
 class MultiHeadAttention(nn.Module):
@@ -49,15 +50,20 @@ class MultiHeadAttention(nn.Module):
         self.W_val = nn.Parameter(torch.Tensor(n_heads, input_dim, val_dim))
         self.W_out = nn.Parameter(torch.Tensor(n_heads, key_dim, embed_dim))
         self.init_parameters()
-        self.last_attn = (None, None)
+        self.last_attn: tuple[torch.Tensor | None, torch.Tensor | None] = (None, None)
 
-    def init_parameters(self):
+    def init_parameters(self) -> None:
         """Initializes the parameters of the attention layers using Xavier uniform initialization."""
         for param in self.parameters():
             stdv = 1.0 / math.sqrt(param.size(-1))
             param.data.uniform_(-stdv, stdv)
 
-    def forward(self, q, h=None, mask=None):
+    def forward(
+        self,
+        q: torch.Tensor,
+        h: torch.Tensor | None = None,
+        mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         """
         Computes the multi-head attention.
 
@@ -139,8 +145,8 @@ class MultiHeadAttention(nn.Module):
             heads.permute(1, 2, 0, 3)
             .contiguous()
             .view(-1, self.n_heads * self.val_dim),
-            self.W_out.view(-1, self.embed_dim),
-        ).view(batch_size, n_query, self.embed_dim)
+            self.W_out.view(-1, cast(int, self.embed_dim)),
+        ).view(batch_size, n_query, cast(int, self.embed_dim))
 
         # Alternative:
         # headst = heads.transpose(0, 1)  # swap the dimensions for batch and heads to align it for the matmul

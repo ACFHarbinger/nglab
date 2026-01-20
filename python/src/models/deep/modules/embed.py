@@ -3,6 +3,7 @@ Data Embedding layers for Time Series Models.
 """
 
 import math
+from typing import cast
 
 import torch
 from torch import nn
@@ -103,7 +104,7 @@ class FixedEmbedding(nn.Module):
         """
         Forward pass.
         """
-        return self.emb(x).detach()
+        return cast(torch.Tensor, self.emb(x).detach())
 
 
 class TemporalEmbedding(nn.Module):
@@ -144,7 +145,7 @@ class TemporalEmbedding(nn.Module):
         day_x = self.day_embed(x[:, :, 1])
         month_x = self.month_embed(x[:, :, 0])
 
-        return hour_x + weekday_x + day_x + month_x + minute_x
+        return cast(torch.Tensor, hour_x + weekday_x + day_x + month_x + minute_x)
 
 
 class TimeFeatureEmbedding(nn.Module):
@@ -166,7 +167,7 @@ class TimeFeatureEmbedding(nn.Module):
         """
         Forward pass.
         """
-        return self.embed(x)
+        return cast(torch.Tensor, self.embed(x))
 
 
 class DataEmbedding(nn.Module):
@@ -201,7 +202,7 @@ class DataEmbedding(nn.Module):
                 + self.temporal_embedding(x_mark)
                 + self.position_embedding(x)
             )
-        return self.dropout(res)
+        return cast(torch.Tensor, self.dropout(res))
 
 
 class DataEmbedding_inverted(nn.Module):  # noqa: N801
@@ -228,7 +229,7 @@ class DataEmbedding_inverted(nn.Module):  # noqa: N801
         else:
             res = self.value_embedding(torch.cat([x, x_mark.permute(0, 2, 1)], 1))
         # x: [Batch Variate d_model]
-        return self.dropout(res)
+        return cast(torch.Tensor, self.dropout(res))
 
 
 class DataEmbedding_wo_pos(nn.Module):  # noqa: N801
@@ -259,7 +260,7 @@ class DataEmbedding_wo_pos(nn.Module):  # noqa: N801
             res = self.value_embedding(x)
         else:
             res = self.value_embedding(x) + self.temporal_embedding(x_mark)
-        return self.dropout(res)
+        return cast(torch.Tensor, self.dropout(res))
 
 
 class PatchEmbedding(nn.Module):
