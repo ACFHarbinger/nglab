@@ -27,6 +27,24 @@ Please be respectful and constructive in all interactions. We aim to foster an o
 
 ---
 
+## Quick Start Checklist (First-Time Contributors)
+
+> [!TIP]
+> Complete this checklist to be ready for your first contribution!
+
+- [ ] Fork and clone the repository
+- [ ] Run `just setup` (installs all dependencies)
+- [ ] Run `just test` (verify environment works)
+- [ ] Run `just build-python` (build Rust extension)
+- [ ] Browse issues labeled `good first issue`
+- [ ] Read [DEVELOPMENT.md](DEVELOPMENT.md) for IDE setup
+- [ ] Read [TESTING.md](TESTING.md) for testing guidelines
+- [ ] Join the community Discord (link in README)
+
+**Estimated time**: 30 minutes
+
+---
+
 ## Core Philosophy
 
 Before writing a single line of code, internalize these three axioms:

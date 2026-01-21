@@ -519,3 +519,195 @@ Application crashes with the following error:
 ---
 
 **Remember**: The best debugging is prevention. Write tests, use type hints, and read the documentation.
+
+---
+
+## 13. GPU / CUDA Troubleshooting
+
+### 13.1 CUDA Out of Memory (OOM)
+
+**Symptom**: `RuntimeError: CUDA out of memory`
+
+**Immediate Fixes**:
+```python
+# Clear cache manually
+torch.cuda.empty_cache()
+
+# Reduce batch size
+config.batch_size = config.batch_size // 2
+
+# Use gradient checkpointing
+model.gradient_checkpointing_enable()
+```
+
+**Monitoring**:
+```bash
+# Watch GPU memory in real-time
+watch -n 1 nvidia-smi
+
+# Python memory summary
+python -c "import torch; print(torch.cuda.memory_summary())"
+```
+
+### 13.2 CUDA Device Not Found
+
+**Symptom**: `torch.cuda.is_available()` returns `False`
+
+**Checklist**:
+1. Check driver: `nvidia-smi` should show GPU info
+2. Check CUDA version: `nvcc --version`
+3. Check PyTorch CUDA: `python -c "import torch; print(torch.version.cuda)"`
+4. Reinstall: `pip install torch --index-url https://download.pytorch.org/whl/cu121`
+
+### 13.3 cuDNN Errors
+
+**Symptom**: `RuntimeError: cuDNN error: CUDNN_STATUS_EXECUTION_FAILED`
+
+**Fixes**:
+```python
+# Disable cuDNN benchmarking (more stable, slightly slower)
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
+```
+
+---
+
+## 14. Distributed Training Issues
+
+### 14.1 NCCL Timeout
+
+**Symptom**: Training hangs with `NCCL timeout`
+
+**Fix**:
+```bash
+export NCCL_DEBUG=INFO
+export NCCL_IB_DISABLE=1  # Disable InfiniBand if not available
+export NCCL_P2P_DISABLE=1  # Disable peer-to-peer (if causing issues)
+export NCCL_SOCKET_IFNAME=eth0  # Specify network interface
+```
+
+### 14.2 Port Already in Use
+
+**Symptom**: `Address already in use` for distributed training
+
+**Fix**:
+```bash
+# Find and kill process using port 29500
+lsof -i :29500 | awk 'NR>1 {print $2}' | xargs kill -9
+
+# Or use a different port
+export MASTER_PORT=29501
+```
+
+### 14.3 Rank Mismatch
+
+**Symptom**: `Expected all tensors to be on the same device`
+
+**Diagnosis**:
+```python
+# Check all model parameters are on the same device
+for name, param in model.named_parameters():
+    print(f"{name}: {param.device}")
+```
+
+---
+
+## 15. Advanced ML Debugging
+
+### 15.1 NaN Gradients
+
+**Symptom**: `Loss is NaN` after a few epochs
+
+**Diagnosis**:
+```python
+# Enable anomaly detection
+torch.autograd.set_detect_anomaly(True)
+
+# Check for NaN in gradients
+for name, param in model.named_parameters():
+    if param.grad is not None and torch.isnan(param.grad).any():
+        print(f"NaN gradient in {name}")
+```
+
+**Common Causes**:
+1. Learning rate too high → Reduce by 10x
+2. Log of zero/negative → Use `log(x + epsilon)`
+3. Division by zero → Add epsilon to denominator
+4. Exploding gradients → Enable gradient clipping
+
+**Fix**:
+```python
+# Gradient clipping
+torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+```
+
+### 15.2 Loss Explosion
+
+**Symptom**: Loss suddenly jumps to very large values
+
+**Causes**:
+1. Learning rate schedule jumped
+2. Outlier in batch
+3. Numerical instability
+
+**Diagnosis**:
+```python
+# Log loss at each step
+if torch.isinf(loss) or loss.item() > 1e6:
+    print(f"Suspicious loss: {loss.item()}")
+    print(f"Input stats: min={x.min()}, max={x.max()}, mean={x.mean()}")
+```
+
+### 15.3 Vanishing Gradients
+
+**Symptom**: Early layers have near-zero gradients
+
+**Diagnosis**:
+```python
+for name, param in model.named_parameters():
+    if param.grad is not None:
+        print(f"{name}: grad mean={param.grad.abs().mean():.2e}")
+```
+
+**Fixes**:
+1. Use residual connections
+2. Replace tanh/sigmoid with ReLU/GELU
+3. Use batch normalization
+4. Initialize weights properly (Xavier, He)
+
+### 15.4 Reward Hacking
+
+**Symptom**: Agent finds exploit that maximizes reward but isn't useful
+
+**Examples**:
+- Agent trades rapidly to exploit transaction fee calculation bug
+- Agent consistently holds to avoid any negative reward
+
+**Diagnosis**:
+```python
+# Log action distribution
+action_counts = Counter(episode_actions)
+print(f"Action distribution: {action_counts}")
+```
+
+**Fixes**:
+1. Add penalty terms for undesired behavior
+2. Use reward shaping that aligns with true objective
+3. Implement early stopping for degenerate behavior
+
+---
+
+## 16. Quick Reference: Error → Fix
+
+| Error | Quick Fix |
+|-------|-----------|
+| `ModuleNotFoundError: nglab` | `just build-python` |
+| `CUDA out of memory` | Reduce batch size, use gradient checkpointing |
+| `Loss is NaN` | Lower learning rate, check for log(0) |
+| `NCCL timeout` | Set `NCCL_IB_DISABLE=1` |
+| `Address already in use` | Kill process on port, or change `MASTER_PORT` |
+| `cuDNN error` | Set `torch.backends.cudnn.deterministic = True` |
+| `Gradient is NaN` | Enable `torch.autograd.set_detect_anomaly(True)` |
+| Agent not learning | Check reward signal, normalize observations |
+| Agent predicts constant | Check for dead neurons, mode collapse |
+

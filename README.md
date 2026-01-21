@@ -150,9 +150,12 @@ Start here! We have expanded our documentation to cover every aspect of the syst
 | **[Interactive Notebooks](notebooks/)** | **Hands-on Learning.** A series of 10 Jupyter notebooks covering architecture, RL training, and backtesting. | Everyone |
 | **[AGENTS.md](AGENTS.md)** | **The Strategy Handbook.** Classification of Agents (RL vs Heuristic), Policy Architectures (Mamba/CNN), and Observation Spaces. | Quants, Researchers |
 | **[ARCHITECTURE.md](ARCHITECTURE.md)** | **The System Blueprint.** High-level design, data flow diagrams, system boundaries, and deployment topology. | Architects, DevOps |
+| **[DEVELOPMENT.md](DEVELOPMENT.md)** | **The Setup Guide.** IDE configuration, environment variables, local development, profiling, and debugging. | New Contributors |
+| **[TESTING.md](TESTING.md)** | **The Quality Guide.** Testing philosophy, coverage requirements, mocking strategies, and CI/CD integration. | All Engineers |
 | **[CONTRIBUTING.md](CONTRIBUTING.md)** | **The Developer Handbook.** Code style, PR process, RFC workflow, and release procedures. | Contributors |
-| **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | **The Field Repair Manual.** Common issues, diagnostic steps, and quick fixes. | Everyone |
+| **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | **The Field Repair Manual.** Common issues, diagnostic steps, GPU/CUDA debugging, and ML troubleshooting. | Everyone |
 | **[IMPROVEMENTS.md](IMPROVEMENTS.md)** | **The Roadmap.** Active tasks, feature requests, and the long-term vision for the platform. | Project Managers |
+
 
 ### 📓 Interactive Notebooks
 

@@ -51,6 +51,16 @@ NGLab is a masterclass in modern software architecture, bridging the gap between
 11. [Exhaustive Code Search & Reference](#11-exhaustive-code-search--reference)
 12. [Glossary of Terms](#12-glossary-of-terms)
 
+> [!TIP]
+> **Prefer hands-on learning?** Check out our [Interactive Jupyter Notebooks](notebooks/) for executable tutorials covering architecture, RL training, and backtesting.
+
+### Prerequisites
+
+Before diving in, ensure you have:
+- Basic understanding of Python, Rust, and TypeScript
+- Familiarity with Reinforcement Learning concepts
+- Development environment set up (see [DEVELOPMENT.md](DEVELOPMENT.md))
+
 ---
 
 ## 1. The NGLab Philosophy

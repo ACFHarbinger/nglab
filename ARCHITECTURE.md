@@ -722,6 +722,100 @@ Cloud Infrastructure
     └── Windows: MSI
 ```
 
+### Kubernetes Production Topology
+
+```mermaid
+graph TB
+    subgraph "Ingress Layer"
+        ING[NGINX Ingress Controller]
+        CERT[Cert-Manager]
+    end
+
+    subgraph "Application Layer"
+        API1[nglab-api Pod 1]
+        API2[nglab-api Pod 2]
+        API3[nglab-api Pod 3]
+        
+        TRAIN1[Training Worker 1]
+        TRAIN2[Training Worker 2]
+    end
+
+    subgraph "Data Layer"
+        PG[(PostgreSQL)]
+        REDIS[(Redis Cache)]
+        S3[(S3 / MinIO)]
+    end
+
+    subgraph "Observability"
+        PROM[Prometheus]
+        GRAF[Grafana]
+        JAEGER[Jaeger]
+    end
+
+    ING --> API1 & API2 & API3
+    API1 & API2 & API3 --> PG
+    API1 & API2 & API3 --> REDIS
+    TRAIN1 & TRAIN2 --> S3
+    API1 & API2 & API3 --> PROM
+    PROM --> GRAF
+    API1 & API2 & API3 --> JAEGER
+```
+
+### Kubernetes Resource Requirements
+
+| Component | Replicas | CPU (Request/Limit) | Memory (Request/Limit) | GPU |
+|-----------|----------|---------------------|------------------------|-----|
+| **nglab-api** | 2-5 | 500m / 2000m | 1Gi / 4Gi | No |
+| **training-worker** | 1-4 | 2000m / 8000m | 4Gi / 32Gi | Yes (1-2) |
+| **postgresql** | 1 (HA: 3) | 500m / 2000m | 1Gi / 4Gi | No |
+| **redis** | 1 (HA: 3) | 100m / 500m | 256Mi / 1Gi | No |
+| **prometheus** | 1 | 500m / 1000m | 2Gi / 4Gi | No |
+| **grafana** | 1 | 100m / 500m | 256Mi / 512Mi | No |
+| **jaeger** | 1 | 500m / 1000m | 1Gi / 2Gi | No |
+
+### Kustomize Overlay Structure
+
+```
+deploy/k8s/
+├── base/                    # Shared configurations
+│   ├── deployment.yaml      # API and worker deployments
+│   ├── service.yaml         # Service definitions
+│   ├── configmap.yaml       # Environment configuration
+│   ├── secrets.yaml         # Sensitive data (sealed)
+│   ├── pvc.yaml             # Persistent volume claims
+│   ├── hpa.yaml             # Horizontal pod autoscaler
+│   ├── pdb.yaml             # Pod disruption budget
+│   ├── serviceaccount.yaml  # RBAC
+│   └── kustomization.yaml   # Base kustomization
+└── overlays/
+    ├── dev/                 # Development (minikube)
+    │   ├── kustomization.yaml
+    │   └── patch-resources.yaml
+    ├── staging/             # Pre-production
+    │   ├── kustomization.yaml
+    │   └── patch-replicas.yaml
+    └── prod/                # Production
+        ├── kustomization.yaml
+        ├── patch-resources.yaml
+        └── ingress.yaml
+```
+
+### Deployment Commands
+
+```bash
+# Deploy to development
+kubectl apply -k deploy/k8s/overlays/dev
+
+# Deploy to staging
+kubectl apply -k deploy/k8s/overlays/staging
+
+# Deploy to production
+kubectl apply -k deploy/k8s/overlays/prod
+
+# Check deployment status
+kubectl get pods -n nglab -w
+```
+
 ---
 
 ## 13. Testing Strategy
@@ -1127,10 +1221,46 @@ graph TB
 
 ---
 
+## 21. System Requirements
+
+### Minimum Requirements
+
+| Component | Minimum | Recommended | Notes |
+|-----------|---------|-------------|-------|
+| **CPU** | 4 cores | 8+ cores | AMD64 architecture required |
+| **RAM** | 8 GB | 32 GB | 16 GB for multi-agent training |
+| **GPU** | None | NVIDIA RTX 3080+ | CUDA 11.8+ for training |
+| **Storage** | 20 GB SSD | 100 GB NVMe | Fast I/O for data loading |
+| **OS** | Ubuntu 22.04 | Ubuntu 24.04 | Also macOS 13+, Windows 11 |
+
+### Software Dependencies
+
+| Software | Version | Purpose |
+|----------|---------|---------|
+| **Rust** | 1.75+ | Simulation engine |
+| **Python** | 3.11+ | ML pipeline |
+| **Node.js** | 20+ | Frontend development |
+| **CUDA** | 11.8+ | GPU acceleration (optional) |
+| **Docker** | 24+ | Containerization |
+| **kubectl** | 1.28+ | Kubernetes deployment |
+
+### Network Requirements
+
+| Port | Service | Protocol | Notes |
+|------|---------|----------|-------|
+| 8000 | API Server | HTTP/HTTPS | Main application |
+| 5432 | PostgreSQL | TCP | Database |
+| 6379 | Redis | TCP | Cache |
+| 4317 | Jaeger OTLP | gRPC | Tracing |
+| 3000 | Grafana | HTTP | Monitoring UI |
+| 9090 | Prometheus | HTTP | Metrics |
+
+---
+
 ## Related Documentation
 
-- [CLAUDE.md](CLAUDE.md) - Tech stack overview
-- [GEMINI.md](GEMINI.md) - Agent memory file
+- [DEVELOPMENT.md](DEVELOPMENT.md) - Development setup guide
+- [TESTING.md](TESTING.md) - Testing strategy
 - [TUTORIAL.md](TUTORIAL.md) - Developer encyclopedia
 - [AGENTS.md](AGENTS.md) - Agent taxonomy and policies
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
@@ -1142,7 +1272,14 @@ graph TB
 
 ## Changelog
 
-### Version 2.2.0 (Current)
+### Version 2.3.0 (Current)
+- Added Kubernetes Production Topology with Mermaid diagrams
+- Added Kubernetes Resource Requirements table
+- Added Kustomize Overlay Structure documentation
+- Added System Requirements section
+- Updated Related Documentation links
+
+### Version 2.2.0
 - Added Error Handling Patterns section
 - Added Observability & Monitoring with metrics definitions
 - Added Database Schema documentation
@@ -1161,5 +1298,5 @@ graph TB
 ---
 
 **Last Updated:** 2026-01-21
-**Version:** 2.2.0 (The Complete System Blueprint)
+**Version:** 2.3.0 (The Complete System Blueprint)
 **Maintainer:** NGLab Team
