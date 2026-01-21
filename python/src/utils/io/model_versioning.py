@@ -6,7 +6,7 @@ with comprehensive metadata for reproducibility and experiment tracking.
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass, field, InitVar
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, cast

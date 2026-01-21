@@ -1,9 +1,16 @@
 
-import pytest
-import numpy as np
-import gymnasium as gym
 from unittest.mock import MagicMock, patch
-from python.src.env.vectorized_env import VectorizedTradingEnv, SubprocVecEnv, make_vec_env, get_batch_env
+
+import numpy as np
+import pytest
+
+from python.src.env.vectorized_env import (
+    SubprocVecEnv,
+    VectorizedTradingEnv,
+    get_batch_env,
+    make_vec_env,
+)
+
 
 class MockInfo:
     def __init__(self, portfolio_value=10000.0, position=0):
@@ -30,7 +37,7 @@ def test_vectorized_trading_env_reset(mock_nglab):
     mock_nglab.return_value = mock_instance
     
     v_env = VectorizedTradingEnv(num_envs=2, lookback=10)
-    obs, info = v_env.reset(seed=42)
+    obs, _info = v_env.reset(seed=42)
     
     assert obs.shape == (2, 10, 6)
     assert mock_instance.reset.call_count == 2
@@ -66,7 +73,7 @@ def test_vectorized_trading_env_step_async_wait(mock_nglab):
     
     v_env = VectorizedTradingEnv(num_envs=2, use_multiprocessing=False)
     v_env.step_async([1, 1])
-    obs, rewards, terminated, truncated, infos = v_env.step_wait()
+    obs, rewards, _, _, _ = v_env.step_wait()
     
     assert obs.shape == (2, 10, 6)
     assert len(rewards) == 2
@@ -96,7 +103,7 @@ def test_subproc_vec_env_reset():
         mock_pipe.return_value = (parent_mock, MagicMock())
         with patch("python.src.env.vectorized_env.mp.Process"):
             s_env = SubprocVecEnv(num_envs=2, lookback=10)
-            obs, info = s_env.reset()
+            obs, _ = s_env.reset()
             assert obs.shape == (2, 10, 6)
             assert parent_mock.send.call_count == 2
             assert parent_mock.recv.call_count == 2
@@ -108,7 +115,7 @@ def test_subproc_vec_env_step():
         mock_pipe.return_value = (parent_mock, MagicMock())
         with patch("python.src.env.vectorized_env.mp.Process"):
             s_env = SubprocVecEnv(num_envs=2, lookback=10)
-            obs, rewards, terminated, truncated, infos = s_env.step([1, 1])
+            obs, rewards, _, _, _ = s_env.step([1, 1])
             assert obs.shape == (2, 10, 6)
             assert len(rewards) == 2
             assert parent_mock.send.call_count == 2
@@ -142,7 +149,7 @@ def test_get_batch_env():
 
 def test_vectorized_context_manager(mock_nglab):
     with patch("python.src.env.vectorized_env.VectorizedTradingEnv.close") as mock_close:
-        with VectorizedTradingEnv(num_envs=1) as v_env:
+        with VectorizedTradingEnv(num_envs=1):
             pass
         mock_close.assert_called_once()
 
@@ -150,6 +157,6 @@ def test_subproc_context_manager():
     with patch("python.src.env.vectorized_env.mp.Process"), patch("python.src.env.vectorized_env.mp.Pipe") as mock_pipe:
         mock_pipe.return_value = (MagicMock(), MagicMock())
         with patch("python.src.env.vectorized_env.SubprocVecEnv.close") as mock_close:
-            with SubprocVecEnv(num_envs=1) as s_env:
+            with SubprocVecEnv(num_envs=1):
                 pass
             mock_close.assert_called_once()

@@ -7,6 +7,7 @@
  * - Risk-adjusted reward functions
  */
 
+#[cfg_attr(not(feature = "python"), allow(unused_imports))]
 use crate::errors::{ArenaError, ArenaResult};
 use crate::simulation::orderbook::{OrderBook, Side};
 use crate::simulation::risk::{RiskManager, RiskStatus};

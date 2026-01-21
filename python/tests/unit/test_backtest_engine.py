@@ -1,8 +1,11 @@
-import pytest
 import json
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from python.src.backtesting.engine import BacktestEngine
 from python.src.backtesting.strategy import BaseStrategy
+
 
 class MockStrategy(BaseStrategy):
     def on_market_data(self, market_id: str, price: float, timestamp: int) -> None:

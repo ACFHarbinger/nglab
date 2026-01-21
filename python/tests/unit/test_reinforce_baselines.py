@@ -1,16 +1,19 @@
-import torch
-import torch.nn as nn
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+import torch
+from torch import nn
+
 from python.src.pipeline.core.reinforce.reinforce_baselines import (
     Baseline,
-    WarmupBaseline,
-    NoBaseline,
-    ExponentialBaseline,
+    BaselineDataset,
     CriticBaseline,
+    ExponentialBaseline,
+    NoBaseline,
     RolloutBaseline,
-    BaselineDataset
+    WarmupBaseline,
 )
+
 
 class MockBaseline(Baseline):
     def eval(self, x, c):

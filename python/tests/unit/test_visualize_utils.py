@@ -1,19 +1,21 @@
 import os
+from unittest.mock import MagicMock, patch
+
 import pytest
 import torch
-import torch.nn as nn
-import numpy as np
-from unittest.mock import MagicMock, patch
+from torch import nn
+
 from python.src.utils.logging.visualize_utils import (
-    get_batch, 
-    MyModelWrapper, 
+    MyModelWrapper,
+    get_batch,
     load_model_instance,
-    plot_weight_trajectories,
     log_weight_distributions,
     plot_logit_lens,
     plot_loss_landscape,
-    visualize_epoch
+    plot_weight_trajectories,
+    visualize_epoch,
 )
+
 
 @pytest.fixture
 def dummy_model():

@@ -1,6 +1,10 @@
 import pytest
 import torch
-from python.src.models.deep.modules.distance_graph_convolution import DistanceAwareGraphConvolution
+
+from python.src.models.deep.modules.distance_graph_convolution import (
+    DistanceAwareGraphConvolution,
+)
+
 
 @pytest.fixture
 def graph_setup():

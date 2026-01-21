@@ -1,10 +1,11 @@
-import pytest
 import sys
-import json
 from unittest.mock import MagicMock, patch
 
-from python.src.storage.gcs import GCSStorage
+import pytest
+
 from python.src.storage.base import StorageConfig
+from python.src.storage.gcs import GCSStorage
+
 
 @pytest.fixture
 def mock_gcs_lib():

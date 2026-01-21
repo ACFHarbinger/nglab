@@ -1,15 +1,16 @@
 """Unit tests for policy modules."""
 
-import pytest
-import numpy as np
-import torch
 from unittest.mock import MagicMock
 
+import numpy as np
+import pytest
+import torch
+
 from python.src.policies.base import Policy
-from python.src.policies.threshold import ThresholdPolicy
 from python.src.policies.black_scholes import BlackScholesPolicy
 from python.src.policies.neural import NeuralPolicy
 from python.src.policies.regular import RegularPolicy
+from python.src.policies.threshold import ThresholdPolicy
 
 
 class TestPolicyBase:
@@ -230,7 +231,7 @@ class TestNeuralPolicy:
         policy = NeuralPolicy(model)
         
         obs = {"state": torch.randn(10)}
-        output = policy.act(obs)
+        policy.act(obs)
         # Since we're mocking, just verify it was called
         assert model.called
 

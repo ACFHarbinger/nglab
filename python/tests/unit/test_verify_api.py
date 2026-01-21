@@ -1,6 +1,7 @@
-import pytest
 from unittest.mock import MagicMock, patch
+
 from python.src.api.verify_api import verify
+
 
 def test_verify_api_success():
     with patch("subprocess.Popen") as mock_popen, \

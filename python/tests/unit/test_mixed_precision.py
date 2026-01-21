@@ -6,11 +6,11 @@ for FP16/BF16 mixed precision training.
 """
 
 import os
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 import torch
-import torch.nn as nn
+from torch import nn
 
 from python.src.utils.mixed_precision import (
     MixedPrecisionConfig,
@@ -20,7 +20,6 @@ from python.src.utils.mixed_precision import (
     estimate_memory_savings,
     get_optimal_precision,
 )
-
 
 # Test fixtures
 
@@ -201,7 +200,7 @@ def test_trainer_training_step(simple_model, sample_batch):
         return output.mean()
 
     # Execute training step
-    loss, loss_val = trainer.training_step(sample_batch, forward_fn, loss_fn)
+    loss, _loss_val = trainer.training_step(sample_batch, forward_fn, loss_fn)
 
     assert isinstance(loss, torch.Tensor)
     assert loss.requires_grad
@@ -412,7 +411,7 @@ def test_full_training_loop(simple_model):
     # Train for a few steps
     for _ in range(5):
         batch = torch.randn(4, 10)
-        loss, _ = trainer.training_step(batch, forward_fn, loss_fn)
+        _loss, _ = trainer.training_step(batch, forward_fn, loss_fn)
         trainer.step(clip_grad_norm=1.0)
 
     # Model should have updated parameters
@@ -428,7 +427,7 @@ def test_checkpoint_save_load_cycle(simple_model, tmp_path):
 
     # Train for a step
     batch = torch.randn(4, 10)
-    loss, _ = trainer1.training_step(batch, lambda m, b: m(b), lambda o, b: o.mean())
+    _loss, _ = trainer1.training_step(batch, lambda m, b: m(b), lambda o, b: o.mean())
     trainer1.step()
 
     # Save state

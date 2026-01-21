@@ -2,22 +2,22 @@
 Tests for Active Learning module - samplers and uncertainty estimation.
 """
 
-import pytest
 import numpy as np
+import pytest
 import torch
 from torch import nn
 
 from python.src.pipeline.active_learning.sampler import (
-    BaseSampler,
-    UncertaintySampler,
-    EntropySampler,
     BaldSampler,
+    BaseSampler,
+    EntropySampler,
     RandomSampler,
+    UncertaintySampler,
 )
 from python.src.pipeline.active_learning.uncertainty import (
-    pinball_loss,
     QuantileHead,
     mc_dropout_predict,
+    pinball_loss,
 )
 
 

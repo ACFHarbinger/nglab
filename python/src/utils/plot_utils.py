@@ -13,15 +13,12 @@ import os
 from collections.abc import Callable
 from typing import Any
 
-import matplotlib.axes
 import networkx as nx
 import numpy as np
 import plotly.express as px
 import seaborn as sns
 import torch
 from matplotlib import pyplot as plt
-from matplotlib.collections import PatchCollection
-from matplotlib.patches import Rectangle
 from numpy.typing import NDArray
 
 from .io.file_utils import compose_dirpath

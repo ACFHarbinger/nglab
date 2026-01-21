@@ -69,8 +69,8 @@ export default function PredictionTab() {
   const [steps, setSteps] = useState(10);
   const [hwAlpha, setHwAlpha] = useState(0.2);
   const [hwBeta, setHwBeta] = useState(0.1);
-  const [hwGamma] = useState(0.1);
-  const [hwSeasonality] = useState(7);
+  const [hwGamma, setHwGamma] = useState(0.1);
+  const [hwSeasonality, setHwSeasonality] = useState(7);
 
   // Prophet Parameters
   const [prophetGrowth, setProphetGrowth] = useState<"linear" | "logistic">("linear");
@@ -335,8 +335,8 @@ export default function PredictionTab() {
           const params = {
             alpha: hwAlpha,
             beta: hwBeta,
-            gamma: 0.1,
-            period: 7,
+            gamma: hwGamma,
+            period: hwSeasonality,
             seasonal_type: "Additive" as const,
             steps,
             sigma: 0.01,
@@ -575,6 +575,32 @@ export default function PredictionTab() {
                       value={hwBeta}
                       onChange={(e) => setHwBeta(parseFloat(e.target.value))}
                       className="w-full"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[10px] text-slate-500 uppercase">
+                      <span>Gamma (Seasonality)</span>
+                      <span>{hwGamma}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01"
+                      value={hwGamma}
+                      onChange={(e) => setHwGamma(parseFloat(e.target.value))}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] text-slate-500 uppercase">
+                      Seasonality Period
+                    </label>
+                    <input
+                      type="number"
+                      value={hwSeasonality}
+                      onChange={(e) => setHwSeasonality(parseInt(e.target.value))}
+                      className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-sm"
                     />
                   </div>
                 </div>

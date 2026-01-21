@@ -1,16 +1,19 @@
-import pytest
 import os
-import torch
-import torch.nn as nn
 from pathlib import Path
-from unittest.mock import MagicMock, patch, mock_open
+from unittest.mock import MagicMock, patch
+
+import pytest
+import torch
+from torch import nn
+
 from python.src.utils.io.cloud_storage import (
-    CloudStorageConfig,
-    S3Backend,
-    GCSBackend,
     CloudCheckpointManager,
-    create_cloud_manager_from_env
+    CloudStorageConfig,
+    GCSBackend,
+    S3Backend,
+    create_cloud_manager_from_env,
 )
+
 
 @pytest.fixture
 def config():
@@ -43,7 +46,7 @@ def test_s3_backend_upload(mock_session_cls, config, tmp_path):
     
     assert uri == "s3://test-bucket/test-prefix/model.pt"
     mock_s3.put_object.assert_called_once()
-    args, kwargs = mock_s3.put_object.call_args
+    _args, kwargs = mock_s3.put_object.call_args
     assert kwargs["Bucket"] == "test-bucket"
     assert kwargs["Key"] == "test-prefix/model.pt"
     assert kwargs["Metadata"] == {"ver": "1.0"}

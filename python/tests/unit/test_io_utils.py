@@ -1,26 +1,20 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-import shutil
-import json
 import torch
-import sys
-import gzip
-from pathlib import Path
-from unittest.mock import MagicMock, patch, ANY
 
-
-from python.src.utils.io.model_versioning import (
-    ModelMetadata,
-    ModelRegistry,
-    compute_dataset_hash,
-    check_version_compatibility,
-    create_metadata_from_config
-)
 from python.src.utils.io.cloud_storage import (
     CloudCheckpointManager,
     CloudStorageConfig,
-    S3Backend,
-    GCSBackend
 )
+from python.src.utils.io.model_versioning import (
+    ModelMetadata,
+    ModelRegistry,
+    check_version_compatibility,
+    compute_dataset_hash,
+    create_metadata_from_config,
+)
+
 
 class TestModelVersioning:
     def test_metadata_serialization(self):
@@ -179,8 +173,8 @@ class TestCloudBackends:
         tmp_file = tmp_path / "model.pt"
         tmp_file.write_bytes(b"data")
         
-        config = CloudStorageConfig(bucket="bucket")
-        with patch("python.src.utils.io.cloud_storage.S3Backend.client") as mock_client:
+        CloudStorageConfig(bucket="bucket")
+        with patch("python.src.utils.io.cloud_storage.S3Backend.client"):
             # We need to mock client property which imports boto3
             # OR better: mock boto3 import using sys.modules like before 
             # But here we can patch the property if S3Backend is imported.

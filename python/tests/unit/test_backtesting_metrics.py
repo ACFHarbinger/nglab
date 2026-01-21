@@ -2,8 +2,8 @@
 Tests for backtesting performance metrics calculation.
 """
 
-import pytest
 import numpy as np
+import pytest
 
 from python.src.backtesting.metrics import calculate_metrics
 
@@ -104,7 +104,7 @@ class TestCalculateMetrics:
         base_value = 10000.0
         values = [base_value]
 
-        for i in range(100):
+        for _i in range(100):
             # More upside than downside
             if np.random.random() < 0.7:
                 change = np.random.uniform(0, 0.02)  # Positive
@@ -207,7 +207,7 @@ class TestCalculateMetrics:
         base_value = 10000.0
         values = [base_value]
 
-        for i in range(200):
+        for _i in range(200):
             # High volatility returns
             change = np.random.randn() * 0.05  # 5% daily vol
             values.append(max(values[-1] * (1 + change), 100))  # Floor at 100

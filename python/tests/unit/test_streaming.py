@@ -1,10 +1,11 @@
-import pytest
-import pandas as pd
-import numpy as np
-from pathlib import Path
 from unittest.mock import MagicMock, patch
-from torch.utils.data import DataLoader
+
+import numpy as np
+import pandas as pd
+import pytest
+
 from python.src.data.streaming import StreamingFinancialDataset
+
 
 @pytest.fixture
 def csv_file(tmp_path):
@@ -19,7 +20,7 @@ def csv_file(tmp_path):
 
 @pytest.fixture
 def parquet_file(tmp_path):
-    df = pd.DataFrame({
+    pd.DataFrame({
         "open": np.random.randn(100),
         "close": np.random.randn(100)
     })

@@ -1,14 +1,17 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 import torch
-import torch.nn as nn
-from unittest.mock import MagicMock, patch
+from torch import nn
+
 from python.src.utils.profiling.cuda_profiler import (
-    ProfilerConfig,
     CUDAProfiler,
+    ProfilerConfig,
     get_gpu_memory_stats,
     profile_model_forward,
-    profile_training_step
+    profile_training_step,
 )
+
 
 @pytest.fixture
 def dummy_model():

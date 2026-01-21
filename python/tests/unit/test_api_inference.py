@@ -1,18 +1,18 @@
-import pytest
 import asyncio
 import json
 import os
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 import torch
-from unittest.mock import MagicMock, patch, AsyncMock
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
+
 from python.src.api.inference import (
-    app, 
-    PredictionRequest, 
-    PredictionResponse, 
-    BatchInferenceHandler, 
+    BatchInferenceHandler,
+    PredictionRequest,
+    app,
     get_model,
-    batch_handler
 )
 
 # Disable telemetry for tests
@@ -86,7 +86,7 @@ def test_get_model_singleton():
         mock_load.return_value = (mock_model, {})
         
         # Reset global state for test
-        import python.src.api.inference as inference
+        from python.src.api import inference
         inference._MODEL = None
         
         m1 = get_model()

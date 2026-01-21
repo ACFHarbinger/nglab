@@ -1,18 +1,19 @@
-import pytest
-import numpy as np
-import torch
 from unittest.mock import MagicMock, patch
+
+import numpy as np
+import pytest
+import torch
 
 # Do NOT mock sys.modules here as it breaks other tests.
 # Instead, patch inside the tests or fixtures.
-
 from python.src.utils.plot_utils import (
-    draw_graph,
-    plot_linechart,
-    plot_attention_maps_wrapper,
     discrete_cmap,
-    visualize_interactive_plot
+    draw_graph,
+    plot_attention_maps_wrapper,
+    plot_linechart,
+    visualize_interactive_plot,
 )
+
 
 @pytest.fixture
 def mock_plt():
@@ -71,8 +72,10 @@ class TestPlotUtils:
         # graph_log shape [n_policies, dim1, dim2]
         # e.g. [1, 2, 6] -> 1 policy, 2 points, each point has 6 values (0=x, 5=y)
         graph_log = np.zeros((1, 2, 6))
-        graph_log[0, 0, 0] = 1.0; graph_log[0, 0, 5] = 10.0 # Point 1
-        graph_log[0, 1, 0] = 2.0; graph_log[0, 1, 5] = 5.0  # Point 2
+        graph_log[0, 0, 0] = 1.0
+        graph_log[0, 0, 5] = 10.0 # Point 1
+        graph_log[0, 1, 0] = 2.0
+        graph_log[0, 1, 5] = 5.0  # Point 2
         
         plot_func = MagicMock()
         

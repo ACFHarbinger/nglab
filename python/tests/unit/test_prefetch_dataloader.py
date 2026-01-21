@@ -1,16 +1,18 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 import torch
-import numpy as np
 from torch.utils.data import DataLoader, Dataset
-from unittest.mock import MagicMock, patch
+
 from python.src.data.prefetch_dataloader import (
-    CUDAPrefetcher,
     BackgroundPrefetcher,
+    CUDAPrefetcher,
     PrefetchDataLoader,
     _IteratorWrapper,
+    benchmark_dataloader,
     create_optimized_dataloader,
-    benchmark_dataloader
 )
+
 
 class SimpleDataset(Dataset):
     def __init__(self, size=10):

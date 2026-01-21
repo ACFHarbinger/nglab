@@ -2,17 +2,13 @@
 Tests for database models.
 """
 
-import pytest
-from datetime import datetime
-from decimal import Decimal
-import uuid
 
 from python.src.db.models import (
     Base,
-    Trade,
-    PortfolioSnapshot,
-    ModelCheckpoint,
     MarketData,
+    ModelCheckpoint,
+    PortfolioSnapshot,
+    Trade,
 )
 
 
@@ -21,7 +17,7 @@ class TestTradeModel:
 
     def test_trade_attributes(self):
         """Test that Trade model has expected columns."""
-        trade = Trade()
+        Trade()
 
         # Check column names exist on the model
         assert hasattr(Trade, "id")

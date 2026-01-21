@@ -1382,15 +1382,20 @@ class DEHB(DifferentialEvolutionHyperband):
         mutation_factor: float = 0.5,
         crossover_prob: float = 0.5,
         strategy: str = "rand1_bin",
-        min_budget: float | None = None,
-        max_budget: float | None = None,
+        min_fidelity: float | None = None,
+        max_fidelity: float | None = None,
         eta: float = 3,
         min_clip: int | None = None,
         max_clip: int | None = None,
+        seed: int | np.random.Generator | None = None,
         configspace: bool = True,
         boundary_fix_type: str = "random",
         max_age: float = np.inf,
+        n_workers: int | None = None,
+        client: Client | None = None,
         async_strategy: str = "immediate",
+        save_freq: str | None = "incumbent",
+        resume: bool = False,
         wandb_project: str | None = None,
         wandb_entity: str | None = None,
         wandb_tags: list[str] | None = None,
@@ -1398,9 +1403,8 @@ class DEHB(DifferentialEvolutionHyperband):
         output_path: str = "./dehb_results",
         **kwargs: Any,
     ) -> None:
-        """Initialize a single-worker DEHB wrapper with optional W&B logging."""
+        """Initialize a multi-worker DEHB optimizer with Dask support and W&B logging."""
         # Set output path and ensure it exists
-        # output_path = kwargs.get("output_path", "./dehb_results") # Removed as output_path is now a direct argument
         kwargs["output_path"] = output_path
         try:
             os.makedirs(output_path, exist_ok=True)
@@ -1409,12 +1413,7 @@ class DEHB(DifferentialEvolutionHyperband):
                 "directories to save output files do not exist and could not be created"
             ) from e
 
-        # Validate budgets
-        assert min_budget is not None, "Please set a minimum budget per run"
-        assert max_budget is not None, "Please set a maximum budget per run"
-
-        n_workers = kwargs.pop("n_workers", 1)
-        # Initialize the base DEHB class
+        # Initialize the base class
         super().__init__(
             cs=cs,
             f=f,
@@ -1422,17 +1421,20 @@ class DEHB(DifferentialEvolutionHyperband):
             mutation_factor=mutation_factor,
             crossover_prob=crossover_prob,
             strategy=strategy,
-            min_fidelity=min_budget,
-            max_fidelity=max_budget,
+            min_fidelity=min_fidelity,
+            max_fidelity=max_fidelity,
             eta=eta,
             min_clip=min_clip,
             max_clip=max_clip,
+            seed=seed,
             configspace=configspace,
             boundary_fix_type=boundary_fix_type,
             max_age=max_age,
             n_workers=n_workers,
-            client=None,  # No Dask client
+            client=client,
             async_strategy=async_strategy,
+            save_freq=save_freq,
+            resume=resume,
             **kwargs,
         )
 
@@ -1452,8 +1454,8 @@ class DEHB(DifferentialEvolutionHyperband):
                     "mutation_factor": mutation_factor,
                     "crossover_prob": crossover_prob,
                     "strategy": strategy,
-                    "min_budget": min_budget,
-                    "max_budget": max_budget,
+                    "min_budget": min_fidelity,
+                    "max_budget": max_fidelity,
                     "eta": eta,
                     "min_clip": min_clip,
                     "max_clip": max_clip,

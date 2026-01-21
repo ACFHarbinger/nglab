@@ -1,20 +1,17 @@
 """Unit tests for data modules."""
 
-import sys
-import pytest
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+import pytest
 import torch
-from pathlib import Path
-from unittest.mock import MagicMock, patch
 
-
+from python.src.data.data_utils import df_to_torch, read_csv, read_json
 from python.src.data.dataloaders import (
     FinancialDataset,
+    StreamingDataset,
     create_dataloader,
-    StreamingDataset
 )
-from python.src.data.data_utils import read_json, read_csv, df_to_torch
 
 
 class TestDataUtils:

@@ -6,13 +6,12 @@ ModelRegistry functionality, and version compatibility checking.
 """
 
 import json
-import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
-import torch.nn as nn
+from torch import nn
 
 from python.src.utils.io.model_versioning import (
     ModelMetadata,
@@ -23,7 +22,6 @@ from python.src.utils.io.model_versioning import (
     load_model_with_metadata,
     save_model_with_metadata,
 )
-
 
 # Test fixtures
 
@@ -180,7 +178,7 @@ def test_load_model_with_metadata(simple_model, sample_metadata, tmp_path):
     assert loaded_metadata.model_type == "test_model"
 
     # Verify model weights match
-    for param1, param2 in zip(simple_model.parameters(), loaded_model.parameters()):
+    for param1, param2 in zip(simple_model.parameters(), loaded_model.parameters(), strict=False):
         assert torch.allclose(param1, param2)
 
 
@@ -279,7 +277,7 @@ def test_model_registry_load(simple_model, sample_metadata, tmp_path):
 
     # Verify
     assert loaded_metadata.version == "1.0.0"
-    for param1, param2 in zip(simple_model.parameters(), loaded_model.parameters()):
+    for param1, param2 in zip(simple_model.parameters(), loaded_model.parameters(), strict=False):
         assert torch.allclose(param1, param2)
 
 

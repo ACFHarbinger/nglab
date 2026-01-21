@@ -2,13 +2,12 @@
 Tests for concept drift detection algorithms.
 """
 
-import pytest
 import numpy as np
+import pytest
 
 from python.src.pipeline.online_learning.drift import (
-    DriftDetector,
-    PageHinkley,
     MovingAverageDrift,
+    PageHinkley,
 )
 
 
@@ -115,7 +114,7 @@ class TestPageHinkley:
         # Gradual increase
         drift_detected = False
         value = 100.0
-        for i in range(100):
+        for _i in range(100):
             value += 0.5  # Gradual increase
             if detector.update(value):
                 drift_detected = True
@@ -144,17 +143,15 @@ class TestPageHinkley:
             detector_stable.update(v)
 
         # Count steps to detect drift
-        steps_sensitive = 0
-        steps_stable = 0
 
         for i, v in enumerate(shift_values):
             if not detector_sensitive.in_drift:
                 detector_sensitive.update(v)
-                steps_sensitive = i + 1
+                i + 1
 
             if not detector_stable.in_drift:
                 detector_stable.update(v)
-                steps_stable = i + 1
+                i + 1
 
         # More sensitive detector should detect drift faster (or at same time)
         # This is a probabilistic test, so we just verify both work
@@ -248,7 +245,7 @@ class TestMovingAverageDrift:
         np.random.seed(42)
         for _ in range(100):
             value = 100.0 + np.random.normal(0, 1)
-            result = detector.update(value)
+            detector.update(value)
 
         # Should not have triggered drift
         assert not detector.in_drift
@@ -386,10 +383,8 @@ class TestDriftDetectorInterface:
             detector.update(100.0)
 
         # New drift
-        drift_detected = False
         for _ in range(50):
             if detector.update(150.0):
-                drift_detected = True
                 break
 
         # Should detect drift again
@@ -443,7 +438,7 @@ class TestDriftScenarios:
         # Simulate seasonal pattern with drift detection
         drift_count = 0
 
-        for cycle in range(3):
+        for _cycle in range(3):
             detector.reset()
 
             # Season 1: High values

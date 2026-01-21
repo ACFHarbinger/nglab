@@ -1,10 +1,12 @@
-import pytest
-import os
 import json
-import pandas as pd
-import torch
+
 import numpy as np
+import pandas as pd
+import pytest
+import torch
+
 from python.src.data.polymarket_dataset import PolymarketDataset
+
 
 @pytest.fixture
 def dataset_setup(tmp_path):

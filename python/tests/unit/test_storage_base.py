@@ -3,11 +3,11 @@ Tests for the storage base module - compression, caching, checksum utilities.
 """
 
 import gzip
-import pytest
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from python.src.storage.base import StorageConfig, ModelMetadata, ModelStorage
+import pytest
+
+from python.src.storage.base import ModelMetadata, ModelStorage, StorageConfig
 
 
 class ConcreteStorage(ModelStorage):

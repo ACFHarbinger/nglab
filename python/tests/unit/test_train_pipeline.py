@@ -1,8 +1,11 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 import torch
-import torch.nn as nn
-from unittest.mock import MagicMock, patch
-from python.src.pipeline.train import rollout, clip_grad_norms, train_epoch, train_batch
+from torch import nn
+
+from python.src.pipeline.train import clip_grad_norms, rollout, train_batch, train_epoch
+
 
 @pytest.fixture
 def dummy_model():
@@ -82,7 +85,7 @@ def test_train_epoch(mock_torch_save, mock_get_inner, mock_log_epoch, mock_train
     
     # Check if checkpoint saved
     mock_torch_save.assert_called_once()
-    args, kwargs = mock_torch_save.call_args
+    args, _kwargs = mock_torch_save.call_args
     assert "model" in args[0]
     assert "optimizer" in args[0]
 

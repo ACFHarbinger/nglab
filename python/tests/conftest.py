@@ -1,9 +1,9 @@
+import gzip
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
-from unittest.mock import MagicMock
-import gzip
 
 # Global mock for zstandard as it's an optional dependency often missing in CI
 mock_zstd = MagicMock()

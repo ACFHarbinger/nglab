@@ -1,10 +1,11 @@
-import pytest
 import torch
+
 from python.src.models.deep.probabilistic.diffusion_unet import (
-    SinusoidalPositionEmbeddings,
+    DiffusionUNet1D,
     ResidualBlock1D,
-    DiffusionUNet1D
+    SinusoidalPositionEmbeddings,
 )
+
 
 def test_sinusoidal_position_embeddings():
     dim = 64

@@ -1,8 +1,11 @@
+from unittest.mock import patch
+
 import pytest
 import torch
 from torch import nn
-from unittest.mock import MagicMock, patch
+
 from python.src.models.ensemble import EnsembleModel, create_ensemble_from_configs
+
 
 class SimpleModel(nn.Module):
     def __init__(self, val):

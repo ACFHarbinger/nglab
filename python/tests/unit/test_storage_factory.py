@@ -1,12 +1,14 @@
-import pytest
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from python.src.storage.factory import create_storage
+import pytest
+
 from python.src.storage.base import StorageConfig
+from python.src.storage.factory import create_storage
+from python.src.storage.gcs import GCSStorage
 from python.src.storage.local import LocalStorage
 from python.src.storage.s3 import S3Storage
-from python.src.storage.gcs import GCSStorage
+
 
 class TestStorageFactory:
     def test_create_local_storage(self, tmp_path):

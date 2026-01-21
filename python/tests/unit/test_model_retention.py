@@ -1,7 +1,9 @@
-import pytest
-import logging
 from unittest.mock import MagicMock
-from python.src.utils.io.model_retention import RetentionConfig, ModelRetentionPolicy
+
+import pytest
+
+from python.src.utils.io.model_retention import ModelRetentionPolicy, RetentionConfig
+
 
 @pytest.fixture
 def mock_manager():

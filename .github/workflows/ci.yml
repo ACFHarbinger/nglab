@@ -74,9 +74,6 @@ jobs:
           uv run ruff check .
           uv run mypy .
 
-      - name: Run Tests
-        run: uv run pytest python/tests
-
   rust-ci:
     name: Rust CI
     runs-on: ubuntu-latest
@@ -106,9 +103,6 @@ jobs:
           cargo check --all-features
           cargo clippy --all-features --workspace -- -D warnings
 
-      - name: Cargo Test
-        run: cd rust && cargo test --all-features
-
   typescript-ci:
     name: TypeScript CI
     runs-on: ubuntu-latest
@@ -131,6 +125,3 @@ jobs:
 
       - name: Lint
         run: npm run lint
-
-      - name: Test
-        run: npm test

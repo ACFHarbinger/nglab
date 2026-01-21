@@ -3,11 +3,10 @@ Tests for file utility functions.
 """
 
 import json
-import os
-import pytest
 import threading
-from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+
+import pytest
 
 from python.src.utils.io.file_utils import compose_dirpath, read_json
 

@@ -2,7 +2,6 @@ from unittest.mock import MagicMock, patch
 
 import ConfigSpace as CS  # noqa: N817
 import numpy as np
-import pytest
 
 from python.src.pipeline.hpo.de import DifferentialEvolution
 from python.src.pipeline.hpo.dehb import (
@@ -16,7 +15,6 @@ from python.src.pipeline.hpo.optimize import (
     optimize_model,
     random_search,
 )
-
 
 # ============================================================
 # Differential Evolution (DE) Tests

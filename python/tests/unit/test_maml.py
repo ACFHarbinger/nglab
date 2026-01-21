@@ -2,12 +2,13 @@
 Tests for MAML (Model-Agnostic Meta-Learning) Lightning module.
 """
 
+from unittest.mock import MagicMock
+
 import pytest
 import torch
 from torch import nn
-from unittest.mock import MagicMock, patch
 
-from python.src.pipeline.meta.maml import MAMLLightningModule, MAMLDataModule
+from python.src.pipeline.meta.maml import MAMLDataModule, MAMLLightningModule
 
 
 class SimpleModel(nn.Module):
@@ -162,7 +163,7 @@ class TestMAMLLightningModule:
         assert not adapted_model.training
 
         # Parameters should be different after adaptation
-        for p1, p2 in zip(maml_module.model.parameters(), adapted_model.parameters()):
+        for _p1, _p2 in zip(maml_module.model.parameters(), adapted_model.parameters(), strict=False):
             # Parameters might be similar but not identical
             pass  # Just checking the structure works
 
@@ -241,7 +242,7 @@ class TestMAMLDataModule:
     def test_create_task_3d_data(self, data_module):
         # 3D data: [num_samples, seq_len, features]
         regime_data = torch.randn(100, 5, 10)
-        support_x, support_y, query_x, query_y = data_module.create_task(regime_data)
+        support_x, support_y, _query_x, _query_y = data_module.create_task(regime_data)
 
         # Check shapes
         assert support_x.shape[0] == data_module.support_size
@@ -254,7 +255,7 @@ class TestMAMLDataModule:
     def test_create_task_small_regime(self, data_module):
         """Test task creation when regime has fewer samples than needed."""
         small_regime = torch.randn(30, 10)  # Less than support + query = 40
-        support_x, support_y, query_x, query_y = data_module.create_task(small_regime)
+        support_x, _support_y, query_x, _query_y = data_module.create_task(small_regime)
 
         # Should still work by sampling with replacement
         assert support_x.shape[0] == data_module.support_size
@@ -285,7 +286,7 @@ class TestMAMLDataModule:
         train_dl = data_module.train_dataloader()
 
         batch_count = 0
-        for batch in train_dl:
+        for _batch in train_dl:
             batch_count += 1
             if batch_count >= 5:
                 break

@@ -1,12 +1,10 @@
-import pytest
 from pathlib import Path
-import json
-import shutil
-from unittest.mock import MagicMock, patch
-from datetime import datetime
 
+import pytest
+
+from python.src.storage.base import StorageConfig
 from python.src.storage.local import LocalStorage
-from python.src.storage.base import StorageConfig, ModelMetadata
+
 
 @pytest.fixture
 def local_storage(tmp_path):

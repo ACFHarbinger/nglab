@@ -1,11 +1,13 @@
-import pytest
 import sys
-from unittest.mock import MagicMock, patch, ANY
-from datetime import datetime
+from unittest.mock import ANY, MagicMock, patch
+
+import pytest
+
+from python.src.storage.base import StorageConfig
 
 # Set PYTHONPATH via pytest or env is assumed.
 from python.src.storage.s3 import S3Storage
-from python.src.storage.base import StorageConfig, ModelMetadata
+
 
 @pytest.fixture
 def mock_boto3():

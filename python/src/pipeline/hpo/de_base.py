@@ -110,7 +110,6 @@ class DifferentialEvolutionBase:
         self.population: np.ndarray[Any, Any] | None = None
         self.population_ids: np.ndarray[Any, Any] | None = None
         self.fitness: np.ndarray[Any, Any] | None = None
-        self.fitness: np.ndarray[Any, Any] | None = None
         self.age: np.ndarray[Any, Any] | None = None
         self.max_age = max_age if max_age is not None else np.inf
         self.history: list[Any] = []

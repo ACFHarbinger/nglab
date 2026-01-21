@@ -1,17 +1,20 @@
-import pytest
+import json
+import os
+from unittest.mock import ANY, MagicMock, patch
+
 import numpy as np
 import pandas as pd
+import pytest
 import torch
-import os
-import json
-from unittest.mock import MagicMock, patch, ANY
+
 from python.src.utils.logging.log_utils import (
-    log_timeseries_values,
+    _convert_numpy,
     log_epoch,
-    plot_training_results,
+    log_timeseries_values,
     log_to_json_resilient,
-    _convert_numpy
+    plot_training_results,
 )
+
 
 @pytest.fixture
 def mock_wandb():
