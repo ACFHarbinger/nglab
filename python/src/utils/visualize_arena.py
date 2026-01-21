@@ -13,7 +13,7 @@ try:
 
     print(f"Successfully imported nglab from {nglab.__file__}")
 
-    from environment import TradingEnv
+    from python.src.env import TradingEnv
 
     print("Successfully imported TradingEnv")
 

@@ -12,7 +12,7 @@ class TestTradingEnvInitialization:
 
     def test_default_initialization(self):
         """Test initialization with default parameters."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         env = TradingEnv()
 
@@ -28,7 +28,7 @@ class TestTradingEnvInitialization:
 
     def test_custom_initialization(self, trading_env_config, sample_prices):
         """Test initialization with custom parameters."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         env = TradingEnv(
             prices=sample_prices["trending_up"],
@@ -48,7 +48,7 @@ class TestTradingEnvInitialization:
 
     def test_observation_space_shape(self, trading_env_config):
         """Test observation space has correct shape."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         lookback = int(trading_env_config["lookback"])
         env = TradingEnv(lookback=lookback)
@@ -58,7 +58,7 @@ class TestTradingEnvInitialization:
 
     def test_action_space_properties(self):
         """Test action space is Discrete(3)."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         env = TradingEnv()
 
@@ -181,7 +181,7 @@ class TestTradingEnvStep:
 
     def test_transaction_costs_applied(self, sample_prices):
         """Test transaction costs are applied correctly."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         env = TradingEnv(
             prices=sample_prices["stable"],
@@ -209,7 +209,7 @@ class TestTradingEnvStep:
 
     def test_termination_zero_portfolio(self, sample_prices):
         """Test termination when portfolio value <= 0."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         # Create env with very high transaction costs to drain capital
         env = TradingEnv(
@@ -232,7 +232,7 @@ class TestTradingEnvStep:
 
     def test_termination_end_of_prices(self, sample_prices):
         """Test termination at end of price data."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         env = TradingEnv(
             prices=sample_prices["small"],  # Only 5 prices
@@ -254,7 +254,7 @@ class TestTradingEnvStep:
 
     def test_truncation_max_steps(self, sample_prices):
         """Test truncation at max_steps."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         env = TradingEnv(
             prices=sample_prices["trending_up"],
@@ -299,7 +299,7 @@ class TestTradingEnvObservation:
 
     def test_observation_normalization(self, sample_prices):
         """Test observation values are normalized."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         env = TradingEnv(prices=sample_prices["trending_up"], lookback=10)
         obs, _ = env.reset()
@@ -342,7 +342,7 @@ class TestTradingEnvSharpe:
 
     def test_sharpe_zero_volatility(self, sample_prices):
         """Test Sharpe calculation with zero volatility."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         env = TradingEnv(prices=sample_prices["stable"])
         env.reset()
@@ -361,7 +361,7 @@ class TestTradingEnvRender:
 
     def test_render_human_mode(self, capsys):
         """Test render in human mode outputs to stdout."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         env = TradingEnv(render_mode="human")
         env.reset()
@@ -372,7 +372,7 @@ class TestTradingEnvRender:
 
     def test_render_none_mode(self, capsys):
         """Test render in None mode does nothing."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         env = TradingEnv(render_mode=None)
         env.reset()
@@ -388,7 +388,7 @@ class TestTradingEnvEdgeCases:
 
     def test_zero_initial_capital(self):
         """Test behavior with zero initial capital."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         env = TradingEnv(initial_capital=0.0)
         obs, _ = env.reset()
@@ -397,7 +397,7 @@ class TestTradingEnvEdgeCases:
 
     def test_extreme_high_prices(self):
         """Test with very high prices."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         high_prices = np.array([1e6, 1e6 + 100, 1e6 + 200] * 50, dtype=np.float64)
         env = TradingEnv(prices=high_prices)
@@ -408,7 +408,7 @@ class TestTradingEnvEdgeCases:
 
     def test_extreme_low_prices(self):
         """Test with very low prices."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         low_prices = np.array([0.01, 0.011, 0.012] * 50, dtype=np.float64)
         env = TradingEnv(prices=low_prices)
@@ -423,7 +423,7 @@ class TestClobEnv:
 
     def test_clob_inherits_trading_env(self):
         """Test ClobEnv inherits from TradingEnv."""
-        from environment.envs import ClobEnv, TradingEnv
+        from python.src.env.envs import ClobEnv, TradingEnv
 
         assert issubclass(ClobEnv, TradingEnv)
 
@@ -452,7 +452,7 @@ class TestClobEnv:
 
     def test_clob_orderbook_initialization(self, clob_env):
         """Test OrderBook initialization (if Rust available)."""
-        from environment.envs import HAS_RUST
+        from python.src.env.envs import HAS_RUST
 
         if HAS_RUST:
             assert clob_env._orderbook is not None

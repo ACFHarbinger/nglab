@@ -5,6 +5,12 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+import warnings
+
+# Filter stubborn warnings that pyproject.toml misses
+warnings.filterwarnings("ignore", message=".*pkg_resources is deprecated.*")
+warnings.filterwarnings("ignore", message=".*ModuleAvailableCache.*")
+warnings.filterwarnings("ignore", message=".*torch_geometric.distributed.*")
 
 # Disable OpenTelemetry during tests to prevent Jaeger connection warnings
 os.environ["OTEL_SDK_DISABLED"] = "true"
@@ -27,18 +33,8 @@ project_root = Path(__file__).resolve().parent.parent.parent
 
 # Add the project root to sys.path.
 # This allows 'import python.src...' to resolve correctly.
-sys.path.insert(0, str(project_root))
-
-# Load modular fixtures
-pytest_plugins = [
-    "python.tests.fixtures.deep_fixtures",
-    "python.tests.fixtures.mac_fixtures",
-    "python.tests.fixtures.regression_fixtures",
-    "python.tests.fixtures.hpo_fixtures",
-    "python.tests.fixtures.model_fixtures",
-    "python.tests.fixtures.environment_fixtures",
-    "python.tests.fixtures.nglab_fixtures",
-]
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 
 # GPU test support

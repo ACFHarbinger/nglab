@@ -11,11 +11,12 @@ from collections.abc import Callable
 from typing import Any
 
 import gymnasium as gym
-from environment import TradingEnv
 from stable_baselines3 import PPO
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
+
+from python.src.env import TradingEnv
 
 
 def make_env(rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000) -> Callable[[], gym.Env[Any, Any]]:

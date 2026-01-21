@@ -15,12 +15,13 @@ from typing import Any, cast
 
 import gymnasium as gym
 import numpy as np
-from environment import TradingEnv
 from gymnasium import spaces
 from stable_baselines3 import SAC
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
+
+from python.src.env import TradingEnv
 
 
 class ContinuousActionWrapper(gym.ActionWrapper[Any, Any, Any]):

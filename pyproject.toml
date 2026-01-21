@@ -92,7 +92,7 @@ manifest-path = "rust/Cargo.toml"
 venvPath = "."
 venv = ".venv"
 typeCheckingMode = "standard"
-include = ["python", "environment", "nglab"]
+include = ["python", "nglab"]
 extraPaths = ["typings"]
 reportMissingImports = true
 reportUnusedImport = "warning"
@@ -108,11 +108,7 @@ runner = "python -m pytest"
 tests_dir = "python/tests/"
 
 [project.optional-dependencies]
-cloud = [
-    "boto3>=1.34.0",
-    "google-cloud-storage>=2.14.0",
-    "zstandard>=0.22.0",
-]
+cloud = ["boto3>=1.34.0", "google-cloud-storage>=2.14.0", "zstandard>=0.22.0"]
 
 [tool.black]
 line-length = 88
@@ -178,7 +174,13 @@ fixable = ["ALL"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["python", "nglab"]
-section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
 
 [tool.ruff.format]
 # Strictly match Black's stable formatting
@@ -195,7 +197,12 @@ python_version = "3.11"
 strict = false
 ignore_missing_imports = true
 files = ["python/src/"]
-exclude = ["python/examples/", "python/tests/", "python/scripts/", "python/docs/"]
+exclude = [
+    "python/examples/",
+    "python/tests/",
+    "python/scripts/",
+    "python/docs/",
+]
 
 warn_return_any = true
 warn_unused_configs = true
@@ -251,90 +258,12 @@ google-cloud-storage = "google.cloud.storage"
 [tool.deptry]
 ignore_unused = ["maturin", "rich", "tensorboard-logger", "keyring"]
 
-# =================================================================
-# PYTEST CONFIGURATION (from pytest.ini)
-# =================================================================
-
-[tool.pytest.ini_options]
-# Test discovery
-python_files = ["test_*.py", "*_test.py"]
-python_classes = ["Test*", "*Test"]
-python_functions = ["test_*", "*_test"]
-testpaths = "python/tests" # Original pyproject.toml value
-
-# Console output options (addopts converted to list format)
-addopts = [
-    "-v",               # Verbose output
-    "-ra",              # Show summary of all test outcomes
-    "--showlocals",     # Show local variables in tracebacks
-    "--strict-markers", # Fail on unknown markers
-    #"--strict-config",  # Fail on unknown config options
-    "--tb=short",       # Shorter traceback format
-    "--color=yes",      # Color output
-    "--show-capture=all", # Show captured output on failure
-    "--disable-warnings", # Disable warnings to reduce noise
-]
-
-# Markers for categorizing tests (converted to key=value pairs)
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "fast: marks tests as fast running",
-    "unit: marks tests as unit tests",
-    "integration: marks tests as integration tests",
-    "validation: marks tests that validate argument combinations",
-    "edge_case: marks tests for edge cases",
-    "parametrize: marks parametrized tests",
-    "train_rl: marks tests related to reinforcement learning training",
-    "mrl_train: marks tests related to meta-learning training",
-    "train_sl: marks tests related to supervised learning training",
-    "train_ul: marks tests related to unsupervised learning training",
-    "train_semi: marks tests related to semi-supervised learning training",
-    "train_self: marks tests related to self-supervised learning training",
-    "hp_optim: marks tests related to hyperparameter optimization",
-    "eval: marks tests related to evaluation command",
-    "architecture: marks tests related to deep learning architectures",
-    "integration: marks integration tests",
-    "policies: marks tests for simulation policies",
-    "model: marks tests for classical machine learning models",
-    "data: marks tests for data processing",
-    "gpu: marks tests requiring GPU/CUDA",
-    "skip: skip this test",
-    "skipif: skip this test if condition is true",
-    "xfail: expected to fail",
-]
-
-# Filter warnings (converted to list)
-filterwarnings = [
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-    "ignore::UserWarning",
-    "ignore::FutureWarning",
-    "ignore:.*urllib3.*:UserWarning",
-    "ignore:.*distutils.*:DeprecationWarning",
-    "error::ResourceWarning",
-]
-
-# Logging configuration
-log_level = "INFO"
-log_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
-log_date_format = "%Y-%m-%d %H:%M:%S"
-log_cli = true
-log_cli_level = "INFO"
-log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
-log_cli_date_format = "%Y-%m-%d %H:%M:%S"
-
-# JUnit XML output
-junit_suite_name = "wsmart_route"
-junit_logging = "all"
-junit_duration_report = "call"
 
 # =================================================================
 # COVERAGE CONFIGURATION (from [tool:coverage] and [coverage:*])
 # =================================================================
 [tool.coverage.run]
-source = [
-    "."
-]
+source = ["."]
 omit = [
     "*/test/*",
     "*/test_*",

@@ -14,7 +14,7 @@ class TestEnvironmentIntegration:
 
     def test_trading_env_rust_integration(self, rust_available):
         """Test TradingEnv uses Rust backend when available."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
 
         env = TradingEnv()
         
@@ -28,7 +28,7 @@ class TestEnvironmentIntegration:
 
     def test_polymarket_env_rust_integration(self, rust_available):
         """Test PolymarketEnv uses Rust backend when available."""
-        from environment.envs import PolymarketEnv
+        from python.src.env.envs import PolymarketEnv
 
         env = PolymarketEnv(market_ids=["M1"])
         
@@ -39,13 +39,13 @@ class TestEnvironmentIntegration:
 
     def test_fallback_behavior_mock(self, monkeypatch):
         """Test graceful fallback when Rust is unavailable (simulated)."""
-        import environment.envs
+        import python.src.env.envs
         
         # Simulate Rust unavailability even if it is available
-        monkeypatch.setattr(environment.envs, "HAS_RUST", False)
-        monkeypatch.setattr(environment.envs, "RustTradingEnv", None)
+        monkeypatch.setattr(python.src.env.envs, "HAS_RUST", False)
+        monkeypatch.setattr(python.src.env.envs, "RustTradingEnv", None)
         
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
         
         env = TradingEnv()
         assert env._rust_env is None
@@ -61,7 +61,7 @@ class TestDataConsistency:
 
     def test_deterministic_behavior(self):
         """Test environment is deterministic with fixed seed."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
         
         env = TradingEnv()
         
@@ -94,7 +94,7 @@ class TestSystemStability:
 
     def test_multi_episode_loop(self):
         """Run multiple episodes back-to-back."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
         
         env = TradingEnv(max_steps=50)
         
@@ -111,7 +111,7 @@ class TestSystemStability:
 
     def test_env_batch_creation(self):
         """Test creating multiple environment instances."""
-        from environment.envs import TradingEnv
+        from python.src.env.envs import TradingEnv
         
         envs = [TradingEnv() for _ in range(5)]
         
