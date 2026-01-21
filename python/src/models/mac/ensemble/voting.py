@@ -1,3 +1,4 @@
+"""Voting ensemble model implementation."""
 from typing import Any
 
 from sklearn.ensemble import VotingClassifier, VotingRegressor
@@ -11,6 +12,7 @@ class VotingModel(ClassicalModel):
     """Voting Ensemble (Soft/Hard Voting or Weighted Average)."""
 
     def __init__(self, task: str = "regression", **kwargs: Any) -> None:
+        """Initialize VotingModel."""
         super().__init__()
 
         if "estimators" not in kwargs:

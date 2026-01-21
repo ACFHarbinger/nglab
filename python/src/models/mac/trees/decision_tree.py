@@ -1,3 +1,4 @@
+"""Decision Tree model suite."""
 from typing import Any
 
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor

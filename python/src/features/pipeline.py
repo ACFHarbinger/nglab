@@ -38,6 +38,7 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         selection_method: str = "variance",  # "variance", "mi", "rfecv"
         selection_params: dict[str, Any] | None = None,
     ):
+        """Initialize FeaturePipeline."""
         self.lookback = lookback
         self.feature_set = feature_set
         self.scaler_type = scaler_type

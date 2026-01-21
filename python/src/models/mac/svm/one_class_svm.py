@@ -1,3 +1,4 @@
+"""One-Class SVM for anomaly detection."""
 from typing import Any
 
 import numpy as np
@@ -14,6 +15,7 @@ class OneClassSVMModel(ClassicalModel):
     """
 
     def __init__(self, **kwargs: Any) -> None:
+        """Initialize OneClassSVMModel."""
         super().__init__()
         self.model = OneClassSVM(**kwargs)
 
@@ -23,6 +25,7 @@ class OneClassSVMModel(ClassicalModel):
         return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
+        """Forward pass for anomaly detection (predicts 1 for inliers, -1 for outliers)."""
         if not self._is_fitted:
             return torch.zeros((x.size(0), 1), device=x.device, dtype=torch.float32)
 

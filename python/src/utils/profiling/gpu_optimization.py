@@ -31,6 +31,7 @@ class TransferProfile:
     bandwidth_gbps: float = 0.0
 
     def __post_init__(self) -> None:
+        """Calculate bandwidth after initialization."""
         if self.transfer_time_ms > 0:
             # Calculate bandwidth in GB/s
             bytes_per_ms = self.data_size_bytes / self.transfer_time_ms
@@ -134,6 +135,7 @@ class TransferProfiler:
     """
 
     def __init__(self) -> None:
+        """Initialize transfer profiler."""
         self.profiles: list[TransferProfile] = []
         self._start_time: float = 0.0
         self._current_name: str = ""
@@ -192,8 +194,10 @@ class TransferProfiler:
         """
 
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+            """Inner decorator for measurement."""
             @wraps(func)
             def wrapper(*args: Any, **kwargs: Any) -> Any:
+                """Wrapper that profiles array transfer."""
                 # Get data size
                 size = 0
                 if hasattr(array, "nbytes"):
@@ -218,6 +222,7 @@ class TransferProfiler:
         rust_to_py = [p for p in self.profiles if p.direction == "rust_to_py"]
 
         def stats(profiles: list[TransferProfile]) -> dict[str, float]:
+            """Calculate statistics for a subset of profiles."""
             if not profiles:
                 return {"count": 0.0, "total_ms": 0.0, "avg_ms": 0.0}
             times = [p.transfer_time_ms for p in profiles]
@@ -265,6 +270,7 @@ class GPUMemoryOptimizer:
     """
 
     def __init__(self, device: int = 0) -> None:
+        """Initialize TransferProfiler."""
         self.device = device
         self._snapshots: list[dict[str, Any]] = []
 

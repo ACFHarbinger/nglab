@@ -89,6 +89,7 @@ def bayesian_optimization(
     storage = f"sqlite:///{storage_path}" if storage_path else None
 
     def objective(trial: optuna.Trial) -> float:
+        """Optuna objective function for Bayesian Optimization."""
         config = {
             "lr": trial.suggest_float("lr", 1e-5, 1e-2, log=True),
             "hidden_dim": trial.suggest_categorical("hidden_dim", [128, 256, 512]),
@@ -137,6 +138,7 @@ def run_dehb_search(
         fidelity: float,
         **kwargs: Any,
     ) -> dict[str, Any]:
+        """DEHB objective function."""
         # Update opts with config
         score = optimize_model(
             cast(dict[str, Any], config if isinstance(config, dict) else dict(config)),
@@ -180,6 +182,7 @@ def grid_search(opts: dict[str, Any], search_space: dict[str, Any]) -> dict[str,
     )
 
     def objective(trial: optuna.Trial) -> float:
+        """Optuna objective function for Grid Search."""
         config = {k: trial.suggest_categorical(k, v) for k, v in search_space.items()}
         return optimize_model(config, opts)
 
@@ -198,6 +201,7 @@ def random_search(opts: dict[str, Any], n_trials: int = 10) -> dict[str, Any]:
     )
 
     def objective(trial: optuna.Trial) -> float:
+        """Optuna objective function for Random Search."""
         # User defined search space via trial suggestions
         config = {
             "lr": trial.suggest_float("lr", 1e-5, 1e-2, log=True),

@@ -81,6 +81,7 @@ class ModelStorage(ABC):
     """Abstract base class for model storage backends."""
 
     def __init__(self, config: StorageConfig) -> None:
+        """Initialize the storage backend."""
         self.config = config
         self._setup_cache()
 

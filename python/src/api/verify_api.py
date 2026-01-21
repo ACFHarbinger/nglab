@@ -10,6 +10,7 @@ import requests
 
 
 def verify() -> None:
+    """Verify that the FastAPI inference API is live and responding."""
     # 1. Start the server in the background
     print("Starting FastAPI server...")
     proc = subprocess.Popen(

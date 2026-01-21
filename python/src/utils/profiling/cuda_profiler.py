@@ -99,6 +99,12 @@ class CUDAProfiler:
     """
 
     def __init__(self, config: ProfilerConfig | None = None) -> None:
+        """
+        Initialize CUDA profiler.
+
+        Args:
+            config: Profiler configuration.
+        """
         self.config = config or ProfilerConfig()
         self._profiler: torch_profile | None = None
         self._step_count = 0
@@ -360,6 +366,7 @@ def profile_training_step(  # noqa: PLR0913
     model.train()
 
     def step() -> float:
+        """Execute a single training step."""
         optimizer.zero_grad()
         output = model(sample_input)
         loss = loss_fn(output, sample_target)

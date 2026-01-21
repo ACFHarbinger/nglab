@@ -1,3 +1,4 @@
+"""Twin Support Vector Machine (TWSVM) implementation."""
 from typing import Any
 
 import numpy as np
@@ -16,6 +17,7 @@ class TWSVMModel(ClassicalModel):
     def __init__(
         self, c1: float = 1.0, c2: float = 1.0, epsilon: float = 1e-5, **kwargs: Any
     ) -> None:
+        """Initialize TWSVMModel."""
         super().__init__()
         self.c1 = c1
         self.c2 = c2
@@ -27,6 +29,7 @@ class TWSVMModel(ClassicalModel):
         self.fallback: LinearSVC | None = None
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        """Fit the TWSVM model using structural risk minimization."""
         if y is None:
             raise ValueError("TWSVMModel requires y for fitting.")
 
@@ -82,6 +85,7 @@ class TWSVMModel(ClassicalModel):
         self._is_fitted = True
 
     def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+        """Predict classes by comparing distances to the twin planes."""
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 
         if not self._is_fitted:
@@ -110,6 +114,7 @@ class TWSVMModel(ClassicalModel):
         return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
+        """Forward pass for the Twin SVM model."""
         if not self._is_fitted:
             return super().forward(
                 x, return_embedding=return_embedding, return_sequence=return_sequence

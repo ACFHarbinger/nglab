@@ -1,3 +1,4 @@
+"""Online normalization utilities."""
 import torch
 from torch import nn
 
@@ -46,6 +47,7 @@ class OnlineNormalizer(nn.Module):
             self.register_parameter("bias", None)
 
     def reset(self) -> None:
+        """Reset running statistics."""
         self.running_mean.zero_()
         self.running_var.fill_(1)
         self.count.zero_()

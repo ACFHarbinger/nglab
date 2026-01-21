@@ -1,3 +1,4 @@
+"""XGBoost model implementation."""
 from typing import Any
 
 import xgboost as xgb

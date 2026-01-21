@@ -84,6 +84,13 @@ class SHAPToolkit:
     """Wrapper for SHAP (SHapley Additive exPlanations)."""
 
     def __init__(self, model: Any, background_data: NDArray[Any] | None = None) -> None:
+        """
+        Initialize SHAP toolkit.
+
+        Args:
+            model: Trained model to explain.
+            background_data: Representative dataset for the explainer.
+        """
         self.model = model
         self.background_data = background_data
         self.explainer: Any = None

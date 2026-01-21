@@ -33,6 +33,7 @@ class PortfolioOptimizer:
         n = len(expected_returns)
 
         def objective(w: NDArray[Any]) -> float:
+            """MVO objective function: minimize variance - lambda * return."""
             port_variance = float(np.dot(w.T, np.dot(covariance_matrix, w)))
             port_return = float(np.dot(w, expected_returns))
             return port_variance - risk_aversion * port_return

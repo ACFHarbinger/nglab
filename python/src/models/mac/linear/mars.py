@@ -1,3 +1,4 @@
+"""Multivariate Adaptive Regression Splines (MARS) model implementation."""
 from typing import Any
 
 import numpy as np
@@ -13,6 +14,7 @@ class MARSModel(ClassicalModel):
     """Simplified Multivariate Adaptive Regression Splines (Piecewise Linear)."""
 
     def __init__(self, n_segments: int = 5, **kwargs: Any) -> None:
+        """Initialize MARSModel."""
         super().__init__()
         self.n_segments = n_segments
         self.model = Pipeline(
@@ -23,6 +25,7 @@ class MARSModel(ClassicalModel):
         )
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        """Fit the MARS model to data."""
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 
         hinges = []
@@ -51,6 +54,7 @@ class MARSModel(ClassicalModel):
         return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
+        """Forward pass using MARS prediction."""
         if not self._is_fitted:
             return super().forward(
                 x, return_embedding=return_embedding, return_sequence=return_sequence
@@ -77,6 +81,7 @@ class MARSModel(ClassicalModel):
         return torch.from_numpy(out_np).to(device).to(torch.float32)
 
     def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+        """Predict using the fitted MARS model."""
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 
         if not self._is_fitted:

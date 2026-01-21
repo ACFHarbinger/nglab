@@ -61,8 +61,10 @@ def cached_query(
     def decorator(
         func: Callable[..., Coroutine[Any, Any, T]],
     ) -> Callable[..., Coroutine[Any, Any, T]]:
+        """Inner decorator function."""
         @functools.wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
+            """Wrapper that handles Redis lookups and cache population."""
             client = await get_redis_client()
 
             # Generate cache key

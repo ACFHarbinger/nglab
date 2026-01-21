@@ -15,6 +15,7 @@ class BaseSampler:
     """Base class for Active Learning samplers."""
 
     def __init__(self, budget: int):
+        """Initialize the sampler with a selection budget."""
         self.budget = budget
 
     def select(self, scores: torch.Tensor) -> np.ndarray[Any, Any]:
@@ -34,6 +35,7 @@ class UncertaintySampler(BaseSampler):
     """Selects samples with the highest uncertainty scores."""
 
     def select(self, scores: torch.Tensor) -> np.ndarray[Any, Any]:
+        """Select samples with highest uncertainty scores."""
         # scores: higher is more uncertain
         _, indices = torch.topk(scores.view(-1), k=self.budget)
         return indices.cpu().numpy()
@@ -85,6 +87,7 @@ class RandomSampler(BaseSampler):
     """Baseline: Selects samples randomly."""
 
     def select(self, scores: torch.Tensor) -> np.ndarray[Any, Any]:
+        """Select samples randomly."""
         pool_size = scores.size(0)
         indices = np.random.choice(pool_size, size=self.budget, replace=False)
         return indices

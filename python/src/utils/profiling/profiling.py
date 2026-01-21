@@ -1,3 +1,13 @@
+"""Performance profiling utilities for NGLab.
+
+Provides decorators for:
+- @profile: cProfile-based function profiling
+- @timeit: High-resolution execution time measurement
+- @memory_profile: Memory usage tracking
+
+All results are logged and can be saved to disk for analysis.
+"""
+
 import cProfile
 import io
 import logging
@@ -23,8 +33,10 @@ def profile(output_dir: str = "./profiles") -> Callable[[F], F]:
     """
 
     def decorator(func: F) -> F:
+        """Inner decorator that wraps the function."""
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
+            """Wrapper that profiles function execution."""
             out_path = Path(output_dir)
             out_path.mkdir(parents=True, exist_ok=True)
 
@@ -57,6 +69,7 @@ def timeit(func: F) -> F:
 
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
+        """Wrapper that measures execution time."""
         start_time = time.perf_counter()
         result = func(*args, **kwargs)
         end_time = time.perf_counter()
@@ -75,6 +88,7 @@ def memory_profile(func: F) -> F:
 
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
+        """Wrapper that measures memory usage."""
         process = psutil.Process(os.getpid())
         mem_before = process.memory_info().rss / (1024 * 1024)  # MB
         result = func(*args, **kwargs)

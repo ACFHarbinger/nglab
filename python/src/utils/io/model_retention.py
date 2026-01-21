@@ -29,9 +29,13 @@ class RetentionConfig:
 class CheckpointManagerProtocol(Protocol):
     """Protocol for checkpoint managers (local or cloud)."""
 
-    def list_versions(self, model_type: str) -> list[str]: ...
+    def list_versions(self, model_type: str) -> list[str]:
+        """List all available versions for a model type."""
+        ...
 
-    def delete(self, model_type: str, version: str) -> bool: ...
+    def delete(self, model_type: str, version: str) -> bool:
+        """Delete a specific model version."""
+        ...
 
 
 class ModelRetentionPolicy:

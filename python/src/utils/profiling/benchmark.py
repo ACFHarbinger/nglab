@@ -281,7 +281,7 @@ class GPUBenchmark:
 
         return results
 
-    def _benchmark_training(  # noqa: PLR0913
+    def _benchmark_training(  # noqa: PLR0913 PLR0915
         self,
         input_shape: tuple[int, ...],
         target_shape: tuple[int, ...],
@@ -315,6 +315,7 @@ class GPUBenchmark:
             torch.cuda.reset_peak_memory_stats()
 
         def train_step(opt: torch.optim.Optimizer, sclr: torch.cuda.amp.GradScaler | None) -> None:
+            """Execute a single training step for benchmarking."""
             opt.zero_grad()
             if mixed_precision and sclr is not None:
                 with torch.autocast(device_type="cuda", dtype=torch.float16):

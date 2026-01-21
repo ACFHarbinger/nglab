@@ -134,6 +134,7 @@ class StreamingFinancialDataset(IterableDataset[dict[str, Any]]):
         buffer: list[dict[str, Any]] = []
 
         def iterator_logic() -> Iterator[dict[str, Any]]:
+            """Core logic for iterating and optional shuffling."""
             dataset_iter = self._get_iterator()
 
             for chunk in dataset_iter:

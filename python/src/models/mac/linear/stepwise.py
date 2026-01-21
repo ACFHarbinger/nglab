@@ -1,3 +1,4 @@
+"""Stepwise Regression model implementation."""
 from typing import Any, Literal, cast
 
 import numpy as np
@@ -18,6 +19,7 @@ class StepwiseRegressionModel(ClassicalModel):
         n_features_to_select: str | int | float = "auto",
         **kwargs: Any,
     ) -> None:
+        """Initialize StepwiseRegressionModel."""
         super().__init__()
         self.base_estimator = LinearRegression()
 
@@ -36,6 +38,7 @@ class StepwiseRegressionModel(ClassicalModel):
         self.final_model: LinearRegression | None = None
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        """Fit the stepwise regression model."""
         if y is None:
             raise ValueError("StepwiseRegressionModel requires y for fitting.")
 
@@ -64,6 +67,7 @@ class StepwiseRegressionModel(ClassicalModel):
         return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
+        """Forward pass using selected features."""
         if not self._is_fitted:
             return super().forward(
                 x, return_embedding=return_embedding, return_sequence=return_sequence
@@ -90,6 +94,7 @@ class StepwiseRegressionModel(ClassicalModel):
 
     # Fix: Corrected Union typing and Return type
     def predict(self, X: npt.NDArray[Any] | torch.Tensor) -> npt.NDArray[Any]:  # noqa: N803
+        """Predict using the fitted model."""
         X_np: npt.NDArray[Any] = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 
         if not self._is_fitted or self.selected_features_ is None or self.final_model is None:

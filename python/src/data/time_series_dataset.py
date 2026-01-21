@@ -36,6 +36,7 @@ class TimeSeriesDataset(Dataset[dict[str, torch.Tensor]]):
         normalize: Literal["minmax", "zscore"] | None = "minmax",
         stats: dict[str, float] | None = None,
     ):
+        """Initialize TimeSeriesDataset."""
         super().__init__()
         self.seq_len = seq_len
         self.pred_len = pred_len

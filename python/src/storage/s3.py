@@ -13,6 +13,7 @@ class S3Storage(ModelStorage):
     """AWS S3 storage backend."""
 
     def __init__(self, config: StorageConfig):
+        """Initialize AWS S3 storage backend."""
         super().__init__(config)
         self._client = None
         self._bucket = config.s3_bucket

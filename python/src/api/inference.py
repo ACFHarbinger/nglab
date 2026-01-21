@@ -36,12 +36,24 @@ from python.src.utils.functions.functions import load_model
 
 # Dummy tracer for when OpenTelemetry is disabled/missing
 class DummySpan:
-    def __enter__(self): return self
-    def __exit__(self, exc_type, exc_val, exc_tb): pass
-    def set_attribute(self, key, value): pass
+    """Dummy span for when OpenTelemetry is disabled."""
+
+    def __enter__(self):
+        """Context manager entry."""
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit."""
+        pass
+    def set_attribute(self, key, value):
+        """No-op for dummy span."""
+        pass
 
 class DummyTracer:
-    def start_as_current_span(self, name): return DummySpan()
+    """Dummy tracer for when OpenTelemetry is disabled."""
+
+    def start_as_current_span(self, name):
+        """Start a no-op span."""
+        return DummySpan()
 
 try:
     tracer = trace.get_tracer(__name__)
@@ -80,6 +92,7 @@ class PredictionRequest(BaseModel):
     @validator("observations")
     @classmethod
     def validate_obs_shape(cls, v: list[list[float]]) -> list[list[float]]:
+        """Validate that all observations in the batch have the same length."""
         if not v:
             raise ValueError("Observations cannot be empty")
         # Ensure all observations have same length
@@ -108,17 +121,25 @@ class BatchInferenceHandler:
     """
 
     def __init__(self, model_loader_func: Callable[[], torch.nn.Module]) -> None:
+        """
+        Initialize BatchInferenceHandler.
+
+        Args:
+            model_loader_func: Function to load the model singleton.
+        """
         self.queue: asyncio.Queue[tuple[PredictionRequest, asyncio.Future[list[list[float]]]]] | None = None
         self.model_loader = model_loader_func
         self._shutdown = False
         self._worker_task: asyncio.Task[None] | None = None
 
     async def start(self) -> None:
+        """Start the background worker loop."""
         self._shutdown = False
         self.queue = asyncio.Queue()
         self._worker_task = asyncio.create_task(self._worker_loop())
 
     async def stop(self) -> None:
+        """Stop the background worker loop and cleanup."""
         self._shutdown = True
         if self._worker_task:
             self._worker_task.cancel()
@@ -261,11 +282,15 @@ def get_model(model_path: str | None = None) -> torch.nn.Module:
 
 
 class RayModelDeployment:
+    """Ray Serve deployment wrapper for the inference service."""
+
     def __init__(self) -> None:
+        """Initialize and warm up the model."""
         # Load model on init to warm up the actor
         get_model()
 
     async def __call__(self, request: PredictionRequest) -> list[list[float]]:
+        """Handle incoming prediction request via Ray Serve."""
         return await batch_handler.predict(request)
 
 
@@ -286,6 +311,7 @@ if RAY_AVAILABLE and ray_serve is not None:
 
 
 def setup_telemetry(app: FastAPI) -> None:
+    """Configure OpenTelemetry for the FastAPI application."""
     resource = Resource(attributes={"service.name": "nglab-inference-api"})
 
     # Trace Sampling: 10% sampling rate for production
@@ -310,6 +336,7 @@ batch_handler = BatchInferenceHandler(lambda: get_model())
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Manages the lifespan of the API, handling startup and shutdown."""
     # Startup
     global _REDIS  # noqa: PLW0603
     await batch_handler.start()

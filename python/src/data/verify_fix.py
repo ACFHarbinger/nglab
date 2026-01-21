@@ -1,3 +1,4 @@
+"""Verification script for renaming logic fixes."""
 import pandas as pd
 
 try:

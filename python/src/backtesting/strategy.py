@@ -23,6 +23,7 @@ class BaseStrategy(ABC):
     """Base class for implementing trading strategies."""
 
     def __init__(self, name: str = "BaseStrategy"):
+        """Initialize BaseStrategy."""
         self.name = name
         self.engine: Any | None = None
 

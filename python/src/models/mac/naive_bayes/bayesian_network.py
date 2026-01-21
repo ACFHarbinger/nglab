@@ -1,3 +1,4 @@
+"""Bayesian Network model implementation."""
 from typing import Any
 
 import numpy as np
@@ -14,10 +15,12 @@ class BayesianNetworkModel(ClassicalModel):
     """
 
     def __init__(self, structure: str = "naive", **kwargs: Any) -> None:
+        """Initialize BayesianNetworkModel."""
         super().__init__()
         self.model = GaussianNB(**kwargs)
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        """Fit the Bayesian Network model."""
         if y is None:
             raise ValueError("BayesianNetworkModel requires y for fitting.")
 
@@ -27,6 +30,7 @@ class BayesianNetworkModel(ClassicalModel):
         self._is_fitted = True
 
     def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+        """Predict labels using the fitted Bayesian Network."""
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 
         if not self._is_fitted:
@@ -41,6 +45,7 @@ class BayesianNetworkModel(ClassicalModel):
         return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
+        """Forward pass for the Bayesian Network model."""
         if not self._is_fitted:
             return super().forward(
                 x, return_embedding=return_embedding, return_sequence=return_sequence

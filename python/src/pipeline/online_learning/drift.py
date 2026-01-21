@@ -1,3 +1,4 @@
+"""Concept drift detection utilities."""
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -7,6 +8,7 @@ class DriftDetector(ABC):
     """Abstract base class for concept drift detection."""
 
     def __init__(self) -> None:
+        """Initialize DriftDetector."""
         self.in_drift = False
         self.in_warning = False
 
@@ -57,6 +59,7 @@ class PageHinkley(DriftDetector):
         self.sum_lower = 0.0
 
     def reset(self) -> None:
+        """Reset Page-Hinkley detector state."""
         self.sample_count = 0
         self.x_mean = 0.0
         self.sum_upper = 0.0
@@ -64,6 +67,7 @@ class PageHinkley(DriftDetector):
         self.in_drift = False
 
     def update(self, value: float) -> bool:
+        """Update Page-Hinkley detector with a new value."""
         self.sample_count += 1
 
         if self.sample_count == 1:
@@ -100,6 +104,7 @@ class MovingAverageDrift(DriftDetector):
     def __init__(
         self, short_window: int = 20, long_window: int = 100, threshold: float = 3.0
     ) -> None:
+        """Initialize MovingAverageDrift detector."""
         super().__init__()
         self.short_window = short_window
         self.long_window = long_window
@@ -108,10 +113,12 @@ class MovingAverageDrift(DriftDetector):
         self.buffer: list[float] = []
 
     def reset(self) -> None:
+        """Reset moving average detector state."""
         self.buffer = []
         self.in_drift = False
 
     def update(self, value: float) -> bool:
+        """Update moving average detector with a new value."""
         self.buffer.append(value)
         if len(self.buffer) > self.long_window:
             self.buffer.pop(0)

@@ -1,3 +1,4 @@
+"""Averaged One-Dependence Estimators (AODE) model implementation."""
 from typing import Any
 
 import numpy as np
@@ -14,12 +15,14 @@ class AODEModel(ClassicalModel):
     """
 
     def __init__(self, n_estimators: int = 10, **kwargs: Any) -> None:
+        """Initialize AODEModel."""
         super().__init__()
         self.n_estimators = n_estimators
         self.models: list[GaussianNB] = []
         self.feature_subsets: list[list[int]] = []
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        """Fit the AODE model."""
         if y is None:
             raise ValueError("AODEModel requires y for fitting.")
 
@@ -42,6 +45,7 @@ class AODEModel(ClassicalModel):
         self._is_fitted = True
 
     def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+        """Predict labels by averaging multiple Naive Bayes models."""
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 
         if not self._is_fitted:
@@ -60,6 +64,7 @@ class AODEModel(ClassicalModel):
         return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
+        """Forward pass for the AODE model."""
         if not self._is_fitted:
             return super().forward(
                 x, return_embedding=return_embedding, return_sequence=return_sequence

@@ -1,3 +1,4 @@
+"""C5.0 model implementation."""
 from typing import Any
 
 from .decision_tree import DecisionTreeModel
@@ -10,6 +11,7 @@ class C50Model(DecisionTreeModel):
     """
 
     def __init__(self, task: str = "classification", **kwargs: Any) -> None:
+        """Initialize C50Model."""
         if task == "classification":
             kwargs["criterion"] = "entropy"
         super().__init__(task=task, **kwargs)

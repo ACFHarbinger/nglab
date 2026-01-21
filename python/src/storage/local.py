@@ -15,6 +15,7 @@ class LocalStorage(ModelStorage):
     """Local filesystem storage backend."""
 
     def __init__(self, config: StorageConfig) -> None:
+        """Initialize local filesystem storage backend."""
         super().__init__(config)
         self.base_path = Path(config.local_path)
         self.base_path.mkdir(parents=True, exist_ok=True)

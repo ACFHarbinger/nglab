@@ -21,6 +21,7 @@ class NewsCrawler:
     ]
 
     def __init__(self, feeds: list[str] | None = None) -> None:
+        """Initialize NewsCrawler."""
         self.feeds = feeds or self.DEFAULT_FEEDS
 
     def crawl(self) -> list[dict[str, Any]]:

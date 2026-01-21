@@ -1,3 +1,4 @@
+"""ID3 model implementation."""
 from typing import Any
 
 from .decision_tree import DecisionTreeModel
@@ -10,6 +11,7 @@ class ID3Model(DecisionTreeModel):
     """
 
     def __init__(self, task: str = "classification", **kwargs: Any) -> None:
+        """Initialize ID3Model."""
         if task == "regression":
             super().__init__(task=task, **kwargs)
         else:

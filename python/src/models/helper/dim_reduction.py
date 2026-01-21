@@ -27,6 +27,7 @@ class DimReductionModel(ClassicalModel):
     """Base class for dimensionality reduction models."""
 
     def __init__(self, **kwargs: Any) -> None:
+        """Initialize DimReductionModel."""
         super().__init__(output_type="embedding")
 
     def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
@@ -67,19 +68,28 @@ class DimReductionModel(ClassicalModel):
 
 
 class PCAModel(DimReductionModel):
+    """Principal Component Analysis (PCA) model wrapper."""
+
     def __init__(self, n_components: int | None = None, **kwargs: Any) -> None:
+        """Initialize PCAModel."""
         super().__init__()
         self.model = PCAAlgorithm(n_components=n_components, **kwargs)
 
 
 class TSNEModel(DimReductionModel):
+    """t-Distributed Stochastic Neighbor Embedding (t-SNE) model wrapper."""
+
     def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
+        """Initialize TSNEModel."""
         super().__init__()
         self.model = TSNEAlgorithm(n_components=n_components, **kwargs)
 
 
 class LDAModel(DimReductionModel):
+    """Linear Discriminant Analysis (LDA) model wrapper."""
+
     def __init__(self, n_components: int | None = None, **kwargs: Any) -> None:
+        """Initialize LDAModel."""
         super().__init__()
         self.model = LDAAlgorithm(n_components=n_components, **kwargs)
 
@@ -90,6 +100,7 @@ class PCRModel(DimReductionModel):
     """Principal Component Regression (Dim Reduction aspect)."""
 
     def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
+        """Initialize PCRModel."""
         super().__init__()
         # Pipeline of PCA -> Regression, but model output is embedding (PCA part usually)
         # But PCR is a regression model.
@@ -108,6 +119,7 @@ class PCRModel(DimReductionModel):
         self.model = self.pca  # For transform
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        """Fit the PCR model."""
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
         self.pca.fit(X_np)
         X_pca = self.pca.transform(X_np)
@@ -118,6 +130,7 @@ class PCRModel(DimReductionModel):
         self._is_fitted = True
 
     def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False, **kwargs: Any) -> torch.Tensor:
+        """Forward pass for the PCR model."""
         # Handle specialized PCR logic
         if self.output_type == "embedding" or return_embedding:
             return super().forward(x, return_embedding=True)
@@ -132,7 +145,10 @@ class PCRModel(DimReductionModel):
 
 
 class PLSRModel(DimReductionModel):
+    """Partial Least Squares Regression (PLSR) model wrapper."""
+
     def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
+        """Initialize PLSRModel."""
         super().__init__()
         self.model = PLSRegression(n_components=n_components, **kwargs)
 
@@ -140,13 +156,19 @@ class PLSRModel(DimReductionModel):
 
 
 class MDSModel(DimReductionModel):
+    """Multidimensional Scaling (MDS) model wrapper."""
+
     def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
+        """Initialize MDSModel."""
         super().__init__()
         self.model = MDS(n_components=n_components, **kwargs)
 
 
 class SammonMappingModel(DimReductionModel):
+    """Sammon Mapping model wrapper."""
+
     def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
+        """Initialize SammonMappingModel."""
         super().__init__()
         self.model = SammonMappingAlgorithm(n_components=n_components, **kwargs)
 
@@ -155,12 +177,16 @@ class ProjectionPursuitModel(DimReductionModel):
     """Uses FastICA as proxy for Projection Pursuit."""
 
     def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
+        """Initialize ProjectionPursuitModel."""
         super().__init__()
         self.model = FastICA(n_components=n_components, **kwargs)
 
 
 class QDAModel(DimReductionModel):
+    """Quadratic Discriminant Analysis (QDA) model wrapper."""
+
     def __init__(self, **kwargs: Any) -> None:
+        """Initialize QDAModel."""
         super().__init__()
         # Remove n_components if present as QDA does not use it
         if "n_components" in kwargs:
@@ -170,6 +196,7 @@ class QDAModel(DimReductionModel):
 
 
     def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False, **kwargs: Any) -> torch.Tensor:
+        """Forward pass for the QDA model."""
         # QDA doesn't support transform usually, only predict/predict_proba
         # For embedding, can return predict_proba
         # Override to use predict_proba as 'embedding'
@@ -190,7 +217,10 @@ class QDAModel(DimReductionModel):
 
 
 class MDAModel(DimReductionModel):
+    """Mixture Discriminant Analysis (MDA) model wrapper."""
+
     def __init__(self, n_components_per_class: int = 1, **kwargs: Any) -> None:
+        """Initialize MDAModel."""
         super().__init__()
         self.model = MDAAlgorithm(
             n_components_per_class=n_components_per_class, **kwargs
@@ -207,6 +237,7 @@ class FDAModel(DimReductionModel):
     """
 
     def __init__(self, n_components: int | None = None, **kwargs: Any) -> None:
+        """Initialize FDAModel."""
         super().__init__()
         self.n_components = n_components
         self.mars_kwargs = kwargs
@@ -216,6 +247,7 @@ class FDAModel(DimReductionModel):
         self.classes_: np.ndarray[Any, Any] | None = None
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        """Fit the FDA model."""
         # 1. Prepare Data
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
         y_np = y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
@@ -277,6 +309,7 @@ class FDAModel(DimReductionModel):
         self._is_fitted = True
 
     def transform(self, X: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:  # noqa: N803
+        """Apply dimensionality reduction/transformation."""
         # Transform X -> MARS features -> LDA -> Low Dim
         preds = []
         for mars in self.mars_models:
@@ -311,6 +344,7 @@ class FDAModel(DimReductionModel):
         return self.lda.transform(X_fitted)
 
     def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False, **kwargs: Any) -> torch.Tensor:
+        """Forward pass for the FDA model."""
         # Custom forward for FDA
         if not self._is_fitted:
             return torch.zeros((x.shape[0], self.n_components or 1)).to(x.device)
@@ -341,7 +375,10 @@ class FDAModel(DimReductionModel):
 
 
 class UMAPModel(DimReductionModel):
+    """Uniform Manifold Approximation and Projection (UMAP) model wrapper."""
+
     def __init__(self, n_components: int = 2, **kwargs: Any) -> None:
+        """Initialize UMAPModel."""
         super().__init__()
         try:
             import umap

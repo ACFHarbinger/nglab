@@ -17,6 +17,7 @@ class LOESSModel(ClassicalModel):
     """Locally Estimated Scatterplot Smoothing (LOESS)."""
 
     def __init__(self, frac: float = 0.66, it: int = 3, **kwargs: Any) -> None:
+        """Initialize LOESSModel."""
         super().__init__()
         self.frac = frac
         self.it = it
@@ -25,6 +26,7 @@ class LOESSModel(ClassicalModel):
         self.y_train: np.ndarray[Any, Any] | None = None
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        """Fit the LOESS model."""
         if y is None:
             raise ValueError("LOESSModel requires y for fitting.")
         if lowess is None:
@@ -43,6 +45,7 @@ class LOESSModel(ClassicalModel):
         self._is_fitted = True
 
     def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+        """Predict using the fitted LOESS model."""
         if not self._is_fitted:
             return np.zeros((X.shape[0], 1))
 
@@ -86,6 +89,7 @@ class LOESSModel(ClassicalModel):
         return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
+        """Forward pass using LOESS prediction."""
         if not self._is_fitted:
             return super().forward(
                 x, return_embedding=return_embedding, return_sequence=return_sequence

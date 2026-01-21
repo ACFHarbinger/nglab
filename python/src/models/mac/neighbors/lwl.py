@@ -1,3 +1,4 @@
+"""Locally Weighted Learning model implementation."""
 from typing import Any, Literal, cast
 
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
@@ -18,6 +19,7 @@ class LWLModel(ClassicalModel):
         kernel: str = "distance",
         **kwargs: Any,
     ) -> None:
+        """Initialize LWLModel."""
         super().__init__()
         weights = cast(
             Literal["uniform", "distance"],

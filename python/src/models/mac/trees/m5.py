@@ -1,3 +1,4 @@
+"""M5 model tree implementation."""
 from typing import Any
 
 import numpy as np
@@ -15,11 +16,13 @@ class M5Model(ClassicalModel):
     """
 
     def __init__(self, **kwargs: Any) -> None:
+        """Initialize M5Model."""
         super().__init__()
         self.tree = DecisionTreeRegressor(**kwargs)
         self.leaf_models: dict[int, LinearRegression | None] = {}
 
     def fit(self, X: torch.Tensor, y: torch.Tensor | None = None) -> None:  # noqa: N803
+        """Fit the M5 model tree."""
         if y is None:
             raise ValueError("M5Model requires y for fitting.")
 
@@ -52,6 +55,7 @@ class M5Model(ClassicalModel):
         self._is_fitted = True
 
     def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+        """Predict values using the fitted model tree and leaf-level linear models."""
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 
         if not self._is_fitted:
@@ -83,6 +87,7 @@ class M5Model(ClassicalModel):
         return_embedding: bool | None = None,
         return_sequence: bool = False,
     ) -> torch.Tensor:
+        """Forward pass for the M5 model."""
         if not self._is_fitted:
             return super().forward(
                 x, return_embedding=return_embedding, return_sequence=return_sequence

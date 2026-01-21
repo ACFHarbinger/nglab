@@ -1,3 +1,5 @@
+"""File and directory utility functions."""
+
 import json
 import os
 from collections.abc import Callable
@@ -10,6 +12,7 @@ def compose_dirpath(func: Callable[..., Any]) -> Callable[..., Any]:
     """
 
     def wrapper(*args: Any, **kwargs: Any) -> Any:
+        """Wrapper that ensures directory existence before calling the function."""
         path = args[0] if args else kwargs.get("json_path") or kwargs.get("dir_path")
         if path:
             os.makedirs(

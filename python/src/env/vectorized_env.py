@@ -35,6 +35,7 @@ class VectorizedTradingEnv:
         seed: int | None = None,
         use_multiprocessing: bool = False,
     ) -> None:
+        """Initialize VectorizedTradingEnv."""
         if not HAS_NGLAB:
             raise ImportError("nglab module not found. Build with 'maturin develop'")
 
@@ -86,10 +87,12 @@ class VectorizedTradingEnv:
 
     @property
     def unwrapped(self) -> 'VectorizedTradingEnv':
+        """Return the unwrapped environment."""
         return self
 
     @property
     def num_actions(self) -> int:
+        """Return the number of actions in the action space."""
         return self.action_space_n
 
     def reset(
@@ -97,6 +100,7 @@ class VectorizedTradingEnv:
         seed: int | None = None,
         options: dict[str, Any] | None = None,
     ) -> tuple[NDArray[np.float64], dict[str, Any]]:
+        """Reset all environments."""
         observations = []
         for i, env in enumerate(self.envs):
             env_seed = (seed + i) if seed is not None else None
@@ -116,6 +120,7 @@ class VectorizedTradingEnv:
         NDArray[np.bool_],
         dict[str, Any],
     ]:
+        """Step all environments synchronously."""
         if isinstance(actions, np.ndarray):
             if len(actions) != self.num_envs:
                  actions = actions.flatten()
@@ -145,6 +150,7 @@ class VectorizedTradingEnv:
         return observations, rewards, terminated, truncated, infos
 
     def step_async(self, actions: NDArray[np.int64] | list[int]) -> None:
+        """Submit step actions asynchronously."""
         self._futures = [
             self._executor.submit(env.step, int(action))
             for env, action in zip(self.envs, actions, strict=False)
@@ -159,6 +165,7 @@ class VectorizedTradingEnv:
         NDArray[np.bool_],
         dict[str, Any],
     ]:
+        """Wait for asynchronous steps to complete."""
         results = [f.result() for f in self._futures]
 
         observations = np.stack([r[0] for r in results], axis=0)
@@ -174,17 +181,21 @@ class VectorizedTradingEnv:
         return observations, rewards, terminated, truncated, infos
 
     def load_prices(self, prices: list[float] | NDArray[np.float64]) -> None:
+        """Load prices into all environments."""
         for env in self.envs:
             env.load_prices(list(prices))
 
     def close(self) -> None:
+        """Shutdown the executor and close environments."""
         if hasattr(self, '_executor'):
             self._executor.shutdown(wait=True)
 
     def __enter__(self) -> 'VectorizedTradingEnv':
+        """Context manager enter."""
         return self
 
     def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any) -> bool | None:
+        """Context manager exit."""
         self.close()
         return None
 
@@ -203,6 +214,7 @@ class SubprocVecEnv:
         max_steps: int = 1000,
         seed: int | None = None,
     ) -> None:
+        """Initialize SubprocVecEnv."""
         self.num_envs = num_envs
         self.closed = False
 
@@ -237,6 +249,7 @@ class SubprocVecEnv:
         seed: int | None = None,
         options: dict[str, Any] | None = None,
     ) -> tuple[NDArray[np.float64], dict[str, Any]]:
+        """Reset all environments."""
         for i, pipe in enumerate(self.parent_pipes):
             env_seed = (seed + i) if seed is not None else None
             pipe.send(("reset", {"seed": env_seed, "options": options}))
@@ -258,6 +271,7 @@ class SubprocVecEnv:
         NDArray[np.bool_],
         dict[str, Any],
     ]:
+        """Step all environments."""
         for pipe, action in zip(self.parent_pipes, actions, strict=False):
             pipe.send(("step", int(action)))
 
@@ -272,6 +286,7 @@ class SubprocVecEnv:
         return observations, rewards, terminated, truncated, infos
 
     def close(self) -> None:
+        """Close pipes and join processes."""
         if self.closed:
             return
         for pipe in self.parent_pipes:
@@ -284,9 +299,11 @@ class SubprocVecEnv:
         self.closed = True
 
     def __enter__(self) -> 'SubprocVecEnv':
+        """Context manager enter."""
         return self
 
     def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any) -> bool | None:
+        """Context manager exit."""
         self.close()
         return None
 

@@ -1,3 +1,4 @@
+"""k-Nearest Neighbors model suite."""
 from typing import Any
 
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor

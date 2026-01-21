@@ -1,3 +1,4 @@
+"""FP-Growth algorithm implementation for association rule learning."""
 from typing import Any, Optional
 
 import pandas as pd

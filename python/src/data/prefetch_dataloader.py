@@ -291,13 +291,16 @@ class _IteratorWrapper:
     """Wrapper to make an iterator look like a DataLoader for CUDAPrefetcher."""
 
     def __init__(self, iterator: Iterator[Any], length: int) -> None:
+        """Initialize IteratorWrapper."""
         self._iterator = iterator
         self._length = length
 
     def __iter__(self) -> Iterator[Any]:
+        """Return the iterator."""
         return self._iterator
 
     def __len__(self) -> int:
+        """Return the total number of batches."""
         return self._length
 
 

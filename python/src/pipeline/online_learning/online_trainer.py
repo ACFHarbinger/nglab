@@ -15,6 +15,7 @@ class ExperienceReplayBuffer:
     """A simple FIFO buffer for experience replay in online learning."""
 
     def __init__(self, capacity: int = 1000) -> None:
+        """Initialize ExperienceReplayBuffer."""
         self.buffer: collections.deque[dict[str, NDArray[Any]]] = collections.deque(
             maxlen=capacity
         )
@@ -51,6 +52,7 @@ class OnlineTrainer:
         update_batch_size: int = 32,
         performance_threshold: float = -0.05,  # Max 5% degradation before rollback
     ) -> None:
+        """Initialize OnlineTrainer."""
         self.model = model
         self.replay_buffer = ExperienceReplayBuffer(capacity=replay_capacity)
         self.update_batch_size = update_batch_size

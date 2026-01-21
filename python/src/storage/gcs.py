@@ -16,6 +16,7 @@ class GCSStorage(ModelStorage):
     """Google Cloud Storage backend."""
 
     def __init__(self, config: StorageConfig):
+        """Initialize Google Cloud Storage backend."""
         super().__init__(config)
         self._client = None
         self._bucket_name = config.gcs_bucket

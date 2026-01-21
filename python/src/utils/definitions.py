@@ -1,3 +1,11 @@
+"""Global constants and configuration definitions for NGLab.
+
+This module defines:
+- Project directory paths (ROOT_DIR, ICON_FILE)
+- Multi-core processing settings (LOCK_TIMEOUT)
+- Configuration from environment variables (BATCH_SIZE, REDIS_URL, etc.)
+"""
+
 import os
 from pathlib import Path
 

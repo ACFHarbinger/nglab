@@ -92,6 +92,14 @@ class MixedPrecisionTrainer:
         optimizer: torch.optim.Optimizer,
         config: MixedPrecisionConfig | None = None,
     ) -> None:
+        """
+        Initialize the mixed precision trainer.
+
+        Args:
+            model: PyTorch model to train.
+            optimizer: PyTorch optimizer.
+            config: Mixed precision configuration.
+        """
         self.model = model
         self.optimizer = optimizer
         self.config = config or MixedPrecisionConfig()

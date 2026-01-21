@@ -37,11 +37,13 @@ class QuantileHead(nn.Module):
     """
 
     def __init__(self, input_dim: int, quantiles: list[float]) -> None:
+        """Initialize QuantileHead."""
         super().__init__()
         self.quantiles = quantiles
         self.head = nn.Linear(input_dim, len(quantiles))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass for quantile regression."""
         return cast(torch.Tensor, self.head(x))
 
 

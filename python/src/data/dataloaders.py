@@ -47,6 +47,7 @@ class FinancialDataset(TimeSeriesDataset):
         multi_asset: bool = False,
         stats: dict[str, Any] | None = None,
     ):
+        """Initialize FinancialDataset."""
         # Store additional config
         self.add_technical_indicators = add_technical_indicators
         self.multi_asset = multi_asset
@@ -210,6 +211,7 @@ class StreamingDataset(Dataset[Any]):
         pred_len: int = 1,
         chunk_size: int = 10000,
     ):
+        """Initialize StreamingDataset."""
         self.csv_path = csv_path
         self.target_column = target_column
         self.seq_len = seq_len
@@ -220,9 +222,11 @@ class StreamingDataset(Dataset[Any]):
         self.total_length = sum(1 for _ in open(csv_path)) - 1  # Subtract header
 
     def __len__(self) -> int:
+        """Return total number of sliding window samples."""
         return max(0, self.total_length - self.seq_len - self.pred_len + 1)
 
     def __getitem__(self, idx: int) -> Any:
+        """Get a sample from the dataset."""
         # This is a placeholder - actual streaming implementation would
         # require more sophisticated chunk management and caching
         raise NotImplementedError("Streaming dataset not fully implemented yet")

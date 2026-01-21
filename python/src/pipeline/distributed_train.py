@@ -1,3 +1,4 @@
+"""Distributed training utilities for NGLab."""
 import logging
 import os
 from collections.abc import Callable
@@ -62,6 +63,17 @@ class DistributedTrainer:
         local_rank: int,
         device: torch.device,
     ):
+        """
+        Initialize DistributedTrainer.
+
+        Args:
+            model: Model to train.
+            train_loader: DataLoader with DistributedSampler.
+            optimizer: Optimizer.
+            criterion: Loss function.
+            local_rank: Local GPU rank.
+            device: Target device.
+        """
         self.local_rank = local_rank
         self.device = device
 
@@ -71,6 +83,7 @@ class DistributedTrainer:
         self.train_loader = train_loader
 
     def train_epoch(self, epoch: int) -> float:
+        """Run a single training epoch."""
         self.model.train()
         sampler = self.train_loader.sampler
         if isinstance(sampler, DistributedSampler):

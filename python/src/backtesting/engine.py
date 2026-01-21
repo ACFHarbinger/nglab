@@ -16,6 +16,7 @@ class BacktestEngine:
     """
 
     def __init__(self, initial_collateral: float = 10000.0, taker_fee: float = 0.001):
+        """Initialize BacktestEngine."""
         self.arena = PolymarketArena(initial_collateral, taker_fee)
         self.strategy: Strategy | None = None
         self.market_ids: list[str] = []

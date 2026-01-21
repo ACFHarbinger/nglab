@@ -1,3 +1,4 @@
+"""Support Vector Machine model suite."""
 from typing import Any, cast
 
 from sklearn.svm import SVC, SVR
@@ -32,6 +33,7 @@ class SVRModel(SVMModel):
     """Support Vector Regression - Alias/Wrapper forcing regression task."""
 
     def __init__(self, **kwargs: Any) -> None:
+        """Initialize SVRModel (Regression)."""
         super().__init__(task="regression", **kwargs)
 
 
@@ -39,4 +41,5 @@ class SVCModel(SVMModel):
     """Support Vector Classification - Alias/Wrapper forcing classification task."""
 
     def __init__(self, **kwargs: Any) -> None:
+        """Initialize SVCModel (Classification)."""
         super().__init__(task="classification", **kwargs)

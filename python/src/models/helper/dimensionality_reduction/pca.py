@@ -1,3 +1,4 @@
+"""Principal Component Analysis (PCA) algorithm implementation."""
 from typing import Any, cast
 
 import numpy as np
