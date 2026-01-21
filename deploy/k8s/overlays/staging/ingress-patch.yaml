@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nglab-ingress
+spec:
+  tls:
+    - hosts:
+        - staging.nglab.example.com
+      secretName: nglab-tls-staging
+  rules:
+    - host: staging.nglab.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nglab-api-service
+                port:
+                  number: 80
