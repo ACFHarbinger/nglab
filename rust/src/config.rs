@@ -6,61 +6,87 @@ use serde::Deserialize;
  */
 #[derive(Debug, Deserialize)]
 pub struct Settings {
-    /** Environment-specific settings (name, log level) */
+    /// Environment-specific settings (name, log level).
     pub environment: EnvironmentConfig,
-    /** Rust simulation engine settings */
+    /// Rust simulation engine settings.
     pub rust: RustConfig,
-    /** Python ML training and runtime settings */
+    /// Python ML training and runtime settings.
     pub python: PythonConfig,
-    /** UI-specific settings for the Tauri frontend */
+    /// UI-specific settings for the Tauri frontend.
     pub tauri: TauriConfig,
-    /** Persistence layer settings */
+    /// Persistence layer settings.
     pub database: DatabaseConfig,
-    /** External API integrations (Polymarket, etc.) */
+    /// External API integrations (Polymarket, etc.).
     pub api: ApiConfig,
 }
 
-#[derive(Debug, Deserialize)]
+/// Configuration for the running environment.
+#[derive(Debug, Deserialize, Clone)]
 pub struct EnvironmentConfig {
+    /// Environment name (e.g., "development", "production").
     pub name: String,
+    /// Logging verbosity level (e.g., "info", "debug").
     pub log_level: String,
+    /// Whether debug mode is enabled.
     pub debug: bool,
 }
 
-#[derive(Debug, Deserialize)]
+/// Configuration for the Rust backend simulation engine.
+#[derive(Debug, Deserialize, Clone)]
 pub struct RustConfig {
+    /// Tick rate for the arena in milliseconds.
     pub arena_tick_rate_ms: u64,
+    /// Default depth for order book snapshots.
     pub max_order_book_depth: usize,
+    /// Whether to enable metric collection.
     pub enable_metrics: bool,
 }
 
-#[derive(Debug, Deserialize)]
+/// Configuration for Python integration and ML training.
+#[derive(Debug, Deserialize, Clone)]
 pub struct PythonConfig {
+    /// Path to the model checkpoint directory.
     pub model_checkpoint_dir: String,
+    /// Weights & Biases mode (e.g., "online", "disabled").
     pub wandb_mode: String,
+    /// Compute device ("cpu" or "cuda").
     pub device: String,
 }
 
-#[derive(Debug, Deserialize)]
+/// Configuration for the Tauri frontend window.
+#[derive(Debug, Deserialize, Clone)]
 pub struct TauriConfig {
+    /// Initial window width.
     pub window_width: u32,
+    /// Initial window height.
     pub window_height: u32,
+    /// Whether to enable developer tools.
     pub enable_devtools: bool,
 }
 
-#[derive(Debug, Deserialize)]
+/// Database connection configuration.
+#[derive(Debug, Deserialize, Clone)]
 pub struct DatabaseConfig {
+    /// Database connection URL.
     pub url: String,
+    /// Maximum connection pool size.
     pub pool_size: u32,
 }
 
-#[derive(Debug, Deserialize)]
+/// Configuration for external APIs.
+#[derive(Debug, Deserialize, Clone)]
 pub struct ApiConfig {
+    /// API key for Polymarket.
     pub polymarket_api_key: String,
+    /// Rate limit requests per minute.
     pub rate_limit_per_minute: u32,
 }
 
 impl Settings {
+    /// Loads configuration settings based on the specified environment.
+    ///
+    /// # Arguments
+    /// * `env` - The environment name to load (e.g., "development", "production").
     pub fn new(env: &str) -> Result<Self, ConfigError> {
         let run_mode = std::env::var("RUN_MODE").unwrap_or_else(|_| "development".into());
         let env_name = if env.is_empty() { &run_mode } else { env };

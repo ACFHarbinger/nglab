@@ -12,31 +12,45 @@ use std::fs;
 use std::path::PathBuf;
 
 /// Summary of a vault entry (for listing)
+/// Summary of a vault entry (for listing).
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VaultSummary {
+    /// Unique identifier for the entry.
     pub id: i64,
+    /// Human-readable label for the secret.
     pub label: String,
+    /// Creation timestamp as a string.
     pub created_at: String,
 }
 
 /// Full vault entry with sensitive value
+/// Full vault entry with sensitive value.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VaultEntry {
+    /// Unique identifier for the entry.
     pub id: i64,
+    /// Human-readable label for the secret.
     pub label: String,
+    /// The actual decrypted secret value.
     pub value: String,
+    /// Creation timestamp as a string.
     pub created_at: String,
 }
 
 /// Standard response wrapper for vault operations
+/// Standard response wrapper for vault operations.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VaultResponse<T> {
+    /// Whether the operation was successful.
     pub success: bool,
+    /// Response or error message.
     pub message: String,
+    /// Generic data payload (results).
     pub data: Option<T>,
 }
 
 impl<T> VaultResponse<T> {
+    /// Creates a successful vault operation response.
     pub fn success(message: &str, data: Option<T>) -> Self {
         Self {
             success: true,
@@ -45,6 +59,7 @@ impl<T> VaultResponse<T> {
         }
     }
 
+    /// Creates an error vault operation response.
     pub fn error(message: &str) -> Self {
         Self {
             success: false,
@@ -54,16 +69,18 @@ impl<T> VaultResponse<T> {
     }
 }
 
+/// Manages encrypted secrets storage using SQLCipher.
 pub struct VaultManager {
     db_path: PathBuf,
 }
 
 impl VaultManager {
+    /// Creates a new VaultManager with a custom database path.
     pub fn new(db_path: PathBuf) -> Self {
         Self { db_path }
     }
 
-    /// Get the default vault path in assets/secrets
+    /// Get the default vault path in assets/secrets.
     pub fn get_default_path() -> Result<PathBuf, String> {
         // Relocate to assets/secrets in the project root
         // Using an absolute path for now as per project requirements
@@ -80,7 +97,7 @@ impl VaultManager {
         Ok(path)
     }
 
-    /// Create a manager with the default path
+    /// Create a manager with the default path.
     pub fn with_default_path() -> Result<Self, String> {
         Ok(Self::new(Self::get_default_path()?))
     }

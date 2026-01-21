@@ -1,6 +1,6 @@
 /*!
- * Utility functions and helpers for visualization and logging.
+ * Utility functions and helpers.
  */
-pub mod math;
+/// Memory usage utilities.
 pub mod memory;
 pub mod visualizer;

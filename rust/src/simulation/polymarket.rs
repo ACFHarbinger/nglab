@@ -19,11 +19,17 @@ use std::collections::HashMap;
  */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Market {
+    /// Unique identifier for the market
     pub id: String,
+    /// Human-readable title of the market
     pub title: String,
+    /// Broad category (e.g., Politics, Crypto)
     pub category: String,
+    /// List of possible outcomes (e.g., ["Yes", "No"])
     pub options: Vec<String>,
+    /// Whether the market has been resolved
     pub resolved: bool,
+    /// The winning outcome, if resolved
     pub outcome: Option<String>,
 }
 
@@ -32,7 +38,9 @@ pub struct Market {
  */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PriceTick {
+    /// Unix timestamp of the price update
     pub timestamp: u64,
+    /// Current price of the Yes token (0.0 to 1.0)
     pub price: f64,
 }
 
@@ -41,16 +49,16 @@ pub struct PriceTick {
  */
 #[derive(Debug, Clone, Default)]
 pub struct Account {
-    /** USDC collateral balance */
+    /// USDC collateral balance available for trading
     pub collateral: f64,
-    /** Holdings: market_id -> (yes_tokens, no_tokens) */
+    /// Current token holdings: market_id -> (yes_tokens, no_tokens)
     pub positions: HashMap<String, (f64, f64)>,
-    /** Realized PnL */
+    /// Accumulated realized profit and loss
     pub realized_pnl: f64,
 }
 
 impl Account {
-    /** Create a new account with initial collateral */
+    /// Creates a new account with the specified initial collateral.
     pub fn new(initial_collateral: f64) -> Self {
         Account {
             collateral: initial_collateral,
@@ -207,6 +215,7 @@ impl PolymarketArena {
 // =========================================================================
 
 impl PolymarketArena {
+    /// Creates a new Polymarket simulation arena.
     pub fn new(initial_collateral: f64, taker_fee: f64) -> Self {
         PolymarketArena {
             markets: HashMap::new(),

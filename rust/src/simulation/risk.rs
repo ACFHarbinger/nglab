@@ -5,7 +5,7 @@
  * and automatic risk-based position adjustments. Critical for production trading.
  */
 
-use crate::utils::math::safe_div;
+use crate::functions::math::safe_div;
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -112,12 +112,15 @@ impl RiskManager {
         }
     }
 
-    /// Create with default configuration.
+    /// Creates a risk manager with default configuration.
     pub fn with_defaults(initial_capital: f64) -> Self {
         Self::new(RiskConfig::default(), initial_capital)
     }
 
-    /// Update portfolio value and recalculate risk metrics.
+    /// Updates portfolio value and recalculates risk metrics.
+    ///
+    /// This should be called every time the portfolio value changes to ensure
+    /// risk metrics like drawdown and VaR are up-to-date.
     pub fn update(&mut self, portfolio_value: f64) {
         let prev_value = self.current_value;
         self.current_value = portfolio_value;
@@ -200,8 +203,9 @@ impl RiskManager {
     }
 
     /// Calculate overall risk score (0-100).
+    /// Calculate overall risk score (0-100).
     fn calculate_risk_score(&self) -> u8 {
-        let mut score = 0.0;
+        let mut score: f64 = 0.0;
 
         // Drawdown contribution (0-40 points)
         let dd_ratio = safe_div(self.status.current_drawdown, self.config.max_drawdown, 0.0);
@@ -252,7 +256,7 @@ impl RiskManager {
         &self.config
     }
 
-    /// Check if trading should be halted.
+    /// Returns true if trading should be halted due to limit breaches.
     pub fn should_halt_trading(&self) -> bool {
         self.status.daily_limit_breached
     }

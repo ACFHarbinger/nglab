@@ -10,9 +10,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::errors::{ArenaError, ArenaResult};
 
+/// Defines the type of seasonality in the model.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
 pub enum SeasonalType {
+    /// Additive seasonality (Linear).
     Additive,
+    /// Multiplicative seasonality (Exponential).
     Multiplicative,
 }
 
@@ -24,15 +27,24 @@ pub enum SeasonalType {
  */
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct HoltWintersParams {
-    pub alpha: f64, // Level smoothing (0-1)
-    pub beta: f64,  // Trend smoothing (0-1)
-    pub gamma: f64, // Seasonal smoothing (0-1)
+    /// Smoothing factor for the level (0 to 1).
+    pub alpha: f64,
+    /// Smoothing factor for the trend (0 to 1).
+    pub beta: f64,
+    /// Smoothing factor for the seasonal component (0 to 1).
+    pub gamma: f64,
+    /// The number of observations in a seasonal cycle (period).
     pub period: usize,
+    /// Whether to use additive or multiplicative seasonality.
     pub seasonal_type: SeasonalType,
+    /// Number of future steps to forecast.
     pub steps: usize,
-    pub sigma: f64, // Noise standard deviation
+    /// Standard deviation of the innovation noise.
+    pub sigma: f64,
+    /// Optional seed for reproducibility.
     pub seed: Option<u64>,
-    pub data: Option<Vec<f64>>, // Historical data for initialization
+    /// Optional historical data for model initialization and warmup.
+    pub data: Option<Vec<f64>>,
 }
 
 /**
@@ -40,16 +52,16 @@ pub struct HoltWintersParams {
  */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct HoltWintersResult {
+    /// The forecasted/simulated time series values.
     pub path: Vec<f64>,
+    /// The seed actually used for the simulation.
     pub used_seed: Option<u64>,
 }
 
-/**
- * Run a forecast / simulation using Holt-Winters Exponential Smoothing.
- *
- * @param params Model parameters and optional historical data.
- */
-#[allow(clippy::needless_range_loop)]
+/// Runs a forecast simulation using Holt-Winters Exponential Smoothing.
+///
+/// This function decomposition the time series into level, trend, and seasonal
+/// components and projects them forward.
 pub fn simulate(params: HoltWintersParams) -> ArenaResult<HoltWintersResult> {
     let seed = if let Some(s) = params.seed {
         s

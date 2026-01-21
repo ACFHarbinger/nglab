@@ -3,4 +3,20 @@
 /**
  * Result container for Prophet forecasts.
  */
-export type ProphetResult = { times: Array<bigint>, values: Array<number>, trend: Array<number>, seasonal: Array<number>, };
+export type ProphetResult = { 
+/**
+ * Timestamps for the forecast period.
+ */
+times: Array<bigint>, 
+/**
+ * Total forecasted values (trend + seasonal).
+ */
+values: Array<number>, 
+/**
+ * Trend component of the forecast.
+ */
+trend: Array<number>, 
+/**
+ * Seasonality component of the forecast.
+ */
+seasonal: Array<number>, };

@@ -5,13 +5,13 @@ use serde::{Deserialize, Serialize};
  */
 #[derive(Serialize, Deserialize)]
 pub struct HealthStatus {
-    /** Combined status: "healthy", "degraded", or "unhealthy" */
+    /// Combined status: "healthy", "degraded", or "unhealthy".
     pub status: String,
-    /** Application version string */
+    /// Application version string.
     pub version: String,
-    /** Total uptime in seconds since last restart */
+    /// Total uptime in seconds since last restart.
     pub uptime_seconds: u64,
-    /** Individual health of core components */
+    /// Individual health of core components.
     pub components: ComponentHealth,
 }
 
@@ -20,13 +20,13 @@ pub struct HealthStatus {
  */
 #[derive(Serialize, Deserialize)]
 pub struct ComponentHealth {
-    /** Simulation arena status */
+    /// Simulation arena status.
     pub arena: bool,
-    /** Order matching engine status */
+    /// Order matching engine status.
     pub orderbook: bool,
-    /** Market data scrapers status */
+    /// Market data scrapers status.
     pub polymarket_scraper: bool,
-    /** Rust-to-Python bridge status */
+    /// Rust-to-Python bridge status.
     pub python_binding: bool,
 }
 

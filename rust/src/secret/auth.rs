@@ -17,12 +17,16 @@ use serde::{Deserialize, Serialize};
 /// Standard response wrapper for authentication operations
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthResponse {
+    /// Whether the operation was successful.
     pub success: bool,
+    /// Detailed message about the operation result.
     pub message: String,
+    /// The authenticated username, if applicable.
     pub username: Option<String>,
 }
 
 impl AuthResponse {
+    /// Creates a successful authentication response.
     pub fn success(message: &str, username: Option<String>) -> Self {
         Self {
             success: true,
@@ -31,6 +35,7 @@ impl AuthResponse {
         }
     }
 
+    /// Creates an error authentication response.
     pub fn error(message: &str) -> Self {
         Self {
             success: false,
@@ -49,21 +54,27 @@ pub type AuthResult<T> = Result<T, AuthError>;
 /// Authentication errors
 #[derive(Debug, thiserror::Error)]
 pub enum AuthError {
+    /// User was not found in the storage.
     #[error("User not found: {0}")]
     UserNotFound(String),
 
+    /// Password provided does not match the stored hash.
     #[error("Invalid password")]
     InvalidPassword,
 
+    /// Attempted to create a user that already exists.
     #[error("User already exists: {0}")]
     UserAlreadyExists(String),
 
+    /// Errors occurring during Argon2 hashing.
     #[error("Password hashing failed: {0}")]
     HashingError(String),
 
+    /// OS keyring or secret service errors.
     #[error("Keyring error: {0}")]
     KeyringError(String),
 
+    /// Internal data serialization failures.
     #[error("Serialization error: {0}")]
     SerializationError(String),
 }
@@ -71,9 +82,9 @@ pub enum AuthError {
 /// Stored user credentials
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StoredCredential {
-    /// Argon2id password hash (includes salt)
+    /// Argon2id password hash (includes the salt).
     pub password_hash: String,
-    /// Account creation timestamp
+    /// The time when the credentials were created.
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 

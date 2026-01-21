@@ -12,10 +12,15 @@ use serde::{Deserialize, Serialize};
  */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlackScholesParams {
+    /// Current price of the underlying asset.
     pub spot: f64,
+    /// Strike price of the option.
     pub strike: f64,
+    /// Risk-free interest rate (annualized).
     pub rate: f64,
+    /// Annualized volatility of the underlying asset.
     pub volatility: f64,
+    /// Time to maturity in years.
     pub maturity: f64,
 }
 
@@ -24,12 +29,19 @@ pub struct BlackScholesParams {
  */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BlackScholesResult {
+    /// Theoretical price of the European call option.
     pub call: f64,
+    /// Theoretical price of the European put option.
     pub put: f64,
+    /// Delta: Sensitivity of option price to underlying price change.
     pub delta: f64,
+    /// Gamma: Sensitivity of Delta to underlying price change.
     pub gamma: f64,
+    /// Vega: Sensitivity of option price to volatility change.
     pub vega: f64,
+    /// Value of d1 in the Black-Scholes formula.
     pub d1: f64,
+    /// Value of d2 in the Black-Scholes formula.
     pub d2: f64,
 }
 
@@ -52,11 +64,10 @@ fn norm_cdf(x: f64) -> f64 {
     0.5 * (1.0 + erf(x / 2.0_f64.sqrt()))
 }
 
-/**
- * Price European vanilla options and calculate primary Greeks.
- *
- * @param params Input parameters (spot, strike, etc.)
- */
+/// Prices European vanilla options and calculates primary Greeks.
+///
+/// # Arguments
+/// * `params` - Model parameters (spot, strike, rate, volatility, maturity).
 pub fn price(params: BlackScholesParams) -> BlackScholesResult {
     let safe_vol = params.volatility.max(1e-8);
     let safe_mat = params.maturity.max(1e-8);

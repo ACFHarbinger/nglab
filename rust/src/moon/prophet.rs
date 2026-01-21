@@ -17,16 +17,27 @@ use crate::errors::{ArenaError, ArenaResult};
  */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProphetParams {
-    pub growth: String,                   // "linear" or "flat"
-    pub changepoints: Option<Vec<usize>>, // Indices of changepoints (optional)
-    pub seasonality_mode: String,         // "additive" or "multiplicative"
+    /// Trend growth type: "linear" or "flat".
+    pub growth: String,
+    /// Manual changepoint indices; if None, they are automatically detected.
+    pub changepoints: Option<Vec<usize>>,
+    /// Seasonality mode: "additive" or "multiplicative".
+    pub seasonality_mode: String,
+    /// Whether to include yearly seasonality patterns.
     pub yearly_seasonality: bool,
+    /// Whether to include weekly seasonality patterns.
     pub weekly_seasonality: bool,
+    /// Whether to include daily seasonality patterns.
     pub daily_seasonality: bool,
+    /// Prior scale for seasonality regularization.
     pub seasonality_prior_scale: f64,
+    /// Prior scale for changepoint selection regularization.
     pub changepoint_prior_scale: f64,
+    /// Number of steps to forecast into the future.
     pub forecast_horizon: usize,
+    /// Historical timestamps in seconds.
     pub times: Vec<i64>,
+    /// Historical observation values.
     pub values: Vec<f64>,
 }
 
@@ -36,9 +47,13 @@ pub struct ProphetParams {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ProphetResult {
+    /// Timestamps for the forecast period.
     pub times: Vec<i64>,
+    /// Total forecasted values (trend + seasonal).
     pub values: Vec<f64>,
+    /// Trend component of the forecast.
     pub trend: Vec<f64>,
+    /// Seasonality component of the forecast.
     pub seasonal: Vec<f64>,
 }
 
@@ -56,6 +71,7 @@ pub struct Prophet {
 }
 
 impl Prophet {
+    /// Creates a new Prophet model instance with the given parameters.
     pub fn new(params: ProphetParams) -> Self {
         Self {
             params,
@@ -455,11 +471,9 @@ impl Prophet {
     }
 }
 
-/**
- * Run a forecast / simulation using the Prophet model.
- *
- * @param params Prophet configuration and historical data.
- */
+/// Executes a Prophet forecast simulation.
+///
+/// Fits the model to historical data and generates future predictions.
 pub fn simulate(params: ProphetParams) -> ArenaResult<ProphetResult> {
     let historical_times = &params.times;
     let historical_values = &params.values;

@@ -21,11 +21,10 @@ pub struct RerunLogger {
 }
 
 impl RerunLogger {
-    /**
-     * Create a new RerunLogger instance.
-     *
-     * @param enabled Whether logging should be active.
-     */
+    /// Creates a new RerunLogger instance.
+    ///
+    /// # Arguments
+    /// * `enabled` - Whether logging should be active.
     #[cfg(feature = "logging")]
     pub fn new(enabled: bool) -> Self {
         if !enabled {
@@ -41,18 +40,18 @@ impl RerunLogger {
         Self { rec: Some(rec) }
     }
 
+    /// Creates a no-op RerunLogger instance when logging is disabled.
     #[cfg(not(feature = "logging"))]
     pub fn new(_enabled: bool) -> Self {
         Self {}
     }
 
-    /**
-     * Log a single simulation step's data.
-     *
-     * @param step Current step sequence number.
-     * @param orderbook Reference to the order book.
-     * @param portfolio_value Current total portfolio value.
-     */
+    /// Logs a single simulation step's data to Rerun.
+    ///
+    /// # Arguments
+    /// * `step` - Current step sequence number.
+    /// * `orderbook` - Reference to the current order book state.
+    /// * `portfolio_value` - Current total portfolio value for tracking.
     #[cfg(feature = "logging")]
     pub fn log_step(&self, step: u64, orderbook: &OrderBook, portfolio_value: f64) {
         if let Some(rec) = &self.rec {
@@ -101,6 +100,7 @@ impl RerunLogger {
         }
     }
 
+    /// No-op log step when logging is disabled.
     #[cfg(not(feature = "logging"))]
     pub fn log_step(&self, _step: u64, _orderbook: &OrderBook, _portfolio_value: f64) {
         // No-op when logging feature is disabled

@@ -1,6 +1,7 @@
 #![cfg_attr(feature = "python", allow(clippy::too_many_arguments))]
 #![deny(clippy::unwrap_used)]
 #![cfg_attr(test, allow(clippy::unwrap_used))]
+#![warn(missing_docs)]
 
 /*!
  * nglab - High-Performance RL Arena for Financial Trading
@@ -49,10 +50,17 @@
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 
+/// Application configuration management.
 pub mod config;
+/// Error handling types and enumerations.
 pub mod errors;
+/// Mathematical and statistical functions.
+pub mod functions;
+/// Health check and status reporting.
 pub mod health;
+/// Logging and tracing infrastructure.
 pub mod logging;
+/// Telemetry and metrics collection.
 pub mod metrics;
 pub mod models;
 pub mod moon;

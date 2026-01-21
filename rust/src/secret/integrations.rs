@@ -8,34 +8,48 @@
 use crate::secret::vault::VaultManager;
 use serde::{Deserialize, Serialize};
 
+/// Configuration for Polymarket integration.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PolymarketConfig {
+    /// API key for authentication.
     pub api_key: String,
+    /// API secret for signing requests.
     pub secret: String,
+    /// Passphrase for API access.
     pub passphrase: String,
+    /// Optional proxy address for connection.
     pub proxy_address: Option<String>,
 }
 
+/// Enum holding configuration for different integration services.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "service", content = "config")]
 pub enum IntegrationConfig {
+    /// Polymarket service configuration.
     #[serde(rename = "polymarket")]
     Polymarket(PolymarketConfig),
 }
 
+/// Represents a stored external integration entry.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ExternalIntegration {
+    /// Unique identifier from the vault.
     pub id: i64,
+    /// Name of the service (e.g., "polymarket").
     pub service_name: String,
+    /// The specific configuration for the service.
     pub config: IntegrationConfig,
+    /// Creation timestamp.
     pub created_at: String,
 }
 
+/// Manages external service integrations backed by the vault.
 pub struct IntegrationManager {
     vault: VaultManager,
 }
 
 impl IntegrationManager {
+    /// Creates a new IntegrationManager using the provided VaultManager.
     pub fn new(vault: VaultManager) -> Self {
         Self { vault }
     }

@@ -15,12 +15,18 @@ use crate::errors::{ArenaError, ArenaResult};
  */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GarchParams {
+    /// Constant variance term (omega).
     pub omega: f64,
+    /// ARCH coefficients (alpha) for lagged squared returns.
     pub alpha: Vec<f64>,
+    /// GARCH coefficients (beta) for lagged variances.
     pub beta: Vec<f64>,
+    /// Number of steps to simulate.
     pub steps: usize,
+    /// Optional seed for reproducibility.
     pub seed: Option<u64>,
-    pub data: Option<Vec<f64>>, // Past returns
+    /// Optional historical returns for process initialization.
+    pub data: Option<Vec<f64>>,
 }
 
 /**
@@ -28,16 +34,16 @@ pub struct GarchParams {
  */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GarchResult {
+    /// The simulated returns series.
     pub returns: Vec<f64>,
+    /// The conditional volatility (sigma) for each step.
     pub volatility: Vec<f64>,
 }
 
-/**
- * Simulate a GARCH(p,q) process for the specified number of steps.
- *
- * @param params Garch model and simulation parameters.
- */
-#[allow(clippy::needless_range_loop, clippy::manual_memcpy)]
+/// Simulates a GARCH(p,q) process for the specified number of steps.
+///
+/// # Arguments
+/// * `params` - GARCH model configuration and simulation parameters.
 pub fn simulate(params: GarchParams) -> ArenaResult<GarchResult> {
     let mut rng = if let Some(s) = params.seed {
         use rand::SeedableRng;

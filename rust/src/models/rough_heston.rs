@@ -16,18 +16,31 @@ use crate::models::rough_bergomi::generate_fbm_cholesky;
  */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RoughHestonParams {
+    /// Initial spot price.
     pub spot: f64,
+    /// Strike price.
     pub strike: f64,
+    /// Risk-free rate.
     pub rate: f64,
+    /// Time to maturity.
     pub maturity: f64,
+    /// Initial variance.
     pub v0: f64,
+    /// Long-term mean variance (theta).
     pub theta: f64,
+    /// Rate of mean reversion (kappa).
     pub kappa: f64,
+    /// Volatility of volatility (nu).
     pub nu: f64,
+    /// Correlation between price and volatility (rho).
     pub rho: f64,
+    /// Hurst parameter (0 < H < 0.5).
     pub hurst: f64,
+    /// Number of simulation steps.
     pub steps: usize,
+    /// Number of Monte Carlo paths.
     pub paths: usize,
+    /// Type of option ("call" or "put").
     pub option_type: String,
 }
 
@@ -36,12 +49,19 @@ pub struct RoughHestonParams {
  */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RoughHestonResult {
+    /// Estimated option price.
     pub price: f64,
+    /// Standard error of the estimate.
     pub std_error: f64,
+    /// Mean terminal price across paths.
     pub mean_terminal: f64,
+    /// 5th percentile price.
     pub p05: f64,
+    /// 95th percentile price.
     pub p95: f64,
+    /// Actual number of paths used.
     pub paths: usize,
+    /// Actual number of steps used.
     pub steps: usize,
 }
 
@@ -72,11 +92,10 @@ fn percentile(values: &[f64], p: f64) -> f64 {
     }
 }
 
-/**
- * Simulate price paths under the rough Heston model and calculate option payoff.
- *
- * @param params Rough Heston model and simulation settings.
- */
+/// Simulates price paths under the rough Heston model and calculates option payoff.
+///
+/// # Arguments
+/// * `params` - Rough Heston model and simulation settings.
 pub fn simulate(params: RoughHestonParams) -> Result<RoughHestonResult, String> {
     let steps = params.steps.clamp(16, 512);
     let paths = params.paths.clamp(100, 10_000);

@@ -14,13 +14,21 @@ use crate::models::black_scholes::{price as bsm_price, BlackScholesParams};
  */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreditRiskParams {
+    /// Underlying asset spot price.
     pub spot: f64,
+    /// Option strike price.
     pub strike: f64,
+    /// Risk-free rate.
     pub rate: f64,
+    /// Annualized volatility.
     pub volatility: f64,
+    /// Time to maturity.
     pub maturity: f64,
+    /// Type of option ("call" or "put").
     pub option_type: String,
+    /// Hazard rate for default probability.
     pub hazard_rate: f64,
+    /// Recovery rate in case of default.
     pub recovery: f64,
 }
 
@@ -29,17 +37,19 @@ pub struct CreditRiskParams {
  */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreditRiskResult {
+    /// Base option price without credit risk.
     pub base: f64,
+    /// Credit-adjusted option price.
     pub adjusted: f64,
+    /// Probability of survival until maturity.
     pub survival: f64,
+    /// Credit Valuation Adjustment (CVA).
     pub cva: f64,
 }
 
-/**
- * Calculate the credit-adjusted price and Credit Valuation Adjustment (CVA).
- *
- * @param params Credit risk and underlying option parameters.
- */
+/// Calculates the credit-adjusted price and Credit Valuation Adjustment (CVA).
+///
+/// This uses a Merton-style structural model with a constant hazard rate.
 pub fn price(params: CreditRiskParams) -> Result<CreditRiskResult, String> {
     let bsm = bsm_price(BlackScholesParams {
         spot: params.spot,

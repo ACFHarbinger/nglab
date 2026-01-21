@@ -14,32 +14,50 @@ use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// Supported algorithmic trading strategies.
 #[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum AlgoType {
+    /// Time-weighted average price
     TWAP,
+    /// Volume-weighted average price
     VWAP,
 }
 
+/// A single algorithmic order execution state.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AlgoOrder {
+    /// Ticker symbol of the asset
     pub asset: String,
+    /// Side of the market (Bid or Ask)
     pub side: Side,
+    /// Total target quantity to execute
     pub total_quantity: f64,
+    /// Quantity still pending execution
     pub remaining_quantity: f64,
+    /// Simulation step index to start execution
     pub start_step: usize,
+    /// Simulation step index to finish execution
     pub end_step: usize,
+    /// The algorithm type to use for execution
     pub algo_type: AlgoType,
 }
 
+/// Step response for multi-asset environments.
 pub struct MultiAssetStepResult {
+    /// Flattened observation data across all assets
     pub obs: Vec<f64>,
+    /// Aggregated reward across assets
     pub reward: f64,
+    /// Whether any terminal condition was met
     pub terminated: bool,
+    /// Whether the episode was truncated due to time limits
     pub truncated: bool,
+    /// Additional diagnostic metadata per asset
     pub info: HashMap<String, f64>,
 }
 
+/// A multi-asset trading environment with risk management.
 #[cfg_attr(feature = "python", pyclass)]
 pub struct MultiAssetEnv {
     assets: Vec<String>,
@@ -60,6 +78,7 @@ pub struct MultiAssetEnv {
 }
 
 impl MultiAssetEnv {
+    /// Creates a new multi-asset trading environment.
     pub fn new(
         assets: Vec<String>,
         initial_capital: f64,
@@ -106,10 +125,12 @@ impl MultiAssetEnv {
         }
     }
 
+    /// Uploads external price history for an asset.
     pub fn load_prices(&mut self, asset: String, prices: Vec<f64>) {
         self.prices.insert(asset, prices);
     }
 
+    /// Calculates the current total portfolio value (cash + positions).
     pub fn portfolio_value(&self) -> f64 {
         let mut value = self.cash;
         for (asset, pos) in &self.positions {
@@ -122,6 +143,7 @@ impl MultiAssetEnv {
         value
     }
 
+    /// Resets the environment to initial state (Rust-native).
     pub fn reset_native(
         &mut self,
         seed: Option<u64>,
@@ -149,6 +171,7 @@ impl MultiAssetEnv {
         Ok((obs_data, info))
     }
 
+    /// Advances the simulation by one step (Rust-native).
     pub fn step_native(&mut self, actions: Vec<i32>) -> ArenaResult<MultiAssetStepResult> {
         let prev_val = self.portfolio_value();
 
@@ -210,6 +233,7 @@ impl MultiAssetEnv {
         })
     }
 
+    /// Returns the current risk management metrics.
     pub fn risk_status(&self) -> RiskStatus {
         self.risk_manager.status().clone()
     }

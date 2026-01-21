@@ -3,4 +3,12 @@
 /**
  * Result containing the simulated ARIMA path.
  */
-export type ArimaResult = { path: Array<number>, used_seed: bigint | null, };
+export type ArimaResult = { 
+/**
+ * The simulated time series path.
+ */
+path: Array<number>, 
+/**
+ * The actual seed used for the simulation.
+ */
+used_seed: bigint | null, };

@@ -17,10 +17,15 @@ use std::collections::HashMap;
  */
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Frequency {
+    /// One minute interval.
     Minutely,
+    /// One hour interval.
     Hourly,
+    /// Daily interval.
     Daily,
+    /// Weekly interval.
     Weekly,
+    /// Monthly interval (approx 30 days).
     Monthly,
 }
 
@@ -42,7 +47,9 @@ impl Frequency {
  */
 #[derive(Serialize, Clone, Debug)]
 pub struct OutcomeInfo {
+    /// The outcome ID (e.g., token ID or outcome label).
     pub id: String,
+    /// Human-readable name of the outcome.
     pub name: String,
 }
 
@@ -51,13 +58,16 @@ pub struct OutcomeInfo {
  */
 #[derive(Serialize, Clone, Debug)]
 pub struct MarketMetadata {
+    /// Title of the market.
     pub title: String,
+    /// List of outcomes.
     pub outcomes: Vec<OutcomeInfo>,
 }
 
 /**
  * Scraper for fetching and processing Polymarket data.
  */
+/// Scraper for fetching and processing Polymarket data.
 pub struct PolymarketScraper {
     client: Client,
     token_ids: Vec<String>,
@@ -80,6 +90,7 @@ struct HistoryItem {
 }
 
 impl PolymarketScraper {
+    /// Creates a new default Polymarket scraper.
     pub fn new() -> Self {
         PolymarketScraper {
             client: Client::new(),
@@ -92,32 +103,38 @@ impl PolymarketScraper {
         }
     }
 
+    /// Sets the data frequency (e.g., Daily, Hourly).
     pub fn with_frequency(mut self, frequency: Frequency) -> Self {
         self.frequency = frequency;
         self
     }
 
+    /// Sets the historical date range for data fetching.
     pub fn with_date_range(mut self, start: DateTime<Utc>, end: DateTime<Utc>) -> Self {
         self.start_date = Some(start);
         self.end_date = Some(end);
         self
     }
 
+    /// Adds a single market/option token ID to fetch.
     pub fn with_option(mut self, token_id: &str) -> Self {
         self.token_ids.push(token_id.to_string());
         self
     }
 
+    /// Adds multiple market/option token IDs to fetch.
     pub fn with_options(mut self, token_ids: Vec<String>) -> Self {
         self.token_ids.extend(token_ids);
         self
     }
 
+    /// Replaces the current selection with a specific list of token IDs.
     pub fn filter_options(mut self, selected_ids: Vec<String>) -> Self {
         self.token_ids = selected_ids;
         self
     }
 
+    /// Returns metadata about the currently resolved market.
     pub fn get_metadata(&self) -> MarketMetadata {
         let mut outcomes = Vec::new();
         // Maintain order from token_ids
@@ -294,6 +311,7 @@ impl PolymarketScraper {
         Ok(data.history)
     }
 
+    /// Fetches currently trending events from Polymarket.
     pub async fn get_trending_events(&self, limit: usize) -> ArenaResult<Vec<EventResponse>> {
         let url = "https://gamma-api.polymarket.com/events";
         let params = [
@@ -431,34 +449,53 @@ impl PolymarketScraper {
     }
 }
 
+/// Raw market response from the API.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct MarketResponse {
+    /// The unique market ID.
     pub id: String,
+    /// The market question/title.
     pub question: String,
+    /// JSON string of outcomes (e.g., "['Yes', 'No']").
     pub outcomes: String, // Stringified JSON array: "[\"Yes\", \"No\"]"
+    /// JSON string of CLOB token IDs.
     #[serde(rename = "clobTokenIds")]
     pub clob_token_ids: String, // Stringified JSON array
 }
 
+/// Raw event response from the API.
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct EventResponse {
+    /// The unique event ID.
     pub id: String,
+    /// The event title.
     pub title: String,
+    /// List of markets associated with this event.
     pub markets: Vec<MarketResponse>,
 }
 
 /// Search result for a market, including additional display info.
 #[derive(Serialize, Debug, Clone)]
 pub struct MarketSearchResult {
+    /// Unique market ID.
     pub id: String,
+    /// ID of the parent event.
     pub event_id: String,
+    /// Title of the event.
     pub title: String,
+    /// Specific question for the market.
     pub question: String,
+    /// List of possible outcomes.
     pub outcomes: Vec<String>,
+    /// List of token IDs for CLOB trading.
     pub clob_token_ids: Vec<String>,
+    /// Total trading volume.
     pub volume: Option<f64>,
+    /// Current liquidity amount.
     pub liquidity: Option<f64>,
+    /// Market end date (ISO format).
     pub end_date: Option<String>,
+    /// Whether the market is currently active.
     pub active: bool,
 }
 

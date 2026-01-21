@@ -14,15 +14,24 @@ use serde::{Deserialize, Serialize};
  */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RBergomiParams {
+    /// Current asset spot price.
     pub spot: f64,
+    /// Option strike price.
     pub strike: f64,
+    /// Time to maturity in years.
     pub t: f64,
+    /// Number of simulation steps.
     pub steps: usize,
+    /// Number of Monte Carlo paths.
     pub paths: usize,
-    pub h: f64,   // Hurst
-    pub eta: f64, // Vol of Vol
-    pub xi: f64,  // Initial Variance Curve (Flat)
-    pub rho: f64, // Correlation
+    /// Hurst parameter (0 < H < 0.5).
+    pub h: f64,
+    /// Volatility of volatility (nu/eta).
+    pub eta: f64,
+    /// Initial variance curve value (flat).
+    pub xi: f64,
+    /// Correlation between asset and volatility.
+    pub rho: f64,
 }
 
 /**
@@ -30,8 +39,11 @@ pub struct RBergomiParams {
  */
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RBergomiResult {
+    /// Estimated option price.
     pub price: f64,
+    /// Standard error of the estimate.
     pub std_error: f64,
+    /// Mean terminal asset price.
     pub mean_terminal: f64,
 }
 

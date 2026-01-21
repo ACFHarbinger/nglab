@@ -9,9 +9,9 @@
 
 #[cfg_attr(not(feature = "python"), allow(unused_imports))]
 use crate::errors::{ArenaError, ArenaResult};
+use crate::functions::math::{safe_div, SafeFloat};
 use crate::simulation::orderbook::{OrderBook, Side};
 use crate::simulation::risk::{RiskManager, RiskStatus};
-use crate::utils::math::{safe_div, SafeFloat};
 #[cfg(feature = "python")]
 use numpy::{PyArray2, ToPyArray};
 #[cfg(feature = "python")]
@@ -65,10 +65,15 @@ impl From<i32> for ActionType {
  */
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct StepResult {
+    /// Vector of feature values for the new state
     pub observation: Vec<f64>,
+    /// Scaled reward value
     pub reward: f64,
+    /// Whether the agent reached a terminal state
     pub terminated: bool,
+    /// Whether the simulation was truncated
     pub truncated: bool,
+    /// Additional diagnostic metadata
     pub info: StepInfo,
 }
 
@@ -77,10 +82,15 @@ pub struct StepResult {
  */
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct StepInfo {
+    /// Total mark-to-market portfolio value
     pub portfolio_value: f64,
+    /// Current net position
     pub position: f64,
+    /// Remining cash balance
     pub cash: f64,
+    /// Current rolling Sharpe ratio
     pub sharpe_ratio: f64,
+    /// Total count of steps in the episode
     pub total_steps: u64,
 }
 
@@ -92,6 +102,7 @@ pub struct ObservationBuffer {
 }
 
 impl ObservationBuffer {
+    /// Creates a new observation buffer for a given feature count and lookback window.
     pub fn new(features: usize, lookback: usize) -> Self {
         ObservationBuffer {
             data: vec![0.0; features * lookback],
@@ -439,6 +450,7 @@ impl TradingEnv {
         &self.orderbook
     }
 
+    /// Get the current risk management status.
     pub fn risk_status(&self) -> RiskStatus {
         self.risk_manager.status().clone()
     }

@@ -5,6 +5,9 @@
  * for historical data ingestion from platforms like Polymarket.
  */
 
+/// Polymarket integration and data handling.
 pub mod polymarket;
+/// Generic web scraping traits and utilities.
 pub mod scraper;
+/// Real-time data streaming via WebSockets.
 pub mod streaming;

@@ -7,11 +7,12 @@ use opentelemetry_otlp::WithExportConfig;
 use opentelemetry_sdk::{runtime, trace as sdktrace, Resource};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, EnvFilter};
 
-/**
- * Initialize structured logging and distributed tracing.
- *
- * Sets up `tracing` with an `EnvFilter`, file/console output, and OpenTelemetry OTLP exporter.
- */
+/// Initializes structured logging and distributed tracing.
+///
+/// Sets up `tracing` with an `EnvFilter`, file/console output, and OpenTelemetry OTLP exporter.
+///
+/// # Arguments
+/// * `log_level` - The minimum log level to capture (e.g., "info", "debug").
 pub fn init_logging(log_level: &str) -> Result<(), Box<dyn std::error::Error>> {
     let file_appender = tracing_appender::rolling::daily("./logs", "nglab.log");
 

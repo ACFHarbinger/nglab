@@ -39,16 +39,22 @@ pub fn list_trained_models() -> Result<Vec<String>, String> {
 /// Response structure for a model prediction request.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PredictionResponse {
+    /// Status of the request ("success" or "error").
     pub status: String,
+    /// Predicted values if successful.
     pub prediction: Option<Vec<f64>>,
+    /// Error message if status is "error".
     pub message: Option<String>,
 }
 
 /// Raw output format expected from the Python inference script.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct InferenceOutput {
+    /// Status of the batch inference.
     pub status: String,
+    /// Raw prediction values from Python.
     pub prediction: Option<serde_json::Value>,
+    /// Error details if any.
     pub message: Option<String>,
 }
 
@@ -99,16 +105,26 @@ pub async fn predict_trained_model(
 /// Training progress message structure.
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct TrainingProgress {
+    /// Type of progress message (e.g., "epoch", "complete", "error").
     #[serde(rename = "type")]
     pub msg_type: String,
+    /// Current epoch number.
     pub epoch: Option<u32>,
+    /// Total number of epochs defined.
     pub total_epochs: Option<u32>,
+    /// Calculated training loss.
     pub train_loss: Option<f64>,
+    /// Calculated validation loss.
     pub val_loss: Option<f64>,
+    /// Completion percentage (0.0 to 100.0).
     pub percent: Option<f64>,
+    /// Current status description.
     pub status: Option<String>,
+    /// Path to the saved model file (sent on completion).
     pub model_path: Option<String>,
+    /// Informational or error message.
     pub message: Option<String>,
+    /// List of column names (sent on column listing).
     pub columns: Option<Vec<String>>,
 }
 
@@ -146,15 +162,25 @@ pub fn list_csv_columns(csv_path: &str) -> Result<Vec<String>, String> {
 /// Parameters for training a model.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TrainingParams {
+    /// Path to the input CSV data.
     pub csv_path: String,
+    /// Name of the column to use as the target variable.
     pub target_column: String,
+    /// Desired name for the resulting model.
     pub model_name: String,
+    /// Number of training iterations.
     pub epochs: u32,
+    /// Number of samples per training batch.
     pub batch_size: u32,
+    /// Learning rate for the optimizer.
     pub learning_rate: f64,
+    /// Input sequence length (lookback).
     pub seq_len: u32,
+    /// Prediction horizon (lookahead).
     pub pred_len: u32,
+    /// Fraction of data to use for training (e.g., 0.8).
     pub train_split: f64,
+    /// Advanced model hyperparameters as a JSON object.
     pub model_params: serde_json::Value,
 }
 

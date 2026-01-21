@@ -30,7 +30,9 @@ use crate::validation::{validate_price, validate_quantity};
  */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Side {
+    /// Buy side.
     Bid,
+    /// Sell side.
     Ask,
 }
 
@@ -39,11 +41,16 @@ pub enum Side {
  */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum OrderType {
+    /// Limit order to buy/sell at specific price.
     Limit,
+    /// Market order to execute immediately.
     Market,
-    StopLoss,   // Triggers Market Sell/Buy
-    TakeProfit, // Triggers Market Sell/Buy
-    StopLimit,  // Triggers Limit Order
+    /// Stop order triggering a market order.
+    StopLoss,
+    /// Take profit order triggering a market order.
+    TakeProfit,
+    /// Stop limit order triggering a limit order.
+    StopLimit,
 }
 
 /**
@@ -51,24 +58,36 @@ pub enum OrderType {
  */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Order {
+    /// Unique identifier for the order
     pub id: u64,
+    /// Price per unit
     pub price: f64,
+    /// Total quantity to be traded
     pub quantity: f64,
+    /// Quantity already filled
     pub filled: f64,
+    /// Side of the market (Bid or Ask)
     pub side: Side,
+    /// Type of order (Limit, Market, etc.)
     pub order_type: OrderType,
+    /// Unix timestamp of order submission
     pub timestamp: u64,
-
-    // Advanced fields
-    pub trigger_price: Option<f64>,          // For Stop/TakeProfit
-    pub iceberg_total: Option<f64>,          // Total quantity for Iceberg (if larger than quantity)
-    pub visible_quantity: Option<f64>,       // Current visible slice
-    pub parent_id: Option<u64>,              // For OCO (points to linked order)
-    pub trailing_delta: Option<f64>,         // Delta for trailing stop
-    pub current_trailing_price: Option<f64>, // Current trigger point for trailing
+    /// Price that triggers the order (for Stop/TakeProfit)
+    pub trigger_price: Option<f64>,
+    /// Total quantity for Iceberg orders
+    pub iceberg_total: Option<f64>,
+    /// Currently visible quantity for Iceberg orders
+    pub visible_quantity: Option<f64>,
+    /// Identifier of the parent order (for OCO)
+    pub parent_id: Option<u64>,
+    /// Delta for trailing stop orders
+    pub trailing_delta: Option<f64>,
+    /// Current trigger point for trailing stop orders
+    pub current_trailing_price: Option<f64>,
 }
 
 impl Order {
+    /// Creates a new basic limit or market order.
     pub fn new(
         id: u64,
         price: f64,
@@ -94,6 +113,7 @@ impl Order {
         }
     }
 
+    /// Creates a new advanced order with trigger, iceberg, or OCO fields.
     #[allow(clippy::too_many_arguments)]
     pub fn new_advanced(
         id: u64,
@@ -165,12 +185,16 @@ impl Order {
  */
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct PriceLevel {
+    /// The price of this level
     pub price: f64,
+    /// FIFO queue of orders at this price
     pub orders: VecDeque<Order>,
+    /// Aggregated quantity of all orders in the queue
     pub total_quantity: f64,
 }
 
 impl PriceLevel {
+    /// Creates a new empty price level.
     pub fn new(price: f64) -> Self {
         PriceLevel {
             price,
@@ -210,11 +234,17 @@ impl PriceLevel {
  */
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Trade {
+    /// ID of the maker order (the order already in the book)
     pub maker_order_id: u64,
+    /// ID of the taker order (the incoming order)
     pub taker_order_id: u64,
+    /// Execution price
     pub price: f64,
+    /// Transacted quantity
     pub quantity: f64,
+    /// Side of the taker order
     pub side: Side,
+    /// Unix timestamp of execution
     pub timestamp: u64,
 }
 
@@ -310,6 +340,7 @@ impl OrderBook {
 // =========================================================================
 
 impl OrderBook {
+    /// Creates a new empty OrderBook.
     pub fn new() -> Self {
         OrderBook {
             bids: IndexMap::new(),
@@ -322,7 +353,7 @@ impl OrderBook {
         }
     }
 
-    /** Submit an advanced order (Stop, OCO, Iceberg) */
+    /// Submit an advanced order (Stop, OCO, Iceberg) to the book.
     #[allow(clippy::too_many_arguments)]
     pub fn submit_advanced_order(
         &mut self,
@@ -851,7 +882,7 @@ impl OrderBook {
         None
     }
 
-    /** Clear the entire order book */
+    /// Clear the entire order book, removing all limit and stop orders.
     pub fn clear(&mut self) {
         self.bids.clear();
         self.asks.clear();

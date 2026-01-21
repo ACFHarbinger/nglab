@@ -14,13 +14,20 @@ use ts_rs::TS;
  */
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct ArimaParams {
-    pub ar: Vec<f64>, // AR coefficients (phi)
-    pub ma: Vec<f64>, // MA coefficients (theta)
-    pub d: usize,     // Integration order
+    /// Autoregressive coefficients (phi).
+    pub ar: Vec<f64>,
+    /// Moving average coefficients (theta).
+    pub ma: Vec<f64>,
+    /// Integration order (d).
+    pub d: usize,
+    /// Number of steps to simulate.
     pub steps: usize,
-    pub sigma: f64, // Noise standard deviation
+    /// Standard deviation of the innovation noise (sigma).
+    pub sigma: f64,
+    /// Optional random seed for reproducibility.
     pub seed: Option<u64>,
-    pub data: Option<Vec<f64>>, // Past data
+    /// Optional historical data for initialization.
+    pub data: Option<Vec<f64>>,
 }
 
 /**
@@ -29,18 +36,18 @@ pub struct ArimaParams {
 #[derive(Serialize, Deserialize, Debug, TS)]
 #[ts(export)]
 pub struct ArimaResult {
+    /// The simulated time series path.
     pub path: Vec<f64>,
+    /// The actual seed used for the simulation.
     pub used_seed: Option<u64>,
 }
 
 use crate::errors::{ArenaError, ArenaResult};
-use crate::utils::math::safe_div;
+use crate::functions::math::safe_div;
 
-/**
- * Fit an ARIMA(p,d,q) model to data and simulate future steps.
- *
- * Uses Yule-Walker equations for AR estimation.
- */
+/// Fits an ARIMA(p,d,q) model to data and simulates future steps.
+///
+/// Uses Yule-Walker equations for AR estimation and assumes zero MA coefficients.
 pub fn fit_and_simulate(
     data: Vec<f64>,
     p: usize,
@@ -184,11 +191,10 @@ fn solve_linear_system(
     Ok(x)
 }
 
-/**
- * Simulate an ARIMA(p,d,q) process for the specified number of steps.
- *
- * @param params ARIMA model and simulation parameters.
- */
+/// Simulates an ARIMA(p,d,q) process for the specified number of steps.
+///
+/// # Arguments
+/// * `params` - ARIMA model and simulation parameters.
 pub fn simulate(params: ArimaParams) -> ArenaResult<ArimaResult> {
     let seed = if let Some(s) = params.seed {
         s
