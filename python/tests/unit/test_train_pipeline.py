@@ -59,9 +59,8 @@ def test_clip_grad_norms(dummy_model):
 @patch("python.src.pipeline.train.log_epoch")
 @patch("python.src.pipeline.train.get_inner_model")
 @patch("torch.save")
-def test_train_epoch(*mocks, dummy_model, dummy_dataset, tmp_path):
+def test_train_epoch(mock_torch_save, mock_get_inner, mock_log_epoch, mock_train_batch, dummy_model, dummy_dataset, tmp_path): # noqa: PLR0913 
     """Test train_epoch function."""
-    mock_torch_save, mock_get_inner, mock_log_epoch, mock_train_batch = mocks
     optimizer = torch.optim.Adam(dummy_model.parameters())
     baseline = MagicMock()
     scheduler = MagicMock()

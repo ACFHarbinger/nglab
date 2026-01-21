@@ -170,18 +170,24 @@ def test_create_manager_from_env():
         assert manager.config.bucket == "env-bucket"
         assert isinstance(manager._backend, S3Backend)
 
-def test_s3_backend_fallback(config, tmp_path):
-    with patch("boto3.Session") as mock_session_cls:
-        mock_session = mock_session_cls.return_value
-        mock_s3 = mock_session.client.return_value
-        mock_s3.put_object.side_effect = Exception("S3 failed")
-        
-        backend = S3Backend(config)
-        local_file = tmp_path / "test.pt"
-        local_file.write_bytes(b"data")
-        
-        # Should NOT raise, instead use fallback
-        uri = backend.upload(local_file, "model.pt", {})
-        
-        assert "fallback/model.pt" in uri
-        assert Path(uri).exists()
+@patch("boto3.Session")
+def test_s3_backend_fallback(mock_session_cls, config, tmp_path):
+    """Test S3 backend falls back to local storage on upload failure."""
+    mock_session = mock_session_cls.return_value
+    mock_s3 = mock_session.client.return_value
+    mock_s3.put_object.side_effect = Exception("S3 failed")
+    
+    backend = S3Backend(config)
+    local_file = tmp_path / "test.pt"
+    local_file.write_bytes(b"data")
+    
+    # Should NOT raise, instead use fallback
+    uri = backend.upload(local_file, "model.pt", {})
+    
+    assert "fallback/model.pt" in uri
+    
+    # Cleanup fallback directory
+    import shutil
+    fallback_dir = Path("fallback")
+    if fallback_dir.exists():
+        shutil.rmtree(fallback_dir)

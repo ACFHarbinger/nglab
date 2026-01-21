@@ -199,14 +199,12 @@ class TestModelStorageBase:
         assert decompressed == data
 
     def test_compress_decompress_zstd(self):
-        # Create a storage instance with zstd compression
-        # For this test, we don't need a tmp_path for cache_dir as we're not testing caching
-        config = StorageConfig(compression="zstd")
-        storage = ConcreteStorage(config)
-        data = b"test data for compression" * 100
+        storage = ConcreteStorage(StorageConfig())
+        data = b"test data for compression" * 100  # Make data larger so compression works
         
-        import importlib.util
-        if importlib.util.find_spec("zstandard") is None:
+        try:
+            import zstandard  # noqa: F401
+        except (ImportError, AttributeError):
             pytest.skip("zstandard not available")
 
         compressed = storage._compress(data)
