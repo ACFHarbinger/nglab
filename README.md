@@ -22,9 +22,11 @@
 <a href="https://scikit-learn.org/"><img alt="Scikit-Learn" src="https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white"></a>
 <a href="https://pandas.pydata.org/"><img alt="Pandas" src="https://img.shields.io/badge/Pandas-150458?logo=pandas&logoColor=white"></a>
 <a href="https://numpy.org/"><img alt="NumPy" src="https://img.shields.io/badge/NumPy-013243?logo=numpy&logoColor=white"></a>
+<a href="https://jupyter.org/"><img alt="Jupyter" src="https://img.shields.io/badge/Jupyter-F37626?logo=jupyter&logoColor=white"></a>
 <a href="https://xgboost.ai/"><img alt="XGBoost" src="https://img.shields.io/badge/XGBoost-2C3E50?logoColor=white"></a>
 <a href="https://mlflow.org/"><img alt="MLflow" src="https://img.shields.io/badge/mlflow-d53938?logo=mlflow&logoColor=white"></a>
 <a href="https://wandb.ai/"><img alt="WandB" src="https://img.shields.io/badge/W&B-FFBE00?logo=weightsandbiases&logoColor=white"></a>
+<a href="https://www.tensorflow.org/tensorboard"><img alt="TensorBoard" src="https://img.shields.io/badge/TensorBoard-FF6F00?logo=tensorflow&logoColor=white"></a>
 <a href="https://plotly.com/"><img alt="Plotly" src="https://img.shields.io/badge/Plotly-3F4F75?logo=plotly&logoColor=white"></a>
 <a href="https://seaborn.pydata.org/"><img alt="Seaborn" src="https://img.shields.io/badge/Seaborn-3776AB?logoColor=white"></a>
 <a href="https://scipy.org/"><img alt="SciPy" src="https://img.shields.io/badge/SciPy-8CAAE6?logo=scipy&logoColor=white"></a>
@@ -78,6 +80,7 @@
 </br>
 
 <a href="https://github.com/acfharbinger/nglab/actions"><img alt="GitHub Actions" src="https://img.shields.io/badge/GitHub_Actions-2088FF?logo=github-actions&logoColor=white"></a>
+<a href="https://dependabot.com/"><img alt="Dependabot" src="https://img.shields.io/badge/Dependabot-enabled-025E8C?logo=dependabot&logoColor=white"></a>
 <a href="https://aws.amazon.com/"><img alt="AWS" src="https://img.shields.io/badge/AWS-232F3E?logo=amazon-aws&logoColor=white"></a>
 <a href="https://cloud.google.com/"><img alt="GCP" src="https://img.shields.io/badge/GCP-4285F4?logo=google-cloud&logoColor=white"></a>
 <a href="https://pytest.org/"><img alt="Pytest" src="https://img.shields.io/badge/Pytest-0A9EDC?logo=pytest&logoColor=white"></a>
@@ -144,11 +147,32 @@ Start here! We have expanded our documentation to cover every aspect of the syst
 | Document | Description | Target Audience |
 | :--- | :--- | :--- |
 | **[TUTORIAL.md](TUTORIAL.md)** | **The Developer Encyclopedia.** Exhaustive deep dives into every module, code snippets, and implementation details. | Developers, Contributors |
+| **[Interactive Notebooks](notebooks/)** | **Hands-on Learning.** A series of 10 Jupyter notebooks covering architecture, RL training, and backtesting. | Everyone |
 | **[AGENTS.md](AGENTS.md)** | **The Strategy Handbook.** Classification of Agents (RL vs Heuristic), Policy Architectures (Mamba/CNN), and Observation Spaces. | Quants, Researchers |
 | **[ARCHITECTURE.md](ARCHITECTURE.md)** | **The System Blueprint.** High-level design, data flow diagrams, system boundaries, and deployment topology. | Architects, DevOps |
 | **[CONTRIBUTING.md](CONTRIBUTING.md)** | **The Developer Handbook.** Code style, PR process, RFC workflow, and release procedures. | Contributors |
 | **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | **The Field Repair Manual.** Common issues, diagnostic steps, and quick fixes. | Everyone |
 | **[IMPROVEMENTS.md](IMPROVEMENTS.md)** | **The Roadmap.** Active tasks, feature requests, and the long-term vision for the platform. | Project Managers |
+
+### 📓 Interactive Notebooks
+
+Experience NGLab hands-on through our curated tutorial series. Each notebook provides a deep dive into specific components with runnable code and real-time visualizations.
+
+| # | Topic | Key Concepts |
+|---|---|---|
+| 01 | [Quickstart Intro](notebooks/01_quickstart_introduction.ipynb) | Polyglot Architecture, Component Communication |
+| 02 | [Rust OrderBook](notebooks/02_rust_orderbook_basics.ipynb) | Matching Engine, Time-Price Priority, VaR |
+| 03 | [Trading Environment](notebooks/03_trading_environment.ipynb) | Gymnasium Interface, Step Lifecycle, Rewards |
+| 04 | [Forecasting](notebooks/04_time_series_forecasting.ipynb) | ARIMA, GARCH, RNN/Mamba Predictions |
+| 05 | [Deep Learning](notebooks/05_deep_learning_models.ipynb) | VAE Regime Detection, Dilated Convolutions |
+| 06 | [HPO Optimization](notebooks/06_hyperparameter_optimization.ipynb) | DEHB Algorithm, Successive Halving |
+| 07 | [RL Training](notebooks/07_reinforcement_learning_training.ipynb) | PPO Algorithm, Policy/Value Networks |
+| 08 | [Multi-Agent](notebooks/08_multi_agent_simulation.ipynb) | Strategic Emergence, Competitive Game Theory |
+| 09 | [Backtesting](notebooks/09_backtesting_framework.ipynb) | Slippage, Transaction Costs, Performance Metrics |
+| 10 | [Advanced Topics](notebooks/10_advanced_topics.ipynb) | Custom Reward Shaping, Probabilistic Ensembles |
+
+> [!TIP]
+> Start with **[01_quickstart_introduction.ipynb](notebooks/01_quickstart_introduction.ipynb)** to verify your environment and understand the core data flow.
 
 ---
 

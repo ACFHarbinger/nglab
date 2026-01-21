@@ -1,11 +1,11 @@
 import gzip
 import os
 import sys
+import warnings
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-import warnings
 
 # Filter stubborn warnings that pyproject.toml misses
 warnings.filterwarnings("ignore", message=".*pkg_resources is deprecated.*")
