@@ -166,8 +166,9 @@ def test_trainer_no_amp(simple_model):
     assert trainer.scaler is None  # No scaler for FP32
 
 
-def test_trainer_autocast_context(simple_model):
-    """Test autocast context manager."""
+@pytest.mark.gpu
+def test_trainer_autocast_context(simple_model, device):
+    """Test autocast context manager in trainer (requires GPU for mixed precision)."""
     optimizer = torch.optim.Adam(simple_model.parameters(), lr=0.001)
     config = MixedPrecisionConfig(precision="16-mixed")
 
@@ -266,8 +267,9 @@ def test_trainer_load_state_dict(simple_model):
     assert trainer1.get_scale() == trainer2.get_scale()
 
 
+@pytest.mark.gpu
 def test_trainer_get_scale(simple_model):
-    """Test getting current loss scale."""
+    """Test getting loss scale from trainer (requires GPU for GradScaler)."""
     optimizer = torch.optim.Adam(simple_model.parameters(), lr=0.001)
     config = MixedPrecisionConfig(precision="16-mixed", init_scale=32768.0)
 
@@ -327,9 +329,10 @@ def test_get_optimal_precision():
 
 
 @patch("torch.cuda.is_available")
+@pytest.mark.gpu
 @patch("torch.cuda.is_bf16_supported")
-def test_get_optimal_precision_with_cuda(mock_bf16, mock_cuda):
-    """Test optimal precision detection with CUDA available."""
+def test_get_optimal_precision_with_cuda(mock_cuda, mock_bf16):
+    """Test get_optimal_precision when CUDA is available (requires GPU)."""
     mock_cuda.return_value = True
     mock_bf16.return_value = True
 
