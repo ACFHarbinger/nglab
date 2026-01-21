@@ -10,11 +10,19 @@ import { FavoriteMarketsWidget } from "./FavoriteMarketsWidget";
 import { FavoriteMarket } from "../../hooks/useFavorites";
 import { RiskDashboardWidget } from "./RiskDashboardWidget";
 
+/**
+ * Props for the DashboardOverview component.
+ */
 interface DashboardOverviewProps {
+  /** Callback to navigate to the detailed market terminal. */
   onNavigateToTerminal: (marketId: string) => void;
+  /** Real-time price map for live updates. */
   livePrices?: Record<string, number>;
+  /** List of user's favorite markets. */
   favorites?: FavoriteMarket[];
+  /** Callback to view the full favorites tab. */
   onNavigateToFavorites?: () => void;
+  /** Calculated risk metrics for the sidebar widget. */
   riskMetrics?: {
     riskScore: number;
     drawdown: number;
@@ -22,6 +30,11 @@ interface DashboardOverviewProps {
   };
 }
 
+/**
+ * The main landing view of the application.
+ * Composes multiple widgets to provide a high-level overview of market activity,
+ * user portfolio status, and system health.
+ */
 export function DashboardOverview({
   onNavigateToTerminal,
   livePrices,

@@ -11,31 +11,57 @@ import {
 import clsx from "clsx";
 import { FavoriteMarket } from "../hooks/useFavorites";
 
+/**
+ * Props for the FavoritesTab component.
+ */
 interface FavoritesTabProps {
+  /** List of favorite markets. */
   favorites: FavoriteMarket[];
+  /** Set of favorite market IDs for O(1) lookups. */
   favoriteIds: Set<string>;
+  /** Callback to add a market to favorites. */
   addFavorite: (market: Omit<FavoriteMarket, "addedAt">) => void;
+  /** Callback to remove a market from favorites. */
   removeFavorite: (marketId: string) => void;
+  /** Check if a market is in favorites. */
   isFavorite: (marketId: string) => boolean;
+  /** Toggle favorite status. */
   toggleFavorite: (market: Omit<FavoriteMarket, "addedAt">) => void;
+  /** Real-time price map. */
   livePrices?: Record<string, number>;
+  /** Navigation callback. */
   onNavigateToMarket?: (marketId: string) => void;
 }
 
-/** Market search result from backend */
+/**
+ * Market search result from backend.
+ */
 interface MarketSearchResult {
+  /** Unique market ID. */
   id: string;
+  /** Parent event ID. */
   event_id: string;
+  /** Market title. */
   title: string;
+  /** Full question text. */
   question: string;
+  /** List of outcome names. */
   outcomes: string[];
+  /** List of CLOB token IDs. */
   clob_token_ids: string[];
+  /** 24h volume. */
   volume: number | null;
+  /** Market liquidity. */
   liquidity: number | null;
+  /** Market end date (ISO). */
   end_date: string | null;
+  /** Whether the market is active. */
   active: boolean;
 }
 
+/**
+ * Frontend representation of a market for search results.
+ */
 interface SearchableMarket {
   id: string;
   symbol: string;
@@ -66,6 +92,9 @@ function transformSearchResult(result: MarketSearchResult): SearchableMarket {
   };
 }
 
+/**
+ * Component for managing and searching favorite markets.
+ */
 export function FavoritesTab({
   favorites,
   addFavorite,
@@ -88,6 +117,9 @@ export function FavoritesTab({
     fetchOpenMarkets();
   }, []);
 
+  /**
+   * Fetches the list of currently open/trending markets from the backend.
+   */
   const fetchOpenMarkets = async () => {
     setIsLoading(true);
     setError(null);

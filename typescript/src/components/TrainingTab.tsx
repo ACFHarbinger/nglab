@@ -26,6 +26,10 @@ import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
 
 // Model categories with their models
+/**
+ * Categorized list of available deep learning models and their specific hyperparameters.
+ * Organized by architecture type (RNNs, Transformers, CNNs, etc.).
+ */
 const MODEL_CATEGORIES = {
   // Deep Learning Models
   "Recurrent Networks": [
@@ -530,6 +534,10 @@ export default function TrainingTab() {
   const [valLoss, setValLoss] = useState<number | null>(null);
   const [currentEpoch, setCurrentEpoch] = useState(0);
 
+  /**
+   * Toggles the visibility of a model category in the sidebar.
+   * @param category - The category name to toggle.
+   */
   const toggleCategory = (category: string) => {
     const newExpanded = new Set(expandedCategories);
     if (newExpanded.has(category)) {
@@ -540,6 +548,10 @@ export default function TrainingTab() {
     setExpandedCategories(newExpanded);
   };
 
+  /**
+   * Opens a file dialog to select a CSV dataset.
+   * Automatically attempts to detect and list available columns upon selection.
+   */
   const handleSelectCsv = async () => {
     try {
       const selected = await open({
@@ -575,6 +587,10 @@ export default function TrainingTab() {
     }
   };
 
+  /**
+   * Initiates the model training process on the Rust backend.
+   * Sets up real-time event listeners for progress updates (loss, epoch).
+   */
   const handleStartTraining = async () => {
     if (!selectedModel || !csvPath || !targetColumn) return;
     setIsTraining(true);

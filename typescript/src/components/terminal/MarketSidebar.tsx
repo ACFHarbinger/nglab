@@ -2,31 +2,56 @@ import { useState, useMemo } from "react";
 import { Search, TrendingUp, TrendingDown, Star, StarOff, Filter, ChevronDown, Layers } from "lucide-react";
 import clsx from "clsx";
 
+/**
+ * Represents a market entity with essential trading data.
+ */
 export interface Market {
+  /** Unique market identifier. */
   id: string;
+  /** Ticker symbol (e.g., "BTC", "TRUMP"). */
   symbol: string;
+  /** Full market question/title. */
   name: string;
+  /** Current trading price (0.0 - 1.0). */
   price: number;
+  /** 24-hour price change percentage. */
   change24h: number;
+  /** 24-hour trading volume in USD. */
   volume24h: number;
+  /** Whether the market is in user's favorites. */
   isFavorite?: boolean;
+  /** Supplemental market data (Polymarket specific). */
   marketData?: {
     id: string;
     outcomes?: Array<{ id: string; name: string }>;
   };
 }
 
+/**
+ * Props for the MarketSidebar component.
+ */
 interface MarketSidebarProps {
+  /** List of available markets. */
   markets: Market[];
+  /** ID of the currently selected market. */
   activeMarketId?: string;
+  /** Callback when a market is selected. */
   onSelectMarket: (id: string) => void;
+  /** Real-time price map. */
   livePrices?: Record<string, number>;
+  /** Set of favorite market IDs. */
   favoriteIds?: Set<string>;
+  /** Callback to toggle favorite status. */
   onToggleFavorite?: (market: Market) => void;
 }
 
 type FilterMode = "all" | "favorites" | "multi-outcome";
 
+/**
+ * Sidebar component for navigating between different markets.
+ * specific features include search, filtering by category/favorites,
+ * and live price updates in the list view.
+ */
 export function MarketSidebar({
   markets,
   activeMarketId,

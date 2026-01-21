@@ -154,13 +154,25 @@ const generateMockTrades = (price: number): Trade[] => {
   return trades;
 };
 
+/**
+ * Props for the TerminalLayout component.
+ */
 interface Props {
+  /** Real-time live price map. */
   livePrices: Record<string, number>;
+  /** Metadata for the currently active market. */
   activeMarket: MarketMetadata | null;
+  /** Function to start streaming market data. */
   startStream?: (marketSource: string, metadata: MarketMetadata) => Promise<void>;
+  /** Function to stop the current stream. */
   stopStream?: () => Promise<void>;
 }
 
+/**
+ * The core trading terminal interface.
+ * Integrates Chart, Order Book, Recent Trades, and Trading execution form.
+ * Manages local state for mock data and coordinates live data updates.
+ */
 export function TerminalLayout({ livePrices, activeMarket, startStream, stopStream }: Props) {
   const { favoriteIds, toggleFavorite } = useFavorites();
   const [selectedMarketId, setSelectedMarketId] = useState("1");

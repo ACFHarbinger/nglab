@@ -2,6 +2,10 @@ import { ArrowDownRight, Maximize2, Edit2 } from "lucide-react";
 import { createChart, ColorType, AreaSeries } from "lightweight-charts";
 import { useEffect, useRef } from "react";
 
+/**
+ * Widget displaying user profile information and portfolio PnL history.
+ * Includes a lightweight area chart for visual PnL tracking.
+ */
 export function UserProfileWidget() {
   const chartContainerRef = useRef<HTMLDivElement>(null);
 

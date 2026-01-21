@@ -1,10 +1,15 @@
 import { Activity, Users, Clock, Calendar, Zap, Eye } from "lucide-react";
 
+/**
+ * Simple SVG sparkline chart component.
+ */
 const Sparkline = ({
   color = "#6366f1",
   data,
 }: {
+  /** Line stroke color. */
   color?: string;
+  /** Array of numerical values to plot. */
   data: number[];
 }) => {
   const max = Math.max(...data);
@@ -53,6 +58,10 @@ const Sparkline = ({
   );
 };
 
+/**
+ * Widget displaying high-level market statistics.
+ * Shows 24h volume, active traders, and peak activity hours with sparklines.
+ */
 export function MarketStatsWidget() {
   return (
     <div className="flex flex-col gap-4 h-full">

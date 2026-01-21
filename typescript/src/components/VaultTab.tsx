@@ -15,13 +15,23 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 
+/**
+ * Metadata for a stored vault secret.
+ */
 interface VaultSummary {
+    /** Unique numeric ID. */
     id: number;
+    /** Human-readable label for the secret. */
     label: string;
+    /** ISO timestamp of creation. */
     created_at: string;
 }
 
 
+/**
+ * Component for managing secure encrypted secrets (API keys, passwords).
+ * Interacts with the backend SQLCipher vault.
+ */
 const VaultTab: React.FC = () => {
     const [isUnlocked, setIsUnlocked] = useState(false);
     const [masterPassword, setMasterPassword] = useState("");
@@ -38,6 +48,9 @@ const VaultTab: React.FC = () => {
         checkUnlockStatus();
     }, []);
 
+    /**
+     * Checks if the vault is currently unlocked in the backend session.
+     */
     const checkUnlockStatus = async () => {
         try {
             const status = await invoke<boolean>("is_vault_unlocked");
@@ -61,6 +74,9 @@ const VaultTab: React.FC = () => {
         }
     };
 
+    /**
+     * Attempts to unlock the vault using the provided master password.
+     */
     const handleUnlock = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -93,6 +109,9 @@ const VaultTab: React.FC = () => {
         }
     };
 
+    /**
+     * Adds a new encrypted secret to the vault.
+     */
     const handleAddSecret = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newLabel || !newValue) return;
@@ -113,6 +132,10 @@ const VaultTab: React.FC = () => {
         }
     };
 
+    /**
+     * Toggles the visibility of a secret's value.
+     * Decrypts on-demand if not already decrypted.
+     */
     const toggleViewSecret = async (id: number) => {
         if (showValues[id]) {
             setShowValues(prev => ({ ...prev, [id]: false }));

@@ -6,13 +6,24 @@ import { Star, ArrowUpRight, ChevronRight } from "lucide-react";
 import clsx from "clsx";
 import { FavoriteMarket } from "../../hooks/useFavorites";
 
+/**
+ * Props for the FavoriteMarketsWidget.
+ */
 interface FavoriteMarketsWidgetProps {
+  /** List of favorite markets to display. */
   favorites: FavoriteMarket[];
+  /** Real-time price map. */
   livePrices?: Record<string, number>;
+  /** Callback when a market is clicked. */
   onSelectMarket: (marketId: string) => void;
+  /** Callback to navigate to the full favorites list. */
   onViewAll?: () => void;
 }
 
+/**
+ * Widget displaying a compact grid of user's favorite markets.
+ * Shows current price, live status, and basic market info.
+ */
 export function FavoriteMarketsWidget({
   favorites,
   livePrices,

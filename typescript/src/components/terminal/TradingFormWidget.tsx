@@ -2,15 +2,25 @@ import { useState, useMemo } from "react";
 import clsx from "clsx";
 import { Wallet, Info, ChevronDown, Layers } from "lucide-react";
 
+/**
+ * Represents a market outcome (e.g., "Yes", "Trump").
+ */
 interface Outcome {
   id: string;
   name: string;
 }
 
+/**
+ * Props for the TradingFormWidget.
+ */
 interface TradingFormProps {
+  /** Market ticker symbol. */
   symbol: string;
+  /** Current best price (mid-market or last). */
   currentPrice: number;
+  /** List of available outcomes. */
   outcomes?: Outcome[];
+  /** Real-time price map for multi-outcome pricing. */
   livePrices?: Record<string, number>;
 }
 
@@ -26,6 +36,11 @@ const outcomeColors = [
   { bg: "bg-orange-600", bgHover: "hover:bg-orange-500", bgLight: "bg-orange-600/10", text: "text-orange-400", border: "border-orange-500" },
 ];
 
+/**
+ * Order execution form for placing Limit and Market orders.
+ * Supports both Binary and Multi-Outcome markets with dynamic UI.
+ * Handles estimated shares, potential payout, and profit calculations.
+ */
 export function TradingFormWidget({ currentPrice, outcomes, livePrices }: TradingFormProps) {
   // Default to Yes/No if no outcomes provided
   const marketOutcomes = useMemo(() => {

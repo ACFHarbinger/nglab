@@ -1,16 +1,29 @@
 import { useMemo } from "react";
 
-// Reusing types/logic from the main dashboard but styling for the terminal
+/**
+ * Represents a single price level in the order book.
+ */
 interface OrderBookLevel {
+  /** Price level. */
   price: number;
+  /** aggregated quantity at this price. */
   total_quantity: number;
 }
 
+/**
+ * Props for the OrderBookWidget.
+ */
 interface OrderBookProps {
+  /** Map of bid levels by price. */
   bids: Record<string, OrderBookLevel>;
+  /** Map of ask levels by price. */
   asks: Record<string, OrderBookLevel>;
 }
 
+/**
+ * Terminal-optimized vertical Order Book visualization.
+ * Displays market depth with visual volume bars and spread calculation.
+ */
 export function OrderBookWidget({ bids, asks }: OrderBookProps) {
   const sortedBids = useMemo(() => {
     return Object.values(bids)

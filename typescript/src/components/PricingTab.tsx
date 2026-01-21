@@ -14,36 +14,69 @@ const clampNumber = (value: number, min?: number, max?: number) => {
   return value;
 };
 
+/**
+ * Result structure from Black-Scholes-Merton model execution.
+ */
 type BlackScholesResult = {
+  /** Theoretical call option price. */
   call: number;
+  /** Theoretical put option price. */
   put: number;
+  /** Rate of change of price w.r.t. stock price. */
   delta: number;
+  /** Rate of change of delta w.r.t. stock price. */
   gamma: number;
+  /** Rate of change of price w.r.t. volatility. */
   vega: number;
+  /** Standardized moneyness d1. */
   d1: number;
+  /** Standardized moneyness d2. */
   d2: number;
 };
 
+/**
+ * Result structure from Credit Risk adjustment model.
+ */
 type CreditRiskResult = {
+  /** Unadjusted option price (risk-free). */
   base: number;
+  /** Option price adjusted for default probability. */
   adjusted: number;
+  /** Survival probability over the option lifetime. */
   survival: number;
+  /** Credit Valuation Adjustment (difference). */
   cva: number;
 };
 
+/**
+ * Result structure from Rough Bergomi simulation.
+ */
 type RBergomiResult = {
+  /** Estimated option price (mean of paths). */
   price: number;
+  /** Standard error of the Monte Carlo estimator. */
   std_error: number;
+  /** Mean terminal asset price. */
   mean_terminal: number;
 };
 
+/**
+ * Result structure from Rough Heston simulation.
+ */
 type RoughHestonResult = {
+  /** Estimated option price. */
   price: number;
+  /** Standard error of the estimator. */
   std_error: number;
+  /** Mean terminal asset price. */
   mean_terminal: number;
+  /** 5th percentile of terminal price distribution. */
   p05: number;
+  /** 95th percentile of terminal price distribution. */
   p95: number;
+  /** Number of paths simulated. */
   paths: number;
+  /** Number of time steps per path. */
   steps: number;
 };
 
@@ -107,6 +140,10 @@ function PricingTab() {
   const [isBsmSimulating, setIsBsmSimulating] = useState(false);
   const [isCreditSimulating, setIsCreditSimulating] = useState(false);
 
+  /**
+   * Invokes the 'pricing_black_scholes' command.
+   * Calculates vanilla option prices and Greeks.
+   */
   const runBsm = async () => {
     setBsmError("");
     setIsBsmSimulating(true);

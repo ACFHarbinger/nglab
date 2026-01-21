@@ -7,8 +7,13 @@ import { invoke } from "@tauri-apps/api/core";
 import { TrendingUp, Flame, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import clsx from "clsx";
 
+/**
+ * Props for the TrendingMarketsWidget.
+ */
 interface TrendingMarketsProps {
+  /** Callback when a market row is clicked. */
   onSelectMarket: (id: string) => void;
+  /** Real-time live price map. */
   livePrices?: Record<string, number>;
 }
 
@@ -137,6 +142,11 @@ const ProbabilityBar = ({ yesPercent }: { yesPercent: number }) => (
   </div>
 );
 
+/**
+ * Widget displaying a list of trending markets.
+ * Features live price updates, sparklines for price history, and volume stats.
+ * Fetches initial data from the backend public API.
+ */
 export function TrendingMarketsWidget({
   onSelectMarket,
   livePrices,

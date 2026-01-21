@@ -118,6 +118,10 @@ const NEWS_ITEMS = [
   },
 ];
 
+/**
+ * Widget displaying real-time global market activity and OSINT intelligence feed.
+ * Features tabs for filtering by activity type (Trades, Insider, etc.) and news source.
+ */
 export function GlobalActivityWidget() {
   const [activeTab, setActiveTab] = useState("All");
   const [activeIntelTab, setActiveIntelTab] = useState("OSINT");

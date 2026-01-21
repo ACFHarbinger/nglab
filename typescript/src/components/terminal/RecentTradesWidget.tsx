@@ -5,19 +5,36 @@
 import { useMemo } from "react";
 import clsx from "clsx";
 
+/**
+ * Represents a single executed trade.
+ */
 export interface Trade {
+  /** Unique trade ID. */
   id: string;
+  /** Execution price. */
   price: number;
-  amount: number; // Quote currency amount (USD)
-  size: number; // Base currency size (Contracts)
+  /** Quote currency amount (USD). */
+  amount: number;
+  /** Base currency size (Contracts). */
+  size: number;
+  /** Aggressor side. */
   side: "buy" | "sell";
-  timestamp: number; // Unix timestamp in seconds
+  /** Unix timestamp in seconds. */
+  timestamp: number;
 }
 
+/**
+ * Props for the RecentTradesWidget.
+ */
 interface RecentTradesProps {
+  /** List of recent trades to display. */
   trades: Trade[];
 }
 
+/**
+ * Widget displaying a chronological list of recent market trades.
+ * Color-coded by side (Buy/Sell) with real-time updates.
+ */
 export function RecentTradesWidget({ trades }: RecentTradesProps) {
   // Sort trades descending by time (newest first)
   const sortedTrades = useMemo(() => {

@@ -17,7 +17,10 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 
-// Mock Data for Sources
+/**
+ * Supported news and social media sources configuration.
+ * Categorized by type (News, Social, Market Data).
+ */
 const SOURCES = {
   "News & Analysis": [
     {
@@ -73,6 +76,7 @@ const SOURCES = {
       color: "text-rose-400",
     },
   ],
+  // ... other categories
 };
 
 // Mock Feed Items

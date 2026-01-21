@@ -41,13 +41,23 @@ interface CsvRow {
   _ts?: number;
 }
 
+/**
+ * Result structure from a GARCH volatility model execution.
+ */
 type GarchResult = {
+  /** Array of historical returns. */
   returns: number[];
+  /** Array of conditional volatility estimates. */
   volatility: number[];
 };
 
+/**
+ * Result structure from a Holt-Winters exponential smoothing model.
+ */
 type HoltWintersResult = {
+  /** Forecasted path values. */
   path: number[];
+  /** Random seed used (if applicable). */
   used_seed?: number;
 };
 
@@ -58,9 +68,15 @@ import { MarketMetadata } from "../hooks/usePolymarket";
  */
 type ActiveModelType = "arima" | "prophet" | "garch" | "holt_winters" | "trained_model";
 
+/**
+ * Props for the PredictionTab component.
+ */
 interface PredictionTabProps {
+  /** Map of current live prices from the active stream. */
   livePrices: Record<string, number>;
+  /** Whether the market stream is currently active. */
   isStreaming: boolean;
+  /** Metadata for the currently selected market. */
   activeMarket: MarketMetadata | null;
 }
 
@@ -216,6 +232,11 @@ export default function PredictionTab({
     }
   }, [currentData, selectedColumn, dataSource]);
 
+  /**
+   * Opens a native file dialog to load a CSV dataset.
+   * Parses the file using PapaParse and detects date/time columns heuristically.
+   * Supports EU (DD/MM/YYYY) and US (MM/DD/YYYY) date formats.
+   */
   const handleOpenFile = async () => {
     try {
       const selected = await open({
@@ -345,6 +366,11 @@ export default function PredictionTab({
     }
   };
 
+  /**
+   * Executes the selected forecasting model (ARIMA, Prophet, GARCH, etc.).
+   * Validates parameters using Zod schemas before invoking the backend.
+   * Updates the chart with the returned prediction path.
+   */
   const runPrediction = async () => {
     if (currentData.length === 0 || !selectedColumn) return;
 

@@ -7,17 +7,33 @@ import {
 } from "lightweight-charts";
 import { useEffect, useRef } from "react";
 
+/**
+ * Single data point for the chart.
+ */
 interface ChartDataPoint {
+  /** Unix timestamp in seconds. */
   time: number;
+  /** Price value. */
   value: number;
 }
 
+/**
+ * Props for the TerminalChart component.
+ */
 interface TerminalChartProps {
+  /** Time-series data points. */
   data: ChartDataPoint[];
+  /** Line color hex code. */
   color?: string;
+  /** Explicit height in pixels. */
   height?: number;
 }
 
+/**
+ * Lightweight chart optimized for terminal view.
+ * Renders a price area chart with 'modern crypto' styling.
+ * Automatically handles container resizing.
+ */
 export function TerminalChart({
   data,
   color = "#22c55e",

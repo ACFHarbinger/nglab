@@ -5,12 +5,22 @@
 import { AlertTriangle, ShieldCheck, TrendingDown, Activity } from "lucide-react";
 import clsx from "clsx";
 
+/**
+ * Props for the RiskDashboardWidget.
+ */
 interface RiskDashboardWidgetProps {
+    /** Combined risk score (0-100), where 100 is max risk. */
     riskScore: number;
+    /** Current portfolio drawdown (0.0 to 1.0). */
     drawdown: number;
+    /** Value at Risk (VaR) estimate (e.g., 95% confidence). */
     varValue: number;
 }
 
+/**
+ * Widget visualizing key portfolio risk metrics.
+ * Displays Risk Score, Drawdown, and VaR with color-coded severity indicators.
+ */
 export function RiskDashboardWidget({ riskScore, drawdown, varValue }: RiskDashboardWidgetProps) {
     const getRiskColor = (score: number) => {
         if (score < 30) return "text-emerald-400";

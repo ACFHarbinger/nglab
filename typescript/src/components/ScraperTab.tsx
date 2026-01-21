@@ -7,13 +7,23 @@ import { invoke } from "@tauri-apps/api/core"; // Updated for Tauri v2
 import { save } from "@tauri-apps/plugin-dialog";
 import { Save, Activity } from "lucide-react";
 
+/**
+ * Outcome information associated with a market.
+ */
 interface OutcomeInfo {
+  /** Unique Outcome ID (Token ID). */
   id: string;
+  /** Human-readable outcome name (e.g., "Yes", "No", "Trump"). */
   name: string;
 }
 
+/**
+ * Metadata for a resolved Polymarket market.
+ */
 interface MarketMetadata {
+  /** Market title/question. */
   title: string;
+  /** List of outcomes. */
   outcomes: OutcomeInfo[];
 }
 
@@ -111,6 +121,11 @@ export default function ScraperTab({
     }
   };
 
+  /**
+   * Toggles the selection state of a specific outcome ID.
+   *
+   * @param id - The outcome ID to toggle.
+   */
   const toggleOutcome = (id: string) => {
     const newSet = new Set(selectedOutcomes);
     if (newSet.has(id)) {
@@ -192,6 +207,10 @@ export default function ScraperTab({
     }
   };
 
+  /**
+   * Resets the local scraper state to allow searching for a new market.
+   * Does NOT stop an active stream if one is running globally.
+   */
   const reset = () => {
     setLocalMetadata(null);
     // We only clear active market if user explicitly resets while viewing it?

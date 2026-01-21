@@ -16,21 +16,39 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 
+/**
+ * Configuration payload for an external integration.
+ */
 interface IntegrationConfig {
+    /** The service identifier (e.g., "polymarket"). */
     service: string;
+    /** Service-specific configuration object (API keys, secrets). */
     config: any;
 }
 
+/**
+ * Represents a stored external integration credentials.
+ */
 interface ExternalIntegration {
+    /** Unique identifier for the integration record. */
     id: number;
+    /** Display name of the service. */
     service_name: string;
+    /** Configuration details. */
     config: IntegrationConfig;
+    /** ISO timestamp of creation. */
     created_at: string;
 }
 
+/**
+ * Props for the AccountTab component.
+ */
 interface Props {
+    /** Whether the live data stream is currently active. */
     isStreaming?: boolean;
+    /** Callback to start streaming a specific market. */
     startStream?: (marketSource: string, metadata: MarketMetadata) => Promise<void>;
+    /** Callback to stop the active stream. */
     stopStream?: () => Promise<void>;
 }
 
@@ -54,6 +72,10 @@ export function AccountTab({ isStreaming = false, startStream, stopStream }: Pro
         checkVaultStatus();
     }, []);
 
+    /**
+     * Checks if the secure vault is currently unlocked.
+     * If unlocked, triggers a fetch of existing integrations.
+     */
     const checkVaultStatus = async () => {
         try {
             const unlocked = await invoke<boolean>("is_vault_unlocked");
@@ -66,6 +88,9 @@ export function AccountTab({ isStreaming = false, startStream, stopStream }: Pro
         }
     };
 
+    /**
+     * Retrieves the list of saved integrations from the backend.
+     */
     const fetchIntegrations = async () => {
         setIsLoading(true);
         try {
@@ -82,6 +107,12 @@ export function AccountTab({ isStreaming = false, startStream, stopStream }: Pro
         }
     };
 
+    /**
+     * Handles the submission of the Polymarket integration form.
+     * Invokes the backend to encrypt and save credentials.
+     *
+     * @param e - The form submission event.
+     */
     const handleSavePolymarket = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -109,6 +140,11 @@ export function AccountTab({ isStreaming = false, startStream, stopStream }: Pro
         }
     };
 
+    /**
+     * Deletes an integration by ID after user confirmation.
+     *
+     * @param id - The ID of the integration to remove.
+     */
     const handleDeleteIntegration = async (id: number) => {
         if (!confirm("Are you sure you want to remove this integration?")) return;
         try {
@@ -123,6 +159,9 @@ export function AccountTab({ isStreaming = false, startStream, stopStream }: Pro
         }
     };
 
+    /**
+     * Toggles the backend debug mode.
+     */
     const toggleDebugMode = async () => {
         const nextMode = !debugMode;
         setDebugMode(nextMode);

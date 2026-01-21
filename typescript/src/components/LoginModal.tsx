@@ -2,20 +2,34 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { X, User, Lock, AlertCircle, CheckCircle } from "lucide-react";
 
+/**
+ * Props for the LoginModal component.
+ */
 interface LoginModalProps {
+    /** Whether the modal is currently visible. */
     isOpen: boolean;
+    /** Callback to close the modal. */
     onClose: () => void;
+    /** Callback fired on successful login. */
     onLoginSuccess: (username: string) => void;
 }
 
+/**
+ * Backend response shape for authentication requests.
+ */
 interface AuthResponse {
     success: boolean;
     message: string;
     username: string | null;
 }
 
+/** Active tab in the modal: "login" or "create". */
 type Tab = "login" | "create";
 
+/**
+ * Modal component handling User Authentication (Login / Sign Up).
+ * Uses backend vault for secure credential verification.
+ */
 export function LoginModal({
     isOpen,
     onClose,
@@ -42,6 +56,9 @@ export function LoginModal({
         resetForm();
     };
 
+    /**
+     * Attempts to log the user in with provided credentials.
+     */
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -71,6 +88,9 @@ export function LoginModal({
         }
     };
 
+    /**
+     * Creates a new user account with the provided credentials.
+     */
     const handleCreateAccount = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -143,8 +163,8 @@ export function LoginModal({
                     <button
                         onClick={() => handleTabChange("login")}
                         className={`flex-1 py-3 text-sm font-medium transition-colors ${tab === "login"
-                                ? "text-indigo-400 border-b-2 border-indigo-400 bg-indigo-500/10"
-                                : "text-slate-400 hover:text-white"
+                            ? "text-indigo-400 border-b-2 border-indigo-400 bg-indigo-500/10"
+                            : "text-slate-400 hover:text-white"
                             }`}
                     >
                         Login
@@ -152,8 +172,8 @@ export function LoginModal({
                     <button
                         onClick={() => handleTabChange("create")}
                         className={`flex-1 py-3 text-sm font-medium transition-colors ${tab === "create"
-                                ? "text-indigo-400 border-b-2 border-indigo-400 bg-indigo-500/10"
-                                : "text-slate-400 hover:text-white"
+                            ? "text-indigo-400 border-b-2 border-indigo-400 bg-indigo-500/10"
+                            : "text-slate-400 hover:text-white"
                             }`}
                     >
                         Create Account
