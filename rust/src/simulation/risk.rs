@@ -285,7 +285,8 @@ impl RiskManager {
 
         if std_dev > 0.0 {
             // Annualized Sharpe (assuming daily returns, 252 trading days)
-            safe_div(mean * 252.0_f64.sqrt(), std_dev, 0.0)
+            // Sharpe = (mean_return * sqrt(252)) / std_dev
+            safe_div(mean * (252.0_f64).sqrt(), std_dev, 0.0)
         } else {
             0.0
         }
@@ -410,14 +411,23 @@ mod tests {
         // Not enough data
         assert_eq!(rm.sharpe_ratio(), 0.0);
 
-        // Add consistent positive returns
-        for _ in 0..50 {
-            let new_value = rm.current_value * 1.001; // 0.1% daily gain
+        // Add varying positive returns (realistic scenario with some volatility)
+        let returns_pct = vec![
+            0.01, 0.015, 0.008, 0.012, 0.009, 0.011, 0.013, 0.007, 0.014, 0.010,
+        ];
+        for i in 0..60 {
+            let ret = returns_pct[i % returns_pct.len()];
+            let new_value = rm.current_value * (1.0 + ret);
             rm.update(new_value);
         }
 
-        // Should have positive Sharpe
-        assert!(rm.sharpe_ratio() > 0.0);
+        let sharpe = rm.sharpe_ratio();
+        // Should have positive Sharpe with positive mean returns and realistic variance
+        assert!(
+            sharpe > 0.0,
+            "Sharpe ratio should be positive with positive returns, got: {}",
+            sharpe
+        );
     }
 
     #[test]

@@ -14,7 +14,15 @@
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 <a href="https://colab.research.google.com/"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
 <a href="https://pypi.org/"><img alt="PyPI" src="https://img.shields.io/pypi/v/rl4co?logo=pypi"></a>
-<a href="https://app.codecov.io/github/acfharbinger/nglab"><img alt="Codecov" src="https://codecov.io/github/acfharbinger/nglab/branch/main/badge.svg"></a>
+<a href="https://app.codecov.io/github/acfharbinger/nglab/tree/main/python">
+  <img alt="Python Coverage" src="https://img.shields.io/codecov/c/github/acfharbinger/nglab?flag=python&logo=python&label=python%20cov">
+</a>
+<a href="https://app.codecov.io/github/acfharbinger/nglab/tree/main/rust">
+  <img alt="Rust Coverage" src="https://img.shields.io/codecov/c/github/acfharbinger/nglab?flag=rust&logo=rust&label=rust%20cov&logoColor=white">
+</a>
+<a href="https://app.codecov.io/github/acfharbinger/nglab/tree/main/typescript">
+  <img alt="TypeScript Coverage" src="https://img.shields.io/codecov/c/github/acfharbinger/nglab?flag=typescript&logo=typescript&label=ts%20cov">
+</a>
 <a href="https://github.com/acfharbinger/nglab/actions/workflows/ci.yml"><img alt="Test" src="https://github.com/acfharbinger/nglab/actions/workflows/ci.yml/badge.svg"></a>
 
 </br>

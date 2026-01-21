@@ -10,35 +10,55 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
+  # Split coverage into language-specific jobs for better performance and debugging
+  python-coverage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      # --- Python Coverage ---
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-      - name: Run Python Tests with Coverage
-        run: uv run pytest --cov=python/src --cov-report=xml
-
-      # --- Rust Coverage ---
-      - name: Install Tarpaulin
-        run: cargo install cargo-tarpaulin
-      - name: Run Rust Tests with Coverage
-        run: cargo tarpaulin --out Xml
-
-      # --- TypeScript Coverage ---
-      - name: Install Node Dependencies
-        run: cd typescript && npm install
-      - name: Run Vitest Coverage
-        run: cd typescript && npm run test -- --coverage
-
-      # --- Upload to Codecov ---
-      - name: Upload Coverage Results
+      - name: Run Python Coverage
+        run: uv run pytest --cov=python/src --cov-report=xml:python-coverage.xml
+      - name: Upload Python Coverage
         uses: codecov/codecov-action@v5
         with:
-          fail_ci_if_error: true
-          files: ./coverage.xml,./cobertura.xml,./typescript/coverage/clover.xml
+          files: ./python-coverage.xml
+          flags: python
+
+  rust-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libglib2.0-dev libgtk-3-dev libsoup2.4-dev libwebkit2gtk-4.0-dev
+      - name: Run Rust Coverage
+        run: cargo tarpaulin --out Xml --output-dir target/tarpaulin
+      - name: Upload Rust Coverage
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./target/tarpaulin/cobertura.xml
+          flags: rust
+
+  typescript-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run Vitest Coverage
+        run: |
+          cd typescript
+          npm install
+          npm run test -- --coverage
+      - name: Upload TypeScript Coverage
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./typescript/coverage/clover.xml
+          flags: typescript
 
   python-ci:
     name: Python CI
