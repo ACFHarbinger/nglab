@@ -64,10 +64,10 @@ def test_cudaprefetcher_to_device():
         assert torch.equal(d["b"][0], moved_d["b"][0])
         
         # Test list/tuple
-        l = [torch.randn(2), (torch.randn(2),)]
-        moved_l = prefetcher._to_device(l)
-        assert isinstance(moved_l, list)
-        assert isinstance(moved_l[1], tuple)
+        test_list = [torch.randn(2), (torch.randn(2),)]
+        moved_list = prefetcher._to_device(test_list)
+        assert isinstance(moved_list, list)
+        assert isinstance(moved_list[1], tuple)
 
 @patch("torch.cuda.current_stream")
 @patch("torch.cuda.stream")

@@ -1,7 +1,9 @@
 import unittest
-from unittest.mock import MagicMock
+
 import torch
+
 from python.src.pipeline.core.lightning.base import BaseModule
+
 
 class ConcreteModule(BaseModule):
     """Concrete implementation of BaseModule for testing."""

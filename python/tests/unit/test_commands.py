@@ -1,8 +1,10 @@
-import unittest
-from unittest.mock import MagicMock, patch
 import argparse
+import unittest
+from unittest.mock import patch
+
 from python.src.commands.registry import get_parser
 from python.src.commands.train_parser import add_train_args
+
 
 class TestRegistry(unittest.TestCase):
     @patch("python.src.commands.registry.add_train_args")
@@ -11,17 +13,14 @@ class TestRegistry(unittest.TestCase):
     @patch("python.src.commands.registry.add_hpo_args")
     @patch("python.src.commands.registry.add_active_learning_args")
     @patch("python.src.commands.registry.add_sentiment_args")
-    def test_get_parser(self, mock_sentiment, mock_al, mock_hpo, mock_crawler, mock_inference, mock_train):
+    def test_get_parser(self, *mocks):
+        """Test get_parser creates parser and calls all add_*_args functions."""
         parser = get_parser()
         self.assertIsNotNone(parser)
         
-        # Verify all add_args functions were called
-        mock_train.assert_called_once()
-        mock_inference.assert_called_once()
-        mock_crawler.assert_called_once()
-        mock_hpo.assert_called_once()
-        mock_al.assert_called_once()
-        mock_sentiment.assert_called_once()
+        # Verify all add_*_args functions were called
+        for mock in mocks:
+            mock.assert_called_once()
 
 class TestTrainParser(unittest.TestCase):
     def test_add_train_args(self):

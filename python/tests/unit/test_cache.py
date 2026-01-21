@@ -1,13 +1,16 @@
 import unittest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
+
 import pytest
+
 from python.src.db.cache import (
-    get_redis_client,
     cache_key,
     cached_query,
+    get_cache_stats,
+    get_redis_client,
     invalidate_cache,
-    get_cache_stats
 )
+
 
 class TestCache(unittest.TestCase):
     def test_cache_key_generation(self):

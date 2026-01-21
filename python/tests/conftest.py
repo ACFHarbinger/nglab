@@ -1,9 +1,13 @@
 import gzip
+import os
 import sys
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+
+# Disable OpenTelemetry during tests to prevent Jaeger connection warnings
+os.environ["OTEL_SDK_DISABLED"] = "true"
 
 # Global mock for zstandard as it's an optional dependency often missing in CI
 mock_zstd = MagicMock()

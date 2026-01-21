@@ -198,23 +198,21 @@ class TestModelStorageBase:
         decompressed = storage._decompress(compressed)
         assert decompressed == data
 
-    def test_compress_decompress_zstd(self, tmp_path):
-        config = StorageConfig(compression="zstd", cache_dir=str(tmp_path / "cache"))
+    def test_compress_decompress_zstd(self):
+        # Create a storage instance with zstd compression
+        # For this test, we don't need a tmp_path for cache_dir as we're not testing caching
+        config = StorageConfig(compression="zstd")
         storage = ConcreteStorage(config)
-        data = b"data to compress with zstd" * 100
+        data = b"test data for compression" * 100
+        
+        import importlib.util
+        if importlib.util.find_spec("zstandard") is None:
+            pytest.skip("zstandard not available")
 
-        try:
-            import zstandard
-
-            compressed = storage._compress(data)
-            assert len(compressed) < len(data)
-            decompressed = storage._decompress(compressed)
-            assert decompressed == data
-        except ImportError:
-            # Falls back to gzip when zstd not available
-            compressed = storage._compress(data)
-            decompressed = storage._decompress(compressed)
-            assert decompressed == data
+        compressed = storage._compress(data)
+        assert len(compressed) < len(data)
+        decompressed = storage._decompress(compressed)
+        assert decompressed == data
 
     def test_compress_zstd_fallback_to_gzip(self, tmp_path):
         """Test that zstd compression falls back to gzip when zstd is not installed."""

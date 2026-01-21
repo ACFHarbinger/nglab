@@ -1,6 +1,9 @@
 import unittest
+
 import torch
-from python.src.utils.functions.masking import TriangularCausalMask, ProbMask
+
+from python.src.utils.functions.masking import ProbMask, TriangularCausalMask
+
 
 class TestMasking(unittest.TestCase):
     def test_triangular_causal_mask_cpu(self):

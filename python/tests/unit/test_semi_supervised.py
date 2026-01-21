@@ -1,7 +1,10 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+
 import torch
+
 from python.src.pipeline.core.lightning.semi_supervised import SemiSupervisedModule
+
 
 class TestSemiSupervisedModule(unittest.TestCase):
     def setUp(self):

@@ -1,12 +1,17 @@
-import unittest
 import os
 import tempfile
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+import unittest
+from unittest.mock import MagicMock
+
 import pandas as pd
 import torch
-from python.src.utils.definitions import update_lock_wait_time, LOCK_TIMEOUT, CORE_LOCK_WAIT_TIME
-from python.src.data.data_utils import read_json, read_csv, df_to_torch
+
+from python.src.data.data_utils import df_to_torch, read_csv, read_json
+from python.src.utils.definitions import (
+    CORE_LOCK_WAIT_TIME,
+    update_lock_wait_time,
+)
+
 
 class TestDefinitions(unittest.TestCase):
     def test_update_lock_wait_time_none(self):
@@ -27,7 +32,8 @@ class TestDataUtils(unittest.TestCase):
             data = read_json(json_path)
             self.assertEqual(data, {"key": "value"})
         finally:
-            os.unlink(json_path)
+            if os.path.exists(json_path):
+                os.unlink(json_path)
     
     def test_read_json_with_lock(self):
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
@@ -41,7 +47,8 @@ class TestDataUtils(unittest.TestCase):
             mock_lock.acquire.assert_called_once_with(timeout=10)
             mock_lock.release.assert_called_once()
         finally:
-            os.unlink(json_path)
+            if os.path.exists(json_path):
+                os.unlink(json_path)
     
     def test_read_csv(self):
         with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
@@ -54,7 +61,8 @@ class TestDataUtils(unittest.TestCase):
             self.assertEqual(len(df), 2)
             self.assertIn('col1', df.columns)
         finally:
-            os.unlink(csv_path)
+            if os.path.exists(csv_path):
+                os.unlink(csv_path)
     
     def test_read_csv_nonexistent(self):
         df = read_csv("/nonexistent/path.csv")
@@ -72,7 +80,8 @@ class TestDataUtils(unittest.TestCase):
             mock_lock.acquire.assert_called_once_with(timeout=10)
             mock_lock.release.assert_called_once()
         finally:
-            os.unlink(csv_path)
+            if os.path.exists(csv_path):
+                os.unlink(csv_path)
     
     def test_df_to_torch(self):
         df = pd.DataFrame({

@@ -1,7 +1,12 @@
 import unittest
-import sys
 from unittest.mock import patch
-from python.src.commands.base_parser import ConfigsParser, LowercaseAction, StoreDictKeyPair
+
+from python.src.commands.base_parser import (
+    ConfigsParser,
+    LowercaseAction,
+    StoreDictKeyPair,
+)
+
 
 class TestConfigsParser(unittest.TestCase):
     def test_error_prints_help(self):
@@ -22,7 +27,7 @@ class TestConfigsParser(unittest.TestCase):
     
     def test_parse_process_args_no_command(self):
         parser = ConfigsParser()
-        subparsers = parser.add_subparsers(dest='command')
+        parser.add_subparsers(dest='command')
         
         with patch('builtins.print'), patch.object(parser, 'print_help'):
             with self.assertRaises(SystemExit):

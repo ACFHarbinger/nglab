@@ -1,17 +1,15 @@
 import json
-import os
 import unittest
-from unittest.mock import MagicMock, patch, ANY
+from unittest.mock import ANY, MagicMock, patch
+
 import torch
 from torch import nn
-import pytest
 
 from python.src.pipeline.core.lightning.supervised_learning import (
-    SLLightningModule,
     ProgressCallback,
-    train_from_csv,
-    main
+    SLLightningModule,
 )
+
 
 class TestLightningSupervised(unittest.TestCase):
     def setUp(self):

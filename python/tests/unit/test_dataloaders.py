@@ -197,7 +197,7 @@ class TestCreateDataloader:
     
     def test_create_dataloader_invalid_ratios(self, sample_csv):
         """Test that invalid ratios raise an error."""
-        with pytest.raises(AssertionError, match="must sum to 1.0"):
+        with pytest.raises(AssertionError, match=r"must sum to 1\.0"):
             create_dataloader(
                 data_path=sample_csv,
                 target_column="price",

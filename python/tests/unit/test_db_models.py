@@ -1,6 +1,13 @@
 import unittest
-from datetime import datetime
-from python.src.db.models import Base, Trade, PortfolioSnapshot, ModelCheckpoint, MarketData
+
+from python.src.db.models import (
+    Base,
+    MarketData,
+    ModelCheckpoint,
+    PortfolioSnapshot,
+    Trade,
+)
+
 
 class TestDatabaseModels(unittest.TestCase):
     def test_base_class(self):

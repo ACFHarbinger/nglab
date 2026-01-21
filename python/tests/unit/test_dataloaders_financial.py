@@ -1,13 +1,16 @@
-import unittest
-from unittest.mock import patch, MagicMock
-import tempfile
 import os
+import tempfile
+import unittest
+from unittest.mock import patch
+
 import pandas as pd
+
 from python.src.data.dataloaders import (
     FinancialDataset,
+    StreamingDataset,
     create_dataloader,
-    StreamingDataset
 )
+
 
 class TestFinancialDataset(unittest.TestCase):
     def setUp(self):
@@ -101,7 +104,7 @@ class TestCreateDataloader(unittest.TestCase):
             temp_parquet_path = temp_parquet.name
         
         try:
-            train_loader, val_loader, test_loader = create_dataloader(
+            train_loader, _val_loader, _test_loader = create_dataloader(
                 data_path=temp_parquet_path,
                 target_column='price',
                 batch_size=16,

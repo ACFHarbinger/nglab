@@ -59,52 +59,6 @@ class TestEnvironmentIntegration:
 class TestDataConsistency:
     """Test consistency between Python and Rust implementations."""
 
-    @pytest.mark.skipif(True, reason="Hard to guarantee exact match without careful seeding in Rust")
-    def test_observation_consistency(self, rust_available, sample_prices):
-        """Test Python and Rust backends produce similar observations."""
-        if not rust_available:
-            pytest.skip("Rust bindings not available")
-
-        from environment.envs import TradingEnv
-        
-        # Setup common data
-        prices = sample_prices["stable"]
-        config = {
-            "initial_capital": 10000.0,
-            "transaction_cost": 0.0, # Zero cost to simplify
-            "lookback": 10,
-            "max_steps": 50,
-        }
-        
-        # 1. Rust Env
-        env_rust = TradingEnv(prices=prices, **config)
-        # Ensure it's using Rust
-        if env_rust._rust_env is None:
-            pytest.skip("Failed to initialize Rust backend")
-            
-        obs_rust, _ = env_rust.reset(seed=42)
-        
-        # 2. Python Env (force fallback)
-        import environment.envs
-        original_has_rust = environment.envs.HAS_RUST
-        environment.envs.HAS_RUST = False # Hacky global change
-        
-        try:
-            # Re-import or instantiate class that checks HAS_RUST at init?
-            # The class checks global HAS_RUST in __init__.
-            
-            env_py = TradingEnv(prices=prices, **config)
-            assert env_py._rust_env is None
-            
-            obs_py, _ = env_py.reset(seed=42)
-            
-            # Compare
-            # Note: Floating point differences expected
-            np.testing.assert_allclose(obs_rust, obs_py, rtol=1e-5, atol=1e-5)
-            
-        finally:
-            environment.envs.HAS_RUST = original_has_rust
-
     def test_deterministic_behavior(self):
         """Test environment is deterministic with fixed seed."""
         from environment.envs import TradingEnv

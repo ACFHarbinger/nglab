@@ -105,8 +105,8 @@ class TestCloudCheckpointManager:
         return MagicMock()
 
     @patch("python.src.utils.io.cloud_storage.S3Backend")
-    def test_manager_save_s3(self, MockS3Backend):
-        mock_backend = MockS3Backend.return_value
+    def test_manager_save_s3(self, mock_s3_backend):
+        mock_backend = mock_s3_backend.return_value
         mock_backend.upload.return_value = "s3://uri"
         
         config = CloudStorageConfig(bucket="bucket")
@@ -126,8 +126,8 @@ class TestCloudCheckpointManager:
         assert metadata["version"] == "1.0.0"
 
     @patch("python.src.utils.io.cloud_storage.GCSBackend")
-    def test_manager_load_gcs(self, MockGCSBackend):
-        mock_backend = MockGCSBackend.return_value
+    def test_manager_load_gcs(self, mock_gcs_backend):
+        mock_backend = mock_gcs_backend.return_value
         
         # Mock download to write a dummy checkpoint to temp file
         def side_effect_download(key, path):
