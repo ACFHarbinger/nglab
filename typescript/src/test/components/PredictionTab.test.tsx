@@ -14,7 +14,7 @@ describe("PredictionTab", () => {
         vi.clearAllMocks();
         mockInvoke.mockImplementation((cmd) => {
             if (cmd === "list_trained_models") return Promise.resolve(["model1"]);
-            if (cmd === "predict_arima") return Promise.resolve({ path: [0.6, 0.7], used_seed: 123 });
+            if (cmd === "run_arima") return Promise.resolve({ path: [0.6, 0.7], used_seed: 123 });
             return Promise.resolve(null);
         });
         mockOpen.mockResolvedValue(null);
@@ -48,13 +48,33 @@ describe("PredictionTab", () => {
 
         // Load data
         fireEvent.click(screen.getByText("Load CSV Data"));
+
+        // Wait for file to be read and parsed
         await waitFor(() => expect(mockReadTextFile).toHaveBeenCalled());
 
-        // Run
-        fireEvent.click(screen.getByText("Run Prediction"));
+        // Wait for data to be loaded by checking if the column select has options
+        await waitFor(() => {
+            const selects = screen.getAllByRole("combobox");
+            const columnSelect = selects[0]; // First select is Target Column
+            // Should have "Close" option after data loads
+            expect(columnSelect).toHaveTextContent("Close");
+        }, { timeout: 2000 });
+
+        // Now the button should be enabled
+        const button = screen.getByText("Run Prediction");
+        expect(button).not.toBeDisabled();
+
+        // Run prediction
+        fireEvent.click(button);
 
         await waitFor(() => {
-            expect(mockInvoke).toHaveBeenCalledWith("run_arima", expect.any(Object));
+            expect(mockInvoke).toHaveBeenCalledWith("run_arima", expect.objectContaining({
+                data: [0.5, 0.6],
+                p: 1,
+                d: 1,
+                q: 1,
+                steps: 10
+            }));
         });
     });
 });

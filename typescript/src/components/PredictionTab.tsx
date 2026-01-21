@@ -73,7 +73,7 @@ export default function PredictionTab() {
   const [hwSeasonality, setHwSeasonality] = useState(7);
 
   // Prophet Parameters
-  const [prophetGrowth, setProphetGrowth] = useState<"linear" | "logistic">("linear");
+  const [prophetGrowth, setProphetGrowth] = useState<"linear" | "flat">("linear");
   const [seasonalityMode, setSeasonalityMode] = useState<"additive" | "multiplicative">("additive");
   const [yearlySeasonality, setYearlySeasonality] = useState(true);
   const [weeklySeasonality, setWeeklySeasonality] = useState(true);
@@ -299,7 +299,7 @@ export default function PredictionTab() {
         }
         case "prophet": {
           const params = {
-            times: rawData.map((r) => Number(r._ts) / 1000), // Convert to seconds
+            times: rawData.map((r) => Math.round(Number(r._ts) / 1000)), // Convert to seconds
             values: dataValues,
             growth: prophetGrowth,
             seasonality_mode: seasonalityMode,
@@ -308,8 +308,7 @@ export default function PredictionTab() {
             daily_seasonality: dailySeasonality,
             changepoint_prior_scale: 0.05,
             seasonality_prior_scale: 10.0,
-            holidays_prior_scale: 10.0,
-            steps,
+            forecast_horizon: steps,
           };
 
           ProphetParamsSchema.parse(params);
@@ -495,11 +494,11 @@ export default function PredictionTab() {
                     <label className="text-[10px] text-slate-500 uppercase">Growth</label>
                     <select
                       value={prophetGrowth}
-                      onChange={(e) => setProphetGrowth(e.target.value as "linear" | "logistic")}
+                      onChange={(e) => setProphetGrowth(e.target.value as "linear" | "flat")}
                       className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-sm"
                     >
                       <option value="linear">Linear</option>
-                      <option value="logistic">Logistic</option>
+                      <option value="flat">Flat</option>
                     </select>
                   </div>
                   <div className="space-y-1">

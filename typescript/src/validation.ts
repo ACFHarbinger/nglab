@@ -13,13 +13,11 @@ export const OrderSchema = z.object({
  * Validation schema for ARIMA parameters.
  */
 export const ArimaParamsSchema = z.object({
-    ar: z.array(z.number()),
-    ma: z.array(z.number()),
+    data: z.array(z.number()),
+    p: z.number().int().min(0),
     d: z.number().int().min(0),
+    q: z.number().int().min(0),
     steps: z.number().int().positive(),
-    sigma: z.number().nonnegative(),
-    seed: z.number().optional(),
-    data: z.array(z.number()).optional(),
 });
 
 /**
