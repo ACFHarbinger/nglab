@@ -1,35 +1,49 @@
-# NGLab Architecture
+# NGLab Architecture: The Blueprint
 
-## Overview
+> **System Overview**: Design Patterns, Component Boundaries, and Data Flow.
 
-NGLab is a multimodal deep reinforcement learning platform for financial trading that combines high-performance simulation, advanced machine learning, and real-time visualization. The architecture follows a three-tier design with clear separation of concerns.
+NGLab is a sophisticated **Multimodal Deep Reinforcement Learning Platform** for financial trading. It follows a strict **Hexagonal Architecture** (Ports & Adapters) to decouple the high-performance core from external interfaces.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    User Interface Layer                      │
-│                  (Tauri 2.0 + React + TS)                   │
-└─────────────────────────────────────────────────────────────┘
-                            ▲
-                            │ Events (arena-update)
-                            │ Commands (start/stop)
-                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                 Training & Learning Layer                    │
-│            (Python + PyTorch + TorchRL + Optuna)            │
-└─────────────────────────────────────────────────────────────┘
-                            ▲
-                            │ PyO3 Bindings
-                            │ Zero-copy NumPy
-                            ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Simulation Engine Layer                    │
-│              (Rust + Tokio + Market Microstructure)         │
-└─────────────────────────────────────────────────────────────┘
+---
+
+## 1. System Context Diagram
+
+Where does NGLab fit in the world?
+
+```mermaid
+graph TD
+    User[Quantitative Trader] -- "Views Dashboard" --> UI[Tauri GUI]
+    User -- "Configures Exp" --> Hydra[Hydra Config]
+    
+    subgraph "NGLab Platform"
+        UI -- "Events/Cmds" --> RustCore[Rust Simulation Core]
+        Hydra -- "Parametrizes" --> PythonBrain[Python Research Layer]
+        
+        PythonBrain -- "Controls" --> RustCore
+        RustCore -- "Feeds Data" --> PythonBrain
+    end
+    
+    Poly[Polymarket API] -- "Market Data" --> RustCore
+    Exchange[Crypto Exchange] -- "Price Integration" --> RustCore
 ```
 
 ---
 
-## Layer 1: Simulation Engine (Rust)
+## 2. Directory Structure Map
+
+A quick reference to where the logic lives.
+
+| Directory | Layer | Purpose | Key Technologies |
+| :--- | :--- | :--- | :--- |
+| `/rust` | **Simulation** | Matching Engine, Risk, Gym Env | Tokio, PyO3, Serde |
+| `/python` | **Intelligence** | Models, Agents, Training Loops | PyTorch, Hydra, Optuna |
+| `/typescript` | **Interface** | GUI, Charts, Commands | React 19, Tauri 2.0, Vite |
+| `/deploy` | **Ops** | CI/CD, Docker, Kubernetes | GitHub Actions, Docker Compose |
+| `/scripts` | **Tools** | Setup, Benchmarks, Maintenance | Bash, Just |
+
+---
+
+## 3. Layer 1: Simulation Engine (Rust)
 
 **Location:** `/rust`
 
@@ -108,7 +122,7 @@ pub fn get_best_ask(&self) -> Option<f64>
 pub fn get_price_levels(&self, depth: usize) -> (Vec<PriceLevel>, Vec<PriceLevel>)
 ```
 
-#### 3. PolymarketArena
+#### 4. PolymarketArena
 **File:** `rust/src/simulation/polymarket.rs`
 
 Prediction market simulation using conditional token framework.
@@ -134,7 +148,7 @@ Market
 └── outcome: Option<bool>
 ```
 
-#### 4. Financial Models
+#### 5. Financial Models
 **Location:** `rust/src/models/`
 
 Advanced quantitative finance models for pricing and risk management.
@@ -144,7 +158,7 @@ Advanced quantitative finance models for pricing and risk management.
 - **Rough Bergomi** (`rough_bergomi.rs`): Alternative rough volatility model
 - **Credit Risk** (`credit_risk.rs`): Default probability modeling
 
-#### 5. Time Series Forecasting ("Project Moon")
+#### 6. Time Series Forecasting ("Project Moon")
 **Location:** `rust/src/moon/`
 
 Classical time series forecasting methods.
@@ -154,7 +168,7 @@ Classical time series forecasting methods.
 - **Exponential Smoothing** (`es.rs`): Trend and seasonality
 - **Prophet** (`prophet.rs`): Changepoint-based forecasting (partial)
 
-#### 6. Web Scraping & Data Collection
+#### 7. Web Scraping & Data Collection
 **Location:** `rust/src/web/`
 
 Real-time market data acquisition.
@@ -167,7 +181,7 @@ Real-time market data acquisition.
 
 ---
 
-## Layer 2: Training & Learning (Python)
+## 4. Layer 2: Training & Learning (Python)
 
 **Location:** `/python`
 
@@ -277,7 +291,7 @@ conf/
 
 ---
 
-## Layer 3: User Interface (TypeScript/Tauri)
+## 5. Layer 3: User Interface (TypeScript/Tauri)
 
 **Location:** `/typescript`
 
@@ -446,12 +460,11 @@ fn get_orderbook() -> OrderBookSnapshot
 ```
 
 ---
+## 6. Key Design Patterns
 
-## Key Design Patterns
+### 6.1 Zero-Copy Data Transfer (Rust ↔ Python)
 
-### 1. Zero-Copy Data Transfer (Rust ↔ Python)
-
-Using PyO3 and numpy crate for efficient memory sharing:
+Using PyO3 and numpy crate for efficient memory sharing. This pattern avoids expensive serialization during high-frequency stepping.
 
 ```rust
 // Rust side
@@ -480,9 +493,9 @@ env = nglab.TradingEnv(10000.0, 50, 0.001)
 obs, _ = env.reset()  # obs is numpy array, no copy
 ```
 
-### 2. Event-Driven Architecture (Tauri)
+### 6.2 Event-Driven Architecture (Tauri)
 
-Decoupled frontend-backend communication:
+Decoupled frontend-backend communication enabling responsive UI even under heavy simulation load.
 
 ```typescript
 // Frontend subscribes to events
@@ -497,9 +510,9 @@ useEffect(() => {
 app_handle.emit_all("arena-update", payload)?;
 ```
 
-### 3. Configuration Composition (Hydra)
+### 6.3 Configuration Composition (Hydra)
 
-Hierarchical configuration with runtime overrides:
+Hierarchical configuration with runtime overrides allows for seamless experiment scaling.
 
 ```yaml
 # config.yaml
@@ -516,9 +529,9 @@ encoder_type: transformer
 $ python train.py model.latent_dim=128 env.initial_cash=50000
 ```
 
-### 4. Async Runtime (Tokio)
+### 6.4 Async Runtime (Tokio)
 
-Non-blocking I/O for scalability:
+Non-blocking I/O for scalable data ingestion.
 
 ```rust
 #[tokio::main]
@@ -535,7 +548,92 @@ async fn main() {
 
 ---
 
-## Performance Characteristics
+## 7. Data Flow Specification
+
+Data moves through the system in three distinct loops.
+
+### 7.1 The Fast Loop (Simulation)
+*Frequency: 10kHz+*
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLOB as OrderBook
+    participant Engine as MatchingEngine
+    participant TradeBuffer
+
+    User->>CLOB: Add Limit Order
+    CLOB->>Engine: Check for Price Equality
+    Engine->>CLOB: Match Found
+    Engine->>TradeBuffer: Emit Trade Execution
+    TradeBuffer->>User: Notify Fill
+```
+
+1.  **Input**: Limit Order (Add/Cancel).
+2.  **Process**: `OrderBook` matching engine.
+3.  **Output**: `Trade` events, `QueuePosition` updates.
+4.  **Storage**: In-memory ring buffer.
+
+### 7.2 The Learning Loop (RL)
+*Frequency: User Defined (e.g., 1 minute candles)*
+
+```mermaid
+sequenceDiagram
+    participant Agent as Python (Agent)
+    participant Wrapper as TorchRL Env
+    participant Bridge as PyO3/Numpy
+    participant Rust as Rust Env
+
+    Agent->>Wrapper: Select Action
+    Wrapper->>Rust: step(action)
+    Rust->>Rust: Execute Order & Update PnL
+    Rust->>Bridge: Zero-Copy Observation
+    Bridge->>Wrapper: TensorDict
+    Wrapper->>Agent: Next State & Reward
+```
+
+1.  **Observation**: Rust builds a flat `Vec<f64>` feature vector.
+2.  **Bridge**: `PyArray` (numpy) wraps the memory pointer (Zero-Copy).
+3.  **Inference**: Python Model $\pi(s)$ computes action $a$.
+4.  **Action**: Integer/Float passed back to Rust via `step(a)`.
+5.  **Reward**: Rust computes $r_t$ and returns it.
+
+### 7.3 The UI Loop (Visualization)
+*Frequency: 60Hz (Throttled)*
+
+```mermaid
+sequenceDiagram
+    participant Rust as Simulation Task
+    participant Tauri as Event Bus
+    participant React as Frontend
+    participant Canvas as Charts/DOM
+
+    Rust->>Tauri: emit('arena-update')
+    Tauri->>React: useArena (Hook)
+    React->>React: Update State
+    React->>Canvas: Redraw Orderbook/Chart
+```
+
+1.  **Event**: `ArenaUpdate` struct is serialized to JSON.
+2.  **Transport**: Tauri Event Bus (`app.emit`).
+3.  **Render**: React `useEffect` triggers a canvas redraw.
+
+---
+
+## 8. Key Design Decisions
+
+### 8.1 Why Rust for Simulation?
+Python is too slow for Order Book matching ($O(N)$ list operations vs Rust's $O(\log N)$ B-Trees). Garbage collection pauses in Python would destroy the determinism required for accurate backtesting.
+
+### 8.2 Why Python for ML?
+The ecosystem. PyTorch, HuggingFace, and Optuna are unrivaled. We bridge the two worlds using `PyO3`, giving us "C++ speed with Python usability".
+
+### 8.3 Why Tauri?
+Electron is bloated (Chromium + Node.js bundle). Tauri uses the OS's native webview (WebKit on Linux/macOS, WebView2 on Windows) and a lightweight Rust backend. This results in a <10MB binary vs >100MB for Electron.
+
+---
+
+## 9. Performance Characteristics
 
 ### Rust Layer
 | Component | Metric | Target | Actual |
@@ -561,7 +659,7 @@ async fn main() {
 
 ---
 
-## Scalability Considerations
+## 10. Scalability Considerations
 
 ### Horizontal Scaling
 - **Training**: Distributed via PyTorch DDP or Ray
@@ -575,7 +673,7 @@ async fn main() {
 
 ---
 
-## Security Considerations
+## 11. Security Considerations
 
 ### API Keys
 - Stored in environment variables
@@ -594,7 +692,11 @@ async fn main() {
 
 ---
 
-## Deployment Architecture
+## 12. Deployment Topology
+
+### Local Research (Dev)
+- **Single Machine**: 1 GPU, Multi-core CPU.
+- **Process**: `cargo run` hosts the simulation; Python is loaded as a dynamic library (`.so`).
 
 ### Development
 ```
@@ -604,7 +706,8 @@ Developer Machine
 └── Tauri: npm run tauri dev
 ```
 
-### Production (Future)
+
+### Cloud Training (Prod - Planned)
 ```
 Cloud Infrastructure
 ├── Training Cluster (GPU)
@@ -621,7 +724,7 @@ Cloud Infrastructure
 
 ---
 
-## Testing Strategy
+## 13. Testing Strategy
 
 ### Unit Tests
 - **Rust**: `#[test]` modules, `cargo test`
@@ -640,7 +743,7 @@ Cloud Infrastructure
 
 ---
 
-## Future Architecture Enhancements
+## 14. Future Architecture Enhancements
 
 ### Short-term (3-6 months)
 - [ ] Add model serving API (FastAPI/Actix-web)
@@ -665,12 +768,12 @@ Cloud Infrastructure
 ## Related Documentation
 
 - [CLAUDE.md](CLAUDE.md) - Tech stack overview
-- [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) - Development roadmap
+- [IMPROVEMENT_PLAN.md](IMPROVEMENTS.md) - Development roadmap
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 - [README.md](README.md) - Getting started
 
 ---
 
-**Last Updated:** 2026-01-19
-**Version:** 0.2.0
+**Last Updated:** 2026-01-21
+**Version:** 2.1.0 (The Omnibus Edition + Code Snippets + Diagrams)
 **Maintainer:** NGLab Team

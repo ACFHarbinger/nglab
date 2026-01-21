@@ -2,20 +2,51 @@
 
 Thank you for your interest in contributing to NGLab! This document provides guidelines and instructions for contributing to the project.
 
+> **Welcome, Engineer.**
+> You are about to contribute to a high-frequency, multimodal intelligence platform. The standards here are high because the stakes are real. Use this document as your definitive guide to the **Process**, **Style**, and **Philosophy** of developing for NGLab.
+
 ## Table of Contents
 
 - [Code of Conduct](#code-of-conduct)
+- [Core Philosophy](#core-philosophy)
 - [Getting Started](#getting-started)
 - [Development Setup](#development-setup)
 - [Development Workflow](#development-workflow)
 - [Code Style](#code-style)
 - [Testing](#testing)
+- [RFC Process](#rfc-process)
 - [Pull Request Process](#pull-request-process)
+- [Release Process](#release-process)
 - [Project Structure](#project-structure)
+
+---
 
 ## Code of Conduct
 
 Please be respectful and constructive in all interactions. We aim to foster an open and welcoming environment.
+
+---
+
+## Core Philosophy
+
+Before writing a single line of code, internalize these three axioms:
+
+### 1. "Zero-Copy or Die"
+Data movement is the enemy of latency. In the Rust-Python bridge, strictly prefer passing pointers over copying data.
+- **BAD**: Serializing a Rust struct to JSON to read it in Python.
+- **GOOD**: Exposing the raw memory address via `PyArray` and reading it with NumPy.
+
+### 2. "Types are Documentation"
+We do not write vague code.
+- **Python**: Every function key must be typed. Use `mypy` strict mode.
+- **Rust**: Use NewTypes (`struct Price(f64)`) to prevent unit confusion (e.g., preventing adding Price to Volume).
+
+### 3. "Determinism is King"
+The simulation must produce bit-exact results for the same seed, regardless of the hardware.
+- Avoid iterating over `HashMap` (random order). Use `BTreeMap` or `IndexMap` instead.
+- Avoid standard `RNG`. Use our seeded `ChaCha8` RNG wrapper.
+
+---
 
 ## Getting Started
 
@@ -39,6 +70,8 @@ Please be respectful and constructive in all interactions. We aim to foster an o
    ```bash
    git remote add upstream https://github.com/ORIGINAL_OWNER/nglab.git
    ```
+
+---
 
 ## Development Setup
 
@@ -86,6 +119,25 @@ pip install pre-commit
 pre-commit install
 ```
 
+### VS Code Configuration
+
+Copy this into your `.vscode/settings.json` for optimal DX:
+```json
+{
+  "rust-analyzer.check.command": "clippy",
+  "python.analysis.typeCheckingMode": "strict",
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
+  }
+}
+```
+
+---
+
 ## Development Workflow
 
 ### 1. Create a Branch
@@ -99,12 +151,13 @@ git checkout -b fix/your-bug-fix
 ```
 
 Branch naming conventions:
-- `feature/` - New features
-- `fix/` - Bug fixes
+- `feature/` - New features (e.g., `feature/mamba-backbone`)
+- `fix/` - Bug fixes (e.g., `fix/clob-matching`)
 - `docs/` - Documentation changes
 - `refactor/` - Code refactoring
 - `test/` - Test additions/changes
 - `chore/` - Maintenance tasks
+- `perf/` - Performance improvements
 
 ### 2. Make Changes
 
@@ -178,6 +231,8 @@ git push origin feature/your-feature-name
 
 Then create a Pull Request on GitHub.
 
+---
+
 ## Code Style
 
 ### Rust
@@ -187,6 +242,14 @@ Then create a Pull Request on GitHub.
 - Use `clippy` for linting with no warnings
 - Add documentation comments (`///`) for public APIs
 - Write unit tests for new functionality
+
+#### The "Do's and Don'ts"
+| Context | DO ✅ | DON'T ❌ |
+| :--- | :--- | :--- |
+| **Error Handling** | Return `Result<T, AppError>` | Use `.unwrap()` or `.expect()` (Instant reject) |
+| **Concurrency** | Use `tokio::select!` for cancellation | Use raw threads `std::thread::spawn` |
+| **Serialization** | Use `serde` with `#[serde(rename_all="camelCase")]` | Manually format JSON strings |
+| **Float Math** | Use `f64` and handle `NaN` implicitly | Use `f32` (precision loss in financial math) |
 
 **Example:**
 ```rust
@@ -210,6 +273,15 @@ pub fn sharpe_ratio(returns: &[f64], risk_free_rate: f64) -> f64 {
 - Use type hints for all function signatures
 - Add docstrings (Google style) for public APIs
 - Maximum line length: 100 characters
+
+#### The "Do's and Don'ts"
+| Context | DO ✅ | DON'T ❌ |
+| :--- | :--- | :--- |
+| **Typing** | `def foo(x: float) -> list[int]:` | `def foo(x):` |
+| **Config** | Use `Hydra` for parameters | Hardcode magic numbers |
+| **Loops** | Use vectorized `numpy`/`torch` operations | Write `for` loops over data |
+| **Imports** | `from typing import Annotated` | `from typing import *` |
+
 
 **Example:**
 ```python
@@ -240,6 +312,13 @@ def calculate_sharpe_ratio(
 - Add JSDoc comments for complex functions
 - Use strict TypeScript configuration
 
+#### The "Do's and Don'ts"
+| Context | DO ✅ | DON'T ❌ |
+| :--- | :--- | :--- |
+| **State** | Use `React Query` or `Tauri Events` | Use `useEffect` for data fetching |
+| **Styles** | Use Tailwind utility classes | Write raw CSS/SCSS files |
+| **Types** | Define interfaces in `types/` | Use `any` type (Instant reject) |
+
 **Example:**
 ```typescript
 /**
@@ -255,6 +334,8 @@ export function calculateSharpeRatio(
   // Implementation
 }
 ```
+
+---
 
 ## Testing
 
@@ -329,6 +410,23 @@ describe('PriceChart', () => {
 });
 ```
 
+---
+
+## RFC Process
+
+For major architectural changes (e.g., "Switching from PPO to DreamerV3" or "Porting the GUI to Leptos"), you must submit an **Request For Comments (RFC)**.
+
+1.  **Create an Issue**: Tag it `proposal/rfc`.
+2.  **Draft the Document**: Create `rfc/000-my-proposal.md`.
+3.  **Structure**:
+    *   **Summary**: 1-paragraph explanation.
+    *   **Motivation**: Why are we doing this?
+    *   **Design**: Technical implementation details.
+    *   **Drawbacks**: What specific problems does this introduce?
+    *   **Alternatives**: What else did you consider?
+
+---
+
 ## Pull Request Process
 
 ### Before Submitting
@@ -385,6 +483,23 @@ How has this been tested?
 - CI/CD must pass (Rust, Python, TypeScript checks)
 - Address review comments promptly
 - Maintain a single commit per logical change (squash if needed)
+
+---
+
+## Release Process
+
+(Maintainers Only)
+
+1.  **Bump Version**:
+    - Update `Cargo.toml`
+    - Update `package.json`
+    - Update `pyproject.toml`
+2.  **Changelog**: Add entry to `CHANGELOG.md`.
+3.  **Tag**: `git tag -a v2.1.0 -m "Release v2.1.0"`
+4.  **Push**: `git push origin --tags`
+5.  Wait for CI to build and publish Docker images.
+
+---
 
 ## Project Structure
 

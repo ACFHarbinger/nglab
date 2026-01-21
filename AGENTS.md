@@ -1,12 +1,18 @@
-# NGLab - Next Gen Laboratory
+# NGLab Agents: The Intelligence Corps
 
-## Core Intelligence & Architectural Exposition
+> **Focus**: Decision-Making Entities, Policies, and Learning Strategies.
+
+This document serves as the handbook for the "Pilots" of the NGLab platform. While `ARCHITECTURE.md` describes the ship, `AGENTS.md` describes the crew.
+
+---
+
+## 1. Core Intelligence & Architectural Exposition
 
 NGLab is a sophisticated **Multimodal Deep Reinforcement Learning (DRL)** platform engineered for high-frequency financial trading, multi-asset simulation, and prediction market analysis. It integrates high-performance systems programming (Rust), cutting-edge machine learning research (Python/PyTorch), and real-time interactive visualization (TypeScript/Tauri).
 
 ---
 
-## 🏗️ System Architecture: The Triad Design
+## 2. 🏗️ System Architecture Reuse
 
 The platform is built on a decoupled, three-tier architecture that optimizes for performance, research flexibility, and operator efficiency.
 
@@ -36,16 +42,7 @@ graph TD
     G -- "Inference" --> I
 ```
 
-### 1. The Simulation Engine (Rust)
-
-The **Core Layer** provides deterministic, low-latency execution of market mechanics.
-
-- **`TradingEnv`**: A Gymnasium-compatible environment optimized for RL agents, featuring zero-copy data transfer to Python.
-- **`OrderBook`**: A standard Central Limit Order Book (CLOB) implementation with price-time priority matching (O(log n) efficiency).
-- **`PolymarketArena`**: A specialized simulation for prediction markets, handling binary outcome tokens and AMM dynamics.
-- **Quantitative Suite**: High-fidelity mathematical models including Black-Scholes, Rough Heston, and Rough Bergomi for synthetic price generation and risk management.
-
-### 2. Research & Learning Pipeline (Python)
+### The Intelligence Layer (Python)
 
 The **Intelligence Layer** hosts an extensive library of deep learning architectures and training utilities.
 
@@ -56,17 +53,98 @@ The **Intelligence Layer** hosts an extensive library of deep learning architect
 - **Policy Framework**: Integration with TorchRL for PPO and SAC agents, alongside classical threshold and quantitative policies.
 - **Evolutionary HPO**: Automated hyperparameter optimization using Optuna for model refinement.
 
-### 3. Operator Interface (TypeScript/Tauri 2.0)
+---
 
-The **Interaction Layer** provides a "Bloomberg-tier" dashboard for real-time monitoring and control.
+## 3. The Agent Taxonomy
 
-- **Live Terminal**: High-performance charting using `lightweight-charts` and real-time order book visualizations.
-- **Command & Control**: Dedicated modules for scraper management, model deployment, and live simulation steering.
-- **Streaming Pipeline**: WebSocket-driven event updates providing 60 FPS visual feedback on market dynamics.
+NGLab employs a diverse set of agents, ranges from simple hard-coded heuristics to massive, pre-trained transformer policies.
+
+### 3.1 Reinforcement Learning (RL) Agents
+These agents learn via trial-and-error, optimizing the scalar reward signal $R_t$ provided by the environment.
+
+#### **PPO (Proximal Policy Optimization)**
+- **Role**: The "Steady Hand". Our default agent for stable, on-policy learning.
+- **Architecture**: Actor-Critic.
+    - **Actor**: $\pi(a|s)$. Outputs a probability distribution (Categorical for discrete, Gaussian for continuous) over actions.
+    - **Critic**: $V(s)$. Estimates the expected future discounted reward.
+- **Key Feature**: The "Clipped Objective" prevents the policy from updating too drastically in a single step, ensuring training stability during market regime shifts.
+
+#### **SAC (Soft Actor-Critic)**
+- **Role**: The "Explorer". An off-policy algorithm optimized for maximum entropy.
+- **Objective**: Maximize $ \mathbb{E}[R_t] + \alpha \mathcal{H}(\pi(\cdot|s_t)) $.
+- **Why it matters**: In financial markets, multiple actions might be equally valid. SAC encourages the agent to keep its options open (high entropy) rather than collapsing to a single deterministic strategy too early.
+
+### 3.2 Heuristic (Rule-Based) Agents
+These agents do not "learn" but execute pre-defined logic. They serve as essential baselines to benchmark RL performance.
+
+#### **The "Market Maker"**
+- **Logic**: Places limits orders at `BestBid - Spread` and `BestAsk + Spread`.
+- **Goal**: Capture the bid-ask spread while remaining delta-neutral.
+- **Inventory Control**: As inventory deviates from 0, it skews its quotes to encourage trades that flatten the position.
+
+#### **The "Trend Follower"**
+- **Logic**: Computes EMA(Short) and EMA(Long).
+    - Buy if `EMA(Short) > EMA(Long)` (Golden Cross).
+    - Sell if `EMA(Short) < EMA(Long)` (Death Cross).
+- **Goal**: Capture massive unidirectional moves (gamma).
 
 ---
 
-## ⚡ Performance Specification
+## 4. Policy Architectures
+
+The "Brain" of the agent. We support swappable backbones.
+
+### 4.1 The "TSMamba" Backbone
+Our flagship architecture for time-series encoding.
+- **Input**: A window of price updates `(Batch, SeqLen, Features)`.
+- **Mechanism**: A Selective State Space Model (SSM). It compresses the history into a fixed-size latent state $h_t$ that evolves linearly.
+- **Advantage**: $O(N)$ inference speed (vs $O(N^2)$ for Transformers), crucial for HFT latencies.
+
+### 4.2 The "Visual" Backbone (CNN)
+Used when the agent "sees" the Order Book as a 2D image (Price Level $\times$ Time).
+- **Layers**: 1D Convolutions over the Price Level dimension.
+- **Feature Extraction**: Detects clusters of liquidity (e.g., "walls") and order imbalances.
+
+---
+
+## 5. The Observation Space
+
+What does the agent actually "see"?
+
+### 5.1 Market Microstructure
+- **LOB Snapshot**: The top 20 levels of Bids and Asks.
+- **Imbalance**: $\frac{\text{Vol}_{bid} - \text{Vol}_{ask}}{\text{Vol}_{bid} + \text{Vol}_{ask}}$. A positive value implies buy pressure.
+- **Spread**: $\text{Ask}_0 - \text{Bid}_0$. Narrow spreads imply high liquidity.
+
+### 5.2 Portfolio State
+- **Cash**: Available USD.
+- **Inventory**: Current net position (signed).
+- **Unrealized PnL**: Current profit/loss if flattened immediately.
+
+### 5.3 Derived Signals
+- **Volatility**: Rolling standard deviation of returns.
+- **RSI**: Relative Strength Index (Momentum).
+- **MACD**: Moving Average Convergence Divergence (Trend).
+
+---
+
+## 6. Interaction Lifecycle
+
+How an Agent survives in the Arena:
+
+1.  **Sense**: The environment wrapper collects raw data from Rust (`OrderBook`, `TradeHistory`).
+2.  **Process**: The Observation Buffer normalizes these values (z-score) and stacks them into a tensor.
+3.  **Think**: The Policy Network ($\pi_\theta$) performs a forward pass.
+    - *Inference Mode*: Returns the mode of the distribution (Deterministic).
+    - *Training Mode*: Samples from the distribution (Stochastic).
+4.  **Act**: The chosen action index is sent to the Rust engine.
+5.  **Learn**:
+    - The `(State, Action, Reward, NextState)` tuple is pushed to a Replay Buffer.
+    - Periodically, a Gradient Descent step updates $\theta$.
+
+---
+
+## 7. ⚡ Performance Specification
 
 | Component                | Metric     | Achievement                            |
 | :----------------------- | :--------- | :------------------------------------- |
@@ -78,7 +156,7 @@ The **Interaction Layer** provides a "Bloomberg-tier" dashboard for real-time mo
 
 ---
 
-## 📡 Data Ingestion & Scrapers
+## 8. 📡 Data Ingestion & Scrapers
 
 NGLab features specialized async scrapers built in Rust to ingest high-fidelity data from live markets:
 
@@ -87,7 +165,7 @@ NGLab features specialized async scrapers built in Rust to ingest high-fidelity 
 
 ---
 
-## 🛠️ Development & Stewardship
+## 9. 🛠️ Development & Stewardship
 
 The project maintains professional software standards across all languages:
 
@@ -97,7 +175,7 @@ The project maintains professional software standards across all languages:
 
 ---
 
-## 🚀 Future Roadmap
+## 10. 🚀 Future Roadmap for Agents
 
 - **Multi-Agent Simulation**: Modeling competing RL agents in a single arena.
 - **Distributed Training**: Scaling model learning across GPU clusters using Ray.

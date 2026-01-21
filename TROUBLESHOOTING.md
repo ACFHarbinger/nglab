@@ -1,42 +1,171 @@
-# NGLab Troubleshooting Guide
+# NGLab Field Repair Manual: Troubleshooting Guide
 
-This guide covers common issues and resolutions for the NGLab development environment.
+> **Diagnosis > Guesswork**.
+> This document maps "Symptoms" to "Root Causes" and "Cures".
 
-## 1. Rust Simulation Engine
+---
 
-### Simulation Panic: "assertion failed: left == right"
-- **Cause**: Usually related to floating-point precision in order book tests or mismatched trade side logic in `MultiAssetEnv`.
-- **Solution**: Ensure usage of `.round()` or `f64::EPSILON` for comparisons. Verify that `Trade` side references are correctly interpreted as either Maker or Taker side (standard is Taker).
+## 1. Quick Diagnostics: The Health Check
 
-### PyO3: "undefined symbol: _Py_NoneStruct"
-- **Cause**: Occurs when running standalone Rust binaries that depend on Python features without linking to the Python interpreter.
-- **Solution**: Ensure you are using `maturin develop` to build the Python bindings, or run `cargo test --no-default-features` if the `python` feature is causing issues.
+Before diving deep, run the automated health check suite.
 
-## 2. Python Environment
+```bash
+# Checks if Rust toolchain, Python venv, and Node modules are synced.
+just check-health
+```
 
-### ModuleNotFoundError: 'nglab'
-- **Cause**: The Rust package hasn't been compiled into the Python environment.
-- **Solution**: Run `just build-python` or `cd python && maturin develop`.
+**Expected Output:**
+```text
+[✅] Rust: cargo 1.80.0
+[✅] Python: 3.11.4 (Active Venv: .venv)
+[✅] Node: v20.5.1
+[✅] Database: Connected (markets.db)
+```
 
-### Protocol Error in MultiAssetEnv Observation
-- **Cause**: The number of assets or features per asset doesn't match the expected `ndarray` shape in the Python wrapper.
-- **Solution**: Verify `features_per_asset` in `rust/src/simulation/multi_asset.rs` matches the shape defined in the Python `step` wrapper.
+If any of these fail, proceed to [Section 2: Environment Issues](#2-environment-issues).
 
-## 3. Frontend / Tauri
+---
 
-### Webview fails to load
-- **Cause**: Permissions or system dependencies (especially on Linux).
-- **Solution**: Run `sudo apt install libwebkit2gtk-4.0-dev build-essential curl wget libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev`.
+## 2. Environment Issues
 
-### "arena-update" events not firing
-- **Cause**: The Rust backend loop is not started or the Mutex is deadlocked.
-- **Solution**: Check `src-tauri/src/main.rs` for Tokio task logs. Ensure `ArenaState` is correctly unlocked in and outside the loop.
+### 2.1 Rust / Cargo
 
-## 4. General DX
+#### Symptom: `error: linker 'cc' not found`
+*   **Cause**: Missing system build essentials.
+*   **Fix**:
+    ```bash
+    sudo apt update && sudo apt install build-essential pkg-config libssl-dev
+    ```
 
-### "Just" command not found
-- **Solution**: Install it via `cargo install just` or `sudo apt install just`.
+#### Symptom: `PyO3: undefined symbol: _Py_NoneStruct`
+*   **Context**: Running a Rust binary that depends on `pyo3` but isn't a Python extension module.
+*   **Cause**: You cannot run `cargo run` on a `cdylib` crate meant for Python import.
+*   **Fix**:
+    *   Do NOT run `cargo run` for the library.
+    *   Use `maturin develop` to build and install into your key.
+    *   Run the *Python entry point* that imports the Rust `.so`.
 
-### Database Locked (SQLite)
-- **Cause**: Multiple instances of the scraper or backend accessing `markets.db`.
-- **Solution**: Use `just reset-credentials` to clear local databases if they become corrupted.
+#### Symptom: `custom-build` Metadata Error
+*   **Cause**: `protobuf-codegen` failing to find `protoc`.
+*   **Fix**:
+    ```bash
+    sudo apt install protobuf-compiler
+    ```
+
+### 2.2 Python / UV
+
+#### Symptom: `ModuleNotFoundError: No module named 'nglab'`
+*   **Cause**: The Rust extension hasn't been built/installed into the current virtual environment.
+*   **Fix**:
+    ```bash
+    source .venv/bin/activate
+    just build-python # Runs maturin develop
+    ```
+
+#### Symptom: `RuntimeError: PyTorch not compiled with CUDA enabled`
+*   **Cause**: You installed the CPU-only version of Torch.
+*   **Fix**:
+    ```bash
+    uv pip install torch --index-url https://download.pytorch.org/whl/cu118 --force-reinstall
+    ```
+
+### 2.3 Tauri / Frontend
+
+#### Symptom: `WebView2Loader.dll not found` (Windows)
+*   **Cause**: Missing webview runtime.
+*   **Fix**: Install the "Evergreen Bootstrapper" from Microsoft.
+
+#### Symptom: `EACCES: permission denied, acces '/usr/lib/node_modules'`
+*   **Cause**: You are running npm with global permissions improperly.
+*   **Fix**: Do not use `sudo`. Use `nvm` to manage node versions.
+
+---
+
+## 3. Runtime Crashes (The "Panic" Room)
+
+### 3.1 Rust Panics (Core Dump)
+**Symptom**: The terminal says `thread 'main' panicked at '...'`.
+
+**Action**: Backtrace it.
+```bash
+# Run with backtrace enabled
+RUST_BACKTRACE=1 cargo run --bin nglab-cli
+```
+
+**Common Panics**:
+1.  `index out of bounds`: You are accessing `history[200]` on a 200-len vec.
+2.  `borrow error`: You are trying to `borrow_mut()` a `RefCell` that is already borrowed. **Fix**: Reduce scope of the first borrow.
+
+### 3.2 Python Segfaults (Segmentation Fault)
+**Symptom**: Process assumes `Exit Code 139` with no python traceback.
+
+**Root Caue**: Typically undefined behavior in the Rust `unsafe` block or invalid pointer access in PyO3.
+
+**Action**: Debug with GDB/LLDB.
+```bash
+gdb --args python python/src/main.py
+(gdb) run
+# ... Wait for crash ...
+(gdb) bt
+```
+Look for the top frame. If it's inside `libnglab.so`, it's a Rust bug. File a critical issue.
+
+---
+
+## 4. Logic Errors (The "Why is it doing that?" Room)
+
+### 4.1 The Agent isn't learning (Reward stays flat)
+**Diagnosis Checklist**:
+1.  **Check Normalization**: Are inputs normalized to $\mathcal{N}(0,1)$? Raw prices (e.g., 20,000) breaks neural net gradients.
+    *   *Fix*: Ensure `ObservationNormalizer` is active in `gym.rs`.
+2.  **Check Rewards**: Is the reward signal strictly zero?
+    *   *Fix*: Print `reward` at every step. Ensure `transaction_cost` isn't eating all profits.
+3.  **Check Entropy**: If entropy drops to 0 immediately, the Learning Rate is too high.
+
+### 4.2 Order Book Desync
+**Symptom**: Frontend shows a price of $100, but Agent buys at $101.
+
+**Cause**: Physics/Rendering Latency mismatch.
+*   The Rust engine operates at 10kHz.
+*   The UI updates at 60Hz.
+*   The UI is showing "old news".
+
+**Fix**: Trust the logs, not the UI. The UI is a downsampled approximation of the truth.
+
+---
+
+## 5. Performance Bottlenecks
+
+### 5.1 Slow Step Times (>10ms)
+**Action**: Profile it.
+```bash
+# Install samply
+cargo install samply
+
+# Profile the execution
+samply record python python/src/main.py
+```
+View the flamegraph.
+*   If `PyO3::to_py_object` is huge: You are copying data. Switch to `numpy` views.
+*   If `Mutex::lock` is huge: You have high thread contention between the GUI reader and the simulation writer. Use `RwLock` or double-buffering.
+
+### 5.2 GPU Starvation (0% Util)
+**Cause**: The CPU isn't feeding data fast enough.
+**Fix**:
+*   Increase `num_envs` (Vectorized Environments).
+*   Move `ObservationNormalizer` to Rust (prevent Python GIL lock).
+
+---
+
+## 6. Asking for Help
+
+When opening an issue, provide the **"Crash Tuple"**:
+
+1.  **The Command**: Exactly what you typed.
+2.  **The Stack Trace**: The full output (use `RUST_BACKTRACE=1`).
+3.  **The Context**: Commit hash (`git rev-parse HEAD`) and OS.
+
+**Emergency Contacts**:
+*   **Infrastructure**: @devops-lead
+*   **Rust Core**: @rust-ace
+*   **Models**: @ml-researcher

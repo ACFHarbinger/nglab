@@ -36,9 +36,13 @@
 <a href="https://www.docker.com/"><img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white"></a>
 
 <p>
+
+<p>
+  <a href="#documentation-hub"><strong>📚 Documentation</strong></a> |
   <a href="#overview"><strong>Overview</strong></a> |
   <a href="#learning-paradigms"><strong>Paradigms</strong></a> |
   <a href="#model-ecosystem"><strong>Model Ecosystem</strong></a> |
+  <a href="#datasets"><strong>Datasets</strong></a> |
   <a href="#setup-dependencies"><strong>Setup</strong></a> |
   <a href="#execute-program"><strong>Usage</strong></a>
 </p>
@@ -47,7 +51,20 @@
 
 ---
 
-# Overview
+## 📚 Documentation Hub
+
+Start here! We have expanded our documentation to cover every aspect of the system.
+
+| Document | Description | Target Audience |
+| :--- | :--- | :--- |
+| **[TUTORIAL.md](TUTORIAL.md)** | **The Developer Encyclopedia.** Exhaustive deep dives into every module, code snippets, and implementation details. | Developers, Contributors |
+| **[AGENTS.md](AGENTS.md)** | **The Strategy Handbook.** Classification of Agents (RL vs Heuristic), Policy Architectures (Mamba/CNN), and Observation Spaces. | Quants, Researchers |
+| **[ARCHITECTURE.md](ARCHITECTURE.md)** | **The System Blueprint.** High-level design, data flow diagrams, system boundaries, and deployment topology. | Architects, DevOps |
+| **[IMPROVEMENTS.md](IMPROVEMENTS.md)** | **The Roadmap.** Active tasks, feature requests, and the long-term vision for the platform. | Project Managers |
+
+---
+
+## Overview
 
 **NGLAB** is a high-performance framework designed to navigate the complexities of financial markets. It combines state-of-the-art **Deep Learning**, **Classical Machine Learning**, and **Reinforcement Learning** to fuse numerical price data with global sentiment analysis.
 
@@ -146,6 +163,8 @@ deactivate
 rm -rf env/.wsr
 ```
 
+---
+
 ## Execute Program
 Choose your preferred interface to interact with the program!
 
@@ -160,6 +179,8 @@ Run the TypeScript/Tauri GUI for a modern, cross-platform experience:
 ```bash
 npm run tauri dev
 ```
+
+---
 
 ## Setup Scripts
 For a fully automated environment setup, use the provided scripts:
