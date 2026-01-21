@@ -11,7 +11,7 @@ import pandas as pd
 import torch
 
 
-def read_json(json_path: str, lock: threading.Lock | None = None) -> Any:
+def read_json(json_path: str, lock: Any = None) -> Any:
     """
     Read a JSON file.
 
@@ -31,7 +31,7 @@ def read_json(json_path: str, lock: threading.Lock | None = None) -> Any:
     return json_data
 
 
-def read_csv(csv_path: str, lock: threading.Lock | None = None) -> pd.DataFrame | None:
+def read_csv(csv_path: str, lock: Any = None) -> pd.DataFrame | None:
     """
     Read a CSV file into a pandas DataFrame.
 

@@ -35,6 +35,14 @@ pub struct AlgoOrder {
     pub algo_type: AlgoType,
 }
 
+pub struct MultiAssetStepResult {
+    pub obs: Vec<f64>,
+    pub reward: f64,
+    pub terminated: bool,
+    pub truncated: bool,
+    pub info: HashMap<String, f64>,
+}
+
 // We reuse ActionType, StepInfo, ObservationBuffer from gym (or redefine if needed)
 // ActionType is generic enough.
 // StepInfo is generic enough but might need per-asset breakdown.
@@ -149,10 +157,7 @@ impl MultiAssetEnv {
         Ok((obs_data, info))
     }
 
-    pub fn step_native(
-        &mut self,
-        actions: Vec<i32>,
-    ) -> ArenaResult<(Vec<f64>, f64, bool, bool, HashMap<String, f64>)> {
+    pub fn step_native(&mut self, actions: Vec<i32>) -> ArenaResult<MultiAssetStepResult> {
         let prev_val = self.portfolio_value();
 
         // Execute actions per asset
@@ -209,7 +214,13 @@ impl MultiAssetEnv {
         info.insert("current_drawdown".to_string(), risk_status.current_drawdown);
         info.insert("current_var".to_string(), risk_status.current_var);
 
-        Ok((obs_data, reward, terminated, truncated, info))
+        Ok(MultiAssetStepResult {
+            obs: obs_data,
+            reward,
+            terminated,
+            truncated,
+            info,
+        })
     }
 
     pub fn risk_status(&self) -> RiskStatus {
@@ -272,22 +283,23 @@ impl MultiAssetEnv {
         py: Python<'py>,
         actions: Vec<i32>,
     ) -> PyResult<(Bound<'py, PyArray2<f64>>, f64, bool, bool, Py<PyAny>)> {
-        let (obs_data, reward, terminated, truncated, info_map) = self.step_native(actions)?;
+        let step_res = self.step_native(actions)?;
         let total_features = self.assets.len() * self.features_per_asset;
 
-        let obs_array = ndarray::Array2::from_shape_vec((self.lookback, total_features), obs_data)
-            .map_err(|e| ArenaError::DataLoading(format!("Invalid shape: {}", e)))?;
+        let obs_array =
+            ndarray::Array2::from_shape_vec((self.lookback, total_features), step_res.obs)
+                .map_err(|e| ArenaError::DataLoading(format!("Invalid shape: {}", e)))?;
 
         let info = PyDict::new(py);
-        for (k, v) in info_map {
+        for (k, v) in step_res.info {
             info.set_item(k, v)?;
         }
 
         Ok((
             obs_array.to_pyarray(py),
-            reward,
-            terminated,
-            truncated,
+            step_res.reward,
+            step_res.terminated,
+            step_res.truncated,
             info.into(),
         ))
     }
@@ -558,12 +570,14 @@ mod tests {
         assert_eq!(*info.get("portfolio_value").unwrap(), 10000.0);
 
         // Step: Buy BTC, Buy ETH
-        let (_obs, reward, terminated, truncated, info) = env.step_native(vec![1, 1]).unwrap(); // Buy, Buy
+        let step_res = env.step_native(vec![1, 1]).unwrap(); // Buy, Buy
 
-        assert!(!terminated);
-        assert!(!truncated);
-        assert!(reward != 0.0 || *info.get("portfolio_value").unwrap() == 10000.0);
-        assert!(*info.get("cash").unwrap() < 10000.0);
+        assert!(!step_res.terminated);
+        assert!(!step_res.truncated);
+        assert!(
+            step_res.reward != 0.0 || *step_res.info.get("portfolio_value").unwrap() == 10000.0
+        );
+        assert!(*step_res.info.get("cash").unwrap() < 10000.0);
         assert!(env.positions.get("BTC").unwrap() > &0.0);
         assert!(env.positions.get("ETH").unwrap() > &0.0);
 

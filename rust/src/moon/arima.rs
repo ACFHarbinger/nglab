@@ -122,7 +122,7 @@ fn estimate_ar_yule_walker(data: &[f64], p: usize) -> ArenaResult<Vec<f64>> {
     for i in 0..p {
         g_vec[i] = gamma[i + 1];
         for j in 0..p {
-            let lag = (i as i32 - j as i32).abs() as usize;
+            let lag = (i as i32 - j as i32).unsigned_abs() as usize;
             r_mat[[i, j]] = gamma[lag];
         }
     }

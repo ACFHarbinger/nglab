@@ -34,7 +34,7 @@ impl RerunLogger {
         // Save to file for robust logging in headless/CI environments
         let rec = RecordingStreamBuilder::new("nglab_arena")
             .save("arena_log.rrd")
-            .unwrap();
+            .expect("Failed to initialize Rerun recording stream");
 
         eprintln!("Rerun logging initialized to arena_log.rrd");
 
