@@ -45,7 +45,7 @@ jobs:
 
       # Add this step to install the tool
       - name: Install Tarpaulin
-        run: cargo install cargo-tarpaulin --secure
+        run: cargo install cargo-tarpaulin
 
       - name: Run Rust Coverage
         run: cargo tarpaulin --out Xml --output-dir target/tarpaulin
