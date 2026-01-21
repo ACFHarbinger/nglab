@@ -62,7 +62,7 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             f=f,
             dimensions=dimensions,
             pop_size=pop_size,
-            max_age=max_age,
+            max_age=max_age if max_age is not None else np.inf,
             mutation_factor=mutation_factor,
             crossover_prob=crossover_prob,
             strategy=strategy,

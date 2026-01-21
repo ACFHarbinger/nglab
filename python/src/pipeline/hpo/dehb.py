@@ -44,28 +44,27 @@ _logger_props = {
 def get_config_space(opts: dict[str, Any]) -> CS.ConfigurationSpace:
     """Build the ConfigSpace for the given optimization options."""
     cs = CS.ConfigurationSpace()
-    if opts["problem"] == "wcvrp":
+    if opts.get("problem") == "wcvrp":
+        range_vals = opts.get("hop_range", [0.0, 1.0])
         cs.add(
-            CSHP.UniformFloatHyperparameter(
-                "w_lost", lower=opts["hop_range"][0], upper=opts["hop_range"][1]
-            )
+            CSHP.UniformFloatHyperparameter("w_lost", lower=range_vals[0], upper=range_vals[1])
         )
         cs.add(
-            CSHP.UniformFloatHyperparameter(
-                "w_prize", lower=opts["hop_range"][0], upper=opts["hop_range"][1]
-            )
+            CSHP.UniformFloatHyperparameter("w_prize", lower=range_vals[0], upper=range_vals[1])
         )
         cs.add(
-            CSHP.UniformFloatHyperparameter(
-                "w_length", lower=opts["hop_range"][0], upper=opts["hop_range"][1]
-            )
+            CSHP.UniformFloatHyperparameter("w_length", lower=range_vals[0], upper=range_vals[1])
         )
         cs.add(
-            CSHP.UniformFloatHyperparameter(
-                "w_overflows", lower=opts["hop_range"][0], upper=opts["hop_range"][1]
-            )
+            CSHP.UniformFloatHyperparameter("w_overflows", lower=range_vals[0], upper=range_vals[1])
         )
-        # cs.add(CSH.UniformIntegerHyperparameter("num_layers", lower=1, upper=4))
+    elif "config_space_params" in opts:
+        params = opts["config_space_params"]
+        for name, space in params.items():
+            if isinstance(space, tuple) and len(space) == 2:
+                cs.add(CSHP.UniformFloatHyperparameter(name, lower=space[0], upper=space[1]))
+            elif isinstance(space, list):
+                cs.add(CSHP.CategoricalHyperparameter(name, choices=space))
     return cs
 
 
@@ -144,9 +143,7 @@ class DifferentialEvolutionHyperband(DifferentialEvolutionHyperbandBase):
 
         # Dask variables
         if n_workers is None and client is None:
-            raise ValueError(
-                "Need to specify either 'n_workers'(>0) or 'client' (a Dask client)!"
-            )
+            n_workers = 1
         if client is not None and isinstance(client, Client):
             self.client: Client | None = client
             self.n_workers = len(client.scheduler_info().get("workers", []))

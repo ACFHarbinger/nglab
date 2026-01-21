@@ -110,7 +110,9 @@ class DifferentialEvolutionBase:
         self.population: np.ndarray[Any, Any] | None = None
         self.population_ids: np.ndarray[Any, Any] | None = None
         self.fitness: np.ndarray[Any, Any] | None = None
+        self.fitness: np.ndarray[Any, Any] | None = None
         self.age: np.ndarray[Any, Any] | None = None
+        self.max_age = max_age if max_age is not None else np.inf
         self.history: list[Any] = []
         self.reset()
 
@@ -176,7 +178,7 @@ class DifferentialEvolutionBase:
         if self.configspace:
             assert self.cs is not None
             # sample from CS s.t. conditional constraints (if any) are maintained
-            sampled_configs = self.cs.sample_configuration(size=pop_size)
+            sampled_configs = self.cs.sample_configuration(size=int(pop_size))
             if not isinstance(sampled_configs, list):
                 sampled_configs = [sampled_configs]
             # the population is maintained in a list-of-vector form where each CS

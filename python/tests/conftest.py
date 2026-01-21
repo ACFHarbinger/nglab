@@ -2,6 +2,16 @@ import sys
 from pathlib import Path
 
 import pytest
+from unittest.mock import MagicMock
+import gzip
+
+# Global mock for zstandard as it's an optional dependency often missing in CI
+mock_zstd = MagicMock()
+mock_zstd.__name__ = "zstandard"
+mock_zstd.__version__ = "0.15.2"
+mock_zstd.ZstdCompressor.return_value.compress.side_effect = gzip.compress
+mock_zstd.ZstdDecompressor.return_value.decompress.side_effect = gzip.decompress
+sys.modules["zstandard"] = mock_zstd
 
 # The project root is THREE levels up from conftest.py:
 # conftest.py -> tests -> python -> nglab (Project Root)

@@ -39,7 +39,7 @@ def test_inference_script_success(mock_model_artifact):
     assert isinstance(res["prediction"], list)
     # Check metadata presence
     assert "metadata" in res
-    assert "hyperparameters" in res["metadata"]
+    assert "training_config" in res["metadata"]
 
 def test_inference_script_missing_model():
     """Test failure when model path is invalid."""

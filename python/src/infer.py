@@ -67,7 +67,7 @@ def main() -> None:  # noqa: PLR0915
                 )
 
         # 3. Instantiate Model
-        config = metadata.hyperparameters
+        config = metadata.training_config
         model_config = config.get("model", config)
         model = TimeSeriesBackbone(model_config)
 

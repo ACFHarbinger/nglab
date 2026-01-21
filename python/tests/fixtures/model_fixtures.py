@@ -26,7 +26,7 @@ def mock_model_artifact(tmp_path, mock_model_config):
         version="0.1.0",
         model_type="lstm_test",
         framework_version="pytorch-2.0",
-        hyperparameters={"model": mock_model_config, "normalization": mock_model_config["normalization"]},
+        training_config={"model": mock_model_config, "normalization": mock_model_config["normalization"]},
         metrics={"val_loss": 0.05},
         training_date="2024-01-01T00:00:00",
         dataset_hash="unknown_hash",

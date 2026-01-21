@@ -7,12 +7,6 @@ import gzip
 from pathlib import Path
 from unittest.mock import MagicMock, patch, ANY
 
-# Mock zstandard before importing cloud_storage which depends on it
-# Use gzip as a poor man's zstandard mock to satisfy round-trip and size checks
-mock_zstd = MagicMock()
-mock_zstd.ZstdCompressor.return_value.compress.side_effect = gzip.compress
-mock_zstd.ZstdDecompressor.return_value.decompress.side_effect = gzip.decompress
-sys.modules["zstandard"] = mock_zstd
 
 from python.src.utils.io.model_versioning import (
     ModelMetadata,
@@ -34,7 +28,7 @@ class TestModelVersioning:
             version="1.0.0",
             model_type="TestModel",
             framework_version="pytorch-2.0",
-            hyperparameters={"lr": 0.01},
+            training_config={"lr": 0.01},
             metrics={"acc": 0.9},
             training_date="2024-01-01",
             dataset_hash="abc",
@@ -78,7 +72,7 @@ class TestModelVersioning:
             metrics={"b": 2}
         )
         assert meta.git_commit == "commit_hash"
-        assert meta.hyperparameters == {"a": 1}
+        assert meta.training_config == {"a": 1}
 
     def test_model_registry_save_load(self, tmp_path):
         registry = ModelRegistry(tmp_path / "registry")

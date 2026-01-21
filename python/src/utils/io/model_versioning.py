@@ -6,7 +6,7 @@ with comprehensive metadata for reproducibility and experiment tracking.
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, InitVar
 from datetime import datetime
 from pathlib import Path
 from typing import Any, cast
@@ -22,25 +22,27 @@ class ModelMetadata:
     Attributes:
         version: Semantic version string (e.g., "1.0.0")
         model_type: Model architecture type (e.g., "VAE", "PPO", "SAC")
-        framework_version: Framework version string (e.g., "pytorch-2.3.0")
-        hyperparameters: Dictionary of hyperparameters used
+        training_config: Dictionary of training parameters
         metrics: Dictionary of evaluation metrics
+        framework_version: Framework version string (e.g., "pytorch-2.3.0")
         training_date: ISO format timestamp
         dataset_hash: Hash of training dataset for reproducibility
         git_commit: Git commit hash when model was trained (optional)
         description: Human-readable description (optional)
+        dependencies: Dictionary of dependency versions (optional)
         tags: List of tags for organization (optional)
     """
 
     version: str
     model_type: str
-    framework_version: str
-    hyperparameters: dict[str, Any]
-    metrics: dict[str, float]
-    training_date: str
-    dataset_hash: str
+    training_config: dict[str, Any] = field(default_factory=dict)
+    metrics: dict[str, float] = field(default_factory=dict)
+    framework_version: str = field(default_factory=lambda: f"pytorch-{torch.__version__}")
+    training_date: str = field(default_factory=lambda: datetime.now().isoformat())
+    dataset_hash: str = "unknown"
     git_commit: str | None = None
     description: str | None = None
+    dependencies: dict[str, str] = field(default_factory=dict)
     tags: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -258,6 +260,7 @@ class ModelRegistry:
         model_type: str,
         version: str,
         map_location: str | torch.device | None = None,
+        strict: bool = True,
     ) -> tuple[nn.Module, ModelMetadata]:
         """Load model from registry.
 
@@ -271,7 +274,7 @@ class ModelRegistry:
             Tuple of (loaded_model, metadata)
         """
         load_path = self._get_model_path(model_type, version)
-        return load_model_with_metadata(model, load_path, map_location)
+        return load_model_with_metadata(model, load_path, map_location, strict=strict)
 
     def list_versions(self, model_type: str) -> list[str]:
         """List all available versions for a model type.
@@ -304,6 +307,19 @@ class ModelRegistry:
         """
         versions = self.list_versions(model_type)
         return versions[0] if versions else None
+
+    def get_metadata(self, model_type: str, version: str) -> ModelMetadata:
+        """Get metadata for a specific model version.
+
+        Args:
+            model_type: Type of model
+            version: Version string
+
+        Returns:
+            ModelMetadata instance
+        """
+        _, metadata = self.load(nn.Module(), model_type, version, strict=False)
+        return metadata
 
     def delete(self, model_type: str, version: str) -> bool:
         """Delete a model version from registry.
@@ -359,7 +375,7 @@ def create_metadata_from_config(  # noqa: PLR0913
         version=version,
         model_type=model_type,
         framework_version=f"pytorch-{torch.__version__}",
-        hyperparameters=config,
+        training_config=config,
         metrics=metrics,
         training_date=datetime.now().isoformat(),
         dataset_hash=dataset_hash,
