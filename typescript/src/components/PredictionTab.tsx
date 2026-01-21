@@ -9,6 +9,7 @@ import {
   LineChart as LineChartIcon,
   Activity,
   FileSpreadsheet,
+  Wifi,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import {
@@ -16,6 +17,7 @@ import {
   ColorType,
   IChartApi,
   UTCTimestamp,
+  LineSeries,
 } from "lightweight-charts";
 import { open } from "@tauri-apps/plugin-dialog";
 import { readTextFile } from "@tauri-apps/plugin-fs";
@@ -49,13 +51,33 @@ type HoltWintersResult = {
   used_seed?: number;
 };
 
+import { MarketMetadata } from "../hooks/usePolymarket";
+
 /**
  * Valid model types for the forecasting lab.
  */
 type ActiveModelType = "arima" | "prophet" | "garch" | "holt_winters" | "trained_model";
 
-export default function PredictionTab() {
+interface PredictionTabProps {
+  livePrices: Record<string, number>;
+  isStreaming: boolean;
+  activeMarket: MarketMetadata | null;
+}
+
+export default function PredictionTab({
+  livePrices,
+  isStreaming,
+  activeMarket,
+}: PredictionTabProps) {
   const [activeModel, setActiveModel] = useState<ActiveModelType>("arima");
+  const [dataSource, setDataSource] = useState<"csv" | "live">("csv");
+  const [liveHistory, setLiveHistory] = useState<CsvRow[]>([]);
+  const latestPricesRef = useRef(livePrices);
+
+  // Keep ref updated for polling
+  useEffect(() => {
+    latestPricesRef.current = livePrices;
+  }, [livePrices]);
   const [isPredicting, setIsPredicting] = useState(false);
   const [rawData, setRawData] = useState<CsvRow[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
@@ -102,14 +124,12 @@ export default function PredictionTab() {
       height: 400,
     });
 
-    // @ts-expect-error - lightweight-charts type complexity
-    const lineSeries = chart.addSeries('Line', {
+    const lineSeries = chart.addSeries(LineSeries, {
       color: "#3b82f6",
       lineWidth: 2,
     });
 
-    // @ts-expect-error - lightweight-charts type complexity
-    const predSeries = chart.addSeries('Line', {
+    const predSeries = chart.addSeries(LineSeries, {
       color: "#10b981",
       lineWidth: 2,
       lineStyle: 2, // Dashed
@@ -133,15 +153,68 @@ export default function PredictionTab() {
     };
   }, []);
 
+  // Live Data Polling (Simplified version of AnalysisTab's logic)
   useEffect(() => {
-    if (rawData.length > 0 && selectedColumn && lineSeriesRef.current) {
-      const chartData = prepareChartData(rawData, selectedColumn);
-      lineSeriesRef.current.setData(chartData);
-      if (chartRef.current) {
+    if (dataSource === "live" && isStreaming && activeMarket) {
+      const interval = setInterval(() => {
+        const now = Date.now();
+        const newRow: CsvRow = { _ts: now, "Timestamp (UTC)": now };
+        const currentPrices = latestPricesRef.current;
+        let hasData = false;
+
+        activeMarket.outcomes.forEach((outcome) => {
+          if (currentPrices[outcome.id] !== undefined) {
+            newRow[outcome.name] = currentPrices[outcome.id];
+            hasData = true;
+          }
+        });
+
+        if (hasData) {
+          setLiveHistory((prev) => {
+            const next = [...prev, newRow];
+            return next.length > 500 ? next.slice(next.length - 500) : next;
+          });
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [dataSource, isStreaming, activeMarket]);
+
+  // Unified Data Source Selection
+  const currentData = dataSource === "csv" ? rawData : liveHistory;
+
+  // Update columns and chart when source or data changes
+  useEffect(() => {
+    if (dataSource === "live" && activeMarket) {
+      const names = activeMarket.outcomes.map((o) => o.name);
+      setColumns(names);
+      if (!selectedColumn || !names.includes(selectedColumn)) {
+        setSelectedColumn(names[0] || "");
+      }
+    } else if (dataSource === "csv" && rawData.length > 0) {
+      const firstRowKeys = Object.keys(rawData[0]);
+      const dateKey = firstRowKeys.find(
+        (k) =>
+          k.toLowerCase().includes("date") || k.toLowerCase().includes("time"),
+      );
+      const cols = firstRowKeys.filter(
+        (k) =>
+          k !== dateKey && k !== "_ts" && k !== "Timestamp (UTC)",
+      );
+      setColumns(cols);
+    }
+  }, [dataSource, activeMarket, rawData]);
+
+  // Update Chart with unified data
+  useEffect(() => {
+    if (currentData.length > 0 && selectedColumn && lineSeriesRef.current) {
+      const chartData = prepareChartData(currentData, selectedColumn);
+      lineSeriesRef.current.setData(chartData.data);
+      if (chartRef.current && dataSource === "csv") {
         chartRef.current.timeScale().fitContent();
       }
     }
-  }, [rawData, selectedColumn]);
+  }, [currentData, selectedColumn, dataSource]);
 
   const handleOpenFile = async () => {
     try {
@@ -273,11 +346,11 @@ export default function PredictionTab() {
   };
 
   const runPrediction = async () => {
-    if (rawData.length === 0 || !selectedColumn) return;
+    if (currentData.length === 0 || !selectedColumn) return;
 
     setIsPredicting(true);
     try {
-      const dataValues = rawData
+      const dataValues = currentData
         .map((r) => Number(r[selectedColumn]))
         .filter((v) => !isNaN(v));
 
@@ -359,9 +432,9 @@ export default function PredictionTab() {
 
 
       if (predictionSeriesRef.current && result.length > 0) {
-        const lastRow = rawData[rawData.length - 1];
+        const lastRow = currentData[currentData.length - 1];
         const lastTs = lastRow._ts;
-        const lastIndex = rawData.length - 1;
+        const lastIndex = currentData.length - 1;
 
         const predData = result.map((val, i) => {
           if (lastTs && !isNaN(lastTs)) {
@@ -399,13 +472,37 @@ export default function PredictionTab() {
             Combine traditional econometrics with modern deep learning.
           </p>
         </div>
-        <button
-          onClick={handleOpenFile}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700"
-        >
-          <FileSpreadsheet size={18} />
-          {fileName || "Load CSV Data"}
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="flex bg-slate-900 rounded-lg p-1 border border-slate-800">
+            <button
+              onClick={() => setDataSource("csv")}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${dataSource === "csv"
+                ? "bg-slate-800 text-white shadow-sm"
+                : "text-slate-500 hover:text-slate-300"
+                }`}
+            >
+              CSV File
+            </button>
+            <button
+              onClick={() => setDataSource("live")}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${dataSource === "live"
+                ? "bg-slate-800 text-white shadow-sm"
+                : "text-slate-500 hover:text-slate-300"
+                }`}
+            >
+              Live Market
+            </button>
+          </div>
+          {dataSource === "csv" && (
+            <button
+              onClick={handleOpenFile}
+              className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700"
+            >
+              <FileSpreadsheet size={18} />
+              {fileName || "Load CSV Data"}
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -619,7 +716,7 @@ export default function PredictionTab() {
 
               <button
                 onClick={runPrediction}
-                disabled={isPredicting || rawData.length === 0}
+                disabled={isPredicting || currentData.length === 0}
                 className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
               >
                 {isPredicting ? (
@@ -656,12 +753,25 @@ export default function PredictionTab() {
 
             <div ref={chartContainerRef} className="w-full" />
 
-            {rawData.length === 0 && (
+            {currentData.length === 0 && (
               <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex items-center justify-center flex-col gap-2">
-                <FileSpreadsheet size={48} className="text-slate-700" />
-                <p className="text-slate-500 font-medium">
-                  Load a CSV to start analyzing
-                </p>
+                {dataSource === "csv" ? (
+                  <>
+                    <FileSpreadsheet size={48} className="text-slate-700" />
+                    <p className="text-slate-500 font-medium">
+                      Load a CSV to start analyzing
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Wifi size={48} className={`text-slate-700 ${isStreaming ? 'animate-pulse text-indigo-500/50' : ''}`} />
+                    <p className="text-slate-500 font-medium text-center px-6">
+                      {isStreaming
+                        ? `Waiting for live data from ${activeMarket?.title || 'market'}...`
+                        : "Start a market stream in the Markets tab to see live data here"}
+                    </p>
+                  </>
+                )}
               </div>
             )}
           </div>

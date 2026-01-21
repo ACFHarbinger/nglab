@@ -22,13 +22,13 @@ describe("PredictionTab", () => {
     });
 
     it("should render initial controls", async () => {
-        render(<PredictionTab />);
+        render(<PredictionTab livePrices={{}} isStreaming={false} activeMarket={null} />);
         expect(screen.getByText("ARIMA (Econometric)")).toBeInTheDocument();
         expect(screen.getByText("Load CSV Data")).toBeInTheDocument();
     });
 
     it("should switch models", async () => {
-        render(<PredictionTab />);
+        render(<PredictionTab livePrices={{}} isStreaming={false} activeMarket={null} />);
 
         // Select GARCH from dropdown - find the select by its options
         const algorithmSelects = screen.getAllByRole("combobox");
@@ -44,7 +44,7 @@ describe("PredictionTab", () => {
     it("should run ARIMA prediction after loading data", async () => {
         mockOpen.mockResolvedValue("/path.csv");
 
-        render(<PredictionTab />);
+        render(<PredictionTab livePrices={{}} isStreaming={false} activeMarket={null} />);
 
         // Load data
         fireEvent.click(screen.getByText("Load CSV Data"));
