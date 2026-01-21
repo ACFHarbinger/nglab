@@ -108,13 +108,14 @@ class BatchInferenceHandler:
     """
 
     def __init__(self, model_loader_func: Callable[[], torch.nn.Module]) -> None:
-        self.queue: asyncio.Queue[tuple[PredictionRequest, asyncio.Future[list[list[float]]]]] = asyncio.Queue()
+        self.queue: asyncio.Queue[tuple[PredictionRequest, asyncio.Future[list[list[float]]]]] | None = None
         self.model_loader = model_loader_func
         self._shutdown = False
         self._worker_task: asyncio.Task[None] | None = None
 
     async def start(self) -> None:
         self._shutdown = False
+        self.queue = asyncio.Queue()
         self._worker_task = asyncio.create_task(self._worker_loop())
 
     async def stop(self) -> None:
@@ -128,6 +129,8 @@ class BatchInferenceHandler:
 
     async def predict(self, request: PredictionRequest) -> list[list[float]]:
         """Add request to queue and await result."""
+        if self.queue is None:
+            raise RuntimeError("BatchInferenceHandler not started")
         future: asyncio.Future[list[list[float]]] = asyncio.get_running_loop().create_future()
         await self.queue.put((request, future))
         return await future
@@ -139,6 +142,8 @@ class BatchInferenceHandler:
 
             # 1. Fetch first item (blocking)
             try:
+                if self.queue is None:
+                    break
                 item = await asyncio.wait_for(self.queue.get(), timeout=1.0)
                 batch.append(item)
             except TimeoutError:
@@ -346,7 +351,7 @@ async def health_check() -> dict[str, Any]:
         "status": "online",
         "gpu_available": torch.cuda.is_available(),
         "redis_connected": _REDIS is not None,
-        "batch_queue_size": batch_handler.queue.qsize(),
+        "batch_queue_size": batch_handler.queue.qsize() if batch_handler.queue else 0,
     }
 
 

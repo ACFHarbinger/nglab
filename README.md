@@ -11,6 +11,7 @@
 <a href="https://github.com/pytorch/rl"><img alt="base: TorchRL" src="https://img.shields.io/badge/base-TorchRL-red"></a>
 <a href="https://hydra.cc/"><img alt="config: Hydra" src="https://img.shields.io/badge/config-Hydra-89b8cd"></a>
 <a href="https://github.com/astral-sh/ruff"><img alt="Code style: ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 <a href="https://colab.research.google.com/"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
 <a href="https://pypi.org/"><img alt="PyPI" src="https://img.shields.io/pypi/v/rl4co?logo=pypi"></a>
 <a href="https://app.codecov.io/github/acfharbinger/nglab"><img alt="Codecov" src="https://codecov.io/github/acfharbinger/nglab/branch/main/badge.svg"></a>
@@ -24,6 +25,7 @@
 <a href="https://www.rust-lang.org/"><img alt="Rust" src="https://img.shields.io/badge/Rust-000000?logo=rust&logoColor=white"></a>
 <a href="https://tauri.app/"><img alt="Tauri" src="https://img.shields.io/badge/Tauri-FFC131?logo=tauri&logoColor=white"></a>
 <a href="https://github.com/astral-sh/uv"><img alt="uv" src="https://img.shields.io/badge/managed%20by-uv-261230.svg"></a>
+<a href="https://www.docker.com/"><img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white"></a>
 
 <p>
   <a href="#overview"><strong>Overview</strong></a> |

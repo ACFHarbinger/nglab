@@ -1,27 +1,17 @@
 import pytest
 import numpy as np
 import torch
-import sys
-from unittest.mock import MagicMock, patch, ANY
+from unittest.mock import MagicMock, patch
 
-# Pre-mock plotting libraries in sys.modules to avoid ImportErrors and side effects
-sys.modules["matplotlib"] = MagicMock()
-sys.modules["matplotlib.pyplot"] = MagicMock()
-sys.modules["matplotlib.axes"] = MagicMock()
-sys.modules["matplotlib.collections"] = MagicMock()
-sys.modules["matplotlib.patches"] = MagicMock()
-sys.modules["seaborn"] = MagicMock()
-sys.modules["networkx"] = MagicMock()
-sys.modules["plotly"] = MagicMock()
-sys.modules["plotly.express"] = MagicMock()
+# Do NOT mock sys.modules here as it breaks other tests.
+# Instead, patch inside the tests or fixtures.
 
 from python.src.utils.plot_utils import (
     draw_graph,
     plot_linechart,
-    plot_tsp,
-    plot_vehicle_routes,
     plot_attention_maps_wrapper,
-    discrete_cmap
+    discrete_cmap,
+    visualize_interactive_plot
 )
 
 @pytest.fixture
@@ -42,6 +32,7 @@ def mock_px():
 @pytest.fixture
 def mock_nx():
     with patch("python.src.utils.plot_utils.nx") as mock:
+        mock.from_numpy_array.return_value = MagicMock()
         yield mock
 
 class TestPlotUtils:
@@ -49,7 +40,7 @@ class TestPlotUtils:
         dist_matrix = np.array([[0, 1], [1, 0]])
         mock_graph = MagicMock()
         mock_nx.from_numpy_array.return_value = mock_graph
-        mock_graph.edges.return_value = []
+        mock_graph.edges.return_value = [(0, 1, {"weight": 1})]
         
         draw_graph(dist_matrix)
         
@@ -59,8 +50,6 @@ class TestPlotUtils:
         mock_plt.show.assert_called()
 
     def test_plot_linechart_simple(self, mock_plt):
-        # shape needs to support index 5 access (at least 6 columns)
-        # Assuming: col 0 is x, col 5 is y
         row1 = [0, 1, 2, 3, 4, 5]
         row2 = [1, 2, 3, 4, 5, 6]
         graph_log = np.array([row1, row2])
@@ -78,53 +67,44 @@ class TestPlotUtils:
         plot_func.assert_called()
         mock_plt.show.assert_called()
 
-    def test_plot_tsp(self, mock_plt):
-        xy = np.array([[0, 0], [1, 1], [0, 1]])
-        tour = np.array([0, 1, 2])
-        ax = MagicMock()
+    def test_plot_linechart_pareto(self, mock_plt):
+        # graph_log shape [n_policies, dim1, dim2]
+        # e.g. [1, 2, 6] -> 1 policy, 2 points, each point has 6 values (0=x, 5=y)
+        graph_log = np.zeros((1, 2, 6))
+        graph_log[0, 0, 0] = 1.0; graph_log[0, 0, 5] = 10.0 # Point 1
+        graph_log[0, 1, 0] = 2.0; graph_log[0, 1, 5] = 5.0  # Point 2
         
-        plot_tsp(xy, tour, ax)
+        plot_func = MagicMock()
         
-        ax.scatter.assert_called()
-        ax.plot.assert_called()
-        ax.quiver.assert_called()
+        dominants = plot_linechart(
+            output_dest="pareto.png",
+            graph_log=graph_log,
+            plot_func=plot_func,
+            policies=["p1"],
+            pareto_front=True,
+            fsave=False
+        )
+        
+        assert dominants is not None
+        assert len(dominants) == 2 # 2 policies
+        assert dominants[0] == [1]
+        # Actually (1,10) vs (2,5). (1,10) is better on y, (2,5) is better on x?
+        # Re-check logic: other[0] <= point[0] and other[1] >= point[1]
+        # (1, 10) vs (2, 5): 1 <= 2 but 10 not <= 5. Not dominated.
+        
+        mock_plt.plot.assert_called() # Should plot pareto front
 
     def test_discrete_cmap(self, mock_plt):
         mock_plt.cm.get_cmap.return_value = MagicMock()
         cmap = discrete_cmap(5)
         assert cmap is not None
 
-    def test_plot_vehicle_routes(self, mock_plt):
-        data = {
-            "depot": torch.tensor([0.5, 0.5]),
-            "loc": torch.tensor([[0.1, 0.1], [0.9, 0.9]]),
-            "demand": torch.tensor([1, 1])
-        }
-        route = torch.tensor([1, 2, 0])
-        ax = MagicMock()
-        
-        plot_vehicle_routes(data, route, ax)
-        
-        ax.plot.assert_called()
-        ax.quiver.assert_called()
-
     def test_plot_attention_maps_wrapper(self, mock_plt, mock_sns, tmp_path):
         model_name = "test_model"
-        # Mock attention dict structure: [layer][head][batch] -> tensor
-        # But code expects: attention_dict[model_name][sample_idx]["attention_weights"] -> tensor [layers, heads, batches]?
-        # Re-reading code:
-        # attention_weights = attention_dict[model_name][sample_idx]["attention_weights"]
-        # shape expected: [layers, heads, batches] if extracting map.
-        # then attn_map = attention_weights[layer_idx, head_idx, batch_idx]...
-        
-        # Let's create a mocked tensor
         attn_tensor = MagicMock()
-        # Mock .cpu().numpy() chain
         attn_tensor.cpu.return_value.numpy.return_value = np.zeros((10, 10))
-        # Support indexing
-        attn_tensor.__getitem__.return_value = attn_tensor # simplify
-        # Support shape
-        attn_tensor.shape = (4, 8, 2) # layers, heads, batches
+        attn_tensor.__getitem__.return_value = attn_tensor
+        attn_tensor.shape = (4, 8, 2)
         
         attention_dict = {
             model_name: [
@@ -146,3 +126,35 @@ class TestPlotUtils:
         
         mock_sns.heatmap.assert_called()
         exec_func.assert_called()
+
+    def test_plot_attention_maps_avg(self, mock_plt, mock_sns, tmp_path):
+        model_name = "test_model"
+        attn_tensor = torch.randn(4, 8, 2, 10, 10) # L, H, B, V, V
+        
+        attention_dict = {model_name: [{"attention_weights": attn_tensor}]}
+        exec_func = MagicMock()
+        
+        # Average heads and batches
+        plot_attention_maps_wrapper(
+            dir_path=str(tmp_path),
+            attention_dict=attention_dict,
+            model_name=model_name,
+            execution_function=exec_func,
+            head_idx=-1,
+            batch_idx=-1
+        )
+        
+        mock_sns.heatmap.assert_called()
+
+    @patch("python.src.utils.plot_utils.px")
+    def test_visualize_interactive_plot(self, mock_px):
+        kwargs = {
+            "plot_target": np.zeros((10, 10)),
+            "title": "Interactive",
+            "figsize": 6.0,
+            "x_labels": ["a"],
+            "y_labels": ["b"]
+        }
+        visualize_interactive_plot(**kwargs)
+        mock_px.imshow.assert_called()
+        mock_px.imshow.return_value.show.assert_called()

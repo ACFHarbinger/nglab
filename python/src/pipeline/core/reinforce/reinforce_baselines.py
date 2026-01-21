@@ -13,7 +13,8 @@ import torch
 import torch.nn.functional as F  # noqa: N812
 from scipy.stats import ttest_rel
 from torch.utils.data import Dataset
-from utils.ARP_HADRL.train import get_inner_model, rollout
+from python.src.pipeline.train import rollout
+from python.src.utils.functions.model_utils import get_inner_model
 
 
 # Attention, Learn to Solve Routing Problems and Heterogeneous Attentions for Solving PDP via DRL

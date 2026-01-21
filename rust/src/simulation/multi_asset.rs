@@ -1,5 +1,4 @@
-#[cfg(feature = "python")]
-use crate::errors::ArenaError;
+use crate::errors::{ArenaError, ArenaResult};
 use crate::simulation::gym::ActionType;
 use crate::simulation::orderbook::{OrderBook, Side, Trade};
 use crate::simulation::risk::{RiskManager, RiskStatus};
@@ -14,8 +13,6 @@ use rand::Rng;
 use rand::SeedableRng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-
-use crate::errors::ArenaResult;
 
 #[cfg_attr(feature = "python", pyclass)]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -43,10 +40,6 @@ pub struct MultiAssetStepResult {
     pub info: HashMap<String, f64>,
 }
 
-// We reuse ActionType, StepInfo, ObservationBuffer from gym (or redefine if needed)
-// ActionType is generic enough.
-// StepInfo is generic enough but might need per-asset breakdown.
-
 #[cfg_attr(feature = "python", pyclass)]
 pub struct MultiAssetEnv {
     assets: Vec<String>,
@@ -60,7 +53,6 @@ pub struct MultiAssetEnv {
     lookback: usize,
     max_steps: usize,
     total_steps: u64,
-    // num_features per asset
     features_per_asset: usize,
     rng: StdRng,
     algo_orders: Vec<AlgoOrder>,
@@ -107,7 +99,7 @@ impl MultiAssetEnv {
             lookback,
             max_steps,
             total_steps: 0,
-            features_per_asset: 6, // price, return, vol, imb, pos, padding
+            features_per_asset: 6,
             rng,
             algo_orders: Vec::new(),
             risk_manager: RiskManager::with_defaults(initial_capital),
@@ -160,7 +152,6 @@ impl MultiAssetEnv {
     pub fn step_native(&mut self, actions: Vec<i32>) -> ArenaResult<MultiAssetStepResult> {
         let prev_val = self.portfolio_value();
 
-        // Execute actions per asset
         for (i, &action_idx) in actions.iter().enumerate() {
             if i >= self.assets.len() {
                 break;
@@ -168,12 +159,10 @@ impl MultiAssetEnv {
             let action = ActionType::from(action_idx);
             let asset_name = self.assets[i].clone();
 
-            // Seed orderbook from tape price if empty
             if let Some(price_vec) = self.prices.get(&asset_name) {
                 if let Some(&price) = price_vec.get(self.current_step) {
                     self.seed_orderbook(&asset_name, price)?;
 
-                    // Trigger advanced orders if any
                     if let Some(ob) = self.orderbooks.get_mut(&asset_name) {
                         ob.check_triggers(price);
                     }
@@ -183,7 +172,6 @@ impl MultiAssetEnv {
             self.execute_asset_action(i, action)?;
         }
 
-        // Process Algo Orders
         self.process_algo_orders()?;
 
         self.current_step += 1;
@@ -200,7 +188,6 @@ impl MultiAssetEnv {
         let terminated = new_val <= 0.0;
         let truncated = self.total_steps as usize >= self.max_steps;
 
-        // Update risk manager
         self.risk_manager.update(new_val);
 
         let obs_data = self.generate_observation_data()?;
@@ -228,7 +215,6 @@ impl MultiAssetEnv {
     }
 }
 
-// Python bindings
 #[cfg(feature = "python")]
 #[pymethods]
 impl MultiAssetEnv {
@@ -267,7 +253,9 @@ impl MultiAssetEnv {
         let total_features = self.assets.len() * self.features_per_asset;
 
         let obs_array = ndarray::Array2::from_shape_vec((self.lookback, total_features), obs_data)
-            .map_err(|e| ArenaError::DataLoading(format!("Invalid shape: {}", e)))?;
+            .map_err(|e| {
+                pyo3::exceptions::PyRuntimeError::new_err(format!("Invalid shape: {}", e))
+            })?;
 
         let info = PyDict::new(py);
         for (k, v) in info_map {
@@ -276,19 +264,22 @@ impl MultiAssetEnv {
         Ok((obs_array.to_pyarray(py), info.into()))
     }
 
-    // Actions: List of integers (one per asset)
     #[allow(clippy::type_complexity)]
     pub fn step<'py>(
         &mut self,
         py: Python<'py>,
         actions: Vec<i32>,
     ) -> PyResult<(Bound<'py, PyArray2<f64>>, f64, bool, bool, Py<PyAny>)> {
-        let step_res = self.step_native(actions)?;
+        let step_res = self
+            .step_native(actions)
+            .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(format!("{:?}", e)))?;
         let total_features = self.assets.len() * self.features_per_asset;
 
         let obs_array =
             ndarray::Array2::from_shape_vec((self.lookback, total_features), step_res.obs)
-                .map_err(|e| ArenaError::DataLoading(format!("Invalid shape: {}", e)))?;
+                .map_err(|e| {
+                    pyo3::exceptions::PyRuntimeError::new_err(format!("Invalid shape: {}", e))
+                })?;
 
         let info = PyDict::new(py);
         for (k, v) in step_res.info {
@@ -309,7 +300,6 @@ impl MultiAssetEnv {
     fn seed_orderbook(&mut self, asset: &str, price: f64) -> ArenaResult<()> {
         if let Some(ob) = self.orderbooks.get_mut(asset) {
             if ob.best_bid().is_none() {
-                // Add synthetic liquidity around the tape price (0.1% spread)
                 let spread = price * 0.001;
                 ob.submit_limit_order(price - spread / 2.0, 1000.0, Side::Bid)?;
                 ob.submit_limit_order(price + spread / 2.0, 1000.0, Side::Ask)?;
@@ -334,7 +324,6 @@ impl MultiAssetEnv {
                     ArenaError::InternalError(format!("OrderBook for {} not found", asset_name))
                 })?;
 
-                // Estimate shares from tape price
                 let price = self
                     .prices
                     .get(&asset_name)
@@ -342,7 +331,6 @@ impl MultiAssetEnv {
                     .cloned()
                     .unwrap_or(1.0);
 
-                // Add some stochastic slippage (0-0.1%)
                 let slippage = self.rng.random_range(0.0..0.001);
                 let effective_price = price * (1.0 + slippage);
 
@@ -370,7 +358,6 @@ impl MultiAssetEnv {
                         .cloned()
                         .unwrap_or(1.0);
 
-                    // Add some stochastic slippage (0-0.1%)
                     let slippage = self.rng.random_range(0.0..0.001);
                     let effective_price = price * (1.0 - slippage);
                     let target_shares = (trade_size_usd / effective_price).min(pos);
@@ -389,7 +376,6 @@ impl MultiAssetEnv {
             let fee = cost * self.transaction_cost;
             match trade.side {
                 Side::Bid => {
-                    // Taker was Bid, so we are Buying
                     if self.cash >= cost + fee {
                         self.cash -= cost + fee;
                         *self.positions.get_mut(asset).ok_or_else(|| {
@@ -401,7 +387,6 @@ impl MultiAssetEnv {
                     }
                 }
                 Side::Ask => {
-                    // Taker was Ask, so we are Selling
                     self.cash += cost - fee;
                     *self.positions.get_mut(asset).ok_or_else(|| {
                         ArenaError::InternalError(format!("Asset {} not found in positions", asset))
@@ -417,7 +402,6 @@ impl MultiAssetEnv {
         let mut all_completed = Vec::new();
         let mut trades_to_apply = Vec::new();
 
-        // We iterate and slice
         for (i, algo) in self.algo_orders.iter_mut().enumerate() {
             if current_step < algo.start_step {
                 continue;
@@ -452,12 +436,10 @@ impl MultiAssetEnv {
             }
         }
 
-        // Apply trades outside the loop to avoid borrow conflict
         for (asset, trades) in trades_to_apply {
             self.apply_trades(&asset, trades)?;
         }
 
-        // Remove completed
         for &idx in all_completed.iter().rev() {
             self.algo_orders.remove(idx);
         }
@@ -505,10 +487,8 @@ impl MultiAssetEnv {
                 })?;
                 let price = *price_series.get(step_idx).unwrap_or(&0.0);
 
-                // 1. Price (raw for now, normalize in Python)
                 data[idx] = price;
 
-                // 2. Log Return
                 if step_idx > 0 {
                     let prev_price = *price_series.get(step_idx - 1).unwrap_or(&price);
                     data[idx + 1] = (price / prev_price.max(1e-6)).ln();
@@ -516,7 +496,6 @@ impl MultiAssetEnv {
                     data[idx + 1] = 0.0;
                 }
 
-                // 3. Volatility (Simple 20-period standard deviation approx)
                 if step_idx >= 20 {
                     let slice = &price_series[step_idx - 20..=step_idx];
                     let mean = slice.iter().sum::<f64>() / 21.0;
@@ -526,13 +505,10 @@ impl MultiAssetEnv {
                     data[idx + 2] = 0.0;
                 }
 
-                // 4. Orderbook Imbalance
                 if let Some(ob) = self.orderbooks.get(asset) {
                     data[idx + 3] = ob.imbalance();
                 }
 
-                // 5. Normalized Position
-                // (Current shares * current price) / portfolio value
                 let p_val = self.portfolio_value();
                 if p_val > 0.0 {
                     let pos_shares = *self.positions.get(asset).ok_or_else(|| {
@@ -541,7 +517,6 @@ impl MultiAssetEnv {
                     data[idx + 4] = (pos_shares * price) / p_val;
                 }
 
-                // 6. Padding/Reserved
                 data[idx + 5] = 0.0;
             }
         }
@@ -564,13 +539,11 @@ mod tests {
         env.load_prices("BTC".to_string(), btc_prices);
         env.load_prices("ETH".to_string(), eth_prices);
 
-        // Reset
         let (obs, info) = env.reset_native(None).unwrap();
-        assert_eq!(obs.len(), 10 * 2 * 6); // lookback * assets * features
+        assert_eq!(obs.len(), 10 * 2 * 6);
         assert_eq!(*info.get("portfolio_value").unwrap(), 10000.0);
 
-        // Step: Buy BTC, Buy ETH
-        let step_res = env.step_native(vec![1, 1]).unwrap(); // Buy, Buy
+        let step_res = env.step_native(vec![1, 1]).unwrap();
 
         assert!(!step_res.terminated);
         assert!(!step_res.truncated);
@@ -580,8 +553,6 @@ mod tests {
         assert!(*step_res.info.get("cash").unwrap() < 10000.0);
         assert!(env.positions.get("BTC").unwrap() > &0.0);
         assert!(env.positions.get("ETH").unwrap() > &0.0);
-
-        // Check features
     }
 
     #[test]
@@ -591,7 +562,6 @@ mod tests {
         env.load_prices("BTC".to_string(), vec![100.0; 200]);
         env.reset_native(None).unwrap();
 
-        // Submit TWAP order: Buy 10 BTC over 5 steps
         let start = env.current_step;
         env.algo_orders.push(AlgoOrder {
             asset: "BTC".to_string(),
@@ -603,9 +573,8 @@ mod tests {
             algo_type: AlgoType::TWAP,
         });
 
-        // 5 steps should execute 2 BTC each (ideally)
         for _ in 0..5 {
-            env.step_native(vec![0]).unwrap(); // Hold, but algo should execute
+            env.step_native(vec![0]).unwrap();
         }
 
         assert_eq!(*env.positions.get("BTC").unwrap(), 10.0);
@@ -616,32 +585,25 @@ mod tests {
     fn test_risk_integration() {
         let mut env = MultiAssetEnv::new(vec!["BTC".to_string()], 100_000.0, 0.0, 1, 100, None);
         env.load_prices("BTC".to_string(), vec![100.0, 100.0, 1.0, 1.0]);
-        env.reset_native(None).unwrap(); // current_step = 1
+        env.reset_native(None).unwrap();
 
-        // Step 1: Seed book and Buy BTC to get exposure (at price 100.0)
         env.seed_orderbook("BTC", 100.0).unwrap();
         for _ in 0..10 {
-            env.execute_asset_action(0, ActionType::Buy).unwrap(); // 10 * 5% = 50% exposure
+            env.execute_asset_action(0, ActionType::Buy).unwrap();
         }
 
-        env.step_native(vec![0]).unwrap(); // Advances to step 2 (price 1.0)
+        env.step_native(vec![0]).unwrap();
 
         let status = env.risk_status();
-        // 50% exposure * 99% drop ~= 49.5% drawdown
         assert!(status.current_drawdown >= 0.15);
         assert!(status.drawdown_breached);
         assert!(status.position_multiplier < 1.0);
 
-        // Step 2: Try to Buy with reduced multiplier
-        // Default buy is initial_capital * 0.05 = 5000 USD
-        // multiplier should be 0.25 (see risk.rs) -> 1250 USD
         env.execute_asset_action(0, ActionType::Buy).unwrap();
 
         let cash_before = env.cash;
-        // Step 2: Try to Buy with reduced multiplier (should be 0)
         env.execute_asset_action(0, ActionType::Buy).unwrap();
 
-        // Multiplier should be 0, so cash should be unchanged
         assert_eq!(env.cash, cash_before);
     }
 }

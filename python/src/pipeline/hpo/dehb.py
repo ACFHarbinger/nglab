@@ -1413,6 +1413,7 @@ class DEHB(DifferentialEvolutionHyperband):
         assert min_budget is not None, "Please set a minimum budget per run"
         assert max_budget is not None, "Please set a maximum budget per run"
 
+        n_workers = kwargs.pop("n_workers", 1)
         # Initialize the base DEHB class
         super().__init__(
             cs=cs,
@@ -1421,15 +1422,15 @@ class DEHB(DifferentialEvolutionHyperband):
             mutation_factor=mutation_factor,
             crossover_prob=crossover_prob,
             strategy=strategy,
-            min_budget=min_budget,
-            max_budget=max_budget,
+            min_fidelity=min_budget,
+            max_fidelity=max_budget,
             eta=eta,
             min_clip=min_clip,
             max_clip=max_clip,
             configspace=configspace,
             boundary_fix_type=boundary_fix_type,
             max_age=max_age,
-            n_workers=1,  # Overridden by n_jobs
+            n_workers=n_workers,
             client=None,  # No Dask client
             async_strategy=async_strategy,
             **kwargs,

@@ -16,9 +16,12 @@ pub fn init_logging(log_level: &str) -> Result<(), Box<dyn std::error::Error>> {
     let file_appender = tracing_appender::rolling::daily("./logs", "nglab.log");
 
     // Setup OpenTelemetry OTLP Exporter
+    let endpoint = std::env::var("OTEL_EXPORTER_OTLP_ENDPOINT")
+        .unwrap_or_else(|_| "http://localhost:4317".to_string());
+
     let exporter = opentelemetry_otlp::SpanExporter::builder()
         .with_tonic()
-        .with_endpoint("http://localhost:4317")
+        .with_endpoint(endpoint)
         .build()?;
 
     let provider = sdktrace::TracerProvider::builder()

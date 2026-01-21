@@ -9,6 +9,9 @@ services:
       - "8000:8000"
     environment:
       - NGLAB_ENV=production
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+    depends_on:
+      - jaeger
     volumes:
       - ./logs:/app/logs
       - ./models:/app/models

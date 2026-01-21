@@ -172,6 +172,11 @@ class BackgroundPrefetcher:
             self._stop_event.set()
             if self._thread is not None:
                 self._thread.join(timeout=1.0)
+            
+            # Check for exceptions again
+            if self._exception is not None:
+                raise self._exception
+
             raise StopIteration
 
         return item

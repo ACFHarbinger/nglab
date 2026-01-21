@@ -106,7 +106,7 @@ class DiffusionUNet1D(nn.Module):
         self.downs = nn.ModuleList([])
         channels = hidden_dim
         for scale in layers:
-            out_channels = channels * scale
+            out_channels = hidden_dim * scale
             self.downs.append(
                 nn.ModuleList(
                     [

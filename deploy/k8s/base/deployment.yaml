@@ -47,7 +47,7 @@ spec:
             - name: NGLAB_REDIS_HOST
               value: "redis-service"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "http://jaeger-collector:4317"
+              value: "http://jaeger:4317"
           resources:
             requests:
               cpu: "500m"
