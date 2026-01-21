@@ -765,15 +765,401 @@ Cloud Infrastructure
 
 ---
 
+## 15. Error Handling Patterns
+
+### 15.1 Rust Error Handling
+
+We use a custom error enum for type-safe error handling:
+
+```rust
+#[derive(Debug, thiserror::Error)]
+pub enum ArenaError {
+    #[error("Invalid order: {0}")]
+    InvalidOrder(String),
+    
+    #[error("Insufficient funds: required {required}, available {available}")]
+    InsufficientFunds { required: f64, available: f64 },
+    
+    #[error("Order not found: {order_id}")]
+    OrderNotFound { order_id: u64 },
+    
+    #[error("Market closed")]
+    MarketClosed,
+    
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+}
+```
+
+**Error Propagation:**
+```rust
+pub fn execute_trade(&mut self, order: Order) -> Result<Trade, ArenaError> {
+    self.validate_order(&order)?;  // Propagate validation errors
+    self.check_funds(&order)?;     // Propagate fund errors
+    
+    let trade = self.match_order(order)?;
+    Ok(trade)
+}
+```
+
+### 15.2 Python Error Handling
+
+Custom exception hierarchy:
+
+```python
+class NGLabError(Exception):
+    """Base exception for NGLab."""
+    pass
+
+class ConfigurationError(NGLabError):
+    """Invalid configuration."""
+    pass
+
+class TrainingError(NGLabError):
+    """Training pipeline failure."""
+    pass
+
+class ModelError(NGLabError):
+    """Model inference/loading error."""
+    pass
+```
+
+### 15.3 Cross-Language Error Mapping
+
+PyO3 automatically converts Rust errors to Python exceptions:
+
+```rust
+#[pymethods]
+impl TradingEnv {
+    fn step(&mut self, action: i32) -> PyResult<StepResult> {
+        self.inner_step(action)
+            .map_err(|e| PyRuntimeError::new_err(e.to_string()))
+    }
+}
+```
+
+---
+
+## 16. Observability & Monitoring
+
+### 16.1 Metrics Stack
+
+```mermaid
+graph LR
+    App[NGLab App] --> OTel[OpenTelemetry Collector]
+    OTel --> Prometheus[Prometheus]
+    OTel --> Jaeger[Jaeger]
+    Prometheus --> Grafana[Grafana]
+    Jaeger --> Grafana
+```
+
+### 16.2 Key Metrics
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `nglab_orders_total` | Counter | Total orders processed |
+| `nglab_order_latency_ms` | Histogram | Order processing latency |
+| `nglab_portfolio_value` | Gauge | Current portfolio value |
+| `nglab_position` | Gauge | Current position size |
+| `nglab_training_loss` | Gauge | Current training loss |
+| `nglab_training_reward` | Gauge | Episode reward |
+
+### 16.3 Tracing
+
+We use OpenTelemetry for distributed tracing:
+
+```rust
+use tracing::{instrument, info_span};
+
+#[instrument(skip(self))]
+pub fn step(&mut self, action: i32) -> Result<StepResult, ArenaError> {
+    let _span = info_span!("execute_action", action = action).entered();
+    // ...
+}
+```
+
+### 16.4 Logging Configuration
+
+```yaml
+# config/logging.yaml
+version: 1
+disable_existing_loggers: false
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+  file:
+    class: logging.FileHandler
+    filename: logs/nglab.log
+    level: DEBUG
+
+loggers:
+  nglab:
+    level: DEBUG
+    handlers: [console, file]
+```
+
+---
+
+## 17. Database Schema
+
+### 17.1 SQLite Schema (markets.db)
+
+```sql
+-- Market definitions
+CREATE TABLE markets (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMP,
+    outcome BOOLEAN
+);
+
+-- Price history
+CREATE TABLE price_ticks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    market_id TEXT NOT NULL,
+    timestamp TIMESTAMP NOT NULL,
+    yes_price REAL NOT NULL,
+    no_price REAL NOT NULL,
+    volume REAL,
+    FOREIGN KEY (market_id) REFERENCES markets(id)
+);
+
+-- Index for time-series queries
+CREATE INDEX idx_price_ticks_market_time 
+ON price_ticks(market_id, timestamp);
+
+-- Agent positions
+CREATE TABLE positions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent_id TEXT NOT NULL,
+    market_id TEXT NOT NULL,
+    position_type TEXT CHECK(position_type IN ('yes', 'no')),
+    quantity REAL NOT NULL,
+    avg_price REAL NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 17.2 Model Registry (MLflow)
+
+| Table | Purpose |
+|-------|---------|
+| `experiments` | Experiment metadata |
+| `runs` | Individual training runs |
+| `metrics` | Training metrics (loss, reward) |
+| `params` | Hyperparameters |
+| `artifacts` | Model checkpoints |
+
+---
+
+## 18. Configuration Reference
+
+### 18.1 Hydra Configuration Structure
+
+```yaml
+# config.yaml
+defaults:
+  - _self_
+  - model: mamba
+  - env: trading
+  - algorithm: ppo
+
+# Environment settings
+env:
+  initial_cash: 100000.0
+  transaction_cost: 0.001
+  lookback_window: 50
+  max_steps: 10000
+
+# Training settings
+training:
+  batch_size: 256
+  learning_rate: 3e-4
+  num_envs: 16
+  total_steps: 1000000
+  checkpoint_interval: 10000
+
+# Logging
+logging:
+  level: INFO
+  wandb:
+    enabled: true
+    project: nglab
+    entity: your-team
+```
+
+### 18.2 Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `NGLAB_LOG_LEVEL` | Logging verbosity | `INFO` |
+| `NGLAB_DATA_DIR` | Data storage path | `./data` |
+| `NGLAB_CACHE_DIR` | Cache directory | `./cache` |
+| `CUDA_VISIBLE_DEVICES` | GPU selection | All |
+| `WANDB_API_KEY` | W&B authentication | - |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | OpenTelemetry endpoint | `localhost:4317` |
+
+---
+
+## 19. API Contracts
+
+### 19.1 Rust-Python Interface
+
+```rust
+/// TradingEnv is exposed to Python via PyO3
+#[pyclass]
+pub struct TradingEnv { ... }
+
+#[pymethods]
+impl TradingEnv {
+    /// Create a new trading environment
+    #[new]
+    fn new(initial_cash: f64, lookback_window: usize, transaction_cost: f64) -> Self;
+    
+    /// Reset the environment
+    fn reset(&mut self, seed: Option<u64>) -> (Py<PyArray1<f64>>, PyObject);
+    
+    /// Take a step in the environment
+    fn step(&mut self, action: i32) -> PyResult<StepResult>;
+    
+    /// Get current portfolio value
+    #[getter]
+    fn portfolio_value(&self) -> f64;
+}
+```
+
+### 19.2 Tauri Command Interface
+
+```typescript
+// Frontend → Backend Commands
+interface TauriCommands {
+  start_arena(): Promise<void>;
+  stop_arena(): Promise<void>;
+  get_orderbook(): Promise<OrderBook>;
+  submit_order(order: OrderRequest): Promise<OrderResult>;
+  get_config(): Promise<Config>;
+  set_config(config: Partial<Config>): Promise<void>;
+}
+
+// Backend → Frontend Events
+interface TauriEvents {
+  'arena-update': ArenaUpdate;
+  'trade-executed': TradeEvent;
+  'error': ErrorEvent;
+  'log': LogEvent;
+}
+```
+
+### 19.3 REST API (Planned)
+
+```yaml
+openapi: 3.0.0
+info:
+  title: NGLab API
+  version: 1.0.0
+
+paths:
+  /api/v1/arena/start:
+    post:
+      summary: Start simulation
+      responses:
+        200:
+          description: Arena started
+  
+  /api/v1/arena/step:
+    post:
+      summary: Execute a step
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: integer
+      responses:
+        200:
+          description: Step result
+  
+  /api/v1/models:
+    get:
+      summary: List available models
+    post:
+      summary: Upload a new model
+```
+
+---
+
+## 20. Dependency Graph
+
+```mermaid
+graph TB
+    subgraph Rust
+        R1[orderbook.rs]
+        R2[gym.rs]
+        R3[risk.rs]
+        R4[polymarket.rs]
+        R2 --> R1
+        R2 --> R3
+    end
+    
+    subgraph Python
+        P1[models/]
+        P2[pipeline/]
+        P3[agents/]
+        P2 --> P1
+        P3 --> P2
+    end
+    
+    subgraph TypeScript
+        T1[hooks/]
+        T2[components/]
+        T2 --> T1
+    end
+    
+    P3 --> R2
+    T1 --> R2
+```
+
+---
+
 ## Related Documentation
 
 - [CLAUDE.md](CLAUDE.md) - Tech stack overview
-- [IMPROVEMENT_PLAN.md](IMPROVEMENTS.md) - Development roadmap
+- [GEMINI.md](GEMINI.md) - Agent memory file
+- [TUTORIAL.md](TUTORIAL.md) - Developer encyclopedia
+- [AGENTS.md](AGENTS.md) - Agent taxonomy and policies
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues and fixes
+- [IMPROVEMENTS.md](IMPROVEMENTS.md) - Development roadmap
 - [README.md](README.md) - Getting started
 
 ---
 
+## Changelog
+
+### Version 2.2.0 (Current)
+- Added Error Handling Patterns section
+- Added Observability & Monitoring with metrics definitions
+- Added Database Schema documentation
+- Added Configuration Reference
+- Added API Contracts for all interfaces
+- Added Dependency Graph visualization
+
+### Version 2.1.0
+- Added System Context Diagram
+- Added Directory Structure Map
+- Added Data Flow Specification with Mermaid diagrams
+
+### Version 2.0.0
+- Initial architecture document
+
+---
+
 **Last Updated:** 2026-01-21
-**Version:** 2.1.0 (The Omnibus Edition + Code Snippets + Diagrams)
+**Version:** 2.2.0 (The Complete System Blueprint)
 **Maintainer:** NGLab Team

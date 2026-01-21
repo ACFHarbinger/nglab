@@ -378,23 +378,282 @@ We use **OpenTelemetry**. Each simulation step is tracked as a "Span". If the la
 
 ---
 
-## 12. Glossary of Terms
+## 12. Advanced Topics
 
--   **Alpha**: Edge/Strategy generating excess returns.
--   **Arena**: The global simulation container.
--   **CLOB**: Central Limit Order Book.
--   **CTF**: Conditional Token Framework (Splitting collateral into outcome tokens).
--   **DEHB**: Differential Evolution Hyperband (Optimization algorithm).
--   **Drift**: Price movement away from the mean.
--   **Greeks**: Derivatives representing option risk (Delta, Gamma, Vega).
--   **Hydra**: Python configuration management.
--   **Mamba**: State Space Model architecture.
--   **Maturin**: Rust-Python build tool.
--   **Polymarket**: Prediction market using binary outcome tokens.
--   **PyO3**: Rust-Python bindings.
--   **Tauri**: Rust-based Electron alternative for the GUI.
--   **TorchRL**: PyTorch-based RL library.
--   **VaR**: Value at Risk (MaxProbableLoss).
+### 12.1 Distributed Training with Ray
+
+For large-scale experiments, we support distributed training using Ray:
+
+```python
+import ray
+from ray import tune
+from nglab.pipeline import train_agent
+
+ray.init()
+
+analysis = tune.run(
+    train_agent,
+    config={
+        "learning_rate": tune.loguniform(1e-5, 1e-2),
+        "entropy_coef": tune.uniform(0.0, 0.1),
+        "num_envs": tune.choice([8, 16, 32]),
+    },
+    num_samples=50,
+    resources_per_trial={"cpu": 4, "gpu": 1},
+)
+
+best_config = analysis.best_config
+```
+
+### 12.2 Multi-Agent Reinforcement Learning
+
+NGLab supports multi-agent scenarios where multiple agents compete in the same arena:
+
+```python
+from nglab.env import MultiAgentArena
+from nglab.agents import PPOAgent, SACAgent
+
+arena = MultiAgentArena(num_agents=4)
+agents = [
+    PPOAgent("market_maker_1"),
+    PPOAgent("market_maker_2"),
+    SACAgent("trend_follower"),
+    RandomAgent("noise_trader"),
+]
+
+for episode in range(1000):
+    obs = arena.reset()
+    done = False
+    while not done:
+        actions = {agent.name: agent.act(obs[agent.name]) for agent in agents}
+        obs, rewards, dones, infos = arena.step(actions)
+        done = all(dones.values())
+```
+
+### 12.3 Custom Reward Shaping
+
+Defining custom reward functions for specific trading objectives:
+
+```python
+from nglab.rewards import RewardFunction
+
+class SharpeReward(RewardFunction):
+    def __init__(self, window: int = 100):
+        self.returns_buffer = deque(maxlen=window)
+    
+    def compute(self, portfolio_value: float, prev_value: float) -> float:
+        ret = (portfolio_value - prev_value) / prev_value
+        self.returns_buffer.append(ret)
+        
+        if len(self.returns_buffer) < 10:
+            return ret
+        
+        mean_ret = np.mean(self.returns_buffer)
+        std_ret = np.std(self.returns_buffer) + 1e-8
+        return mean_ret / std_ret
+```
+
+### 12.4 Model Ensembling
+
+Combining multiple models for robust predictions:
+
+```python
+from nglab.ensembles import EnsembleModel
+
+models = [
+    TSMamba(config1),
+    NSTransformer(config2),
+    LSTM(config3),
+]
+
+ensemble = EnsembleModel(
+    models=models,
+    aggregation="weighted_average",
+    weights=[0.5, 0.3, 0.2],
+)
+
+prediction = ensemble.predict(observation)
+```
+
+### 12.5 Backtesting Framework
+
+Running historical backtests with realistic market impact:
+
+```python
+from nglab.backtest import Backtester, SlippageModel
+
+backtester = Backtester(
+    data_path="data/btc_2023.csv",
+    initial_capital=100000,
+    slippage=SlippageModel(base_bps=1, volume_impact=0.1),
+    transaction_cost=0.001,
+)
+
+results = backtester.run(agent)
+print(f"Sharpe Ratio: {results.sharpe_ratio:.2f}")
+print(f"Max Drawdown: {results.max_drawdown:.2%}")
+print(f"Total Return: {results.total_return:.2%}")
+```
+
+---
+
+## 13. Debugging Guide
+
+### 13.1 Common Issues and Solutions
+
+| Issue | Symptom | Solution |
+|-------|---------|----------|
+| Agent not learning | Reward stays flat | Check observation normalization |
+| Memory leak | RAM grows continuously | Clear replay buffer, use bounded buffers |
+| NaN in loss | Training crashes | Add gradient clipping, check for div by zero |
+| Slow steps | >10ms per step | Profile with `samply`, reduce Python overhead |
+| GPU idle | 0% utilization | Increase batch size or num_envs |
+
+### 13.2 Debugging Rust-Python Interactions
+
+```python
+# Enable detailed PyO3 logging
+import os
+os.environ["RUST_LOG"] = "debug"
+os.environ["RUST_BACKTRACE"] = "1"
+
+import nglab
+```
+
+### 13.3 Profiling the Training Loop
+
+```python
+import torch.profiler
+
+with torch.profiler.profile(
+    activities=[
+        torch.profiler.ProfilerActivity.CPU,
+        torch.profiler.ProfilerActivity.CUDA,
+    ],
+    record_shapes=True,
+    profile_memory=True,
+) as prof:
+    for step in range(100):
+        agent.train_step(batch)
+
+print(prof.key_averages().table(sort_by="cuda_time_total"))
+```
+
+---
+
+## 14. API Reference
+
+### 14.1 Core Rust Types
+
+```rust
+/// The main trading environment
+pub struct TradingEnv {
+    pub cash: f64,
+    pub position: f64,
+    pub portfolio_value: f64,
+    // ...
+}
+
+impl TradingEnv {
+    pub fn new(config: EnvConfig) -> Self;
+    pub fn reset(&mut self, seed: Option<u64>) -> Observation;
+    pub fn step(&mut self, action: Action) -> StepResult;
+}
+```
+
+### 14.2 Python Model Interface
+
+```python
+class BaseModel(nn.Module):
+    """Base class for all NGLab models."""
+    
+    def forward(self, x: Tensor) -> Tensor:
+        """Forward pass."""
+        raise NotImplementedError
+    
+    def predict(self, x: Tensor) -> Tensor:
+        """Inference mode prediction."""
+        self.eval()
+        with torch.no_grad():
+            return self.forward(x)
+```
+
+### 14.3 TypeScript Hook Interfaces
+
+```typescript
+interface ArenaState {
+  stepInfo: StepInfo;
+  orderBook: OrderBook;
+  priceHistory: number[];
+  isRunning: boolean;
+}
+
+interface UseArenaResult {
+  arenaState: ArenaState;
+  start: () => Promise<void>;
+  stop: () => Promise<void>;
+  reset: () => Promise<void>;
+}
+
+function useArena(): UseArenaResult;
+```
+
+---
+
+## 15. Glossary of Terms
+
+| Term | Definition |
+|------|------------|
+| **Alpha** | Edge/Strategy generating excess returns |
+| **Arena** | The global simulation container |
+| **Backbone** | The neural network architecture (e.g., Mamba, Transformer) |
+| **CLOB** | Central Limit Order Book |
+| **CTF** | Conditional Token Framework (Splitting collateral into outcome tokens) |
+| **DEHB** | Differential Evolution Hyperband (Optimization algorithm) |
+| **Drift** | Price movement away from the mean |
+| **Entropy** | Measure of policy randomness in RL |
+| **Fidelity** | Resource level in multi-fidelity optimization |
+| **Greeks** | Derivatives representing option risk (Delta, Gamma, Vega) |
+| **Hydra** | Python configuration management |
+| **Imbalance** | Ratio of bid to ask volume |
+| **KL Divergence** | Measure of distribution difference in VAE |
+| **Latent Space** | Compressed representation in autoencoders |
+| **LOB** | Limit Order Book |
+| **Mamba** | State Space Model architecture |
+| **Maturin** | Rust-Python build tool |
+| **Observation** | State vector seen by the agent |
+| **Policy** | Mapping from states to actions |
+| **Polymarket** | Prediction market using binary outcome tokens |
+| **PyO3** | Rust-Python bindings |
+| **Replay Buffer** | Storage for experience tuples in off-policy RL |
+| **Reparameterization** | Trick enabling gradient flow through sampling |
+| **Sharpe Ratio** | Risk-adjusted return metric |
+| **Slippage** | Difference between expected and executed price |
+| **SSM** | State Space Model |
+| **Tauri** | Rust-based Electron alternative for the GUI |
+| **TorchRL** | PyTorch-based RL library |
+| **VaR** | Value at Risk (Maximum Probable Loss) |
+| **Vectorized Env** | Multiple parallel environment instances |
+| **Zero-Copy** | Memory sharing without copying data |
+
+---
+
+## 16. Changelog
+
+### Version 2.1 (Current)
+- Added Advanced Topics section with distributed training and multi-agent support
+- Expanded API Reference with Rust, Python, and TypeScript interfaces
+- Added comprehensive Debugging Guide
+- Expanded Glossary to 30+ terms
+
+### Version 2.0
+- Initial "Omnibus Edition" with full cross-language documentation
+- Deep dives into DEHB, Mamba, and VAE architectures
+- Added Code Reference tables
+
+### Version 1.0
+- Basic tutorial structure
+- High-level architecture overview
 
 ---
 

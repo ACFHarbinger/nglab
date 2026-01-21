@@ -539,17 +539,294 @@ nglab/
 
 ## Additional Resources
 
-- **Architecture**: See [CLAUDE.md](CLAUDE.md) for tech stack overview
-- **Improvement Plan**: See [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) for roadmap
+- **Architecture**: See [ARCHITECTURE.md](ARCHITECTURE.md) for system design
+- **Tutorial**: See [TUTORIAL.md](TUTORIAL.md) for developer encyclopedia
+- **Troubleshooting**: See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues
 - **API Docs**: Run `just docs` to generate documentation
 - **Task Runner**: Run `just` to see all available commands
+
+---
+
+## Debugging Workflow
+
+### 11.1 Debugging Rust Code
+
+**Enable Debug Builds:**
+```bash
+# Build with debug symbols
+cargo build
+
+# Run with backtrace
+RUST_BACKTRACE=1 cargo run --bin nglab-cli
+```
+
+**Using LLDB:**
+```bash
+# Start debugger
+lldb target/debug/nglab-cli
+
+# Set breakpoint
+(lldb) b orderbook.rs:150
+(lldb) run
+```
+
+**Logging:**
+```rust
+use tracing::{info, debug, warn, error};
+
+// Add to your function
+debug!(price = %order.price, "Processing order");
+```
+
+### 11.2 Debugging Python Code
+
+**Using pdb:**
+```python
+import pdb; pdb.set_trace()  # Add breakpoint
+
+# Or use the modern breakpoint() function
+breakpoint()
+```
+
+**VS Code Launch Configuration:**
+```json
+{
+  "name": "Python: Train PPO",
+  "type": "debugpy",
+  "request": "launch",
+  "program": "${workspaceFolder}/python/src/pipeline/train_ppo.py",
+  "console": "integratedTerminal",
+  "env": {
+    "PYTHONPATH": "${workspaceFolder}/python/src"
+  }
+}
+```
+
+### 11.3 Debugging TypeScript/Tauri
+
+**Chrome DevTools:**
+1. Run `npm run tauri dev`
+2. Right-click in the app → Inspect
+3. Use Console, Network, and Performance tabs
+
+**Tauri Backend Logging:**
+```rust
+// In src-tauri/src/lib.rs
+log::info!("Arena state: {:?}", state);
+```
+
+---
+
+## Performance Optimization Guidelines
+
+### 12.1 Rust Performance
+
+| Technique | When to Use | Example |
+|-----------|-------------|---------|
+| **Pre-allocation** | Known collection sizes | `Vec::with_capacity(1000)` |
+| **Iterators** | Processing sequences | Use `.iter()` over index loops |
+| **SIMD** | Numeric computations | `packed_simd` or `std::simd` |
+| **Arena Allocation** | Many small objects | `bumpalo` or `typed-arena` |
+
+**Profiling Tools:**
+```bash
+# Flamegraph
+cargo install flamegraph
+sudo cargo flamegraph --bin nglab-cli
+
+# Criterion benchmarks
+cargo bench --bench orderbook_bench
+```
+
+### 12.2 Python Performance
+
+| Technique | When to Use | Example |
+|-----------|-------------|---------|
+| **Vectorization** | Array operations | `np.dot(a, b)` over loops |
+| **JIT Compilation** | Hot functions | `@torch.jit.script` |
+| **Async I/O** | Network operations | `asyncio` / `aiohttp` |
+| **Data Loading** | Training loops | `num_workers > 0` in DataLoader |
+
+**Profiling Tools:**
+```python
+# cProfile
+python -m cProfile -o profile.prof train_ppo.py
+snakeviz profile.prof
+
+# PyTorch Profiler
+with torch.profiler.profile() as prof:
+    model(input)
+print(prof.key_averages().table())
+```
+
+### 12.3 Memory Optimization
+
+**Rust:**
+- Use `Box<dyn Trait>` sparingly
+- Prefer stack allocation for small structs
+- Use `Cow<str>` for conditional ownership
+
+**Python:**
+- Use generators for large datasets
+- Clear GPU memory: `torch.cuda.empty_cache()`
+- Use `del` for large objects when done
+
+---
+
+## Security Best Practices
+
+### 13.1 API Key Management
+
+```bash
+# NEVER do this
+export API_KEY="sk-1234567890"  # In shell history!
+
+# DO this instead
+# Store in .env (git-ignored)
+echo "API_KEY=sk-1234567890" >> .env
+
+# Load in Python
+from dotenv import load_dotenv
+load_dotenv()
+api_key = os.environ["API_KEY"]
+```
+
+### 13.2 Input Validation
+
+**Rust:**
+```rust
+pub fn set_position(&mut self, position: f64) -> Result<(), ArenaError> {
+    if position.is_nan() || position.is_infinite() {
+        return Err(ArenaError::InvalidInput("Position must be finite"));
+    }
+    if position < self.config.min_position || position > self.config.max_position {
+        return Err(ArenaError::InvalidInput("Position out of bounds"));
+    }
+    self.position = position;
+    Ok(())
+}
+```
+
+**Python:**
+```python
+def validate_config(config: dict) -> None:
+    """Validate configuration before use."""
+    required_keys = ["learning_rate", "batch_size", "num_envs"]
+    for key in required_keys:
+        if key not in config:
+            raise ValueError(f"Missing required config key: {key}")
+    
+    if config["learning_rate"] <= 0:
+        raise ValueError("Learning rate must be positive")
+```
+
+### 13.3 Dependency Security
+
+```bash
+# Audit Rust dependencies
+cargo audit
+
+# Audit Python dependencies
+pip-audit
+
+# Audit npm dependencies
+npm audit
+```
+
+---
+
+## Architecture Decision Records (ADRs)
+
+When making significant architectural decisions, document them using ADRs.
+
+### ADR Template
+
+Create files in `docs/adr/` with the following format:
+
+```markdown
+# ADR-001: Use Rust for Simulation Engine
+
+## Status
+Accepted
+
+## Context
+We need a simulation engine that can process >10,000 orders per second
+with deterministic behavior across different platforms.
+
+## Decision
+We will use Rust for the simulation engine with PyO3 bindings for Python.
+
+## Consequences
+### Positive
+- Microsecond-level latency
+- Memory safety without GC
+- Zero-copy data transfer to Python
+
+### Negative
+- Steeper learning curve for Python developers
+- Longer compile times
+- Need to maintain PyO3 bindings
+
+## Alternatives Considered
+1. **C++**: Rejected due to memory safety concerns
+2. **Pure Python with Numba**: Rejected due to GIL limitations
+3. **Go**: Rejected due to GC pauses
+
+## References
+- [PyO3 Documentation](https://pyo3.rs/)
+- [Rust Performance Book](https://nnethercote.github.io/perf-book/)
+```
+
+### Existing ADRs
+
+| ADR | Title | Status |
+|-----|-------|--------|
+| ADR-001 | Use Rust for Simulation | Accepted |
+| ADR-002 | PyTorch over TensorFlow | Accepted |
+| ADR-003 | Tauri over Electron | Accepted |
+| ADR-004 | Hydra for Configuration | Accepted |
+| ADR-005 | TorchRL for RL | Accepted |
+
+---
+
+## Mentorship & Onboarding
+
+### For New Contributors
+
+1. **Week 1**: Set up development environment, run all tests
+2. **Week 2**: Pick a "good first issue" from GitHub
+3. **Week 3**: Submit your first PR with mentor review
+4. **Week 4**: Take on a more complex task
+
+### Finding Mentors
+
+- Check the `CODEOWNERS` file for area experts
+- Join the Discord #mentorship channel
+- Request a mentor in your first PR
+
+---
+
+## Recognition & Credits
+
+Contributors are recognized in:
+- `CHANGELOG.md` for each release
+- `CONTRIBUTORS.md` (auto-generated from git history)
+- GitHub release notes
+
+---
 
 ## Questions?
 
 If you have questions or need help:
 1. Check existing issues and discussions
 2. Open a new issue with the `question` label
-3. Reach out to maintainers
+3. Join our Discord community
+4. Reach out to maintainers
+
+**Response Time Expectations:**
+- Issues: 24-48 hours for initial response
+- PRs: 48-72 hours for first review
+- Critical bugs: Same-day response
 
 ---
 
