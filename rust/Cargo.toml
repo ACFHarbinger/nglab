@@ -3,6 +3,7 @@ name = "nglab"
 version = "0.1.0"
 edition = "2021"
 description = "A Multimodal Deep Reinforcement Learning bot to assist you in all your gambling (stock market) needs"
+license = "AGPL-3.0-only"
 repository = "https://github.com/ACFHarbinger/nglab"
 documentation = "https://docs.rs/my_project"
 

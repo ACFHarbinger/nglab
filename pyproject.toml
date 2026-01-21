@@ -3,6 +3,7 @@ name = "nglab"
 version = "0.1.0"
 description = "A Multimodal Deep Reinforcement Learning bot to assist you in all your gambling (stock market) needs"
 readme = "README.md"
+license = "AGPL-3.0-only"
 requires-python = ">=3.11, <3.13"
 dependencies = [
     "gymnasium>=1.2.3",

@@ -6,14 +6,108 @@
 
 **A Comprehensive Multimodal Intelligence Framework for Quantitative Finance and Automated Gambling.**
 
-<a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
+<a href="https://pytorch.org/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
 <a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/-Lightning-792ee5?logo=pytorchlightning&logoColor=white"></a>
 <a href="https://github.com/pytorch/rl"><img alt="base: TorchRL" src="https://img.shields.io/badge/base-TorchRL-red"></a>
-<a href="https://hydra.cc/"><img alt="config: Hydra" src="https://img.shields.io/badge/config-Hydra-89b8cd"></a>
-<a href="https://github.com/astral-sh/ruff"><img alt="Code style: ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
-<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+<a href="https://huggingface.co/transformers/"><img alt="Transformers" src="https://img.shields.io/badge/%F0%9F%A4%97%20Transformers-FFD21E"></a>
+<a href="https://ray.io/"><img alt="Ray" src="https://img.shields.io/badge/Ray-028CF0?logo=ray&logoColor=white"></a>
+<a href="https://optuna.org/"><img alt="Optuna" src="https://img.shields.io/badge/Optuna-22314E?logoColor=white"></a>
+<a href="https://hydra.cc/"><img alt="Hydra" src="https://img.shields.io/badge/config-Hydra-89b8cd"></a>
+<a href="https://gymnasium.farama.org/"><img alt="Gymnasium" src="https://img.shields.io/badge/Gymnasium-22314E?logoColor=white"></a>
+<a href="https://stable-baselines3.readthedocs.io/"><img alt="SB3" src="https://img.shields.io/badge/Stable_Baselines3-FF6F00?logoColor=white"></a>
 <a href="https://colab.research.google.com/"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"></a>
-<a href="https://pypi.org/"><img alt="PyPI" src="https://img.shields.io/pypi/v/rl4co?logo=pypi"></a>
+
+</br>
+
+<a href="https://scikit-learn.org/"><img alt="Scikit-Learn" src="https://img.shields.io/badge/scikit--learn-F7931E?logo=scikit-learn&logoColor=white"></a>
+<a href="https://pandas.pydata.org/"><img alt="Pandas" src="https://img.shields.io/badge/Pandas-150458?logo=pandas&logoColor=white"></a>
+<a href="https://numpy.org/"><img alt="NumPy" src="https://img.shields.io/badge/NumPy-013243?logo=numpy&logoColor=white"></a>
+<a href="https://xgboost.ai/"><img alt="XGBoost" src="https://img.shields.io/badge/XGBoost-2C3E50?logoColor=white"></a>
+<a href="https://mlflow.org/"><img alt="MLflow" src="https://img.shields.io/badge/mlflow-d53938?logo=mlflow&logoColor=white"></a>
+<a href="https://wandb.ai/"><img alt="WandB" src="https://img.shields.io/badge/W&B-FFBE00?logo=weightsandbiases&logoColor=white"></a>
+<a href="https://plotly.com/"><img alt="Plotly" src="https://img.shields.io/badge/Plotly-3F4F75?logo=plotly&logoColor=white"></a>
+<a href="https://seaborn.pydata.org/"><img alt="Seaborn" src="https://img.shields.io/badge/Seaborn-3776AB?logoColor=white"></a>
+<a href="https://scipy.org/"><img alt="SciPy" src="https://img.shields.io/badge/SciPy-8CAAE6?logo=scipy&logoColor=white"></a>
+<a href="https://www.statsmodels.org/"><img alt="Statsmodels" src="https://img.shields.io/badge/Statsmodels-3178C6?logoColor=white"></a>
+
+</br>
+
+<a href="https://fastapi.tiangolo.com/"><img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white"></a>
+<a href="https://flask.palletsprojects.com/"><img alt="Flask" src="https://img.shields.io/badge/Flask-000000?logo=flask&logoColor=white"></a>
+<a href="https://nginx.org/"><img alt="Nginx" src="https://img.shields.io/badge/Nginx-009639?logo=nginx&logoColor=white"></a>
+<a href="https://pydantic.dev/"><img alt="Pydantic" src="https://img.shields.io/badge/Pydantic-E92063?logo=pydantic&logoColor=white"></a>
+<a href="https://www.sqlalchemy.org/"><img alt="SQLAlchemy" src="https://img.shields.io/badge/SQLAlchemy-D71F23?logo=sqlalchemy&logoColor=white"></a>
+<a href="https://pypi.org/project/asyncpg/"><img alt="asyncpg" src="https://img.shields.io/badge/PostgreSQL-asyncpg-336791?logo=postgresql&logoColor=white"></a>
+<a href="https://requests.readthedocs.io/"><img alt="Requests" src="https://img.shields.io/badge/Requests-3776AB?logoColor=white"></a>
+<a href="https://www.python-httpx.org/"><img alt="Httpx" src="https://img.shields.io/badge/Httpx-000000?logoColor=white"></a>
+
+</br>
+
+<a href="https://prometheus.io/"><img alt="Prometheus" src="https://img.shields.io/badge/Prometheus-E6522C?logo=prometheus&logoColor=white"></a>
+<a href="https://grafana.com/"><img alt="Grafana" src="https://img.shields.io/badge/Grafana-F46800?logo=grafana&logoColor=white"></a>
+<a href="https://www.jaegertracing.io/"><img alt="Jaeger" src="https://img.shields.io/badge/Jaeger-60D05C?logo=jaeger&logoColor=white"></a>
+<a href="https://opentelemetry.io/"><img alt="OpenTelemetry" src="https://img.shields.io/badge/OpenTelemetry-000000?logo=opentelemetry&logoColor=white"></a>
+<a href="https://loguru.readthedocs.io/"><img alt="Loguru" src="https://img.shields.io/badge/Loguru-000000?logoColor=white"></a>
+<a href="https://rerun.io/"><img alt="Rerun" src="https://img.shields.io/badge/Rerun-Visualization-blue?logoColor=white"></a>
+
+</br>
+
+<a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/Python-3.11-3776ab?logo=python&logoColor=white"></a>
+<a href="https://www.rust-lang.org/"><img alt="Rust" src="https://img.shields.io/badge/Rust-000000?logo=rust&logoColor=white"></a>
+<a href="https://www.typescriptlang.org/"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white"></a>
+<a href="https://kotlinlang.org/"><img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white"></a>
+<a href="https://developer.android.com/"><img alt="Android" src="https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white"></a>
+<a href="https://react.dev/"><img alt="React" src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black"></a>
+<a href="https://tauri.app/"><img alt="Tauri" src="https://img.shields.io/badge/Tauri-FFC131?logo=tauri&logoColor=white"></a>
+<a href="https://pyo3.rs/"><img alt="PyO3" src="https://img.shields.io/badge/PyO3-Bridge-3776AB?logo=rust&logoColor=white"></a>
+<a href="https://maturin.rs/"><img alt="Maturin" src="https://img.shields.io/badge/Maturin-Build-E57300?logo=rust&logoColor=white"></a>
+<a href="https://vitejs.dev/"><img alt="Vite" src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white"></a>
+
+</br>
+
+<a href="https://www.docker.com/"><img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white"></a>
+<a href="https://kubernetes.io/"><img alt="Kubernetes" src="https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=white"></a>
+<a href="https://helm.sh/"><img alt="Helm" src="https://img.shields.io/badge/Helm-0F1628?logo=helm&logoColor=white"></a>
+<a href="https://github.com/astral-sh/uv"><img alt="uv" src="https://img.shields.io/badge/managed%20by-uv-261230.svg"></a>
+<a href="https://github.com/casey/just"><img alt="Just" src="https://img.shields.io/badge/Just-000000?logo=just&logoColor=white"></a>
+<a href="https://doc.rust-lang.org/cargo/"><img alt="Cargo" src="https://img.shields.io/badge/Cargo-E57300?logo=rust&logoColor=white"></a>
+<a href="https://www.gnu.org/software/make/"><img alt="Makefile" src="https://img.shields.io/badge/Makefile-000000?logo=gnu&logoColor=white"></a>
+<a href="https://gradle.org/"><img alt="Gradle" src="https://img.shields.io/badge/Gradle-02303A?logo=gradle&logoColor=white"></a>
+<a href="https://www.npmjs.com/"><img alt="NPM" src="https://img.shields.io/badge/NPM-CB3837?logo=npm&logoColor=white"></a>
+
+</br>
+
+<a href="https://github.com/acfharbinger/nglab/actions"><img alt="GitHub Actions" src="https://img.shields.io/badge/GitHub_Actions-2088FF?logo=github-actions&logoColor=white"></a>
+<a href="https://aws.amazon.com/"><img alt="AWS" src="https://img.shields.io/badge/AWS-232F3E?logo=amazon-aws&logoColor=white"></a>
+<a href="https://cloud.google.com/"><img alt="GCP" src="https://img.shields.io/badge/GCP-4285F4?logo=google-cloud&logoColor=white"></a>
+<a href="https://pytest.org/"><img alt="Pytest" src="https://img.shields.io/badge/Pytest-0A9EDC?logo=pytest&logoColor=white"></a>
+<a href="https://vitest.dev/"><img alt="Vitest" src="https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white"></a>
+<a href="https://www.cypress.io/"><img alt="Cypress" src="https://img.shields.io/badge/Cypress-17202C?logo=cypress&logoColor=white"></a>
+<a href="https://eslint.org/"><img alt="ESLint" src="https://img.shields.io/badge/ESLint-4B3263?logo=eslint&logoColor=white"></a>
+<a href="https://www.sphinx-doc.org/"><img alt="Sphinx" src="https://img.shields.io/badge/Sphinx-Docs-000000?logo=sphinx&logoColor=white"></a>
+
+</br>
+
+<a href="https://hypothesis.readthedocs.io/"><img alt="Hypothesis" src="https://img.shields.io/badge/Hypothesis-tested-brightgreen?logoColor=white"></a>
+<a href="https://mypy-lang.org/"><img alt="MyPy" src="https://img.shields.io/badge/MyPy-checked-2f4f4f.svg"></a>
+<a href="https://github.com/astral-sh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
+<a href="https://github.com/psf/black"><img alt="Black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+<a href="https://pre-commit.com/"><img alt="pre-commit" src="https://img.shields.io/badge/pre--commit-FAB040?logo=pre-commit&logoColor=white"></a>
+<a href="https://tailwindcss.com/"><img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?logo=tailwind-css&logoColor=white"></a>
+<a href="https://ui.shadcn.com/"><img alt="Shadcn UI" src="https://img.shields.io/badge/shadcn%2Fui-000000?logo=shadcnui&logoColor=white"></a>
+
+</br>
+
+<a href="https://www.postgresql.org/"><img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white"></a>
+<a href="https://redis.io/"><img alt="Redis" src="https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white"></a>
+<a href="https://www.sqlite.org/"><img alt="SQLite" src="https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white"></a>
+<a href="https://tokio.rs/"><img alt="Tokio" src="https://img.shields.io/badge/Tokio-Async-000000?logo=rust&logoColor=white"></a>
+<a href="https://serde.rs/"><img alt="Serde" src="https://img.shields.io/badge/Serde-Serialization-000000?logo=rust&logoColor=white"></a>
+<a href="https://developer.nvidia.com/cuda-toolkit"><img alt="CUDA" src="https://img.shields.io/badge/CUDA-RTX_4080-76B900?logo=nvidia&logoColor=white"></a>
+<a href="https://developer.nvidia.com/cuda-toolkit"><img alt="CUDA" src="https://img.shields.io/badge/CUDA-RTX_3090ti-76B900?logo=nvidia&logoColor=white"></a>
+
+</br>
+
 <a href="https://app.codecov.io/github/acfharbinger/nglab/tree/main/python">
   <img alt="Python Coverage" src="https://img.shields.io/codecov/c/github/acfharbinger/nglab?flag=python&logo=python&label=python%20cov">
 </a>
@@ -24,21 +118,6 @@
   <img alt="TypeScript Coverage" src="https://img.shields.io/codecov/c/github/acfharbinger/nglab?flag=typescript&logo=typescript&label=ts%20cov">
 </a>
 <a href="https://github.com/acfharbinger/nglab/actions/workflows/ci.yml"><img alt="Test" src="https://github.com/acfharbinger/nglab/actions/workflows/ci.yml/badge.svg"></a>
-
-</br>
-
-<a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/Python-3.11-3776ab?logo=python&logoColor=white"></a>
-<a href="https://www.rust-lang.org/"><img alt="Rust" src="https://img.shields.io/badge/Rust-000000?logo=rust&logoColor=white"></a>
-<a href="https://www.typescriptlang.org/"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white"></a>
-<a href="https://kotlinlang.org/"><img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white"></a>
-<a href="https://react.dev/"><img alt="React" src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black"></a>
-<a href="https://tauri.app/"><img alt="Tauri" src="https://img.shields.io/badge/Tauri-FFC131?logo=tauri&logoColor=white"></a>
-<a href="https://github.com/astral-sh/uv"><img alt="uv" src="https://img.shields.io/badge/managed%20by-uv-261230.svg"></a>
-<a href="https://www.docker.com/"><img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white"></a>
-<a href="https://kubernetes.io/"><img alt="Kubernetes" src="https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=white"></a>
-<a href="https://www.postgresql.org/"><img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white"></a>
-<a href="https://redis.io/"><img alt="Redis" src="https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white"></a>
-<a href="https://mypy-lang.org/"><img alt="MyPy" src="https://img.shields.io/badge/MyPy-checked-2f4f4f.svg"></a>
 
 <p>
 
@@ -425,7 +504,7 @@ We welcome contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU Affero General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
 
 ---
 
