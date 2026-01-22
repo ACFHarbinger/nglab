@@ -1,4 +1,4 @@
-use crate::web::polymarket::PolymarketScraper;
+use crate::web::polymarket::{MarketMetadata, PolymarketScraper};
 use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -14,23 +14,21 @@ pub struct PolymarketPriceUpdate {
     pub price: f64,
 }
 
-/// Resolves a Polymarket market source (URL or slug) into outcome token IDs.
-pub async fn resolve_polymarket_token_ids(market_source: &str) -> Result<Vec<String>, String> {
+/// Resolves a Polymarket market source (URL or slug) into outcome token IDs and metadata.
+pub async fn resolve_polymarket_token_ids(
+    market_source: &str,
+) -> Result<(Vec<String>, MarketMetadata), String> {
+    let mut scraper = PolymarketScraper::new();
+
     // Handle Test/Mock cases
     if market_source == "1" || market_source == "test" {
-        // Use a stable, high-volume market for testing (Trump 2024)
-        // This ensures the test button actually streams real data.
+        // Use a stable, high-volume market for testing (Warsh)
         let target_slug = "will-trump-nominate-kevin-warsh-as-the-next-fed-chair";
-        let mut scraper = PolymarketScraper::new();
         scraper
             .resolve_market(target_slug)
             .await
             .map_err(|e| format!("Failed to resolve market: {}", e))?;
-
-        let metadata = scraper.get_metadata();
-        Ok(metadata.outcomes.into_iter().map(|o| o.id).collect())
     } else {
-        let mut scraper = PolymarketScraper::new();
         let mut target_id = market_source.to_string();
 
         if target_id.starts_with("http") {
@@ -52,10 +50,11 @@ pub async fn resolve_polymarket_token_ids(market_source: &str) -> Result<Vec<Str
             .resolve_market(&target_id)
             .await
             .map_err(|e| format!("Failed to resolve market: {}", e))?;
-
-        let metadata = scraper.get_metadata();
-        Ok(metadata.outcomes.into_iter().map(|o| o.id).collect())
     }
+
+    let metadata = scraper.get_metadata();
+    let token_ids = metadata.outcomes.iter().map(|o| o.id.clone()).collect();
+    Ok((token_ids, metadata))
 }
 
 /// Runs the background loop for streaming prices from Polymarket.

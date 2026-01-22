@@ -2,7 +2,7 @@
  * Tauri commands for the SQLCipher encrypted vault.
  */
 
-use nglab::secret::vault::{VaultEntry, VaultManager, VaultResponse, VaultSummary};
+use nglab::secret::vault::{VaultEntry, VaultFavorite, VaultManager, VaultResponse, VaultSummary};
 use std::sync::Mutex;
 use tauri::{AppHandle, State};
 
@@ -164,6 +164,86 @@ pub async fn delete_vault_secret(
         Ok(()) => Ok(VaultResponse::success("Secret deleted", None)),
         Err(e) => Ok(VaultResponse::error(&format!(
             "Failed to delete secret: {}",
+            e
+        ))),
+    }
+}
+
+/// Add a favorite market to the vault
+#[tauri::command]
+pub async fn add_favorite(
+    _app: AppHandle,
+    id: String,
+    symbol: String,
+    name: String,
+    metadata_json: String,
+    state: State<'_, VaultState>,
+) -> Result<VaultResponse<()>, String> {
+    let master_key = if let Ok(key_guard) = state.master_key.lock() {
+        match key_guard.as_ref() {
+            Some(key) => key.clone(),
+            None => return Ok(VaultResponse::error("Vault is locked")),
+        }
+    } else {
+        return Err("Failed to lock state".to_string());
+    };
+
+    let manager = VaultManager::with_default_path()?;
+    match manager.add_favorite(&master_key, &id, &symbol, &name, &metadata_json) {
+        Ok(()) => Ok(VaultResponse::success("Favorite added", None)),
+        Err(e) => Ok(VaultResponse::error(&format!(
+            "Failed to add favorite: {}",
+            e
+        ))),
+    }
+}
+
+/// List all favorite markets
+#[tauri::command]
+pub async fn get_favorites(
+    _app: AppHandle,
+    state: State<'_, VaultState>,
+) -> Result<VaultResponse<Vec<VaultFavorite>>, String> {
+    let master_key = if let Ok(key_guard) = state.master_key.lock() {
+        match key_guard.as_ref() {
+            Some(key) => key.clone(),
+            None => return Ok(VaultResponse::error("Vault is locked")),
+        }
+    } else {
+        return Err("Failed to lock state".to_string());
+    };
+
+    let manager = VaultManager::with_default_path()?;
+    match manager.list_favorites(&master_key) {
+        Ok(favorites) => Ok(VaultResponse::success("Favorites listed", Some(favorites))),
+        Err(e) => Ok(VaultResponse::error(&format!(
+            "Failed to list favorites: {}",
+            e
+        ))),
+    }
+}
+
+/// Remove a favorite market
+#[tauri::command]
+pub async fn remove_favorite(
+    _app: AppHandle,
+    id: String,
+    state: State<'_, VaultState>,
+) -> Result<VaultResponse<()>, String> {
+    let master_key = if let Ok(key_guard) = state.master_key.lock() {
+        match key_guard.as_ref() {
+            Some(key) => key.clone(),
+            None => return Ok(VaultResponse::error("Vault is locked")),
+        }
+    } else {
+        return Err("Failed to lock state".to_string());
+    };
+
+    let manager = VaultManager::with_default_path()?;
+    match manager.remove_favorite(&master_key, &id) {
+        Ok(()) => Ok(VaultResponse::success("Favorite removed", None)),
+        Err(e) => Ok(VaultResponse::error(&format!(
+            "Failed to remove favorite: {}",
             e
         ))),
     }

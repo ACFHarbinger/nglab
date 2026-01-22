@@ -42,7 +42,6 @@ const generateMockMarkets = () => [
     price: 0.65,
     change24h: 4.2,
     volume24h: 208000000,
-    isFavorite: true,
     // Real Token IDs for testing (2026)
     marketData: {
       id: "will-trump-nominate-kevin-warsh-as-the-next-fed-chair",
@@ -104,7 +103,6 @@ const generateMockMarkets = () => [
     price: 0.53,
     change24h: -0.5,
     volume24h: 967000000,
-    isFavorite: true,
     marketData: {
       id: "will-bitcoin-reach-100000-by-december-31-2026-571",
       outcomes: [
@@ -191,7 +189,6 @@ export function TerminalLayout({
   favorites,
   toggleFavorite,
 }: Props) {
-  const [selectedMarketId, setSelectedMarketId] = useState("1");
   const [chartData, setChartData] = useState<any[]>([]);
   const [orderBook, setOrderBook] = useState<{ bids: any; asks: any }>({
     bids: {},
@@ -229,15 +226,25 @@ export function TerminalLayout({
     return Array.from(uniqueMarketsMap.values());
   }, [trendingMarkets, favoriteIds, favorites]);
 
-  // Sync activeMarket with selectedMarketId
+  // Handle initialization of selection from external activeMarket
+  const [selectedMarketId, setSelectedMarketId] = useState(() => {
+    if (activeMarket?.title) {
+      const match = markets.find((m) => m.name === activeMarket.title);
+      return match ? match.id : "1";
+    }
+    return "1";
+  });
+
+  // External sync: If activeMarket changes from OUTSIDE (e.g. Navigation), sync local state.
   useEffect(() => {
     if (activeMarket?.title) {
       const match = markets.find((m) => m.name === activeMarket.title);
       if (match && match.id !== selectedMarketId) {
+        console.log("🔄 External sync triggered in terminal:", match.id);
         setSelectedMarketId(match.id);
       }
     }
-  }, [activeMarket, markets, selectedMarketId]);
+  }, [activeMarket?.title, markets]); // Dependency on title ensures it only runs on actual changes
 
   useEffect(() => {
     fetchTrending();
@@ -280,20 +287,23 @@ export function TerminalLayout({
   // Start stream when market is selected
   useEffect(() => {
     if (startStream && selectedMarket) {
-      const Outcomes = selectedMarket.marketData?.outcomes || [{ id: "1", name: "Yes" }, { id: "2", name: "No" }];
-      // Use logic to determine market source. 
-      let marketSource = selectedMarketId;
-      if (selectedMarket.marketData && selectedMarketId !== "1") {
-        marketSource = selectedMarket.marketData.id;
-      }
+      // Use the actual market ID from marketData if it exists (for both mocks and trending)
+      const marketSource = selectedMarket.marketData?.id || selectedMarketId;
 
-      startStream(marketSource, { title: selectedMarket.name, outcomes: Outcomes })
-        .catch(e => console.error("Auto stream start failed", e));
+      console.log(`📡 Switching terminal stream to: ${marketSource} (${selectedMarket.name})`);
+
+      // We explicitly stop the previous stream before starting a new one to ensure clean state
+      const runStream = async () => {
+        if (stopStream) await stopStream();
+        await startStream(marketSource, selectedMarket.marketData);
+      };
+
+      runStream().catch((e) => console.error("Terminal stream transition failed", e));
     }
 
     return () => {
       if (stopStream) {
-        stopStream().catch(e => console.error("Failed to stop stream", e));
+        stopStream().catch((e) => console.error("Cleanup stream stop failed", e));
       }
     };
   }, [selectedMarketId, selectedMarket?.name, startStream, stopStream]);
@@ -363,7 +373,7 @@ export function TerminalLayout({
     // Update chart with live price
     // We use the calculated currentPrice for the chart update
     if (Object.keys(livePrices || {}).length > 0 && isFinite(currentPrice) && currentPrice !== selectedMarket.price) {
-      setChartData((prev) => {
+      setChartData((prev: any[]) => {
         const now = Math.floor(Date.now() / 1000);
         const lastPoint = prev[prev.length - 1];
 

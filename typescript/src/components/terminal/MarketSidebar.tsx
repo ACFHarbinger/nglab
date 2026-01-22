@@ -81,7 +81,7 @@ export function MarketSidebar({
     // Apply category filter
     switch (filterMode) {
       case "favorites":
-        result = result.filter((m) => favoriteIds?.has(m.id) || m.isFavorite);
+        result = result.filter((m) => favoriteIds?.has(m.id));
         break;
       case "multi-outcome":
         result = result.filter(
@@ -104,7 +104,7 @@ export function MarketSidebar({
   };
 
   const isFavorited = (market: Market) => {
-    return favoriteIds?.has(market.id) || market.isFavorite;
+    return favoriteIds?.has(market.id) || false;
   };
 
   const renderMarketItem = (market: Market) => {

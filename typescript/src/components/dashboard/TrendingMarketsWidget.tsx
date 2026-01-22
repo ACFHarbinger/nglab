@@ -4,7 +4,7 @@
  */
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { TrendingUp, Flame, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { TrendingUp, Flame, Loader2, AlertCircle, RefreshCw, Star } from "lucide-react";
 import clsx from "clsx";
 
 /**
@@ -15,6 +15,10 @@ interface TrendingMarketsProps {
   onSelectMarket: (id: string) => void;
   /** Real-time live price map. */
   livePrices?: Record<string, number>;
+  /** Set of favorite IDs */
+  favoriteIds?: Set<string>;
+  /** Toggle favorite callback */
+  toggleFavorite?: (market: any) => void;
 }
 
 /** Market search result from backend */
@@ -150,6 +154,8 @@ const ProbabilityBar = ({ yesPercent }: { yesPercent: number }) => (
 export function TrendingMarketsWidget({
   onSelectMarket,
   livePrices,
+  favoriteIds,
+  toggleFavorite,
 }: TrendingMarketsProps) {
   const [markets, setMarkets] = useState<TrendingMarket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -257,6 +263,7 @@ export function TrendingMarketsWidget({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="text-[10px] text-slate-500 uppercase font-bold border-b border-slate-800/50">
+                <th className="px-5 py-3 font-medium w-10"></th>
                 <th className="px-5 py-3 font-medium">Market</th>
                 <th className="px-5 py-3 font-medium text-center">Chart</th>
                 <th className="px-5 py-3 font-medium text-right">Price</th>
@@ -268,6 +275,7 @@ export function TrendingMarketsWidget({
               {markets.map((market) => {
                 const { yesPrice, noPrice, isLive } = getMarketPrices(market);
                 const yesPercent = Math.round(yesPrice * 100);
+                const isFavorited = favoriteIds?.has(market.id);
 
                 return (
                   <tr
@@ -276,6 +284,30 @@ export function TrendingMarketsWidget({
                     className="group cursor-pointer hover:bg-slate-800/40 border-b border-slate-800/30 transition-colors"
                   >
                     <td className="px-5 py-3">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (toggleFavorite) {
+                            toggleFavorite({
+                              id: market.id,
+                              symbol: market.id, // Fallback as symbol is not in TrendingMarket
+                              name: market.name,
+                              marketData: {
+                                id: market.id,
+                                outcomes: [], // Will be resolved by backend
+                              },
+                            });
+                          }
+                        }}
+                        className={clsx(
+                          "transition-colors",
+                          isFavorited ? "text-yellow-500" : "text-slate-600 hover:text-yellow-500/50"
+                        )}
+                      >
+                        <Star size={16} fill={isFavorited ? "currentColor" : "none"} />
+                      </button>
+                    </td>
+                    <td className="px-2 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 group-hover:border-indigo-500/50 transition-colors text-lg">
                           {market.icon}

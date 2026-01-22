@@ -20,6 +20,10 @@ interface DashboardOverviewProps {
   livePrices?: Record<string, number>;
   /** List of user's favorite markets. */
   favorites?: FavoriteMarket[];
+  /** Set of favorite market IDs for quick lookup. */
+  favoriteIds?: Set<string>;
+  /** Callback to toggle favorite status. */
+  toggleFavorite?: (market: any) => void;
   /** Callback to view the full favorites tab. */
   onNavigateToFavorites?: () => void;
   /** Calculated risk metrics for the sidebar widget. */
@@ -39,6 +43,8 @@ export function DashboardOverview({
   onNavigateToTerminal,
   livePrices,
   favorites = [],
+  favoriteIds,
+  toggleFavorite,
   onNavigateToFavorites,
   riskMetrics,
 }: DashboardOverviewProps) {
@@ -80,6 +86,8 @@ export function DashboardOverview({
           <TrendingMarketsWidget
             onSelectMarket={onNavigateToTerminal}
             livePrices={livePrices}
+            favoriteIds={favoriteIds}
+            toggleFavorite={toggleFavorite}
           />
         </div>
       </div>

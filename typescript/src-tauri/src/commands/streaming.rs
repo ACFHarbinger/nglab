@@ -19,11 +19,11 @@ use tauri::{Emitter, Manager};
 pub async fn stream_polymarket_prices(
     app: tauri::AppHandle,
     market_source: String,
-) -> Result<(), String> {
+) -> Result<nglab::web::polymarket::MarketMetadata, String> {
     eprintln!("🚀 Starting Polymarket stream for: {}", market_source);
 
-    // 1. Resolve Token IDs (now async)
-    let token_ids = resolve_polymarket_token_ids(&market_source)
+    // 1. Resolve Token IDs and Metadata
+    let (token_ids, metadata) = resolve_polymarket_token_ids(&market_source)
         .await
         .map_err(|e| format!("Failed to resolve: {}", e))?;
 
@@ -53,7 +53,7 @@ pub async fn stream_polymarket_prices(
         .await;
     });
 
-    Ok(())
+    Ok(metadata)
 }
 
 /**

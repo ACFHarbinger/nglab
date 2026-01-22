@@ -12,7 +12,6 @@ use std::fs;
 use std::path::PathBuf;
 
 /// Summary of a vault entry (for listing)
-/// Summary of a vault entry (for listing).
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VaultSummary {
     /// Unique identifier for the entry.
@@ -24,7 +23,6 @@ pub struct VaultSummary {
 }
 
 /// Full vault entry with sensitive value
-/// Full vault entry with sensitive value.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VaultEntry {
     /// Unique identifier for the entry.
@@ -38,7 +36,6 @@ pub struct VaultEntry {
 }
 
 /// Standard response wrapper for vault operations
-/// Standard response wrapper for vault operations.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VaultResponse<T> {
     /// Whether the operation was successful.
@@ -122,6 +119,17 @@ impl VaultManager {
             )",
             [],
         )?;
+
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS favorites (
+                id TEXT PRIMARY KEY,
+                symbol TEXT NOT NULL,
+                name TEXT NOT NULL,
+                metadata_json TEXT NOT NULL,
+                added_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )",
+            [],
+        )?;
         Ok(())
     }
 
@@ -196,4 +204,61 @@ impl VaultManager {
         conn.execute("DELETE FROM secrets WHERE id = ?1", params![id])?;
         Ok(())
     }
+
+    /// Add a favorite market to the vault
+    pub fn add_favorite(
+        &self,
+        key_str: &str,
+        id: &str,
+        symbol: &str,
+        name: &str,
+        metadata_json: &str,
+    ) -> SqlResult<()> {
+        let conn = self.open_connection(key_str)?;
+        conn.execute(
+            "INSERT OR REPLACE INTO favorites (id, symbol, name, metadata_json) VALUES (?1, ?2, ?3, ?4)",
+            params![id, symbol, name, metadata_json],
+        )?;
+        Ok(())
+    }
+
+    /// List all favorite markets in the vault
+    pub fn list_favorites(&self, key_str: &str) -> SqlResult<Vec<VaultFavorite>> {
+        let conn = self.open_connection(key_str)?;
+        let mut stmt = conn.prepare("SELECT id, symbol, name, metadata_json FROM favorites")?;
+        let rows = stmt.query_map([], |row| {
+            Ok(VaultFavorite {
+                id: row.get(0)?,
+                symbol: row.get(1)?,
+                name: row.get(2)?,
+                metadata_json: row.get(3)?,
+            })
+        })?;
+
+        let mut favorites = Vec::new();
+        for row in rows {
+            favorites.push(row?);
+        }
+        Ok(favorites)
+    }
+
+    /// Remove a favorite market from the vault
+    pub fn remove_favorite(&self, key_str: &str, id: &str) -> SqlResult<()> {
+        let conn = self.open_connection(key_str)?;
+        conn.execute("DELETE FROM favorites WHERE id = ?1", params![id])?;
+        Ok(())
+    }
+}
+
+/// Represents a favorite market stored in the vault
+#[derive(Debug, Serialize, Deserialize)]
+pub struct VaultFavorite {
+    /// Unique identifier for the market
+    pub id: String,
+    /// Symbol of the market
+    pub symbol: String,
+    /// Human-readable name
+    pub name: String,
+    /// JSON metadata for resolution and streaming
+    pub metadata_json: String,
 }

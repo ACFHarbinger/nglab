@@ -1,101 +1,142 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { invoke } from "@tauri-apps/api/core";
 
 /**
  * @module hooks/useFavorites
- * @description Manages user's favorite markets with localStorage persistence.
+ * @description Manages user's favorite markets with secure Vault persistence.
  */
 
 export interface FavoriteMarket {
   id: string;
   symbol: string;
   name: string;
-  addedAt: number;
+  addedAt?: number;
   marketData?: {
     id: string;
     outcomes?: Array<{ id: string; name: string }>;
   };
 }
 
-const FAVORITES_STORAGE_KEY = "nglab_favorites";
-
 /**
- * Custom hook to manage favorite markets with localStorage persistence.
- *
- * @returns {object} An object containing:
- * - `favorites`: Array of favorite markets.
- * - `favoriteIds`: Set of favorite market IDs for quick lookup.
- * - `addFavorite`: Function to add a market to favorites.
- * - `removeFavorite`: Function to remove a market from favorites.
- * - `isFavorite`: Function to check if a market is favorited.
- * - `toggleFavorite`: Function to toggle a market's favorite status.
+ * Custom hook to manage favorite markets with backend Vault persistence.
  */
 export function useFavorites() {
   const [favorites, setFavorites] = useState<FavoriteMarket[]>([]);
   const isLoaded = useRef(false);
 
-  // Load favorites from localStorage on mount
-  useEffect(() => {
+  const [lastMessage, setLastMessage] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
+
+  const refreshFavorites = useCallback(async () => {
     try {
-      const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setFavorites(parsed);
-        }
+      const response: any = await invoke("get_favorites");
+      if (response.success && response.data) {
+        const mapped: FavoriteMarket[] = response.data.map((f: any) => {
+          let marketData = {};
+          try {
+            marketData = JSON.parse(f.metadata_json);
+          } catch (e) {
+            console.warn("Failed to parse metadata for", f.id, e);
+          }
+          return {
+            id: f.id,
+            symbol: f.symbol,
+            name: f.name,
+            marketData,
+          };
+        });
+        setFavorites(mapped);
+        setIsError(false);
+      } else if (!response.success && response.message !== "Vault is locked") {
+        console.error("❌ Favorites fetch failed:", response.message);
+        setLastMessage(response.message);
+        setIsError(true);
       }
     } catch (e) {
-      console.error("Failed to load favorites from localStorage:", e);
+      console.warn("Vault might be locked or uninitialized:", e);
     } finally {
       isLoaded.current = true;
     }
   }, []);
 
-  // Persist favorites to localStorage whenever they change
+  // Load favorites on mount
   useEffect(() => {
-    if (!isLoaded.current) return;
-    try {
-      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
-    } catch (e) {
-      console.error("Failed to save favorites to localStorage:", e);
-    }
-  }, [favorites]);
+    refreshFavorites();
+  }, [refreshFavorites]);
 
   const favoriteIds = useMemo(
     () => new Set(favorites.map((f: FavoriteMarket) => f.id)),
-    [favorites]
+    [favorites],
   );
 
-  const addFavorite = useCallback((market: Omit<FavoriteMarket, "addedAt">) => {
-    setFavorites((prev: FavoriteMarket[]) => {
-      if (prev.some((f: FavoriteMarket) => f.id === market.id)) {
-        return prev;
-      }
-      return [...prev, { ...market, addedAt: Date.now() }];
-    });
-  }, []);
+  const addFavorite = useCallback(
+    async (market: Omit<FavoriteMarket, "addedAt">) => {
+      try {
+        const metadata_json = JSON.stringify(market.marketData || {});
+        const response: any = await invoke("add_favorite", {
+          id: String(market.id),
+          symbol: market.symbol || "UNK",
+          name: market.name || "Unknown Market",
+          metadataJson: metadata_json,
+        });
 
-  const removeFavorite = useCallback((marketId: string) => {
-    setFavorites((prev: FavoriteMarket[]) =>
-      prev.filter((f: FavoriteMarket) => f.id !== marketId)
-    );
+        if (response.success) {
+          console.log("⭐ Added to favorites:", market.id);
+          setLastMessage(`Added ${market.name} to favorites`);
+          setIsError(false);
+          setFavorites((prev) => {
+            if (prev.some((f) => f.id === market.id)) return prev;
+            return [...prev, { ...market, addedAt: Date.now() }];
+          });
+        } else {
+          console.error("❌ Failed to add favorite:", response.message);
+          setLastMessage(`Failed to add favorite: ${response.message}`);
+          setIsError(true);
+        }
+      } catch (e) {
+        console.error("❌ Failed to add favorite:", e);
+        setLastMessage(`System error adding favorite: ${e}`);
+        setIsError(true);
+      }
+    },
+    [],
+  );
+
+  const removeFavorite = useCallback(async (marketId: string) => {
+    try {
+      const response: any = await invoke("remove_favorite", { id: String(marketId) });
+      if (response.success) {
+        console.log("🗑️ Removed from favorites:", marketId);
+        setLastMessage(`Removed from favorites`);
+        setIsError(false);
+        setFavorites((prev) => prev.filter((f) => f.id !== marketId));
+      } else {
+        setLastMessage(`Failed to remove favorite: ${response.message}`);
+        setIsError(true);
+      }
+    } catch (e) {
+      console.error("❌ Failed to remove favorite:", e);
+      setLastMessage(`System error removing favorite: ${e}`);
+      setIsError(true);
+    }
   }, []);
 
   const isFavorite = useCallback(
     (marketId: string) => {
       return favoriteIds.has(marketId);
     },
-    [favoriteIds]
+    [favoriteIds],
   );
 
   const toggleFavorite = useCallback(
-    (market: Omit<FavoriteMarket, "addedAt">) => {
+    async (market: Omit<FavoriteMarket, "addedAt">) => {
       if (isFavorite(market.id)) {
-        removeFavorite(market.id);
+        await removeFavorite(market.id);
       } else {
-        addFavorite(market);
+        await addFavorite(market);
       }
     },
-    [isFavorite, addFavorite, removeFavorite]
+    [isFavorite, addFavorite, removeFavorite],
   );
 
   return {
@@ -105,5 +146,9 @@ export function useFavorites() {
     removeFavorite,
     isFavorite,
     toggleFavorite,
+    refreshFavorites,
+    lastMessage,
+    isError,
+    setLastMessage,
   };
 }

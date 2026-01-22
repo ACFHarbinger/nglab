@@ -2,7 +2,9 @@
  * Tauri commands for user authentication.
  */
 
+use crate::commands::vault::VaultState;
 use nglab::secret::auth::{AuthError, AuthManager, AuthResponse};
+use nglab::secret::vault::VaultManager;
 use std::sync::Mutex;
 use tauri::State;
 
@@ -51,13 +53,31 @@ pub async fn login(
     username: String,
     password: String,
     state: State<'_, AuthState>,
+    vault_state: State<'_, VaultState>,
 ) -> Result<AuthResponse, String> {
     match AuthManager::login(&username, &password) {
         Ok(true) => {
-            // Set current user in session state
+            // 1. Set current user in session state
             if let Ok(mut current_user) = state.current_user.lock() {
                 *current_user = Some(username.clone());
             }
+
+            // 2. Auto-unlock the vault
+            let salt = b"nglab-vault-salt-2026";
+            let key_str = VaultManager::derive_key_string(&password, salt);
+            let manager = VaultManager::with_default_path()?;
+
+            if let Err(e) = manager.init_db(&key_str) {
+                return Ok(AuthResponse::error(&format!(
+                    "Login successful, but failed to unlock vault: {}",
+                    e
+                )));
+            }
+
+            if let Ok(mut master_key) = vault_state.master_key.lock() {
+                *master_key = Some(key_str);
+            }
+
             Ok(AuthResponse::success("Login successful", Some(username)))
         }
         Ok(false) => Ok(AuthResponse::error("Invalid password")),

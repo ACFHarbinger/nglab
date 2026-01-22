@@ -33,8 +33,10 @@ import {
   GraduationCap,
   Newspaper,
   ShieldCheck,
+  AlertCircle,
 } from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/core";
 import { usePolymarket } from "./hooks/usePolymarket";
 import clsx from "clsx";
 import { TerminalLayout } from "./components/terminal/TerminalLayout";
@@ -79,7 +81,19 @@ function App() {
     removeFavorite,
     isFavorite,
     toggleFavorite,
+    refreshFavorites,
+    lastMessage,
+    isError,
+    setLastMessage,
   } = useFavorites();
+
+  // Clear toast after delay
+  useEffect(() => {
+    if (lastMessage) {
+      const timer = setTimeout(() => setLastMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [lastMessage, setLastMessage]);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
@@ -96,6 +110,22 @@ function App() {
       unlisten.then((f) => f());
     };
   }, []);
+
+  /**
+   * Logs the current user out, clearing both frontend and backend session state.
+   * Locks the secure vault to protect user data.
+   */
+  const handleLogout = async () => {
+    try {
+      await invoke("logout");
+      await invoke("lock_vault");
+      setCurrentUser(null);
+      // Favorites will be cleared automatically since the vault is locked
+      // and useFavorites will fail its next refresh, but we can clear them manually too
+    } catch (e) {
+      console.error("Logout failed:", e);
+    }
+  };
 
   /**
    * Triggers the start of the simulation via the `useArena` hook.
@@ -318,7 +348,7 @@ function App() {
             <div className="flex items-center gap-3">
               <span className="text-sm text-slate-300">Hi, <span className="font-medium text-white">{currentUser}</span></span>
               <button
-                onClick={() => setCurrentUser(null)}
+                onClick={handleLogout}
                 className="text-sm text-slate-400 hover:text-white transition-colors"
               >
                 Logout
@@ -339,7 +369,10 @@ function App() {
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        onLoginSuccess={(username) => setCurrentUser(username)}
+        onLoginSuccess={(username) => {
+          setCurrentUser(username);
+          refreshFavorites();
+        }}
       />
 
       {/* Live Indicator Bar (only shows when streaming) */}
@@ -363,6 +396,8 @@ function App() {
             }}
             livePrices={livePrices}
             favorites={favorites}
+            favoriteIds={favoriteIds}
+            toggleFavorite={toggleFavorite}
             onNavigateToFavorites={() => setActiveTab("favorites")}
             riskMetrics={arenaData ? {
               riskScore: arenaData.risk_score,
@@ -526,6 +561,22 @@ function App() {
           />
         ) : null}
       </main>
+      {/* Toast Notification */}
+      {lastMessage && (
+        <div className={clsx(
+          "fixed bottom-6 left-1/2 -translate-x-1/2 z-[10000] px-4 py-3 rounded-xl border shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300",
+          isError ? "bg-rose-950 border-rose-500 text-rose-200" : "bg-emerald-950 border-emerald-500 text-emerald-200"
+        )}>
+          {isError ? <AlertCircle size={18} /> : <ShieldCheck size={18} />}
+          <span className="text-sm font-medium">{lastMessage}</span>
+          <button
+            onClick={() => setLastMessage(null)}
+            className="ml-2 hover:opacity-70"
+          >
+            <ShieldCheck size={14} className="rotate-45" /> {/* Primitive close icon fallback */}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
