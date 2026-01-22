@@ -492,6 +492,9 @@ function App() {
             activeMarket={activeMarket}
             startStream={startStream}
             stopStream={stopStream}
+            favoriteIds={favoriteIds}
+            favorites={favorites}
+            toggleFavorite={toggleFavorite}
           />
         ) : activeTab === "training" ? (
           <TrainingTab />

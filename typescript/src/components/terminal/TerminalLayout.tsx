@@ -7,7 +7,7 @@ import { useState, useEffect, useMemo } from "react";
  * @module components/terminal/MarketSidebar
  * @description Searchable sidebar for quickly switching between different trading pairs/markets.
  */
-import { MarketSidebar } from "./MarketSidebar";
+import { MarketSidebar, Market } from "./MarketSidebar";
 /**
  * @module components/terminal/TerminalChart
  * @description Real-time price chart visualization for a selected market.
@@ -29,7 +29,7 @@ import { RecentTradesWidget, Trade } from "./RecentTradesWidget";
  */
 import { TradingFormWidget } from "./TradingFormWidget";
 import { MarketMetadata } from "../../hooks/usePolymarket";
-import { useFavorites } from "../../hooks/useFavorites";
+import { FavoriteMarket } from "../../hooks/useFavorites";
 import { Wallet, Settings } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 
@@ -163,9 +163,18 @@ interface Props {
   /** Metadata for the currently active market. */
   activeMarket: MarketMetadata | null;
   /** Function to start streaming market data. */
-  startStream?: (marketSource: string, metadata: MarketMetadata) => Promise<void>;
+  startStream?: (
+    marketSource: string,
+    metadata: MarketMetadata
+  ) => Promise<void>;
   /** Function to stop the current stream. */
   stopStream?: () => Promise<void>;
+  /** Set of favorite market IDs. */
+  favoriteIds: Set<string>;
+  /** Array of favorite market data. */
+  favorites: FavoriteMarket[];
+  /** Callback to toggle favorite status. */
+  toggleFavorite: (market: any) => void;
 }
 
 /**
@@ -173,8 +182,15 @@ interface Props {
  * Integrates Chart, Order Book, Recent Trades, and Trading execution form.
  * Manages local state for mock data and coordinates live data updates.
  */
-export function TerminalLayout({ livePrices, activeMarket, startStream, stopStream }: Props) {
-  const { favoriteIds, toggleFavorite } = useFavorites();
+export function TerminalLayout({
+  livePrices,
+  activeMarket,
+  startStream,
+  stopStream,
+  favoriteIds,
+  favorites,
+  toggleFavorite,
+}: Props) {
   const [selectedMarketId, setSelectedMarketId] = useState("1");
   const [chartData, setChartData] = useState<any[]>([]);
   const [orderBook, setOrderBook] = useState<{ bids: any; asks: any }>({
@@ -184,18 +200,34 @@ export function TerminalLayout({ livePrices, activeMarket, startStream, stopStre
   const [recentTrades, setRecentTrades] = useState<Trade[]>([]);
   const [trendingMarkets, setTrendingMarkets] = useState<any[]>([]);
 
-  // Always use fresh mock data + trending state
-  const markets = useMemo(
-    () => {
-      const allMarkets = [...generateMockMarkets(), ...trendingMarkets];
-      // Sync isFavorite status from hook
-      return allMarkets.map(m => ({
+  // Always use fresh mock data + trending state + favorites
+  const markets = useMemo(() => {
+    const mockMarkets = generateMockMarkets();
+    const mappedFavorites: Market[] = favorites.map((f) => ({
+      id: f.id,
+      symbol: f.symbol,
+      name: f.name,
+      price: 0.5, // Default for favorites not currently streaming
+      change24h: 0,
+      volume24h: 0,
+      isFavorite: true,
+      marketData: f.marketData,
+    }));
+
+    // Combine all sources
+    const combined = [...mockMarkets, ...trendingMarkets, ...mappedFavorites];
+
+    // Deduplicate by ID, prioritizing later entries (mappedFavorites)
+    const uniqueMarketsMap = new Map<string, Market>();
+    combined.forEach((m) => {
+      uniqueMarketsMap.set(m.id, {
         ...m,
-        isFavorite: favoriteIds.has(m.id)
-      }));
-    },
-    [trendingMarkets, favoriteIds],
-  );
+        isFavorite: favoriteIds.has(m.id),
+      });
+    });
+
+    return Array.from(uniqueMarketsMap.values());
+  }, [trendingMarkets, favoriteIds, favorites]);
 
   // Sync activeMarket with selectedMarketId
   useEffect(() => {

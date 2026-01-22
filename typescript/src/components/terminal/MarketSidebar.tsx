@@ -107,6 +107,156 @@ export function MarketSidebar({
     return favoriteIds?.has(market.id) || market.isFavorite;
   };
 
+  const renderMarketItem = (market: Market) => {
+    // Resolve price: check livePrices by markeId OR by outcome ID (Polymarket)
+    let currentPrice = market.price;
+    let isLive = false;
+
+    if (livePrices) {
+      if (livePrices[market.id] !== undefined) {
+        currentPrice = livePrices[market.id];
+        isLive = true;
+      } else if (
+        market.marketData?.outcomes &&
+        market.marketData.outcomes.length > 0
+      ) {
+        const yesId = market.marketData.outcomes[0].id;
+        if (livePrices[yesId] !== undefined) {
+          currentPrice = livePrices[yesId];
+          isLive = true;
+        }
+      }
+    }
+
+    const outcomeCount = getOutcomeCount(market);
+    const favorited = isFavorited(market);
+
+    return (
+      <div
+        key={market.id}
+        className={clsx(
+          "group px-3 py-3 border-b border-slate-800/50 cursor-pointer transition-colors hover:bg-slate-800/50",
+          activeMarketId === market.id
+            ? "bg-slate-800 border-l-2 border-l-indigo-500"
+            : "border-l-2 border-l-transparent"
+        )}
+      >
+        <div className="flex justify-between items-start mb-1">
+          <div
+            className="flex items-center gap-2 flex-1"
+            onClick={() => onSelectMarket(market.id)}
+          >
+            <span
+              className={clsx(
+                "font-bold text-sm",
+                activeMarketId === market.id
+                  ? "text-white"
+                  : "text-slate-300 group-hover:text-white"
+              )}
+            >
+              {market.symbol}
+            </span>
+            {outcomeCount > 2 && (
+              <span className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 bg-indigo-500/20 text-indigo-400 rounded-full">
+                <Layers size={8} />
+                {outcomeCount}
+              </span>
+            )}
+            {isLive && (
+              <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span
+              className={clsx(
+                "font-mono text-sm",
+                isLive ? "text-emerald-400" : "text-white"
+              )}
+              onClick={() => onSelectMarket(market.id)}
+            >
+              {currentPrice < 1
+                ? currentPrice.toFixed(3)
+                : currentPrice.toFixed(2)}
+            </span>
+
+            {/* Favorite Toggle Button */}
+            {onToggleFavorite && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite(market);
+                }}
+                className={clsx(
+                  "p-1 rounded transition-colors",
+                  favorited
+                    ? "text-yellow-500 hover:text-yellow-400"
+                    : "text-slate-600 hover:text-yellow-500 opacity-0 group-hover:opacity-100"
+                )}
+                title={favorited ? "Remove from favorites" : "Add to favorites"}
+              >
+                {favorited ? (
+                  <Star className="h-3.5 w-3.5 fill-current" />
+                ) : (
+                  <StarOff className="h-3.5 w-3.5" />
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div
+          className="flex justify-between items-center text-xs"
+          onClick={() => onSelectMarket(market.id)}
+        >
+          <span
+            className="text-slate-500 truncate max-w-[120px]"
+            title={market.name}
+          >
+            {market.name}
+          </span>
+          <div className="flex items-center gap-1">
+            <span className="text-slate-600">
+              ${(market.volume24h / 1000).toFixed(1)}k
+            </span>
+            <span
+              className={clsx(
+                "flex items-center",
+                market.change24h >= 0 ? "text-green-400" : "text-rose-400"
+              )}
+            >
+              {market.change24h >= 0 ? (
+                <TrendingUp size={10} className="mr-0.5" />
+              ) : (
+                <TrendingDown size={10} className="mr-0.5" />
+              )}
+              {Math.abs(market.change24h).toFixed(2)}%
+            </span>
+          </div>
+        </div>
+
+        {/* Show outcomes preview for multi-outcome markets */}
+        {outcomeCount > 2 && market.marketData?.outcomes && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {market.marketData.outcomes.slice(0, 4).map((outcome) => (
+              <span
+                key={outcome.id}
+                className="text-[9px] px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded"
+              >
+                {outcome.name}
+              </span>
+            ))}
+            {outcomeCount > 4 && (
+              <span className="text-[9px] px-1.5 py-0.5 text-slate-600">
+                +{outcomeCount - 4} more
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-full bg-slate-900 border-r border-slate-800 w-80">
       {/* Header / Search */}
@@ -184,152 +334,38 @@ export function MarketSidebar({
             </p>
           </div>
         ) : (
-          filteredMarkets.map((market) => {
-            // Resolve price: check livePrices by markeId OR by outcome ID (Polymarket)
-            let currentPrice = market.price;
-            let isLive = false;
-
-            if (livePrices) {
-              if (livePrices[market.id] !== undefined) {
-                currentPrice = livePrices[market.id];
-                isLive = true;
-              } else if (market.marketData?.outcomes && market.marketData.outcomes.length > 0) {
-                const yesId = market.marketData.outcomes[0].id;
-                if (livePrices[yesId] !== undefined) {
-                  currentPrice = livePrices[yesId];
-                  isLive = true;
-                }
-              }
-            }
-
-            const outcomeCount = getOutcomeCount(market);
-            const favorited = isFavorited(market);
-
-            return (
-              <div
-                key={market.id}
-                className={clsx(
-                  "group px-3 py-3 border-b border-slate-800/50 cursor-pointer transition-colors hover:bg-slate-800/50",
-                  activeMarketId === market.id
-                    ? "bg-slate-800 border-l-2 border-l-indigo-500"
-                    : "border-l-2 border-l-transparent"
-                )}
-              >
-                <div className="flex justify-between items-start mb-1">
-                  <div
-                    className="flex items-center gap-2 flex-1"
-                    onClick={() => onSelectMarket(market.id)}
-                  >
-                    <span
-                      className={clsx(
-                        "font-bold text-sm",
-                        activeMarketId === market.id
-                          ? "text-white"
-                          : "text-slate-300 group-hover:text-white"
-                      )}
-                    >
-                      {market.symbol}
-                    </span>
-                    {outcomeCount > 2 && (
-                      <span className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 bg-indigo-500/20 text-indigo-400 rounded-full">
-                        <Layers size={8} />
-                        {outcomeCount}
-                      </span>
-                    )}
-                    {isLive && (
-                      <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    )}
+          <>
+            {/* Favorites Section (Pinned at top if in 'all' mode) */}
+            {filterMode === "all" &&
+              Array.from(favoriteIds || []).length > 0 && (
+                <div className="py-2">
+                  <div className="px-3 py-1 flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/20 mb-1">
+                    <Star
+                      size={10}
+                      className="fill-yellow-500 text-yellow-500"
+                    />
+                    Favorites
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={clsx(
-                        "font-mono text-sm",
-                        isLive ? "text-emerald-400" : "text-white"
-                      )}
-                      onClick={() => onSelectMarket(market.id)}
-                    >
-                      {currentPrice < 1
-                        ? currentPrice.toFixed(3)
-                        : currentPrice.toFixed(2)}
-                    </span>
-
-                    {/* Favorite Toggle Button */}
-                    {onToggleFavorite && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleFavorite(market);
-                        }}
-                        className={clsx(
-                          "p-1 rounded transition-colors",
-                          favorited
-                            ? "text-yellow-500 hover:text-yellow-400"
-                            : "text-slate-600 hover:text-yellow-500 opacity-0 group-hover:opacity-100"
-                        )}
-                        title={favorited ? "Remove from favorites" : "Add to favorites"}
-                      >
-                        {favorited ? (
-                          <Star className="h-3.5 w-3.5 fill-current" />
-                        ) : (
-                          <StarOff className="h-3.5 w-3.5" />
-                        )}
-                      </button>
-                    )}
-                  </div>
+                  {filteredMarkets
+                    .filter((m) => isFavorited(m))
+                    .map((market) => renderMarketItem(market))}
                 </div>
+              )}
 
-                <div
-                  className="flex justify-between items-center text-xs"
-                  onClick={() => onSelectMarket(market.id)}
-                >
-                  <span
-                    className="text-slate-500 truncate max-w-[120px]"
-                    title={market.name}
-                  >
-                    {market.name}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-slate-600">
-                      ${(market.volume24h / 1000).toFixed(1)}k
-                    </span>
-                    <span
-                      className={clsx(
-                        "flex items-center",
-                        market.change24h >= 0 ? "text-green-400" : "text-rose-400"
-                      )}
-                    >
-                      {market.change24h >= 0 ? (
-                        <TrendingUp size={10} className="mr-0.5" />
-                      ) : (
-                        <TrendingDown size={10} className="mr-0.5" />
-                      )}
-                      {Math.abs(market.change24h).toFixed(2)}%
-                    </span>
-                  </div>
-                </div>
-
-                {/* Show outcomes preview for multi-outcome markets */}
-                {outcomeCount > 2 && market.marketData?.outcomes && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {market.marketData.outcomes.slice(0, 4).map((outcome) => (
-                      <span
-                        key={outcome.id}
-                        className="text-[9px] px-1.5 py-0.5 bg-slate-800 text-slate-400 rounded"
-                      >
-                        {outcome.name}
-                      </span>
-                    ))}
-                    {outcomeCount > 4 && (
-                      <span className="text-[9px] px-1.5 py-0.5 text-slate-600">
-                        +{outcomeCount - 4} more
-                      </span>
-                    )}
+            {/* Main Section */}
+            <div>
+              {filterMode === "all" &&
+                Array.from(favoriteIds || []).length > 0 && (
+                  <div className="px-3 py-1 flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/20 mb-1">
+                    <Layers size={10} />
+                    Other Markets
                   </div>
                 )}
-              </div>
-            );
-          })
+              {filteredMarkets
+                .filter((m) => filterMode !== "all" || !isFavorited(m))
+                .map((market) => renderMarketItem(market))}
+            </div>
+          </>
         )}
       </div>
 

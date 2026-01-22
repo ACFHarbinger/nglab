@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 
 /**
  * @module hooks/useFavorites
@@ -31,6 +31,7 @@ const FAVORITES_STORAGE_KEY = "nglab_favorites";
  */
 export function useFavorites() {
   const [favorites, setFavorites] = useState<FavoriteMarket[]>([]);
+  const isLoaded = useRef(false);
 
   // Load favorites from localStorage on mount
   useEffect(() => {
@@ -44,11 +45,14 @@ export function useFavorites() {
       }
     } catch (e) {
       console.error("Failed to load favorites from localStorage:", e);
+    } finally {
+      isLoaded.current = true;
     }
   }, []);
 
   // Persist favorites to localStorage whenever they change
   useEffect(() => {
+    if (!isLoaded.current) return;
     try {
       localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
     } catch (e) {
@@ -56,11 +60,14 @@ export function useFavorites() {
     }
   }, [favorites]);
 
-  const favoriteIds = new Set(favorites.map((f) => f.id));
+  const favoriteIds = useMemo(
+    () => new Set(favorites.map((f: FavoriteMarket) => f.id)),
+    [favorites]
+  );
 
   const addFavorite = useCallback((market: Omit<FavoriteMarket, "addedAt">) => {
-    setFavorites((prev) => {
-      if (prev.some((f) => f.id === market.id)) {
+    setFavorites((prev: FavoriteMarket[]) => {
+      if (prev.some((f: FavoriteMarket) => f.id === market.id)) {
         return prev;
       }
       return [...prev, { ...market, addedAt: Date.now() }];
@@ -68,7 +75,9 @@ export function useFavorites() {
   }, []);
 
   const removeFavorite = useCallback((marketId: string) => {
-    setFavorites((prev) => prev.filter((f) => f.id !== marketId));
+    setFavorites((prev: FavoriteMarket[]) =>
+      prev.filter((f: FavoriteMarket) => f.id !== marketId)
+    );
   }, []);
 
   const isFavorite = useCallback(
