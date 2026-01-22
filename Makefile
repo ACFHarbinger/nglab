@@ -122,6 +122,12 @@ clean:
 	find . -type f -name '*.pyc' -delete
 	@echo "$(GREEN)✅ Cleanup complete!$(RESET)"
 
+# Reset credentials
+reset-credentials:
+	@echo "$(YELLOW)🧹 Resetting all credentials (deleting local databases)...$(RESET)"
+	rm -f assets/secrets/*.db
+	@echo "$(GREEN)✅ Credentials reset!$(RESET)"
+
 # Development setup
 dev: install-hooks
 	@echo "$(CYAN)$(BOLD)🚀 Setting up development environment...$(RESET)"

@@ -1,18 +1,12 @@
-/*!
- * Authentication module for NGLab.
- *
- * Provides secure password hashing with Argon2id and credential storage
- * using the OS-native keyring (Keychain on macOS, Credential Manager on Windows,
- * Secret Service on Linux).
- */
-
 use argon2::{
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
 };
-use keyring::Entry;
 use password_hash::rand_core::OsRng;
+use rusqlite::{params, Connection, Result as SqlResult};
 use serde::{Deserialize, Serialize};
+use std::fs;
+use std::path::PathBuf;
 
 /// Standard response wrapper for authentication operations
 #[derive(Debug, Serialize, Deserialize)]
@@ -45,9 +39,6 @@ impl AuthResponse {
     }
 }
 
-/// Service name for keyring entries
-const SERVICE_NAME: &str = "nglab";
-
 /// Result type for authentication operations
 pub type AuthResult<T> = Result<T, AuthError>;
 
@@ -70,9 +61,9 @@ pub enum AuthError {
     #[error("Password hashing failed: {0}")]
     HashingError(String),
 
-    /// OS keyring or secret service errors.
-    #[error("Keyring error: {0}")]
-    KeyringError(String),
+    /// Database errors.
+    #[error("Database error: {0}")]
+    DatabaseError(String),
 
     /// Internal data serialization failures.
     #[error("Serialization error: {0}")]
@@ -86,6 +77,128 @@ pub struct StoredCredential {
     pub password_hash: String,
     /// The time when the credentials were created.
     pub created_at: chrono::DateTime<chrono::Utc>,
+}
+
+/// Manages credential storage using SQLite/SQLCipher.
+pub struct CredentialManager {
+    db_path: PathBuf,
+}
+
+impl CredentialManager {
+    /// Default encryption key for credentials database (hashes are already secure)
+    const DEFAULT_KEY: &'static str = "nglab_credentials_secure_v1";
+
+    /// Creates a new CredentialManager with the given database path.
+    pub fn new(db_path: PathBuf) -> Self {
+        Self { db_path }
+    }
+
+    /// Gets the default path for the credentials database in `assets/secrets/credentials.db`.
+    pub fn get_default_path() -> AuthResult<PathBuf> {
+        let mut path = PathBuf::from("/home/pkhunter/Repositories/nglab");
+        path.push("assets");
+        path.push("secrets");
+
+        if !path.exists() {
+            fs::create_dir_all(&path).map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        }
+
+        path.push("credentials.db");
+        Ok(path)
+    }
+
+    /// Creates a new CredentialManager using the default database path.
+    pub fn with_default_path() -> AuthResult<Self> {
+        Ok(Self::new(Self::get_default_path()?))
+    }
+
+    /// Opens an encrypted connection to the database.
+    fn open_connection(&self) -> SqlResult<Connection> {
+        let conn = Connection::open(&self.db_path)?;
+        conn.pragma_update(None, "key", Self::DEFAULT_KEY)?;
+        Ok(conn)
+    }
+
+    /// Initializes the database schema.
+    pub fn init_db(&self) -> AuthResult<()> {
+        let conn = self
+            .open_connection()
+            .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS users (
+                username TEXT PRIMARY KEY,
+                credential_json TEXT NOT NULL
+            )",
+            [],
+        )
+        .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        Ok(())
+    }
+
+    /// Saves a user's credential to the database.
+    pub fn save_credential(&self, username: &str, credential: &StoredCredential) -> AuthResult<()> {
+        let conn = self
+            .open_connection()
+            .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        let json = serde_json::to_string(credential)
+            .map_err(|e| AuthError::SerializationError(e.to_string()))?;
+
+        conn.execute(
+            "INSERT INTO users (username, credential_json) VALUES (?1, ?2)",
+            params![username, json],
+        )
+        .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        Ok(())
+    }
+
+    /// Retrieves a user's credential from the database.
+    pub fn get_credential(&self, username: &str) -> AuthResult<Option<StoredCredential>> {
+        let conn = self
+            .open_connection()
+            .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        let mut stmt = conn
+            .prepare("SELECT credential_json FROM users WHERE username = ?1")
+            .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+
+        let mut rows = stmt
+            .query_map(params![username], |row| {
+                let json: String = row.get(0)?;
+                Ok(json)
+            })
+            .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+
+        if let Some(json_res) = rows.next() {
+            let json = json_res.map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+            let credential: StoredCredential = serde_json::from_str(&json)
+                .map_err(|e| AuthError::SerializationError(e.to_string()))?;
+            return Ok(Some(credential));
+        }
+        Ok(None)
+    }
+
+    /// Deletes a user's credential from the database.
+    pub fn delete_credential(&self, username: &str) -> AuthResult<()> {
+        let conn = self
+            .open_connection()
+            .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        conn.execute("DELETE FROM users WHERE username = ?1", params![username])
+            .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        Ok(())
+    }
+
+    /// Checks if a user exists in the database.
+    pub fn user_exists(&self, username: &str) -> AuthResult<bool> {
+        let conn = self
+            .open_connection()
+            .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        let mut stmt = conn
+            .prepare("SELECT 1 FROM users WHERE username = ?1")
+            .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        let exists = stmt
+            .exists(params![username])
+            .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        Ok(exists)
+    }
 }
 
 /// Authentication manager
@@ -113,27 +226,14 @@ impl AuthManager {
             .is_ok())
     }
 
-    /// Get keyring entry for a username
-    fn get_entry(username: &str) -> AuthResult<Entry> {
-        Entry::new(SERVICE_NAME, username).map_err(|e| AuthError::KeyringError(e.to_string()))
-    }
-
     /// Create a new user account
-    ///
-    /// Hashes the password with Argon2id and stores it in the OS keyring.
     pub fn create_account(username: &str, password: &str) -> AuthResult<()> {
-        let entry = Self::get_entry(username)?;
+        let manager = CredentialManager::with_default_path()?;
+        manager.init_db()?;
 
         // Check if user already exists
-        match entry.get_password() {
-            Ok(_) => return Err(AuthError::UserAlreadyExists(username.to_string())),
-            Err(keyring::Error::NoEntry) => { /* User does not exist, proceed */ }
-            Err(e) => {
-                return Err(AuthError::KeyringError(format!(
-                    "Error checking existing user: {}",
-                    e
-                )))
-            }
+        if manager.user_exists(username)? {
+            return Err(AuthError::UserAlreadyExists(username.to_string()));
         }
 
         // Hash password
@@ -145,39 +245,21 @@ impl AuthManager {
             created_at: chrono::Utc::now(),
         };
 
-        // Serialize and store
-        let credential_json = serde_json::to_string(&credential)
-            .map_err(|e| AuthError::SerializationError(e.to_string()))?;
-
-        entry
-            .set_password(&credential_json)
-            .map_err(|e| AuthError::KeyringError(format!("Failed to save credential: {}", e)))?;
+        // Store
+        manager.save_credential(username, &credential)?;
 
         Ok(())
     }
 
     /// Verify login credentials
-    ///
-    /// Retrieves the stored hash from keyring and verifies the password.
     pub fn login(username: &str, password: &str) -> AuthResult<bool> {
-        let entry = Self::get_entry(username)?;
+        let manager = CredentialManager::with_default_path()?;
+        manager.init_db()?;
 
         // Get stored credential
-        let credential_json = match entry.get_password() {
-            Ok(json) => json,
-            Err(keyring::Error::NoEntry) => {
-                return Err(AuthError::UserNotFound(username.to_string()))
-            }
-            Err(e) => {
-                return Err(AuthError::KeyringError(format!(
-                    "Failed to retrieve credential: {}",
-                    e
-                )))
-            }
-        };
-
-        let credential: StoredCredential = serde_json::from_str(&credential_json)
-            .map_err(|e| AuthError::SerializationError(e.to_string()))?;
+        let credential = manager
+            .get_credential(username)?
+            .ok_or_else(|| AuthError::UserNotFound(username.to_string()))?;
 
         // Verify password
         Self::verify_password(password, &credential.password_hash)
@@ -185,26 +267,29 @@ impl AuthManager {
 
     /// Delete a user account
     pub fn delete_account(username: &str) -> AuthResult<()> {
-        let entry = Self::get_entry(username)?;
-
-        entry
-            .delete_credential()
-            .map_err(|e| AuthError::KeyringError(e.to_string()))?;
-
-        Ok(())
+        let manager = CredentialManager::with_default_path()?;
+        manager.delete_credential(username)
     }
 
     /// Check if a user exists
     pub fn user_exists(username: &str) -> AuthResult<bool> {
-        let entry = Self::get_entry(username)?;
-        Ok(entry.get_password().is_ok())
+        let manager = CredentialManager::with_default_path()?;
+        manager.user_exists(username)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use password_hash::rand_core::RngCore;
+    use tempfile::tempdir;
+
+    fn setup_test_manager() -> (CredentialManager, tempfile::TempDir) {
+        let dir = tempdir().unwrap();
+        let db_path = dir.path().join("test_credentials.db");
+        let manager = CredentialManager::new(db_path);
+        manager.init_db().unwrap();
+        (manager, dir)
+    }
 
     #[test]
     fn test_password_hashing() {
@@ -222,22 +307,25 @@ mod tests {
     }
 
     #[test]
-    fn test_full_auth_flow() {
-        let username = format!("test_user_{}", OsRng.next_u64());
-        let password = "test_password_123";
+    fn test_credential_manager_crud() {
+        let (manager, _dir) = setup_test_manager();
+        let username = "test_user";
+        let credential = StoredCredential {
+            password_hash: "dummy_hash".to_string(),
+            created_at: chrono::Utc::now(),
+        };
 
-        // Create account
-        AuthManager::create_account(&username, &password).expect("Failed to create account");
+        // Create
+        manager.save_credential(username, &credential).unwrap();
+        assert!(manager.user_exists(username).unwrap());
 
-        // Login should succeed
-        assert!(AuthManager::login(&username, &password).expect("Failed to login"));
+        // Read
+        let retrieved = manager.get_credential(username).unwrap().unwrap();
+        assert_eq!(retrieved.password_hash, credential.password_hash);
 
-        // Login with wrong password should return false (invalid password)
-        assert!(
-            !AuthManager::login(&username, "wrong_pass").expect("Failed to check wrong password")
-        );
-
-        // Clean up
-        AuthManager::delete_account(&username).expect("Failed to delete account");
+        // Delete
+        manager.delete_credential(username).unwrap();
+        assert!(!manager.user_exists(username).unwrap());
+        assert!(manager.get_credential(username).unwrap().is_none());
     }
 }

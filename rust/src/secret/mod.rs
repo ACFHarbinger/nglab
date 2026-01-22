@@ -5,6 +5,7 @@
  * with external trading platforms.
  */
 
+/// Authentication and credential management.
 pub mod auth;
 pub mod integrations;
 pub mod vault;
