@@ -40,11 +40,11 @@ Tasks:
 [x] Implement bracket orders
   - Entry + stop-loss + take-profit as atomic unit
   - Automatic child order creation on fill
-□ Add pegged orders
+[x] Add pegged orders
   - Peg to mid, bid, ask, or last price
   - Dynamic price adjustment on book updates
-□ Expose new order types via Tauri commands
-□ Add order type selector in TradingFormWidget
+[x] Expose new order types via Tauri commands
+[x] Add order type selector in TradingFormWidget
 ```
 **Complexity**: Medium | **Impact**: High
 

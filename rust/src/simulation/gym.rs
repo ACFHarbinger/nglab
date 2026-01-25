@@ -699,6 +699,11 @@ impl TradingEnv {
     pub fn set_seed(&mut self, seed: u64) {
         self.rng = StdRng::seed_from_u64(seed);
     }
+
+    /** Mutable access to orderbook for direct order manipulation */
+    pub fn orderbook_mut(&mut self) -> &mut OrderBook {
+        &mut self.orderbook
+    }
 }
 
 #[cfg(test)]

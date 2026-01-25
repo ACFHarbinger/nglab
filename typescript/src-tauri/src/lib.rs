@@ -44,6 +44,10 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::simulation::start_simulation,
             commands::simulation::stop_simulation,
+            commands::trade::submit_fok_order,
+            commands::trade::submit_ioc_order,
+            commands::trade::submit_bracket_order,
+            commands::trade::submit_pegged_order,
             commands::scraping::scrape_polymarket,
             commands::streaming::stream_polymarket_prices,
             commands::streaming::stop_polymarket_stream,

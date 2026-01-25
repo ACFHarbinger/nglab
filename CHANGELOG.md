@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced ARCHITECTURE.md with Kubernetes topology
 - Enhanced TROUBLESHOOTING.md with GPU/CUDA debugging guides
 - Interactive Jupyter notebook tutorial series (10 notebooks)
+- **Pegged Orders**: Dynamic order pricing (e.g., Peg to Best Bid + Offset) with real-time updates via `PegReference` and `reprice_pegged_orders`.
 
 #### Deep Learning Framework
 - **Comprehensive Model Library**: Full implementation of 28+ advanced architectures in `python/src/models/deep/`

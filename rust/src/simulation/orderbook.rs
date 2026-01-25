@@ -20,7 +20,8 @@ use indexmap::IndexMap;
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
+use ts_rs::TS;
 
 use crate::errors::ArenaResult;
 use crate::validation::{validate_price, validate_quantity};
@@ -28,8 +29,9 @@ use crate::validation::{validate_price, validate_quantity};
 /**
  * Order side: Bid (buy) or Ask (sell).
  */
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[cfg_attr(feature = "python", pyclass(get_all))]
+#[ts(export)]
 pub enum Side {
     /// Buy side.
     Bid,
@@ -48,10 +50,26 @@ impl Side {
 }
 
 /**
+ * Reference price for pegged orders.
+ */
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[cfg_attr(feature = "python", pyclass(get_all))]
+#[ts(export)]
+pub enum PegReference {
+    /// Peg to the best bid.
+    BestBid,
+    /// Peg to the best ask.
+    BestAsk,
+    /// Peg to the mid point.
+    MidPoint,
+}
+
+/**
  * Supported order types.
  */
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[cfg_attr(feature = "python", pyclass)]
+#[ts(export)]
 pub enum OrderType {
     /// Limit order to buy/sell at specific price.
     Limit,
@@ -67,6 +85,8 @@ pub enum OrderType {
     FillOrKill,
     /// Execute what's available immediately, cancel the rest.
     ImmediateOrCancel,
+    /// Pegged order tracking a reference price.
+    Pegged,
 }
 
 /**
@@ -109,8 +129,9 @@ impl AuctionState {
 /**
  * A single order entry in the book.
  */
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[cfg_attr(feature = "python", pyclass(get_all))]
+#[ts(export)]
 pub struct Order {
     /// Unique identifier for the order
     pub id: u64,
@@ -146,6 +167,10 @@ pub struct Order {
     pub bracket_sl: Option<f64>,
     /// Take profit price for bracket order
     pub bracket_tp: Option<f64>,
+    /// Reference for pegged orders
+    pub peg_reference: Option<PegReference>,
+    /// Offset for pegged orders
+    pub peg_offset: Option<f64>,
 }
 
 /**
@@ -187,6 +212,8 @@ impl Order {
             oco_id: None,
             bracket_sl: None,
             bracket_tp: None,
+            peg_reference: None,
+            peg_offset: None,
         }
     }
 
@@ -227,6 +254,8 @@ impl Order {
             oco_id,
             bracket_sl,
             bracket_tp,
+            peg_reference: None,
+            peg_offset: None,
         }
     }
 
@@ -355,6 +384,8 @@ pub struct OrderBook {
     pending_orders: VecDeque<PendingOrder>,
     /** Simulated network/processing latency in milliseconds */
     latency_ms: u64,
+    /** Set of active pegged order IDs for efficient updates */
+    pub pegged_orders: HashSet<u64>,
 }
 
 impl Default for OrderBook {
@@ -451,6 +482,17 @@ impl OrderBook {
     ) -> u64 {
         self.submit_bracket_order(price, quantity, side, sl_price, tp_price)
     }
+
+    #[pyo3(name = "submit_pegged_order")]
+    pub fn submit_pegged_order_py(
+        &mut self,
+        quantity: f64,
+        side: Side,
+        peg_reference: PegReference,
+        peg_offset: f64,
+    ) -> Option<u64> {
+        self.submit_pegged_order(quantity, side, peg_reference, peg_offset)
+    }
 }
 
 // =========================================================================
@@ -472,6 +514,7 @@ impl OrderBook {
             auction_state: None,
             pending_orders: VecDeque::new(),
             latency_ms: 0,
+            pegged_orders: HashSet::new(),
         }
     }
 
@@ -502,7 +545,11 @@ impl OrderBook {
             self.stop_orders.push(order);
             Vec::new()
         } else {
-            self.match_order(order)
+            let trades = self.match_order(order);
+            if !self.pegged_orders.is_empty() {
+                self.reprice_pegged_orders();
+            }
+            trades
         }
     }
 
@@ -1063,7 +1110,10 @@ impl OrderBook {
                     let p = k as f64 / self.price_precision;
                     if matches!(
                         order.order_type,
-                        OrderType::Limit | OrderType::FillOrKill | OrderType::ImmediateOrCancel
+                        OrderType::Limit
+                            | OrderType::FillOrKill
+                            | OrderType::ImmediateOrCancel
+                            | OrderType::Pegged
                     ) && order.price < p
                     {
                         break;
@@ -1115,7 +1165,9 @@ impl OrderBook {
                 }
                 self.asks.retain(|_, l| !l.is_empty());
                 let (ff, iff) = (order.filled, order.is_filled());
-                if order.order_type == OrderType::Limit && !iff {
+                if (order.order_type == OrderType::Limit || order.order_type == OrderType::Pegged)
+                    && !iff
+                {
                     self.submit_order_to_book(order);
                 }
                 (ff, iff)
@@ -1130,7 +1182,10 @@ impl OrderBook {
                     let p = k as f64 / self.price_precision;
                     if matches!(
                         order.order_type,
-                        OrderType::Limit | OrderType::FillOrKill | OrderType::ImmediateOrCancel
+                        OrderType::Limit
+                            | OrderType::FillOrKill
+                            | OrderType::ImmediateOrCancel
+                            | OrderType::Pegged
                     ) && order.price > p
                     {
                         break;
@@ -1182,7 +1237,9 @@ impl OrderBook {
                 }
                 self.bids.retain(|_, l| !l.is_empty());
                 let (ff, iff) = (order.filled, order.is_filled());
-                if order.order_type == OrderType::Limit && !iff {
+                if (order.order_type == OrderType::Limit || order.order_type == OrderType::Pegged)
+                    && !iff
+                {
                     self.submit_order_to_book(order);
                 }
                 (ff, iff)
@@ -1193,6 +1250,11 @@ impl OrderBook {
             self.handle_order_fill(m_id, m_side, m_qty, m_iff, m_oco, m_sl, m_tp);
         }
         self.handle_order_fill(id, side, final_filled, is_filled, oco_id, b_sl, b_tp);
+
+        if !self.pegged_orders.is_empty() {
+            self.reprice_pegged_orders();
+        }
+
         trades
     }
 
@@ -1267,11 +1329,153 @@ impl OrderBook {
         None
     }
 
+    /// Remove an order from the book and return it.
+    pub fn pop_order(&mut self, order_id: u64) -> Option<Order> {
+        let mut target = None;
+        for (&price, level) in &self.bids {
+            if let Some(idx) = level.orders.iter().position(|o| o.id == order_id) {
+                target = Some((price, idx, Side::Bid));
+                break;
+            }
+        }
+
+        if target.is_none() {
+            for (&price, level) in &self.asks {
+                if let Some(idx) = level.orders.iter().position(|o| o.id == order_id) {
+                    target = Some((price, idx, Side::Ask));
+                    break;
+                }
+            }
+        }
+
+        if let Some((price, idx, side)) = target {
+            let maps = match side {
+                Side::Bid => &mut self.bids,
+                Side::Ask => &mut self.asks,
+            };
+
+            if let Some(level) = maps.get_mut(&price) {
+                if idx < level.orders.len() {
+                    let order = level.orders.remove(idx).unwrap();
+                    level.total_quantity -= order.remaining();
+
+                    if level.is_empty() {
+                        maps.swap_remove(&price);
+                    }
+                    return Some(order);
+                }
+            }
+        }
+        None
+    }
+
     /// Clear all orders from the book.
     pub fn clear(&mut self) {
         self.bids.clear();
         self.asks.clear();
         self.stop_orders.clear();
+        self.pegged_orders.clear();
+    }
+
+    /// Calculate peg price based on reference and offset.
+    fn calculate_peg_price(&self, reference: PegReference, offset: f64) -> Option<f64> {
+        let price = match reference {
+            PegReference::BestBid => self.best_bid(),
+            PegReference::BestAsk => self.best_ask(),
+            PegReference::MidPoint => self.mid_price(),
+        };
+
+        // If reference is missing, default to last price or None
+        let ref_price = price.or(Some(self.last_price)).filter(|&p| p > 0.0)?;
+
+        let final_price = ref_price + offset;
+
+        Some((final_price * self.price_precision).round() / self.price_precision)
+    }
+
+    /// Submit a pegged order.
+    pub fn submit_pegged_order(
+        &mut self,
+        quantity: f64,
+        side: Side,
+        reference: PegReference,
+        offset: f64,
+    ) -> Option<u64> {
+        let price = self.calculate_peg_price(reference, offset)?;
+
+        let order_id = self.next_order_id;
+        self.next_order_id += 1;
+
+        let mut order = Order::new(
+            order_id,
+            price,
+            quantity,
+            side,
+            OrderType::Pegged,
+            self.timestamp,
+        );
+        order.peg_reference = Some(reference);
+        order.peg_offset = Some(offset);
+
+        self.pegged_orders.insert(order_id);
+
+        if self.latency_ms > 0 {
+            self.pending_orders.push_back(PendingOrder {
+                process_at: self.timestamp + self.latency_ms,
+                order,
+            });
+            Some(order_id)
+        } else {
+            self.process_incoming_order(order);
+            Some(order_id)
+        }
+    }
+
+    /// Reprice all active pegged orders based on current market data.
+    pub fn reprice_pegged_orders(&mut self) {
+        // Collect orders that need updates to avoid borrowing issues
+        let mut updates = Vec::new();
+        let mut to_remove = Vec::new();
+
+        // Helper to find order info
+        let find_order_info = |id: u64| -> Option<(f64, PegReference, f64)> {
+            for level in self.bids.values() {
+                if let Some(o) = level.orders.iter().find(|o| o.id == id) {
+                    return Some((o.price, o.peg_reference?, o.peg_offset?));
+                }
+            }
+            for level in self.asks.values() {
+                if let Some(o) = level.orders.iter().find(|o| o.id == id) {
+                    return Some((o.price, o.peg_reference?, o.peg_offset?));
+                }
+            }
+            None
+        };
+
+        for &id in &self.pegged_orders {
+            if let Some((current_price, reference, offset)) = find_order_info(id) {
+                if let Some(new_price) = self.calculate_peg_price(reference, offset) {
+                    if (new_price - current_price).abs() > std::f64::EPSILON {
+                        updates.push((id, new_price));
+                    }
+                }
+            } else {
+                // Order not found (filled or cancelled), mark for removal
+                to_remove.push(id);
+            }
+        }
+
+        for id in to_remove {
+            self.pegged_orders.remove(&id);
+        }
+
+        // Apply updates
+        for (id, new_price) in updates {
+            if let Some(mut order) = self.pop_order(id) {
+                order.price = new_price;
+                self.submit_order_to_book(order);
+            }
+        }
     }
 }
 
@@ -1293,6 +1497,44 @@ mod tests {
         book.submit_limit_order(101.0, 15.0, Side::Ask).unwrap();
         assert_eq!(book.best_bid(), Some(100.0));
         assert_eq!(book.best_ask(), Some(101.0));
+    }
+
+    #[test]
+    fn test_pegged_order_submission_and_update() {
+        let mut book = OrderBook::new();
+        book.submit_limit_order(100.0, 10.0, Side::Bid).unwrap();
+        book.submit_limit_order(105.0, 10.0, Side::Ask).unwrap();
+
+        // Peg to Best Bid + 0.0 (Primary Peg)
+        // This avoids the self-referential infinite loop of aggressive pegs.
+        let id = book
+            .submit_pegged_order(5.0, Side::Bid, PegReference::BestBid, 0.0)
+            .unwrap();
+
+        // Initial check: Best Bid is 100.0. I join at 100.0.
+        // My ID is tracked.
+        assert_eq!(book.pegged_orders.len(), 1);
+        assert!(book.pegged_orders.contains(&id));
+
+        // Now update the market: New Limit Bid at 102.0
+        // This establishes a NEW Best Bid at 102.0.
+        // My order (currently at 100.0) should reprice to 102.0 logic:
+        // Match runs -> updates BBO -> calls reprice_pegged_orders -> I move to 102.0.
+        book.submit_limit_order(102.0, 10.0, Side::Bid).unwrap();
+
+        // Verify my order is now at 102.0
+        let order_info = book.get_queue_position(id);
+        assert!(order_info.is_some());
+
+        // Check price of the order in the book
+        let mut found_price = None;
+        for level in book.bids.values() {
+            if level.orders.iter().any(|o| o.id == id) {
+                found_price = Some(level.price);
+                break;
+            }
+        }
+        assert_eq!(found_price, Some(102.0));
     }
 
     #[test]
