@@ -8,6 +8,7 @@ import { useState } from "react";
  * @description High-level overview of global market volume, active traders, and peak activity times.
  */
 import { ExternalLink, Twitter, Info, Radio } from "lucide-react";
+import { useStreamingGuard } from "../../hooks/useStreamingGuard";
 import clsx from "clsx";
 
 const ACTIVITY_TABS = ["All", "Insider", "Top Traders", "Tracked", "Friends"];
@@ -125,6 +126,7 @@ const NEWS_ITEMS = [
 export function GlobalActivityWidget() {
   const [activeTab, setActiveTab] = useState("All");
   const [activeIntelTab, setActiveIntelTab] = useState("OSINT");
+  const { canStream } = useStreamingGuard();
 
   return (
     <div className="flex flex-col h-full bg-slate-900 border-l border-slate-800 w-full">
@@ -135,9 +137,21 @@ export function GlobalActivityWidget() {
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
             Activity
           </span>
-          <span className="flex items-center gap-1.5 bg-green-500/20 text-green-400 text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-green-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            LIVE
+          <span
+            className={clsx(
+              "flex items-center gap-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full border transition-all duration-300",
+              canStream
+                ? "bg-green-500/20 text-green-400 border-green-500/30"
+                : "bg-rose-500/20 text-rose-400 border-rose-500/30",
+            )}
+          >
+            <span
+              className={clsx(
+                "w-1.5 h-1.5 rounded-full transition-colors duration-300",
+                canStream ? "bg-green-500 animate-pulse" : "bg-rose-500",
+              )}
+            />
+            {canStream ? "LIVE" : "INACTIVE"}
           </span>
         </div>
         <div className="flex border-b border-slate-800 bg-slate-950">

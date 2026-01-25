@@ -1,5 +1,14 @@
 import { useState, useMemo } from "react";
-import { Search, TrendingUp, TrendingDown, Star, StarOff, Filter, ChevronDown, Layers } from "lucide-react";
+import {
+  Search,
+  TrendingUp,
+  TrendingDown,
+  Star,
+  StarOff,
+  Filter,
+  ChevronDown,
+  Layers,
+} from "lucide-react";
 import clsx from "clsx";
 
 /**
@@ -74,7 +83,7 @@ export function MarketSidebar({
       result = result.filter(
         (m) =>
           m.name.toLowerCase().includes(query) ||
-          m.symbol.toLowerCase().includes(query)
+          m.symbol.toLowerCase().includes(query),
       );
     }
 
@@ -85,7 +94,7 @@ export function MarketSidebar({
         break;
       case "multi-outcome":
         result = result.filter(
-          (m) => (m.marketData?.outcomes?.length ?? 2) > 2
+          (m) => (m.marketData?.outcomes?.length ?? 2) > 2,
         );
         break;
     }
@@ -138,7 +147,7 @@ export function MarketSidebar({
           "group px-3 py-3 border-b border-slate-800/50 cursor-pointer transition-colors hover:bg-slate-800/50",
           activeMarketId === market.id
             ? "bg-slate-800 border-l-2 border-l-indigo-500"
-            : "border-l-2 border-l-transparent"
+            : "border-l-2 border-l-transparent",
         )}
       >
         <div className="flex justify-between items-start mb-1">
@@ -151,7 +160,7 @@ export function MarketSidebar({
                 "font-bold text-sm",
                 activeMarketId === market.id
                   ? "text-white"
-                  : "text-slate-300 group-hover:text-white"
+                  : "text-slate-300 group-hover:text-white",
               )}
             >
               {market.symbol}
@@ -171,13 +180,15 @@ export function MarketSidebar({
             <span
               className={clsx(
                 "font-mono text-sm",
-                isLive ? "text-emerald-400" : "text-white"
+                isLive ? "text-emerald-400" : "text-white",
               )}
               onClick={() => onSelectMarket(market.id)}
             >
-              {currentPrice < 1
-                ? currentPrice.toFixed(3)
-                : currentPrice.toFixed(2)}
+              {isFinite(currentPrice)
+                ? currentPrice < 1
+                  ? currentPrice.toFixed(3)
+                  : currentPrice.toFixed(2)
+                : "0.000"}
             </span>
 
             {/* Favorite Toggle Button */}
@@ -191,7 +202,7 @@ export function MarketSidebar({
                   "p-1 rounded transition-colors",
                   favorited
                     ? "text-yellow-500 hover:text-yellow-400"
-                    : "text-slate-600 hover:text-yellow-500 opacity-0 group-hover:opacity-100"
+                    : "text-slate-600 hover:text-yellow-500 opacity-0 group-hover:opacity-100",
                 )}
                 title={favorited ? "Remove from favorites" : "Add to favorites"}
               >
@@ -217,12 +228,16 @@ export function MarketSidebar({
           </span>
           <div className="flex items-center gap-1">
             <span className="text-slate-600">
-              ${(market.volume24h / 1000).toFixed(1)}k
+              $
+              {isFinite(market.volume24h)
+                ? (market.volume24h / 1000).toFixed(1)
+                : "0.0"}
+              k
             </span>
             <span
               className={clsx(
                 "flex items-center",
-                market.change24h >= 0 ? "text-green-400" : "text-rose-400"
+                market.change24h >= 0 ? "text-green-400" : "text-rose-400",
               )}
             >
               {market.change24h >= 0 ? (
@@ -230,7 +245,7 @@ export function MarketSidebar({
               ) : (
                 <TrendingDown size={10} className="mr-0.5" />
               )}
-              {Math.abs(market.change24h).toFixed(2)}%
+              {Math.abs(market.change24h || 0).toFixed(2)}%
             </span>
           </div>
         </div>
@@ -286,7 +301,7 @@ export function MarketSidebar({
               size={12}
               className={clsx(
                 "transition-transform",
-                showFilterMenu && "rotate-180"
+                showFilterMenu && "rotate-180",
               )}
             />
           </button>
@@ -304,7 +319,7 @@ export function MarketSidebar({
                     "w-full px-3 py-2 text-left text-xs transition-colors",
                     filterMode === mode
                       ? "bg-indigo-600 text-white"
-                      : "text-slate-300 hover:bg-slate-700"
+                      : "text-slate-300 hover:bg-slate-700",
                   )}
                 >
                   {filterLabels[mode]}

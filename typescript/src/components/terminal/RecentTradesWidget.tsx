@@ -38,7 +38,10 @@ interface RecentTradesProps {
 export function RecentTradesWidget({ trades }: RecentTradesProps) {
   // Sort trades descending by time (newest first)
   const sortedTrades = useMemo(() => {
-    return [...trades].sort((a, b) => b.timestamp - a.timestamp);
+    if (!trades || !Array.isArray(trades)) return [];
+    return [...trades]
+      .filter((t) => t && typeof t.timestamp === "number")
+      .sort((a, b) => b.timestamp - a.timestamp);
   }, [trades]);
 
   return (
@@ -70,10 +73,10 @@ export function RecentTradesWidget({ trades }: RecentTradesProps) {
                   trade.side === "buy" ? "text-emerald-400" : "text-rose-400",
                 )}
               >
-                {trade.price.toFixed(3)}
+                {isFinite(trade.price) ? trade.price.toFixed(3) : "0.000"}
               </span>
               <span className="w-16 text-right text-slate-300">
-                {trade.size.toFixed(0)}
+                {isFinite(trade.size) ? trade.size.toFixed(0) : "0"}
               </span>
               <span className="flex-1 text-right text-slate-500">
                 {new Date(trade.timestamp * 1000).toLocaleTimeString([], {

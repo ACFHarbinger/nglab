@@ -26,13 +26,17 @@ interface OrderBookProps {
  */
 export function OrderBookWidget({ bids, asks }: OrderBookProps) {
   const sortedBids = useMemo(() => {
+    if (!bids) return [];
     return Object.values(bids)
+      .filter((b) => b && typeof b.price === "number")
       .sort((a, b) => b.price - a.price)
       .slice(0, 15);
   }, [bids]);
 
   const sortedAsks = useMemo(() => {
+    if (!asks) return [];
     return Object.values(asks)
+      .filter((a) => a && typeof a.price === "number")
       .sort((a, b) => a.price - b.price)
       .slice(0, 15);
   }, [asks]);
@@ -71,12 +75,18 @@ export function OrderBookWidget({ bids, asks }: OrderBookProps) {
                 className="absolute right-0 top-0 bottom-0 bg-rose-900/20"
                 style={{ width: `${(ask.total_quantity / maxVol) * 100}%` }}
               />
-              <span className="z-10 text-rose-400">{ask.price.toFixed(3)}</span>
+              <span className="z-10 text-rose-400">
+                {isFinite(ask.price) ? ask.price.toFixed(3) : "0.000"}
+              </span>
               <span className="z-10 text-slate-300">
-                {ask.total_quantity.toFixed(0)}
+                {isFinite(ask.total_quantity)
+                  ? ask.total_quantity.toFixed(0)
+                  : "0"}
               </span>
               <span className="z-10 text-slate-500">
-                {(ask.price * ask.total_quantity).toFixed(0)}
+                {isFinite(ask.price) && isFinite(ask.total_quantity)
+                  ? (ask.price * ask.total_quantity).toFixed(0)
+                  : "0"}
               </span>
             </div>
           ))}
@@ -86,7 +96,9 @@ export function OrderBookWidget({ bids, asks }: OrderBookProps) {
         <div className="py-2 border-y border-slate-800 bg-slate-950 text-center">
           {sortedAsks.length > 0 && sortedBids.length > 0 ? (
             <span className="text-lg font-bold text-slate-200">
-              {((sortedAsks[0].price + sortedBids[0].price) / 2).toFixed(3)}
+              {isFinite(sortedAsks[0].price) && isFinite(sortedBids[0].price)
+                ? ((sortedAsks[0].price + sortedBids[0].price) / 2).toFixed(3)
+                : "-"}
             </span>
           ) : (
             <span className="text-slate-500">-</span>
@@ -106,13 +118,17 @@ export function OrderBookWidget({ bids, asks }: OrderBookProps) {
                 style={{ width: `${(bid.total_quantity / maxVol) * 100}%` }}
               />
               <span className="z-10 text-emerald-400">
-                {bid.price.toFixed(3)}
+                {isFinite(bid.price) ? bid.price.toFixed(3) : "0.000"}
               </span>
               <span className="z-10 text-slate-300">
-                {bid.total_quantity.toFixed(0)}
+                {isFinite(bid.total_quantity)
+                  ? bid.total_quantity.toFixed(0)
+                  : "0"}
               </span>
               <span className="z-10 text-slate-500">
-                {(bid.price * bid.total_quantity).toFixed(0)}
+                {isFinite(bid.price) && isFinite(bid.total_quantity)
+                  ? (bid.price * bid.total_quantity).toFixed(0)
+                  : "0"}
               </span>
             </div>
           ))}

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import clsx from "clsx";
 import { Wallet, Info, ChevronDown, Layers } from "lucide-react";
 
@@ -26,14 +26,62 @@ interface TradingFormProps {
 
 // Generate distinct colors for multi-outcome markets
 const outcomeColors = [
-  { bg: "bg-emerald-600", bgHover: "hover:bg-emerald-500", bgLight: "bg-emerald-600/10", text: "text-emerald-400", border: "border-emerald-500" },
-  { bg: "bg-rose-600", bgHover: "hover:bg-rose-500", bgLight: "bg-rose-600/10", text: "text-rose-400", border: "border-rose-500" },
-  { bg: "bg-blue-600", bgHover: "hover:bg-blue-500", bgLight: "bg-blue-600/10", text: "text-blue-400", border: "border-blue-500" },
-  { bg: "bg-amber-600", bgHover: "hover:bg-amber-500", bgLight: "bg-amber-600/10", text: "text-amber-400", border: "border-amber-500" },
-  { bg: "bg-purple-600", bgHover: "hover:bg-purple-500", bgLight: "bg-purple-600/10", text: "text-purple-400", border: "border-purple-500" },
-  { bg: "bg-cyan-600", bgHover: "hover:bg-cyan-500", bgLight: "bg-cyan-600/10", text: "text-cyan-400", border: "border-cyan-500" },
-  { bg: "bg-pink-600", bgHover: "hover:bg-pink-500", bgLight: "bg-pink-600/10", text: "text-pink-400", border: "border-pink-500" },
-  { bg: "bg-orange-600", bgHover: "hover:bg-orange-500", bgLight: "bg-orange-600/10", text: "text-orange-400", border: "border-orange-500" },
+  {
+    bg: "bg-emerald-600",
+    bgHover: "hover:bg-emerald-500",
+    bgLight: "bg-emerald-600/10",
+    text: "text-emerald-400",
+    border: "border-emerald-500",
+  },
+  {
+    bg: "bg-rose-600",
+    bgHover: "hover:bg-rose-500",
+    bgLight: "bg-rose-600/10",
+    text: "text-rose-400",
+    border: "border-rose-500",
+  },
+  {
+    bg: "bg-blue-600",
+    bgHover: "hover:bg-blue-500",
+    bgLight: "bg-blue-600/10",
+    text: "text-blue-400",
+    border: "border-blue-500",
+  },
+  {
+    bg: "bg-amber-600",
+    bgHover: "hover:bg-amber-500",
+    bgLight: "bg-amber-600/10",
+    text: "text-amber-400",
+    border: "border-amber-500",
+  },
+  {
+    bg: "bg-purple-600",
+    bgHover: "hover:bg-purple-500",
+    bgLight: "bg-purple-600/10",
+    text: "text-purple-400",
+    border: "border-purple-500",
+  },
+  {
+    bg: "bg-cyan-600",
+    bgHover: "hover:bg-cyan-500",
+    bgLight: "bg-cyan-600/10",
+    text: "text-cyan-400",
+    border: "border-cyan-500",
+  },
+  {
+    bg: "bg-pink-600",
+    bgHover: "hover:bg-pink-500",
+    bgLight: "bg-pink-600/10",
+    text: "text-pink-400",
+    border: "border-pink-500",
+  },
+  {
+    bg: "bg-orange-600",
+    bgHover: "hover:bg-orange-500",
+    bgLight: "bg-orange-600/10",
+    text: "text-orange-400",
+    border: "border-orange-500",
+  },
 ];
 
 /**
@@ -41,7 +89,11 @@ const outcomeColors = [
  * Supports both Binary and Multi-Outcome markets with dynamic UI.
  * Handles estimated shares, potential payout, and profit calculations.
  */
-export function TradingFormWidget({ currentPrice, outcomes, livePrices }: TradingFormProps) {
+export function TradingFormWidget({
+  currentPrice,
+  outcomes,
+  livePrices,
+}: TradingFormProps) {
   // Default to Yes/No if no outcomes provided
   const marketOutcomes = useMemo(() => {
     if (outcomes && outcomes.length > 0) return outcomes;
@@ -60,17 +112,32 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
   const maxBuy = 1000; // Mock wallet balance
   const maxSell = 500; // Mock position size
 
-  const selectedOutcome = marketOutcomes[selectedOutcomeIdx];
-  const colorScheme = outcomeColors[selectedOutcomeIdx % outcomeColors.length];
+  const selectedOutcome = marketOutcomes[selectedOutcomeIdx] ||
+    marketOutcomes[0] || { id: "unknown", name: "Unknown" };
+  const colorScheme =
+    outcomeColors[
+      Math.min(selectedOutcomeIdx, marketOutcomes.length - 1) %
+        outcomeColors.length
+    ] || outcomeColors[0];
+
+  // Reset index if it becomes out of bounds due to prop changes
+  useEffect(() => {
+    if (selectedOutcomeIdx >= marketOutcomes.length) {
+      setSelectedOutcomeIdx(0);
+    }
+  }, [marketOutcomes.length, selectedOutcomeIdx]);
 
   // Get price for selected outcome
   const getOutcomePrice = (outcomeId: string, idx: number): number => {
     if (livePrices && livePrices[outcomeId] !== undefined) {
-      return livePrices[outcomeId];
+      const price = livePrices[outcomeId];
+      return typeof price === "number" ? price : 0;
     }
     // For binary markets, calculate complementary price
     if (marketOutcomes.length === 2) {
-      return idx === 0 ? currentPrice : Math.max(0, 1 - currentPrice);
+      return idx === 0
+        ? currentPrice || 0
+        : Math.max(0, 1 - (currentPrice || 0));
     }
     // For multi-outcome, use equal distribution as fallback
     return 1 / marketOutcomes.length;
@@ -78,9 +145,14 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
 
   const activePrice = getOutcomePrice(selectedOutcome.id, selectedOutcomeIdx);
   const parsedAmount = parseFloat(amount) || 0;
-  const estimatedShares = parsedAmount / (activePrice || 0.01);
+  // Ensure we don't divide by zero or NaN
+  const safePrice =
+    isFinite(activePrice) && activePrice > 0 ? activePrice : 0.01;
+  const estimatedShares = parsedAmount / safePrice;
   const potentialPayout = estimatedShares * 1; // Each share pays $1 if it wins
-  const potentialProfit = potentialPayout - parsedAmount;
+  const potentialProfit = isFinite(potentialPayout)
+    ? potentialPayout - parsedAmount
+    : 0;
 
   // Simple fee calc (mock)
   const fee = parsedAmount * 0.001;
@@ -107,7 +179,7 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
                 "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                 colorScheme.bg,
                 colorScheme.bgHover,
-                "text-white"
+                "text-white",
               )}
             >
               <span className="flex items-center gap-2">
@@ -116,13 +188,13 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
               </span>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs opacity-75">
-                  ${activePrice.toFixed(3)}
+                  ${isFinite(activePrice) ? activePrice.toFixed(3) : "0.000"}
                 </span>
                 <ChevronDown
                   size={14}
                   className={clsx(
                     "transition-transform",
-                    showOutcomeDropdown && "rotate-180"
+                    showOutcomeDropdown && "rotate-180",
                   )}
                 />
               </div>
@@ -144,20 +216,17 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
                         "w-full flex items-center justify-between px-3 py-2.5 text-sm transition-colors",
                         selectedOutcomeIdx === idx
                           ? `${colors.bgLight} ${colors.text}`
-                          : "text-slate-300 hover:bg-slate-700"
+                          : "text-slate-300 hover:bg-slate-700",
                       )}
                     >
                       <span className="flex items-center gap-2">
                         <span
-                          className={clsx(
-                            "w-2 h-2 rounded-full",
-                            colors.bg
-                          )}
+                          className={clsx("w-2 h-2 rounded-full", colors.bg)}
                         />
                         {outcome.name}
                       </span>
                       <span className="font-mono text-xs">
-                        ${price.toFixed(3)}
+                        ${isFinite(price) ? price.toFixed(3) : "0.000"}
                       </span>
                     </button>
                   );
@@ -179,7 +248,7 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
                   "py-1.5 text-xs font-bold uppercase tracking-wider rounded transition-colors",
                   selectedOutcomeIdx === idx
                     ? `${colors.bg} text-white`
-                    : "bg-slate-800 text-slate-500 hover:bg-slate-700"
+                    : "bg-slate-800 text-slate-500 hover:bg-slate-700",
                 )}
               >
                 {outcome.name}
@@ -197,7 +266,7 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
             "flex-1 py-3 text-sm font-bold uppercase tracking-wide transition-colors",
             side === "buy"
               ? "bg-emerald-600/10 text-emerald-400 border-b-2 border-emerald-500"
-              : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+              : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50",
           )}
         >
           Buy
@@ -208,7 +277,7 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
             "flex-1 py-3 text-sm font-bold uppercase tracking-wide transition-colors",
             side === "sell"
               ? "bg-rose-600/10 text-rose-400 border-b-2 border-rose-500"
-              : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+              : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50",
           )}
         >
           Sell
@@ -218,11 +287,9 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
       <div className="p-4 flex flex-col gap-4 flex-1">
         {/* Current outcome price display */}
         <div className="flex items-center justify-between text-xs">
-          <span className="text-slate-400">
-            {selectedOutcome.name} Price
-          </span>
+          <span className="text-slate-400">{selectedOutcome.name} Price</span>
           <span className={clsx("font-mono font-bold", colorScheme.text)}>
-            ${activePrice.toFixed(3)}
+            ${isFinite(activePrice) ? activePrice.toFixed(3) : "0.000"}
           </span>
         </div>
 
@@ -240,7 +307,9 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
               type="number"
               className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-right font-mono text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
               placeholder="0.00"
-              defaultValue={activePrice.toFixed(3)}
+              defaultValue={
+                isFinite(activePrice) ? activePrice.toFixed(3) : "0.000"
+              }
             />
             <span className="absolute left-3 top-2.5 text-slate-500 text-sm">
               USDC
@@ -255,7 +324,7 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
               <Wallet size={10} />
               <span>
                 {side === "buy"
-                  ? `${maxBuy.toFixed(2)} USDC`
+                  ? `${isFinite(maxBuy) ? maxBuy.toFixed(2) : "0.00"} USDC`
                   : `${maxSell} Shares`}
               </span>
             </div>
@@ -291,34 +360,39 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
           <div className="flex justify-between text-xs">
             <span className="text-slate-500">Est. Shares</span>
             <span className="font-mono text-slate-200">
-              {estimatedShares.toFixed(2)}
+              {isFinite(estimatedShares) ? estimatedShares.toFixed(2) : "0.00"}
             </span>
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-slate-500">Potential Payout</span>
             <span className="font-mono text-emerald-400">
-              ${potentialPayout.toFixed(2)}
+              ${isFinite(potentialPayout) ? potentialPayout.toFixed(2) : "0.00"}
             </span>
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-slate-500">Potential Profit</span>
-            <span className={clsx(
-              "font-mono",
-              potentialProfit >= 0 ? "text-emerald-400" : "text-rose-400"
-            )}>
-              {potentialProfit >= 0 ? "+" : ""}${potentialProfit.toFixed(2)}
+            <span
+              className={clsx(
+                "font-mono",
+                potentialProfit >= 0 ? "text-emerald-400" : "text-rose-400",
+              )}
+            >
+              {potentialProfit >= 0 ? "+" : ""}$
+              {isFinite(potentialProfit) ? potentialProfit.toFixed(2) : "0.00"}
             </span>
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-slate-500 flex items-center gap-1">
               Fee <Info size={10} />
             </span>
-            <span className="font-mono text-slate-200">${fee.toFixed(4)}</span>
+            <span className="font-mono text-slate-200">
+              ${isFinite(fee) ? fee.toFixed(4) : "0.0000"}
+            </span>
           </div>
           <div className="flex justify-between text-xs pt-2 border-t border-slate-800/50">
             <span className="text-slate-400 font-bold">Total Cost</span>
             <span className="font-mono text-white text-sm font-bold">
-              ${parsedAmount.toFixed(2)}
+              ${isFinite(parsedAmount) ? parsedAmount.toFixed(2) : "0.00"}
             </span>
           </div>
         </div>
@@ -331,10 +405,12 @@ export function TradingFormWidget({ currentPrice, outcomes, livePrices }: Tradin
             "w-full py-3.5 rounded-lg font-bold text-sm tracking-wide shadow-lg transition-all active:scale-[0.98]",
             side === "buy"
               ? `${colorScheme.bg} ${colorScheme.bgHover} text-white shadow-emerald-900/20`
-              : "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-900/20"
+              : "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-900/20",
           )}
         >
-          {side === "buy" ? `Buy ${selectedOutcome.name}` : `Sell ${selectedOutcome.name}`}
+          {side === "buy"
+            ? `Buy ${selectedOutcome.name}`
+            : `Sell ${selectedOutcome.name}`}
         </button>
 
         {/* Outcome probabilities summary for multi-outcome */}

@@ -13,6 +13,7 @@ import { LoginModal } from "./components/LoginModal";
 import { FavoritesTab } from "./components/FavoritesTab";
 import { useArena } from "./hooks/useArena";
 import { useFavorites } from "./hooks/useFavorites";
+import { useStreaming } from "./context/StreamingContext";
 import {
   Play,
   Square,
@@ -58,6 +59,7 @@ function App() {
     stopStream,
     setActiveMarket,
   } = usePolymarket();
+  const { setIsLoggedIn } = useStreaming();
   const [logs, setLogs] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<
     | "dashboard"
@@ -97,6 +99,11 @@ function App() {
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
+
+  // --- LOGIN SYNC: Notify StreamingContext about login status ---
+  useEffect(() => {
+    setIsLoggedIn(currentUser !== null);
+  }, [currentUser, setIsLoggedIn]);
 
   // Listen for logs
   useEffect(() => {
@@ -346,7 +353,10 @@ function App() {
           {/* Login Button */}
           {currentUser ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-slate-300">Hi, <span className="font-medium text-white">{currentUser}</span></span>
+              <span className="text-sm text-slate-300">
+                Hi,{" "}
+                <span className="font-medium text-white">{currentUser}</span>
+              </span>
               <button
                 onClick={handleLogout}
                 className="text-sm text-slate-400 hover:text-white transition-colors"
@@ -399,11 +409,15 @@ function App() {
             favoriteIds={favoriteIds}
             toggleFavorite={toggleFavorite}
             onNavigateToFavorites={() => setActiveTab("favorites")}
-            riskMetrics={arenaData ? {
-              riskScore: arenaData.risk_score,
-              drawdown: arenaData.current_drawdown,
-              varValue: arenaData.current_var
-            } : undefined}
+            riskMetrics={
+              arenaData
+                ? {
+                    riskScore: arenaData.risk_score,
+                    drawdown: arenaData.current_drawdown,
+                    varValue: arenaData.current_var,
+                  }
+                : undefined
+            }
           />
         ) : activeTab === "simulation" ? (
           <div className="grid grid-cols-12 gap-6 h-full p-4">
@@ -563,17 +577,22 @@ function App() {
       </main>
       {/* Toast Notification */}
       {lastMessage && (
-        <div className={clsx(
-          "fixed bottom-6 left-1/2 -translate-x-1/2 z-[10000] px-4 py-3 rounded-xl border shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300",
-          isError ? "bg-rose-950 border-rose-500 text-rose-200" : "bg-emerald-950 border-emerald-500 text-emerald-200"
-        )}>
+        <div
+          className={clsx(
+            "fixed bottom-6 left-1/2 -translate-x-1/2 z-[10000] px-4 py-3 rounded-xl border shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300",
+            isError
+              ? "bg-rose-950 border-rose-500 text-rose-200"
+              : "bg-emerald-950 border-emerald-500 text-emerald-200",
+          )}
+        >
           {isError ? <AlertCircle size={18} /> : <ShieldCheck size={18} />}
           <span className="text-sm font-medium">{lastMessage}</span>
           <button
             onClick={() => setLastMessage(null)}
             className="ml-2 hover:opacity-70"
           >
-            <ShieldCheck size={14} className="rotate-45" /> {/* Primitive close icon fallback */}
+            <ShieldCheck size={14} className="rotate-45" />{" "}
+            {/* Primitive close icon fallback */}
           </button>
         </div>
       )}

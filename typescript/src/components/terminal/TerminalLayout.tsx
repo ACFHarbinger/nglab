@@ -46,10 +46,16 @@ const generateMockMarkets = () => [
     marketData: {
       id: "will-trump-nominate-kevin-warsh-as-the-next-fed-chair",
       outcomes: [
-        { id: "51338236787729560681434534660841415073585974762690814047670810862722808070955", name: "Yes" },
-        { id: "18289842382539867639079362738467334752951741961393928566628307174343542320349", name: "No" }
-      ]
-    }
+        {
+          id: "51338236787729560681434534660841415073585974762690814047670810862722808070955",
+          name: "Yes",
+        },
+        {
+          id: "18289842382539867639079362738467334752951741961393928566628307174343542320349",
+          name: "No",
+        },
+      ],
+    },
   },
   {
     id: "2",
@@ -61,10 +67,16 @@ const generateMockMarkets = () => [
     marketData: {
       id: "will-trump-nominate-kevin-hassett-as-the-next-fed-chair",
       outcomes: [
-        { id: "34551606549875928972193520396544368029176529083448203019529657908155427866742", name: "Yes" },
-        { id: "22802130763821766047382314926654345322953005062130920361011056163048911488589", name: "No" }
-      ]
-    }
+        {
+          id: "34551606549875928972193520396544368029176529083448203019529657908155427866742",
+          name: "Yes",
+        },
+        {
+          id: "22802130763821766047382314926654345322953005062130920361011056163048911488589",
+          name: "No",
+        },
+      ],
+    },
   },
   {
     id: "3",
@@ -76,10 +88,16 @@ const generateMockMarkets = () => [
     marketData: {
       id: "will-ethereum-reach-10000-by-december-31-2026",
       outcomes: [
-        { id: "100865557115198861945068078147655261264339702053336500548943844953071484972262", name: "Yes" },
-        { id: "110234250181945907038686474667990126495798306823136531546168897766302386074534", name: "No" }
-      ]
-    }
+        {
+          id: "100865557115198861945068078147655261264339702053336500548943844953071484972262",
+          name: "Yes",
+        },
+        {
+          id: "110234250181945907038686474667990126495798306823136531546168897766302386074534",
+          name: "No",
+        },
+      ],
+    },
   },
   {
     id: "4",
@@ -91,10 +109,16 @@ const generateMockMarkets = () => [
     marketData: {
       id: "fed-decreases-interest-rates-by-25-bps-after-january-2026-meeting",
       outcomes: [
-        { id: "92703761682322480664976766247614127878023988651992837287050266308961660624165", name: "Yes" },
-        { id: "48193521645113703700467246669338225849301704920590102230072263970163239985027", name: "No" }
-      ]
-    }
+        {
+          id: "92703761682322480664976766247614127878023988651992837287050266308961660624165",
+          name: "Yes",
+        },
+        {
+          id: "48193521645113703700467246669338225849301704920590102230072263970163239985027",
+          name: "No",
+        },
+      ],
+    },
   },
   {
     id: "5",
@@ -106,10 +130,16 @@ const generateMockMarkets = () => [
     marketData: {
       id: "will-bitcoin-reach-100000-by-december-31-2026-571",
       outcomes: [
-        { id: "56078938060096976448086754249497300447360333783952000147427828224794011030104", name: "Yes" },
-        { id: "11291662904897713174667903388388696640643610556195928998276904135282270136756", name: "No" }
-      ]
-    }
+        {
+          id: "56078938060096976448086754249497300447360333783952000147427828224794011030104",
+          name: "Yes",
+        },
+        {
+          id: "11291662904897713174667903388388696640643610556195928998276904135282270136756",
+          name: "No",
+        },
+      ],
+    },
   },
 ];
 
@@ -163,7 +193,7 @@ interface Props {
   /** Function to start streaming market data. */
   startStream?: (
     marketSource: string,
-    metadata: MarketMetadata
+    metadata: MarketMetadata,
   ) => Promise<void>;
   /** Function to stop the current stream. */
   stopStream?: () => Promise<void>;
@@ -200,7 +230,7 @@ export function TerminalLayout({
   // Always use fresh mock data + trending state + favorites
   const markets = useMemo(() => {
     const mockMarkets = generateMockMarkets();
-    const mappedFavorites: Market[] = favorites.map((f) => ({
+    const mappedFavorites: Market[] = (favorites || []).map((f) => ({
       id: f.id,
       symbol: f.symbol,
       name: f.name,
@@ -219,7 +249,7 @@ export function TerminalLayout({
     combined.forEach((m) => {
       uniqueMarketsMap.set(m.id, {
         ...m,
-        isFavorite: favoriteIds.has(m.id),
+        isFavorite: (favoriteIds || new Set()).has(m.id),
       });
     });
 
@@ -255,21 +285,23 @@ export function TerminalLayout({
       const response: any = await invoke("get_trending_markets", { limit: 10 });
       if (response.success && response.data) {
         // Map backend events to frontend market structure
-        const trending = response.data.map((event: any, index: number) => {
-          // Flatten: Use first market of the event or specific logic
-          const market = event.markets?.[0]; // Simplification
-          return {
-            id: market?.id || event.id,
-            symbol: event.title.substring(0, 10).toUpperCase(), // Naive symbol
-            name: event.title,
-            price: 0.50, // Default or fetch
-            change24h: 0,
-            volume24h: 10000 - index * 100, // Fake volume desc
-            isFavorite: false,
-            // Store full data for streaming
-            marketData: market
-          };
-        });
+        const trending = (response.data || []).map(
+          (event: any, index: number) => {
+            // Flatten: Use first market of the event or specific logic
+            const market = event.markets?.[0]; // Simplification
+            return {
+              id: market?.id || event.id,
+              symbol: event.title.substring(0, 10).toUpperCase(), // Naive symbol
+              name: event.title,
+              price: 0.5, // Default or fetch
+              change24h: 0,
+              volume24h: 10000 - index * 100, // Fake volume desc
+              isFavorite: false,
+              // Store full data for streaming
+              marketData: market,
+            };
+          },
+        );
 
         // Merge with mocks or replace
         if (trending.length > 0) {
@@ -281,16 +313,18 @@ export function TerminalLayout({
     }
   };
 
-  const selectedMarket: any =
-    markets.find((m) => m.id === selectedMarketId) || markets[0];
+  const selectedMarket: any = markets.find((m) => m.id === selectedMarketId) ||
+    markets[0] || { symbol: "...", price: 0, change24h: 0 };
 
   // Start stream when market is selected
   useEffect(() => {
-    if (startStream && selectedMarket) {
+    if (startStream && selectedMarket && selectedMarket.id) {
       // Use the actual market ID from marketData if it exists (for both mocks and trending)
-      const marketSource = selectedMarket.marketData?.id || selectedMarketId;
+      const marketSource = selectedMarket.marketData?.id || selectedMarket.id;
 
-      console.log(`📡 Switching terminal stream to: ${marketSource} (${selectedMarket.name})`);
+      console.log(
+        `📡 Switching terminal stream to: ${marketSource} (${selectedMarket.name})`,
+      );
 
       // We explicitly stop the previous stream before starting a new one to ensure clean state
       const runStream = async () => {
@@ -298,26 +332,30 @@ export function TerminalLayout({
         await startStream(marketSource, selectedMarket.marketData);
       };
 
-      runStream().catch((e) => console.error("Terminal stream transition failed", e));
+      runStream().catch((e) =>
+        console.error("Terminal stream transition failed", e),
+      );
     }
 
     return () => {
       if (stopStream) {
-        stopStream().catch((e) => console.error("Cleanup stream stop failed", e));
+        stopStream().catch((e) =>
+          console.error("Cleanup stream stop failed", e),
+        );
       }
     };
   }, [selectedMarketId, selectedMarket?.name, startStream, stopStream]);
 
   // Live price update logic
-  let currentPrice = selectedMarket.price;
+  let currentPrice = selectedMarket?.price || 0;
 
-  if (livePrices) {
+  if (livePrices && selectedMarket) {
     // 1. Check direct mapping (simple)
     if (livePrices[selectedMarketId]) {
       currentPrice = livePrices[selectedMarketId];
     }
     // 2. Check by Token/Outcome ID (Polymarket)
-    else if (selectedMarket.marketData?.outcomes?.length > 0) {
+    else if (selectedMarket?.marketData?.outcomes?.length > 0) {
       // Assume first outcome is the main one (Yes)
       const yesId = selectedMarket.marketData.outcomes[0].id;
       if (livePrices[yesId]) {
@@ -335,7 +373,9 @@ export function TerminalLayout({
       <div className="fixed bottom-24 right-12 bg-slate-900 border-2 border-emerald-500 text-[11px] text-emerald-400 p-4 rounded-xl z-[9999] pointer-events-none shadow-[0_0_30px_rgba(16,185,129,0.3)] backdrop-blur-md min-w-[220px]">
         <div className="font-bold uppercase tracking-widest border-b border-emerald-500/20 pb-2 mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${Object.keys(livePrices || {}).length > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+            <div
+              className={`w-2 h-2 rounded-full ${Object.keys(livePrices || {}).length > 0 ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`}
+            />
             <span>Live Stream</span>
           </div>
           <span className="text-[9px] opacity-50 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
@@ -345,16 +385,20 @@ export function TerminalLayout({
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <span className="opacity-60">Active Assets:</span>
-            <span className="text-white font-bold">{Object.keys(livePrices || {}).length}</span>
+            <span className="text-white font-bold">
+              {Object.keys(livePrices || {}).length}
+            </span>
           </div>
           <div className="flex justify-between items-center border-t border-emerald-500/10 pt-2 mt-2">
             <span className="opacity-60 text-emerald-400">Last Event:</span>
-            <span className="text-white truncate max-w-[100px]">{lastAssetId.substring(0, 8)}...</span>
+            <span className="text-white truncate max-w-[100px]">
+              {lastAssetId.substring(0, 8)}...
+            </span>
           </div>
-          {lastPrice !== null && (
+          {isFinite(lastPrice as number) && lastPrice !== null && (
             <div className="flex justify-between items-center text-[9px] opacity-40">
               <span>Last Price:</span>
-              <span>${lastPrice.toFixed(4)}</span>
+              <span>${(lastPrice as number).toFixed(4)}</span>
             </div>
           )}
         </div>
@@ -372,12 +416,16 @@ export function TerminalLayout({
   useEffect(() => {
     // Update chart with live price
     // We use the calculated currentPrice for the chart update
-    if (Object.keys(livePrices || {}).length > 0 && isFinite(currentPrice) && currentPrice !== selectedMarket.price) {
+    if (
+      Object.keys(livePrices || {}).length > 0 &&
+      isFinite(currentPrice) &&
+      currentPrice !== selectedMarket.price
+    ) {
       setChartData((prev: any[]) => {
         const now = Math.floor(Date.now() / 1000);
         const lastPoint = prev[prev.length - 1];
 
-        // Lightweight-charts requires unique, ascending timestamps. 
+        // Lightweight-charts requires unique, ascending timestamps.
         // If we get multiple updates in the same second, we update the last point's value instead of pushing a new one.
         if (lastPoint && lastPoint.time === now) {
           const updated = [...prev];
@@ -420,13 +468,20 @@ export function TerminalLayout({
             </h1>
             <div className="flex flex-col">
               <span className="text-2xl font-mono font-bold text-white">
-                ${currentPrice.toFixed(3)}
+                ${isFinite(currentPrice) ? currentPrice.toFixed(3) : "0.000"}
               </span>
               <span
                 className={`text-xs ${selectedMarket.change24h >= 0 ? "text-green-400" : "text-rose-400"}`}
               >
-                {selectedMarket.change24h > 0 ? "+" : ""}
-                {selectedMarket.change24h}%
+                {isFinite(selectedMarket.change24h)
+                  ? selectedMarket.change24h > 0
+                    ? "+"
+                    : ""
+                  : ""}
+                {isFinite(selectedMarket.change24h)
+                  ? selectedMarket.change24h
+                  : "0"}
+                %
               </span>
             </div>
           </div>

@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { useStreamingGuard } from "./useStreamingGuard";
 
 /**
  * @module hooks/useArena
  * @description Provides a React hook for managing the real-time trading arena simulation.
+ * Respects the global streaming control - simulation will not start if streaming is disabled.
  */
 
 /**
@@ -67,19 +69,46 @@ export interface ArenaUpdate {
  * Listens for 'arena-update' events from the Tauri backend and maintains
  * state for the latest update, tick history, and simulation status.
  *
+ * **Streaming Guard**: This hook respects the global streaming control.
+ * If global streaming is disabled, `start()` will be a no-op and any
+ * running simulation will be automatically stopped.
+ *
  * @returns {object} An object containing:
  * - `data`: The latest `ArenaUpdate` or `null`.
  * - `history`: An array of the last 200 `ArenaUpdate` snapshots.
  * - `isRunning`: Boolean indicating if if the simulation is active.
  * - `start`: Function to start the simulation.
  * - `stop`: Function to stop the simulation.
+ * - `isGlobalStreamingEnabled`: Whether global streaming is enabled.
  */
 export function useArena() {
   const [data, setData] = useState<ArenaUpdate | null>(null);
   const [history, setHistory] = useState<ArenaUpdate[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
+  // --- STREAMING GUARD: Get global streaming state ---
+  const { canStream, isGlobalStreamingEnabled } = useStreamingGuard();
+
+  // Track running state for cleanup effects
+  const isRunningRef = useRef(false);
+  isRunningRef.current = isRunning;
+
+  // --- STREAMING GUARD: Auto-stop when global streaming is disabled or logged out ---
   useEffect(() => {
+    if (!canStream && isRunningRef.current) {
+      console.log("🛑 Streaming gated - stopping arena simulation");
+      invoke("stop_simulation")
+        .then(() => setIsRunning(false))
+        .catch(console.error);
+    }
+  }, [canStream]);
+
+  useEffect(() => {
+    // --- STREAMING GUARD: Don't set up listener if streaming is gated ---
+    if (!canStream) {
+      return;
+    }
+
     const unlistenPromise = listen<ArenaUpdate>("arena-update", (event) => {
       const update = event.payload;
       setData(update);
@@ -94,17 +123,27 @@ export function useArena() {
     return () => {
       unlistenPromise.then((unlisten) => unlisten());
     };
-  }, []);
+  }, [canStream]);
 
   /**
    * Starts the simulation on the backend.
    * Sets `isRunning` to true upon successful invocation.
+   *
+   * **Note**: This is a no-op if global streaming is disabled.
    */
   const start = useCallback(() => {
+    // --- STREAMING GUARD: Prevent start if streaming is disabled ---
+    if (!canStream) {
+      console.warn(
+        "⚠️ Cannot start arena simulation: streaming is gated (check toggle or login)",
+      );
+      return;
+    }
+
     invoke("start_simulation")
       .then(() => setIsRunning(true))
       .catch(console.error);
-  }, []);
+  }, [canStream]);
 
   /**
    * Stops the simulation on the backend.
@@ -116,5 +155,5 @@ export function useArena() {
       .catch(console.error);
   }, []);
 
-  return { data, history, isRunning, start, stop };
+  return { data, history, isRunning, start, stop, isGlobalStreamingEnabled };
 }

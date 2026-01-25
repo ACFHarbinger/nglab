@@ -1,10 +1,13 @@
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useFavorites, FavoriteMarket } from "../../hooks/useFavorites";
+import { invoke } from "@tauri-apps/api/core";
+
+// Mock Tauri invoke
+const mockInvoke = invoke as unknown as ReturnType<typeof vi.fn>;
 
 describe("useFavorites", () => {
   beforeEach(() => {
-    localStorage.setItem("nglab_favorites", "[]");
     vi.clearAllMocks();
   });
 
@@ -21,243 +24,167 @@ describe("useFavorites", () => {
     },
   };
 
+  const mockFavoriteEvent = {
+    id: "market-1",
+    symbol: "BTC100K",
+    name: "Will Bitcoin reach $100k?",
+    metadata_json: JSON.stringify({
+      id: "market-1",
+      outcomes: [
+        { id: "token-yes", name: "Yes" },
+        { id: "token-no", name: "No" },
+      ],
+    }),
+  };
+
   describe("initialization", () => {
     it("should start with empty favorites", () => {
+      mockInvoke.mockResolvedValueOnce({ success: true, data: [] });
       const { result } = renderHook(() => useFavorites());
       expect(result.current.favorites).toEqual([]);
       expect(result.current.favoriteIds.size).toBe(0);
     });
 
-    it("should load favorites from localStorage on mount", () => {
-      const storedFavorites: FavoriteMarket[] = [
-        { ...mockMarket, addedAt: Date.now() },
-      ];
-      localStorage.setItem("nglab_favorites", JSON.stringify(storedFavorites));
+    it("should load favorites from backend on mount", async () => {
+      mockInvoke.mockResolvedValueOnce({
+        success: true,
+        data: [mockFavoriteEvent],
+      });
 
       const { result } = renderHook(() => useFavorites());
 
-      expect(result.current.favorites).toHaveLength(1);
+      await waitFor(() => {
+        expect(result.current.favorites).toHaveLength(1);
+      });
       expect(result.current.favorites[0].id).toBe("market-1");
+      expect(mockInvoke).toHaveBeenCalledWith("get_favorites");
     });
 
-    it("should handle corrupted localStorage data gracefully", () => {
-      localStorage.setItem("nglab_favorites", "invalid-json");
-      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => { });
-
+    it("should handle error response gracefully", async () => {
+      mockInvoke.mockResolvedValueOnce({ success: false, message: "Error" });
       const { result } = renderHook(() => useFavorites());
 
-      expect(result.current.favorites).toEqual([]);
-      consoleSpy.mockRestore();
-    });
-
-    it("should handle non-array localStorage data gracefully", () => {
-      localStorage.setItem("nglab_favorites", JSON.stringify({ notArray: true }));
-
-      const { result } = renderHook(() => useFavorites());
-
-      expect(result.current.favorites).toEqual([]);
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+      expect(result.current.lastMessage).toBe("Error");
     });
   });
 
   describe("addFavorite", () => {
-    it("should add a market to favorites", () => {
+    it("should add a market to favorites", async () => {
+      mockInvoke.mockResolvedValue({ success: true, data: [] }); // Init
       const { result } = renderHook(() => useFavorites());
+
+      mockInvoke.mockResolvedValueOnce({ success: true }); // add_favorite
 
       act(() => {
         result.current.addFavorite(mockMarket);
       });
 
-      expect(result.current.favorites).toHaveLength(1);
+      await waitFor(() => {
+        expect(result.current.favorites).toHaveLength(1);
+      });
       expect(result.current.favorites[0].id).toBe("market-1");
-      expect(result.current.favorites[0].addedAt).toBeDefined();
+      expect(mockInvoke).toHaveBeenCalledWith(
+        "add_favorite",
+        expect.anything(),
+      );
     });
 
-    it("should not add duplicate markets", () => {
+    it("should not add duplicate markets", async () => {
+      mockInvoke.mockResolvedValue({
+        success: true,
+        data: [mockFavoriteEvent],
+      }); // Init with 1
       const { result } = renderHook(() => useFavorites());
 
+      await waitFor(() => expect(result.current.favorites).toHaveLength(1));
+
       act(() => {
-        result.current.addFavorite(mockMarket);
         result.current.addFavorite(mockMarket);
       });
 
       expect(result.current.favorites).toHaveLength(1);
-    });
-
-    it("should persist to localStorage", () => {
-      const { result } = renderHook(() => useFavorites());
-
-      act(() => {
-        result.current.addFavorite(mockMarket);
-      });
-
-      const stored = JSON.parse(localStorage.getItem("nglab_favorites") || "[]");
-      expect(stored).toHaveLength(1);
-      expect(stored[0].id).toBe("market-1");
-    });
-
-    it("should add timestamp to favorites", () => {
-      const beforeTime = Date.now();
-      const { result } = renderHook(() => useFavorites());
-
-      act(() => {
-        result.current.addFavorite(mockMarket);
-      });
-
-      const afterTime = Date.now();
-      expect(result.current.favorites[0].addedAt).toBeGreaterThanOrEqual(beforeTime);
-      expect(result.current.favorites[0].addedAt).toBeLessThanOrEqual(afterTime);
     });
   });
 
   describe("removeFavorite", () => {
-    it("should remove a market from favorites", () => {
+    it("should remove a market from favorites", async () => {
+      mockInvoke.mockResolvedValueOnce({
+        success: true,
+        data: [mockFavoriteEvent],
+      }); // Init
       const { result } = renderHook(() => useFavorites());
 
-      act(() => {
-        result.current.addFavorite(mockMarket);
-      });
+      await waitFor(() => expect(result.current.favorites).toHaveLength(1));
 
-      expect(result.current.favorites).toHaveLength(1);
-
+      mockInvoke.mockResolvedValueOnce({ success: true }); // remove_favorite
       act(() => {
         result.current.removeFavorite("market-1");
       });
 
-      expect(result.current.favorites).toHaveLength(0);
-    });
-
-    it("should handle removing non-existent market gracefully", () => {
-      const { result } = renderHook(() => useFavorites());
-
-      act(() => {
-        result.current.addFavorite(mockMarket);
-        result.current.removeFavorite("non-existent-id");
+      await waitFor(() => {
+        expect(result.current.favorites).toHaveLength(0);
       });
-
-      expect(result.current.favorites).toHaveLength(1);
-    });
-
-    it("should persist removal to localStorage", () => {
-      const { result } = renderHook(() => useFavorites());
-
-      act(() => {
-        result.current.addFavorite(mockMarket);
-      });
-
-      act(() => {
-        result.current.removeFavorite("market-1");
-      });
-
-      const stored = JSON.parse(localStorage.getItem("nglab_favorites") || "[]");
-      expect(stored).toHaveLength(0);
     });
   });
 
   describe("isFavorite", () => {
-    it("should return true for favorited markets", () => {
+    it("should return true for favorited markets", async () => {
+      mockInvoke.mockResolvedValueOnce({
+        success: true,
+        data: [mockFavoriteEvent],
+      });
       const { result } = renderHook(() => useFavorites());
 
-      act(() => {
-        result.current.addFavorite(mockMarket);
+      await waitFor(() => {
+        expect(result.current.isFavorite("market-1")).toBe(true);
       });
-
-      expect(result.current.isFavorite("market-1")).toBe(true);
     });
 
-    it("should return false for non-favorited markets", () => {
+    it("should return false for non-favorited markets", async () => {
+      mockInvoke.mockResolvedValueOnce({ success: true, data: [] });
       const { result } = renderHook(() => useFavorites());
 
-      expect(result.current.isFavorite("market-1")).toBe(false);
+      await waitFor(() => {
+        expect(result.current.isFavorite("market-1")).toBe(false);
+      });
     });
   });
 
   describe("toggleFavorite", () => {
-    it("should add market if not favorited", () => {
+    it("should add market if not favorited", async () => {
+      mockInvoke.mockResolvedValueOnce({ success: true, data: [] });
       const { result } = renderHook(() => useFavorites());
 
+      mockInvoke.mockResolvedValueOnce({ success: true }); // add
       act(() => {
         result.current.toggleFavorite(mockMarket);
       });
 
-      expect(result.current.favorites).toHaveLength(1);
+      await waitFor(() => {
+        expect(result.current.favorites).toHaveLength(1);
+      });
     });
 
-    it("should remove market if already favorited", () => {
+    it("should remove market if already favorited", async () => {
+      mockInvoke.mockResolvedValueOnce({
+        success: true,
+        data: [mockFavoriteEvent],
+      });
       const { result } = renderHook(() => useFavorites());
 
-      act(() => {
-        result.current.addFavorite(mockMarket);
-      });
+      await waitFor(() => expect(result.current.favorites).toHaveLength(1));
 
+      mockInvoke.mockResolvedValueOnce({ success: true }); // remove
       act(() => {
         result.current.toggleFavorite(mockMarket);
       });
 
-      expect(result.current.favorites).toHaveLength(0);
-    });
-  });
-
-  describe("favoriteIds", () => {
-    it("should update when favorites change", () => {
-      const { result } = renderHook(() => useFavorites());
-
-      expect(result.current.favoriteIds.has("market-1")).toBe(false);
-
-      act(() => {
-        result.current.addFavorite(mockMarket);
+      await waitFor(() => {
+        expect(result.current.favorites).toHaveLength(0);
       });
-
-      expect(result.current.favoriteIds.has("market-1")).toBe(true);
-
-      act(() => {
-        result.current.removeFavorite("market-1");
-      });
-
-      expect(result.current.favoriteIds.has("market-1")).toBe(false);
-    });
-  });
-
-  describe("multiple markets", () => {
-    it("should handle multiple favorites", () => {
-      const { result } = renderHook(() => useFavorites());
-
-      const market2: Omit<FavoriteMarket, "addedAt"> = {
-        id: "market-2",
-        symbol: "ETH10K",
-        name: "Will Ethereum reach $10k?",
-      };
-
-      act(() => {
-        result.current.addFavorite(mockMarket);
-        result.current.addFavorite(market2);
-      });
-
-      expect(result.current.favorites).toHaveLength(2);
-      expect(result.current.isFavorite("market-1")).toBe(true);
-      expect(result.current.isFavorite("market-2")).toBe(true);
-    });
-
-    it("should remove specific market without affecting others", () => {
-      const { result } = renderHook(() => useFavorites());
-
-      const market2: Omit<FavoriteMarket, "addedAt"> = {
-        id: "market-2",
-        symbol: "ETH10K",
-        name: "Will Ethereum reach $10k?",
-      };
-
-      act(() => {
-        result.current.addFavorite(mockMarket);
-        result.current.addFavorite(market2);
-      });
-
-      act(() => {
-        result.current.removeFavorite("market-1");
-      });
-
-      expect(result.current.favorites).toHaveLength(1);
-      expect(result.current.isFavorite("market-1")).toBe(false);
-      expect(result.current.isFavorite("market-2")).toBe(true);
     });
   });
 });

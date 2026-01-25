@@ -1,4 +1,6 @@
 import { Activity, Users, Clock, Calendar, Zap, Eye } from "lucide-react";
+import { useStreamingGuard } from "../../hooks/useStreamingGuard";
+import clsx from "clsx";
 
 /**
  * Simple SVG sparkline chart component.
@@ -63,6 +65,8 @@ const Sparkline = ({
  * Shows 24h volume, active traders, and peak activity hours with sparklines.
  */
 export function MarketStatsWidget() {
+  const { canStream } = useStreamingGuard();
+
   return (
     <div className="flex flex-col gap-4 h-full">
       {/* Header */}
@@ -71,9 +75,21 @@ export function MarketStatsWidget() {
           <span className="text-sm font-bold uppercase tracking-wider text-slate-400">
             Market Overview
           </span>
-          <span className="flex items-center gap-1.5 bg-green-500/20 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-green-500/30">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            LIVE
+          <span
+            className={clsx(
+              "flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all duration-300",
+              canStream
+                ? "bg-green-500/20 text-green-400 border-green-500/30"
+                : "bg-rose-500/20 text-rose-400 border-rose-500/30",
+            )}
+          >
+            <span
+              className={clsx(
+                "w-1.5 h-1.5 rounded-full transition-colors duration-300",
+                canStream ? "bg-green-500 animate-pulse" : "bg-rose-500",
+              )}
+            />
+            {canStream ? "LIVE" : "INACTIVE"}
           </span>
         </div>
         <button className="text-[10px] text-slate-500 hover:text-white transition-colors uppercase font-bold flex items-center gap-1">
