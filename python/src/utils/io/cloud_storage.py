@@ -1,4 +1,5 @@
-"""Cloud Storage Backend for Model Checkpoints.
+"""
+Cloud Storage Backend for Model Checkpoints.
 
 Provides S3 and GCS backends for storing model checkpoints with
 automatic compression, versioning, and fallback support.
@@ -8,7 +9,6 @@ import logging
 import os
 import tempfile
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
@@ -19,32 +19,7 @@ import zstandard as zstd
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class CloudStorageConfig:
-    """Configuration for cloud storage backends.
-
-    Attributes:
-        bucket: S3 bucket or GCS bucket name.
-        prefix: Prefix/folder for models within bucket.
-        compression_level: Zstd compression level (1-22, default 3).
-        enable_versioning: Enable object versioning.
-        fallback_local_path: Local path to use if cloud fails.
-    """
-
-    bucket: str
-    prefix: str = "models"
-    compression_level: int = 3
-    enable_versioning: bool = True
-    fallback_local_path: str | None = None
-
-    # AWS specific
-    aws_region: str = "us-east-1"
-    aws_access_key_id: str | None = None
-    aws_secret_access_key: str | None = None
-
-    # GCS specific
-    gcs_project: str | None = None
-    gcs_credentials_path: str | None = None
+from python.src.configs.storage import CloudStorageConfig
 
 
 class CloudStorageBackend(ABC):

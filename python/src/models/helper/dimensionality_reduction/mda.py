@@ -1,3 +1,4 @@
+
 """Mixture Discriminant Analysis (MDA) algorithm implementation."""
 
 from typing import Any, cast

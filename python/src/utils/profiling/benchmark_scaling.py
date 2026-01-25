@@ -12,7 +12,7 @@ from tensordict import TensorDict
 
 # Add src to path
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../../"))
-from python.src.env.env_wrapper import TradingEnvWrapper
+from python.src.envs.env_wrapper import TradingEnvWrapper
 
 
 def run_benchmark(

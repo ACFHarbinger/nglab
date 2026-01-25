@@ -29,33 +29,7 @@ from torch.profiler import (
 )
 
 
-@dataclass
-class ProfilerConfig:
-    """Configuration for CUDA profiling."""
-
-    # Output settings
-    output_dir: str = "./profiler_output"
-    export_chrome_trace: bool = True
-    export_tensorboard: bool = True
-
-    # Profiler schedule
-    wait_steps: int = 1
-    warmup_steps: int = 1
-    active_steps: int = 3
-    repeat: int = 1
-
-    # Activities to profile
-    profile_cpu: bool = True
-    profile_cuda: bool = True
-
-    # Memory profiling
-    profile_memory: bool = True
-    with_stack: bool = True
-    with_flops: bool = True
-    with_modules: bool = True
-
-    # Record shapes for tensor operations
-    record_shapes: bool = True
+from python.src.configs.optimization import ProfilerConfig
 
 
 @dataclass

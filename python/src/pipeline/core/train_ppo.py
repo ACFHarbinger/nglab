@@ -18,7 +18,7 @@ from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
 from python.src.configs import register_configs
-from python.src.env import TradingEnv
+from python.src.envs import TradingEnv
 
 # Register structured configs
 register_configs()

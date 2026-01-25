@@ -1,44 +1,21 @@
-"""Global constants and configuration definitions for NGLab.
+"""
+Global constants and configuration definitions for NGLab.
 
-This module defines:
-- Project directory paths (ROOT_DIR, ICON_FILE)
-- Multi-core processing settings (LOCK_TIMEOUT)
-- Configuration from environment variables (BATCH_SIZE, REDIS_URL, etc.)
+This module now re-exports constants from python.src.constants to maintain
+backward compatibility.
 """
 
-import os
-from pathlib import Path
+from python.src.constants.paths import ICON_FILE, ROOT_DIR
+from python.src.constants.system import (
+    CACHE_TTL,
+    CORE_LOCK_WAIT_TIME,
+    LOCK_TIMEOUT,
+    REDIS_HOST,
+    REDIS_PORT,
+    REDIS_URL,
+    update_lock_wait_time,
+)
+from python.src.constants.training import DEFAULT_BATCH_SIZE, BATCH_TIMEOUT
 
-# Paths
-path = Path(os.getcwd())
-parts = path.parts
-ROOT_DIR = Path(*parts[: parts.index("nglab") + 1])
-ICON_FILE = os.path.join(ROOT_DIR, "assets", "images", "logo-nglab.png")
-
-# Multi-core processing settings
-CORE_LOCK_WAIT_TIME = 10
-LOCK_TIMEOUT = CORE_LOCK_WAIT_TIME
-
-
-def update_lock_wait_time(num_cpu_cores: int | None = None) -> int:
-    """
-    Updates the global LOCK_TIMEOUT based on the number of CPU cores.
-
-    Returns:
-        The new (or default) value of LOCK_TIMEOUT.
-    """
-    global LOCK_TIMEOUT  # noqa: PLW0603
-    if num_cpu_cores is None:
-        LOCK_TIMEOUT = CORE_LOCK_WAIT_TIME
-    else:
-        LOCK_TIMEOUT = CORE_LOCK_WAIT_TIME * num_cpu_cores
-    return LOCK_TIMEOUT
-
-
-# Configuration
-BATCH_SIZE = int(os.getenv("BATCH_SIZE", "32"))
-BATCH_TIMEOUT = float(os.getenv("BATCH_TIMEOUT", "0.01"))
-REDIS_HOST = os.getenv("NGLAB_REDIS_HOST", "localhost")
-REDIS_PORT = os.getenv("NGLAB_REDIS_PORT", "6379")
-REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}"
-CACHE_TTL = 60  # seconds
+# Re-export path parts if needed, though they were derived from cwd which is flaky.
+# We will skip 'path' and 'parts' unless strictly necessary (inference.py doesn't seem to use them).

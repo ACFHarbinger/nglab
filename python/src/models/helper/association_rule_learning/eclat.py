@@ -1,3 +1,4 @@
+
 """Eclat algorithm implementation for association rule learning."""
 
 import itertools

@@ -6,7 +6,6 @@ and enforcing retention rules across local and cloud storage.
 """
 
 import logging
-from dataclasses import dataclass
 from typing import Any, Protocol, cast
 
 from python.src.utils.io.cloud_storage import CloudCheckpointManager
@@ -15,15 +14,7 @@ from python.src.utils.io.model_versioning import ModelRegistry
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class RetentionConfig:
-    """Configuration for model retention."""
-
-    keep_latest_n: int = 5
-    keep_best_metric: str | None = "val_loss"
-    keep_best_n: int = 1
-    max_age_days: int | None = None
-    dry_run: bool = False
+from python.src.configs.storage import RetentionConfig
 
 
 class CheckpointManagerProtocol(Protocol):

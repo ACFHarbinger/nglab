@@ -57,6 +57,8 @@ dependencies = [
     "httpx>=0.28.1",
     "tensorboard>=2.20.0",
     "plotly>=6.5.2",
+    "hvac>=2.4.0",
+    "zstandard>=0.25.0",
 ]
 
 [dependency-groups]

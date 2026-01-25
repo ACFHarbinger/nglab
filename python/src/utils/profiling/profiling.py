@@ -1,4 +1,5 @@
-"""Performance profiling utilities for NGLab.
+"""
+Performance profiling utilities for NGLab.
 
 Provides decorators for:
 - @profile: cProfile-based function profiling

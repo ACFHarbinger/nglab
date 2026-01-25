@@ -1,3 +1,4 @@
+
 """
 Base Lightning Module for the NGLab training pipeline.
 

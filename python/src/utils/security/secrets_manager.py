@@ -7,20 +7,12 @@ Provides a unified interface for accessing secrets from multiple backends
 
 import logging
 import os
-from dataclasses import dataclass
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class VaultConfig:
-    """Configuration for HashiCorp Vault."""
-
-    url: str
-    token: str | None = None
-    mount_point: str = "secret"
-    path: str = "nglab"
+from python.src.configs.security import VaultConfig
 
 
 class SecretsManager:

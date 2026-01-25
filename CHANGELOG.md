@@ -16,6 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced TROUBLESHOOTING.md with GPU/CUDA debugging guides
 - Interactive Jupyter notebook tutorial series (10 notebooks)
 
+#### Deep Learning Framework
+- **Comprehensive Model Library**: Full implementation of 28+ advanced architectures in `python/src/models/deep/`
+  - **Competitive**: Learning Vector Quantization (LVQ), Self-Organizing Maps (SOM)
+  - **Convolutional**: Capsule Networks, Rolling Window CNN, DCIGN, Deep ConvNet (DCN), DeconvNet, ResNet
+  - **General**: ELM, MLP, Neural ODEs, Perceptron, Physics-Informed NN (PINN), RBF
+  - **Memory**: Differentiable Neural Computer (DNC), Neural Turing Machine (NTM)
+  - **Probabilistic**: Boltzmann Machines, DBN, Diffusion UNet 1D, Normalizing Flows (RealNVP), TimeGAN, Hopfield Networks, Markov Chains, RBM
+  - **Recurrent**: Echo State Networks (ESN), Liquid State Machines (LSM), LSTM, GRU, Time-Series Mamba, xLSTM
+  - **Spiking**: Spiking Neural Networks (SNN) with Surrogate Gradient LIF Cells
+  - **Modules**: Multi-Head Attention, Graph Convolutions (GCN, GatedGCN), Mamba Blocks, Positional Embeddings
+
 ---
 
 ## [0.10.0] - 2026-01-25

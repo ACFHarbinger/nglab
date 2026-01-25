@@ -12,7 +12,7 @@ import numpy as np
 from stable_baselines3 import PPO, SAC
 
 from pipeline.core.train_sac import ContinuousActionWrapper
-from python.src.env import TradingEnv
+from python.src.envs import TradingEnv
 
 
 def calculate_metrics(portfolio_values: list[float]) -> dict[str, Any]:

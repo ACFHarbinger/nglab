@@ -1,4 +1,5 @@
-"""Model versioning and artifact management for NGLab.
+"""
+Model versioning and artifact management for NGLab.
 
 This module provides utilities for saving, loading, and managing model versions
 with comprehensive metadata for reproducibility and experiment tracking.

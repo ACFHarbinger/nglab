@@ -1,3 +1,4 @@
+
 """
 Gymnasium-compatible environments wrapping the Rust arena
 """

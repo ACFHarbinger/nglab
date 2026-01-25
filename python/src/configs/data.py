@@ -1,8 +1,13 @@
+
+from __future__ import annotations
+
 from dataclasses import dataclass
+
+from python.src.configs.base import BaseConfig
 
 
 @dataclass
-class DataConfig:
+class DataConfig(BaseConfig):
     data_path: str = "data/polymarket/"
     target_column: str = "price"
     batch_size: int = 32

@@ -1,14 +1,17 @@
+
+from __future__ import annotations
+
 from dataclasses import dataclass
 
-from omegaconf import MISSING
+from python.src.configs.base import BaseConfig
 
 
 @dataclass
-class AlgorithmConfig:
-    name: str = MISSING
+class AlgorithmConfig(BaseConfig):
+    name: str = "base"
     learning_rate: float = 3e-4
     gamma: float = 0.99
-    save_dir: str = MISSING
+    save_dir: str = "models/base"
 
 
 @dataclass

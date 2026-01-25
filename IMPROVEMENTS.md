@@ -798,6 +798,29 @@ Tasks:
   - Distribution visualization
 [x] Implement scenario builder UI
   - Visual scenario configuration
+
+---
+
+## Priority 7: Deep Learning Architectures (High Impact)
+
+### 7.1 Advanced Model Library
+
+**Files**: `python/src/models/deep/`
+**Status**: Implemented
+**Impact**: High - State-of-the-art forecasting capabilities
+
+```
+Tasks:
+[x] Implement Competitive Networks (LVQ, SOM)
+[x] Implement Convolutional Networks (CNN, ResNet, DCIGN, Capsule)
+[x] Implement Memory Augmented Networks (DNC, NTM)
+[x] Implement Probabilistic Models (TimeGAN, Diffusion, Flow, RBM)
+[x] Implement Recurrent Networks (xLSTM, TSMamba, ESN, LSM)
+[x] Implement Spiking Neural Networks (SNN, LIF)
+[x] Implement Graph Neural Networks (GCN, GatedGCN)
+[x] Create modular building blocks (Attention, Mamba, Embeddings)
+```
+**Complexity**: High | **Impact**: High
   - Parameter sliders
 [x] Add scenario results dashboard
   - P&L distribution

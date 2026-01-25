@@ -1,4 +1,5 @@
-"""Online learning utilities for NGLab.
+"""
+Online learning utilities for NGLab.
 
 Drift detection, online normalization, and incremental training.
 """

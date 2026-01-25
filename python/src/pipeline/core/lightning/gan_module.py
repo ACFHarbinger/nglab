@@ -1,3 +1,4 @@
+
 """
 Generative Adversarial Network (GAN) Module for Time Series Prediction.
 """

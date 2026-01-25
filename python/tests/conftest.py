@@ -7,6 +7,18 @@ from unittest.mock import MagicMock
 
 import pytest
 
+pytest_plugins = [
+    "python.tests.fixtures.arg_fixtures",
+    "python.tests.fixtures.config_fixtures",
+    "python.tests.fixtures.deep_fixtures",
+    "python.tests.fixtures.environment_fixtures",
+    "python.tests.fixtures.hpo_fixtures",
+    "python.tests.fixtures.mac_fixtures",
+    "python.tests.fixtures.model_fixtures",
+    "python.tests.fixtures.nglab_fixtures",
+    "python.tests.fixtures.regression_fixtures",
+]
+
 # Filter stubborn warnings that pyproject.toml misses
 warnings.filterwarnings("ignore", message=".*pkg_resources is deprecated.*")
 warnings.filterwarnings("ignore", message=".*ModuleAvailableCache.*")

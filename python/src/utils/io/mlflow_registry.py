@@ -1,4 +1,5 @@
-"""MLflow model registry integration for NGLab.
+"""
+MLflow model registry integration for NGLab.
 
 Provides ModelRegistry class for:
 - Logging models with metrics and hyperparameters

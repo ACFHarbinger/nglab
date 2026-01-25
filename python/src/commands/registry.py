@@ -3,8 +3,10 @@ Centralized registry for the modular CLI parser.
 """
 
 from python.src.commands.active_learning_parser import add_active_learning_args
+from python.src.commands.backtest_parser import add_backtest_args
 from python.src.commands.base_parser import ConfigsParser
 from python.src.commands.crawler_parser import add_crawler_args
+from python.src.commands.evaluate_parser import add_evaluate_args
 from python.src.commands.hpo_parser import add_hpo_args
 from python.src.commands.inference_parser import add_inference_args
 from python.src.commands.sentiment_parser import add_sentiment_args
@@ -55,5 +57,17 @@ def get_parser() -> ConfigsParser:
         "sentiment", help="Analyze market sentiment"
     )
     add_sentiment_args(sentiment_parser)
+
+    # Evaluation
+    evaluate_parser = subparsers.add_parser(
+        "evaluate", help="Evaluate model performance"
+    )
+    add_evaluate_args(evaluate_parser)
+
+    # Backtesting
+    backtest_parser = subparsers.add_parser(
+        "backtest", help="Run historical backtest"
+    )
+    add_backtest_args(backtest_parser)
 
     return parser

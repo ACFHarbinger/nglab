@@ -10,7 +10,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from python.src.env.trading_env import TradingEnv
+from python.src.envs.trading_env import TradingEnv
 
 
 def evaluate_model(model: Any, env: TradingEnv, num_steps: int = 100) -> float:

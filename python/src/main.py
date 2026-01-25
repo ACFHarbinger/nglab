@@ -14,7 +14,7 @@ from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.loggers import TensorBoardLogger
 
 from python.src.configs import register_configs
-from python.src.env.env_wrapper import TradingEnvWrapper
+from python.src.envs.env_wrapper import TradingEnvWrapper
 
 # Imports from our modules
 from python.src.models.time_series import TimeSeriesBackbone
