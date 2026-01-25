@@ -3,8 +3,8 @@
  */
 
 use crate::commands::vault::VaultState;
-use nglab::secret::auth::{AuthError, AuthManager, AuthResponse};
-use nglab::secret::vault::VaultManager;
+use nglab::security::auth::{AuthError, AuthManager, AuthResponse};
+use nglab::security::vault::VaultManager;
 use std::sync::Mutex;
 use tauri::State;
 

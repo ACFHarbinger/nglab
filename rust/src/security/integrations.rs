@@ -5,7 +5,7 @@
  * Credentials are stored as JSON blobs in the secure Vault.
  */
 
-use crate::secret::vault::VaultManager;
+use crate::security::vault::VaultManager;
 use serde::{Deserialize, Serialize};
 
 /// Configuration for Polymarket integration.

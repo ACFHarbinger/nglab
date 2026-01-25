@@ -69,9 +69,7 @@ pub fn simulate(params: GarchParams) -> ArenaResult<GarchResult> {
         let mut sig2 = vec![0.0; n];
 
         // Fill initial epsilon from data
-        for i in 0..data.len() {
-            eps[i] = data[i];
-        }
+        eps[..data.len()].copy_from_slice(data);
 
         let sum_alpha: f64 = params.alpha.iter().sum();
         let sum_beta: f64 = params.beta.iter().sum();
@@ -81,9 +79,7 @@ pub fn simulate(params: GarchParams) -> ArenaResult<GarchResult> {
             params.omega
         };
 
-        for i in 0..data.len() {
-            sig2[i] = unconditional_var;
-        }
+        sig2[..data.len()].fill(unconditional_var);
         for t in max_lag..data.len() {
             let mut var = params.omega;
             for i in 0..p {

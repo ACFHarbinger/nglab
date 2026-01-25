@@ -205,6 +205,7 @@ pub struct TradingEnv {
 #[cfg(feature = "python")]
 #[pymethods]
 impl TradingEnv {
+    /// Create a new TradingEnv instance (Python API).
     #[new]
     #[pyo3(signature = (initial_capital=10000.0, transaction_cost=0.001, lookback=30, max_steps=1000, enable_logging=true, seed=None))]
     pub fn new_py(

@@ -283,46 +283,55 @@ impl Default for OrderBook {
 #[cfg(feature = "python")]
 #[pymethods]
 impl OrderBook {
+    /// Create a new OrderBook instance (Python API).
     #[new]
     pub fn new_py() -> Self {
         Self::new()
     }
 
+    /// Get the best bid price (Python API).
     #[pyo3(name = "best_bid")]
     pub fn best_bid_py(&self) -> Option<f64> {
         self.best_bid()
     }
 
+    /// Get the best ask price (Python API).
     #[pyo3(name = "best_ask")]
     pub fn best_ask_py(&self) -> Option<f64> {
         self.best_ask()
     }
 
+    /// Get the mid price (Python API).
     #[pyo3(name = "mid_price")]
     pub fn mid_price_py(&self) -> Option<f64> {
         self.mid_price()
     }
 
+    /// Get the spread (Python API).
     #[pyo3(name = "spread")]
     pub fn spread_py(&self) -> Option<f64> {
         self.spread()
     }
 
+    /// Get the order book imbalance (Python API).
     #[pyo3(name = "imbalance")]
     pub fn imbalance_py(&self) -> f64 {
         self.imbalance()
     }
 
+    /// Get total bid volume (Python API).
     #[pyo3(name = "total_bid_volume")]
     pub fn total_bid_volume_py(&self) -> f64 {
         self.total_bid_volume()
     }
 
+    /// Get total ask volume (Python API).
     #[pyo3(name = "total_ask_volume")]
     pub fn total_ask_volume_py(&self) -> f64 {
         self.total_ask_volume()
     }
 
+    /// Modify an existing order (Python API).
     #[pyo3(name = "modify_order")]
     pub fn modify_order_py(
         &mut self,

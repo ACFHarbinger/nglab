@@ -125,27 +125,7 @@ pub fn simulate(params: HoltWintersParams) -> ArenaResult<HoltWintersResult> {
 
     if let Some(ref data) = params.data {
         // Run filter over history to update L, T, S
-        for i in 0..data.len() {
-            let y = data[i];
-            // let s_idx = i % m; // Unused
-
-            // We need S_{t-m}. In our circular buffer or vec logic, we need to be careful.
-            // Let's store S as a Vec of length m, representing indices [t-m, ..., t-1] relative to current t?
-            // Actually, standard HW formulation:
-            // S_t computed at time t is used for time t+m.
-            // When at time t, we use S_{t-m} (which was computed m steps ago).
-            // Let's keep `s` as a Vec<f64> of size m. `s[i % m]` will store the seasonal component for season `i`.
-            // Wait, this is tricky for updates.
-            // Easier: Just keep track of the *last known* seasonal index.
-
-            // Standard approach:
-            // S_new = gamma * (Y - L_new) + (1-gamma) * S_old  (Additive)
-            // But we need the S from "last cycle".
-            // Let's interpret `s` as: `s[k]` is the Seasonal factor for the k-th period of the cycle (0..m-1).
-            // At step i, the season index is `idx = i % m`.
-            // We use `s[idx]` as the seasonal component coming from the past.
-            // Then we update `s[idx]` with the new value.
-
+        for (i, &y) in data.iter().enumerate() {
             let idx = i % m;
             let old_s = s[idx];
             let (new_l, new_t, new_s) = match params.seasonal_type {

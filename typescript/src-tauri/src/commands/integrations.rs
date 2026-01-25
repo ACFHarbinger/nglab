@@ -3,10 +3,10 @@
  */
 
 use crate::commands::vault::VaultState;
-use nglab::secret::integrations::{
+use nglab::security::integrations::{
     ExternalIntegration, IntegrationConfig, IntegrationManager, PolymarketConfig,
 };
-use nglab::secret::vault::{VaultManager, VaultResponse};
+use nglab::security::vault::{VaultManager, VaultResponse};
 use nglab::web::polymarket::{EventResponse, MarketSearchResult, PolymarketScraper};
 use tauri::State;
 

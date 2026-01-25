@@ -242,6 +242,7 @@ impl MultiAssetEnv {
 #[cfg(feature = "python")]
 #[pymethods]
 impl MultiAssetEnv {
+    /// Create a new MultiAssetEnv instance (Python API).
     #[new]
     #[pyo3(signature = (assets, initial_capital=10000.0, transaction_cost=0.001, lookback=30, max_steps=1000, seed=None))]
     pub fn new_py(
@@ -262,11 +263,13 @@ impl MultiAssetEnv {
         )
     }
 
+    /// Upload external price history for an asset (Python API).
     #[pyo3(name = "load_prices")]
     pub fn load_prices_py(&mut self, asset: String, prices: Vec<f64>) {
         self.load_prices(asset, prices);
     }
 
+    /// Reset the environment (Python API).
     #[pyo3(signature = (seed=None))]
     pub fn reset<'py>(
         &mut self,
@@ -288,6 +291,7 @@ impl MultiAssetEnv {
         Ok((obs_array.to_pyarray(py), info.into()))
     }
 
+    /// Take a step in the environment (Python API).
     #[allow(clippy::type_complexity)]
     pub fn step<'py>(
         &mut self,
@@ -470,6 +474,7 @@ impl MultiAssetEnv {
         Ok(())
     }
 
+    /// Submit an algorithmic order (Python API).
     #[cfg(feature = "python")]
     pub fn submit_algo_order_py(
         &mut self,

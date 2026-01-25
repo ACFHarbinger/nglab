@@ -2,7 +2,9 @@
  * Tauri commands for the SQLCipher encrypted vault.
  */
 
-use nglab::secret::vault::{VaultEntry, VaultFavorite, VaultManager, VaultResponse, VaultSummary};
+use nglab::security::vault::{
+    VaultEntry, VaultFavorite, VaultManager, VaultResponse, VaultSummary,
+};
 use std::sync::Mutex;
 use tauri::{AppHandle, State};
 

@@ -64,7 +64,7 @@ pub mod logging;
 pub mod metrics;
 pub mod models;
 pub mod moon;
-pub mod secret;
+pub mod security;
 pub mod simulation;
 pub mod utils;
 pub mod validation;
@@ -90,11 +90,13 @@ pub struct Arena {
 #[cfg(feature = "python")]
 #[pymethods]
 impl Arena {
+    /// Create a new Arena instance.
     #[new]
     pub fn new_py() -> Self {
         Self::new()
     }
 
+    /// Get current step count.
     #[pyo3(name = "step_count")]
     pub fn step_count_py(&self) -> u64 {
         self.step_count()
