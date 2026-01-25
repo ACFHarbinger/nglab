@@ -730,7 +730,7 @@ Tasks:
   - Configurable aggression
   - Capital allocation
   - Strategy parameters
-□ Create market impact visualization
+[x] Create market impact visualization
   - Agent activity heatmap
   - Price impact attribution
 [x] Implement agent performance tracking
@@ -756,7 +756,7 @@ Tasks:
 [x] Add Greeks calculation engine
   - Real-time Greeks updates
   - Portfolio-level Greeks
-□ Create options chain UI
+[x] Create options chain UI
   - Strike/expiry matrix
   - Bid/ask/last/volume
   - IV display
@@ -764,10 +764,10 @@ Tasks:
   - American vs. European
   - Early exercise logic
   - Assignment simulation
-□ Add volatility surface visualization
+[x] Add volatility surface visualization
   - 3D surface plot
   - Smile/skew analysis
-□ Create options strategy builder
+[x] Create options strategy builder
   - Multi-leg strategy construction
   - Payoff diagram
   - Break-even analysis
@@ -789,17 +789,17 @@ Tasks:
 [x] Implement stress testing
   - Portfolio stress test execution
   - Multiple scenario comparison
-□ Add historical scenario replay
+[x] Add historical scenario replay
   - Flash crash replay
   - Major event replay
 [x] Create Monte Carlo simulation
   - Path generation
   - VaR/CVaR calculation
   - Distribution visualization
-□ Implement scenario builder UI
+[x] Implement scenario builder UI
   - Visual scenario configuration
   - Parameter sliders
-□ Add scenario results dashboard
+[x] Add scenario results dashboard
   - P&L distribution
   - Risk metrics under stress
 ```

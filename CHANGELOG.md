@@ -47,6 +47,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Scenario Engine**: Deterministic `Scenario` types (PriceShock, VolatilitySpike) for stress testing.
 - **Monte Carlo**: Geometric Brownian Motion (GBM) path generator for VaR and CVaR calculation.
 
+#### Frontend UI
+- **Options UI**: `OptionsChain`, `VolatilitySurface`, and `StrategyBuilder` components.
+- **Scenario UI**: `ScenarioBuilder` for configuring shocks and `ScenarioDashboard` for risk results.
+- **Agent Analysis**: `ImpactHeatmap` for visualizing agent market impact.
+
 
 ### Fixed
 - **Order Matching**: Consolidated `match_order` logic to correctly handle maker-side OCO/Bracket triggers.
