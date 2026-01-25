@@ -36,7 +36,9 @@ class Baseline:
         """
         return batch, None
 
-    def eval(self, x: torch.Tensor, c: torch.Tensor) -> tuple[torch.Tensor | float, torch.Tensor | float]:
+    def eval(
+        self, x: torch.Tensor, c: torch.Tensor
+    ) -> tuple[torch.Tensor | float, torch.Tensor | float]:
         """
         Evaluate the baseline for a given state and cost.
         """
@@ -105,7 +107,9 @@ class WarmupBaseline(Baseline):
             return self.baseline.unwrap_batch(batch)
         return self.warmup_baseline.unwrap_batch(batch)
 
-    def eval(self, x: torch.Tensor, c: torch.Tensor) -> tuple[torch.Tensor | float, torch.Tensor | float]:
+    def eval(
+        self, x: torch.Tensor, c: torch.Tensor
+    ) -> tuple[torch.Tensor | float, torch.Tensor | float]:
         """
         Evaluate baseline combining warmup and final baselines.
         """
@@ -114,10 +118,10 @@ class WarmupBaseline(Baseline):
             return self.baseline.eval(x, c)
         if self.alpha == 0:
             return self.warmup_baseline.eval(x, c)
-        
+
         v, loss = self.baseline.eval(x, c)
         vw, loss_w = self.warmup_baseline.eval(x, c)
-        
+
         # Return convex combination of baseline and of loss
         return (
             self.alpha * v + (1 - self.alpha) * vw,
@@ -154,7 +158,9 @@ class NoBaseline(Baseline):
     Empty baseline that returns zero.
     """
 
-    def eval(self, x: torch.Tensor, c: torch.Tensor) -> tuple[torch.Tensor | float, torch.Tensor | float]:
+    def eval(
+        self, x: torch.Tensor, c: torch.Tensor
+    ) -> tuple[torch.Tensor | float, torch.Tensor | float]:
         """
         Return zero baseline and loss.
         """
@@ -175,7 +181,9 @@ class ExponentialBaseline(Baseline):
         self.beta = beta
         self.v: torch.Tensor | None = None
 
-    def eval(self, x: torch.Tensor, c: torch.Tensor) -> tuple[torch.Tensor | float, torch.Tensor | float]:
+    def eval(
+        self, x: torch.Tensor, c: torch.Tensor
+    ) -> tuple[torch.Tensor | float, torch.Tensor | float]:
         """
         Update and return EMA baseline value.
         """
@@ -214,7 +222,9 @@ class CriticBaseline(Baseline):
 
         self.critic = critic
 
-    def eval(self, x: torch.Tensor, c: torch.Tensor) -> tuple[torch.Tensor | float, torch.Tensor | float]:
+    def eval(
+        self, x: torch.Tensor, c: torch.Tensor
+    ) -> tuple[torch.Tensor | float, torch.Tensor | float]:
         """
         Evaluate critic network and return value and MSE loss.
         """
@@ -255,7 +265,9 @@ class RolloutBaseline(Baseline):
     Baseline based on a fixed rollout model (Greedy baseline).
     """
 
-    def __init__(self, model: torch.nn.Module, problem: Any, opts: Any, epoch: int = 0) -> None:
+    def __init__(
+        self, model: torch.nn.Module, problem: Any, opts: Any, epoch: int = 0
+    ) -> None:
         """
         Initialize Rollout baseline.
         """
@@ -271,7 +283,9 @@ class RolloutBaseline(Baseline):
 
         self._update_model(model, epoch)
 
-    def _update_model(self, model: torch.nn.Module, epoch: int, dataset: Any = None) -> None:
+    def _update_model(
+        self, model: torch.nn.Module, epoch: int, dataset: Any = None
+    ) -> None:
         """
         Update the baseline model.
         """
@@ -393,7 +407,7 @@ class BaselineDataset(Dataset[dict[str, Any]]):
         self.dataset = dataset
         self.baseline = baseline
         if self.dataset is not None and self.baseline is not None:
-             assert len(self.dataset) == len(self.baseline)
+            assert len(self.dataset) == len(self.baseline)
 
     def __getitem__(self, item: int) -> dict[str, Any]:
         """

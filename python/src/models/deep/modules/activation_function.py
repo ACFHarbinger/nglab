@@ -43,7 +43,9 @@ class ActivationFunction(nn.Module):
         if af_name == "relu":
             self.activation = nn.ReLU(inplace=inplace or False)
         elif af_name == "leakyrelu":
-            self.activation = nn.LeakyReLU(inplace=inplace or False, negative_slope=fparam or 0.01)
+            self.activation = nn.LeakyReLU(
+                inplace=inplace or False, negative_slope=fparam or 0.01
+            )
         elif af_name == "silu":
             self.activation = nn.SiLU(inplace=inplace or False)
         elif af_name == "selu":
@@ -90,7 +92,9 @@ class ActivationFunction(nn.Module):
         elif af_name == "hardsigmoid":
             self.activation = nn.Hardsigmoid(inplace=inplace or False)
         elif af_name == "threshold":
-            self.activation = nn.Threshold(inplace=inplace or False, threshold=tval or 0.0, value=rval or 0.0)
+            self.activation = nn.Threshold(
+                inplace=inplace or False, threshold=tval or 0.0, value=rval or 0.0
+            )
         elif af_name == "softplus":
             self.activation = nn.Softplus(beta=fparam or 1.0, threshold=tval or 20.0)
         elif af_name == "softshrink":
@@ -116,7 +120,9 @@ class ActivationFunction(nn.Module):
             stdv = 1.0 / math.sqrt(param.size(-1))
             param.data.uniform_(-stdv, stdv)
 
-    def forward(self, input: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(
+        self, input: torch.Tensor, mask: torch.Tensor | None = None
+    ) -> torch.Tensor:
         """
         Applies the activation function to the input.
 

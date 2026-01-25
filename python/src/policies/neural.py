@@ -9,12 +9,13 @@ from typing import Any
 
 import torch
 from tensordict import TensorDict
+from tensordict.nn import TensorDictModuleBase
 from torch import nn
 
 from .base import Policy
 
 
-class NeuralPolicy(Policy):
+class NeuralPolicy(TensorDictModuleBase, Policy):
     """
     Policy that wraps a PyTorch/TorchRL module.
     """
@@ -27,9 +28,26 @@ class NeuralPolicy(Policy):
             model (nn.Module): The underlying neural network model.
             cfg (Dict, optional): Configuration dictionary.
         """
-        super().__init__(cfg)
+        TensorDictModuleBase.__init__(self)
+        Policy.__init__(self, cfg)
         self.model = model  # Expecting a TensorDictModule or similar
         self.device = self.cfg.get("device", "cpu")
+
+    def forward(self, x: Any) -> Any:
+        """
+        Forward pass for nn.Module compatibility.
+        """
+        return self.model(x)
+
+    @property
+    def in_keys(self) -> list[str]:
+        return ["observation"]
+
+    @property
+    def out_keys(self) -> list[str]:
+        return [
+            "logits"
+        ]  # Assuming the backbone outputs logits for the action distribution
 
     def act(self, observation: torch.Tensor | TensorDict | dict[str, Any]) -> Any:
         """

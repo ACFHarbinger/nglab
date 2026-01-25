@@ -1,4 +1,5 @@
 """LightGBM model implementation."""
+
 from typing import Any
 
 import lightgbm as lgb

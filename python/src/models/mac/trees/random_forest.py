@@ -1,4 +1,5 @@
 """Random Forest model suite."""
+
 from typing import Any
 
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor

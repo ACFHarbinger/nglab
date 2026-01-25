@@ -1,4 +1,5 @@
 """Naive Bayes model suite."""
+
 from typing import Any
 
 from sklearn.naive_bayes import GaussianNB, MultinomialNB

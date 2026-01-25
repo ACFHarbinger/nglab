@@ -1,4 +1,5 @@
 """Online normalization utilities."""
+
 import torch
 from torch import nn
 

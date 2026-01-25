@@ -170,7 +170,9 @@ class DNC(nn.Module):
         # Output network
         self.output_net = nn.Linear(hidden_dim + num_reads * memory_dim, output_dim)
 
-    def parse_interface_vector(self, interface: torch.Tensor) -> dict[str, torch.Tensor]:
+    def parse_interface_vector(
+        self, interface: torch.Tensor
+    ) -> dict[str, torch.Tensor]:
         """
         Parse the interface vector into DNC parameters.
 

@@ -16,7 +16,7 @@ class TestImports:
         """Test nglab module can be imported."""
         try:
             import nglab  # noqa: F401
-            
+
             imported = True
         except ImportError:
             imported = False
@@ -41,7 +41,7 @@ class TestImports:
         """Test graceful handling of ImportError."""
         try:
             from nglab import NonExistentClass  # noqa: F401
-            
+
             exists = True
         except (ImportError, AttributeError):
             exists = False
@@ -124,7 +124,7 @@ class TestOrderBook:
     def test_orderbook_total_bid_volume(self, orderbook_instance):
         """Test OrderBook.total_bid_volume() returns float."""
         volume = orderbook_instance.total_bid_volume()
-        
+
         # Volume is usually 0.0 if empty, not None
         assert isinstance(volume, float)
         assert volume >= 0.0
@@ -200,7 +200,7 @@ class TestTradingEnvRust:
         obs, reward, terminated, truncated, info = result
 
         assert isinstance(obs, np.ndarray)
-        assert isinstance(reward, (int, float))
+        assert isinstance(reward, int | float)
         assert isinstance(terminated, bool)
         assert isinstance(truncated, bool)
         assert isinstance(info, dict)

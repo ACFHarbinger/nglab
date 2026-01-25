@@ -1,4 +1,5 @@
 """Stacking ensemble model implementation."""
+
 from typing import Any
 
 from sklearn.ensemble import StackingClassifier, StackingRegressor

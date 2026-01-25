@@ -30,7 +30,12 @@ class DimReductionModel(ClassicalModel):
         """Initialize DimReductionModel."""
         super().__init__(output_type="embedding")
 
-    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """Override forward to use transform instead of predict."""
         device = x.device
         x_np = x.detach().cpu().numpy()
@@ -94,8 +99,6 @@ class LDAModel(DimReductionModel):
         self.model = LDAAlgorithm(n_components=n_components, **kwargs)
 
 
-
-
 class PCRModel(DimReductionModel):
     """Principal Component Regression (Dim Reduction aspect)."""
 
@@ -123,13 +126,19 @@ class PCRModel(DimReductionModel):
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
         self.pca.fit(X_np)
         X_pca = self.pca.transform(X_np)
-        
+
         y_np = y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
         if y_np is not None:
             self.reg.fit(X_pca, y_np)
         self._is_fitted = True
 
-    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False, **kwargs: Any) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+        **kwargs: Any,
+    ) -> torch.Tensor:
         """Forward pass for the PCR model."""
         # Handle specialized PCR logic
         if self.output_type == "embedding" or return_embedding:
@@ -151,8 +160,6 @@ class PLSRModel(DimReductionModel):
         """Initialize PLSRModel."""
         super().__init__()
         self.model = PLSRegression(n_components=n_components, **kwargs)
-
-
 
 
 class MDSModel(DimReductionModel):
@@ -193,19 +200,23 @@ class QDAModel(DimReductionModel):
             kwargs.pop("n_components")
         self.model = QuadraticDiscriminantAnalysis(**kwargs)
 
-
-
-    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False, **kwargs: Any) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+        **kwargs: Any,
+    ) -> torch.Tensor:
         """Forward pass for the QDA model."""
         # QDA doesn't support transform usually, only predict/predict_proba
         # For embedding, can return predict_proba
         # Override to use predict_proba as 'embedding'
         if not self._is_fitted:
             return torch.zeros((x.shape[0], 1)).to(x.device)
-        
+
         # We know x is a Tensor from the signature
         x_np = x.detach().cpu().numpy()
-            
+
         if x_np.ndim == 3:
             x_np = x_np[:, -1, :]
         out = self.model.predict_proba(x_np)
@@ -225,8 +236,6 @@ class MDAModel(DimReductionModel):
         self.model = MDAAlgorithm(
             n_components_per_class=n_components_per_class, **kwargs
         )
-
-
 
 
 class FDAModel(DimReductionModel):
@@ -251,7 +260,7 @@ class FDAModel(DimReductionModel):
         # 1. Prepare Data
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
         y_np = y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
-        
+
         if X_np.ndim == 3:
             X_np = X_np.reshape(X_np.shape[0] * X_np.shape[1], -1)
             # Flatten X for consistency if validation checks are needed,
@@ -267,7 +276,7 @@ class FDAModel(DimReductionModel):
             y_np = y_np.ravel()
 
         if y_np is None:
-             raise ValueError("FDAModel requires target labels 'y'.")
+            raise ValueError("FDAModel requires target labels 'y'.")
 
         self.classes_ = np.unique(y_np)
 
@@ -319,21 +328,21 @@ class FDAModel(DimReductionModel):
             # I must convert back to Tensor for mars.
             # This is inefficient: forward(Tensor) -> numpy -> transform(numpy) -> Tensor -> mars(Tensor).
             # But keeping structure:
-            
+
             # transform signature expects numpy usually in sklearn land.
             # But MARSModel is PyTorch.
-            
+
             X_tensor = torch.from_numpy(X).float()
-            # If self.mars_models are on GPU, we need to move X_tensor there. 
+            # If self.mars_models are on GPU, we need to move X_tensor there.
             # We don't easily know device here without storing it.
             # Assuming CPU or that forward passing Tensor was better.
-            
+
             # Let's fix design: separate `forward` logic.
             # But okay for now, let's just make it work.
-            if hasattr(self.mars_models[0], "dummy_param"): # Check device
-                 dev = self.mars_models[0].dummy_param.device
-                 X_tensor = X_tensor.to(dev)
-                 
+            if hasattr(self.mars_models[0], "dummy_param"):  # Check device
+                dev = self.mars_models[0].dummy_param.device
+                X_tensor = X_tensor.to(dev)
+
             p = mars(X_tensor)
             # p is Tensor
             p_np = p.detach().cpu().numpy()
@@ -343,7 +352,13 @@ class FDAModel(DimReductionModel):
         X_fitted = np.hstack(preds)
         return self.lda.transform(X_fitted)
 
-    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False, **kwargs: Any) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+        **kwargs: Any,
+    ) -> torch.Tensor:
         """Forward pass for the FDA model."""
         # Custom forward for FDA
         if not self._is_fitted:

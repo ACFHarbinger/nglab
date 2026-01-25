@@ -2,7 +2,6 @@
 Capsule Network Layer.
 """
 
-
 import torch
 from torch import nn
 
@@ -12,7 +11,14 @@ class CapsuleLayer(nn.Module):
     Simplified Capsule Layer (CN).
     """
 
-    def __init__(self, in_caps: int, in_dim: int, out_caps: int, out_dim: int, output_type: str = "embedding") -> None:
+    def __init__(
+        self,
+        in_caps: int,
+        in_dim: int,
+        out_caps: int,
+        out_dim: int,
+        output_type: str = "embedding",
+    ) -> None:
         """
         Initialize Capsule Layer.
         """
@@ -34,7 +40,12 @@ class CapsuleLayer(nn.Module):
         scale = norm_sq / (1 + norm_sq) / (torch.sqrt(norm_sq) + 1e-8)
         return scale * x
 
-    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         Forward pass.
         x: (Batch, Seq, In_Caps, In_Dim) or (Batch, In_Caps, In_Dim)

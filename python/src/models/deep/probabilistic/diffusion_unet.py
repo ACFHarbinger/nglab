@@ -57,11 +57,15 @@ class ResidualBlock1D(nn.Module):
         self.conv2 = nn.Conv1d(out_channels, out_channels, kernel_size=3, padding=1)
 
         if in_channels != out_channels:
-            self.shortcut: nn.Module = nn.Conv1d(in_channels, out_channels, kernel_size=1)
+            self.shortcut: nn.Module = nn.Conv1d(
+                in_channels, out_channels, kernel_size=1
+            )
         else:
             self.shortcut = nn.Identity()
 
-    def forward(self, x: torch.Tensor, time_emb: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(
+        self, x: torch.Tensor, time_emb: torch.Tensor | None = None
+    ) -> torch.Tensor:
         """Forward pass."""
         h = self.conv1(F.silu(self.norm1(x)))
 
@@ -83,7 +87,12 @@ class DiffusionUNet1D(nn.Module):
     """
 
     def __init__(
-        self, input_dim: int, output_dim: int, hidden_dim: int = 64, layers: list[int] | None = None, time_emb_dim: int = 128
+        self,
+        input_dim: int,
+        output_dim: int,
+        hidden_dim: int = 64,
+        layers: list[int] | None = None,
+        time_emb_dim: int = 128,
     ) -> None:
         """Initialize Diffusion UNet."""
         if layers is None:
@@ -142,7 +151,9 @@ class DiffusionUNet1D(nn.Module):
 
         self.out_conv = nn.Conv1d(channels, output_dim, kernel_size=1)
 
-    def forward(self, x: torch.Tensor, t: torch.Tensor, cond: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(
+        self, x: torch.Tensor, t: torch.Tensor, cond: torch.Tensor | None = None
+    ) -> torch.Tensor:
         """
         Forward pass.
         Args:
@@ -180,7 +191,7 @@ class DiffusionUNet1D(nn.Module):
         # Up
         for up_layer in self.ups:
             if not isinstance(up_layer, nn.ModuleList):
-                 continue
+                continue
             upsample, block1, block2 = up_layer
             h = upsample(h)
             skip = skips.pop()

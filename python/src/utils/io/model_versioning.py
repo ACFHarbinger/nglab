@@ -37,7 +37,9 @@ class ModelMetadata:
     model_type: str
     training_config: dict[str, Any] = field(default_factory=dict)
     metrics: dict[str, float] = field(default_factory=dict)
-    framework_version: str = field(default_factory=lambda: f"pytorch-{torch.__version__}")
+    framework_version: str = field(
+        default_factory=lambda: f"pytorch-{torch.__version__}"
+    )
     training_date: str = field(default_factory=lambda: datetime.now().isoformat())
     dataset_hash: str = "unknown"
     git_commit: str | None = None

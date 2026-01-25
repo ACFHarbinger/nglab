@@ -1,4 +1,5 @@
 """AdaBoost model implementation."""
+
 from typing import Any
 
 from sklearn.ensemble import AdaBoostClassifier, AdaBoostRegressor

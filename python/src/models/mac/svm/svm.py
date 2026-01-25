@@ -1,4 +1,5 @@
 """Support Vector Machine model suite."""
+
 from typing import Any, cast
 
 from sklearn.svm import SVC, SVR

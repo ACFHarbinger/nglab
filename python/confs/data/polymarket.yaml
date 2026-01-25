@@ -1,0 +1,13 @@
+data_path: data/polymarket/
+target_column: price
+batch_size: 32
+seq_len: 30
+pred_len: 1
+train_ratio: 0.7
+val_ratio: 0.15
+test_ratio: 0.15
+normalize: minmax
+num_workers: 4
+format: csv
+streaming: false
+add_technical_indicators: false

@@ -2,7 +2,6 @@
 Recurrent Neural Network (RNN) implementations (LSTM, GRU).
 """
 
-
 from typing import cast
 
 import torch
@@ -43,7 +42,12 @@ class LSTM(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, output_dim)
 
-    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -104,7 +108,12 @@ class GRU(nn.Module):
         )
         self.fc = nn.Linear(hidden_dim, output_dim)
 
-    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         Forward pass.
         """

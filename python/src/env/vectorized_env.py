@@ -15,6 +15,7 @@ from numpy.typing import NDArray
 
 try:
     import nglab
+
     HAS_NGLAB = True
 except ImportError:
     HAS_NGLAB = False
@@ -65,7 +66,9 @@ class VectorizedTradingEnv:
         self.observation_shape = (num_envs, *self.single_observation_shape)
         self.action_space_n = 3
 
-        single_action_space: gym.spaces.Discrete[Any] = gym.spaces.Discrete(self.action_space_n)
+        single_action_space: gym.spaces.Discrete[Any] = gym.spaces.Discrete(
+            self.action_space_n
+        )
         single_observation_space: gym.spaces.Box = gym.spaces.Box(
             low=-np.inf,
             high=np.inf,
@@ -79,14 +82,16 @@ class VectorizedTradingEnv:
         self.single_observation_space = single_observation_space
 
         if use_multiprocessing:
-            self._executor: ProcessPoolExecutor | ThreadPoolExecutor = ProcessPoolExecutor(max_workers=num_envs)
+            self._executor: ProcessPoolExecutor | ThreadPoolExecutor = (
+                ProcessPoolExecutor(max_workers=num_envs)
+            )
         else:
             self._executor = ThreadPoolExecutor(max_workers=num_envs)
-        
+
         self._futures: list[Any] = []
 
     @property
-    def unwrapped(self) -> 'VectorizedTradingEnv':
+    def unwrapped(self) -> "VectorizedTradingEnv":
         """Return the unwrapped environment."""
         return self
 
@@ -123,12 +128,16 @@ class VectorizedTradingEnv:
         """Step all environments synchronously."""
         if isinstance(actions, np.ndarray):
             if len(actions) != self.num_envs:
-                 actions = actions.flatten()
-                 if len(actions) != self.num_envs:
-                     raise ValueError(f"Expected {self.num_envs} actions, got {len(actions)}")
+                actions = actions.flatten()
+                if len(actions) != self.num_envs:
+                    raise ValueError(
+                        f"Expected {self.num_envs} actions, got {len(actions)}"
+                    )
         elif isinstance(actions, list):
             if len(actions) != self.num_envs:
-                raise ValueError(f"Expected {self.num_envs} actions, got {len(actions)}")
+                raise ValueError(
+                    f"Expected {self.num_envs} actions, got {len(actions)}"
+                )
         else:
             actions = [int(cast(Any, actions))] * self.num_envs
 
@@ -143,8 +152,10 @@ class VectorizedTradingEnv:
         truncated = np.array([r[3] for r in results], dtype=np.bool_)
 
         infos = {
-            "portfolio_values": [getattr(r[4], 'portfolio_value', 0.0) for r in results],
-            "positions": [getattr(r[4], 'position', 0) for r in results],
+            "portfolio_values": [
+                getattr(r[4], "portfolio_value", 0.0) for r in results
+            ],
+            "positions": [getattr(r[4], "position", 0) for r in results],
         }
 
         return observations, rewards, terminated, truncated, infos
@@ -174,8 +185,10 @@ class VectorizedTradingEnv:
         truncated = np.array([r[3] for r in results], dtype=np.bool_)
 
         infos = {
-            "portfolio_values": [getattr(r[4], 'portfolio_value', 0.0) for r in results],
-            "positions": [getattr(r[4], 'position', 0) for r in results],
+            "portfolio_values": [
+                getattr(r[4], "portfolio_value", 0.0) for r in results
+            ],
+            "positions": [getattr(r[4], "position", 0) for r in results],
         }
 
         return observations, rewards, terminated, truncated, infos
@@ -187,14 +200,19 @@ class VectorizedTradingEnv:
 
     def close(self) -> None:
         """Shutdown the executor and close environments."""
-        if hasattr(self, '_executor'):
+        if hasattr(self, "_executor"):
             self._executor.shutdown(wait=True)
 
-    def __enter__(self) -> 'VectorizedTradingEnv':
+    def __enter__(self) -> "VectorizedTradingEnv":
         """Context manager enter."""
         return self
 
-    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any) -> bool | None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any,
+    ) -> bool | None:
         """Context manager exit."""
         self.close()
         return None
@@ -298,11 +316,16 @@ class SubprocVecEnv:
             process.join(timeout=5)
         self.closed = True
 
-    def __enter__(self) -> 'SubprocVecEnv':
+    def __enter__(self) -> "SubprocVecEnv":
         """Context manager enter."""
         return self
 
-    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any) -> bool | None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any,
+    ) -> bool | None:
         """Context manager exit."""
         self.close()
         return None

@@ -74,13 +74,16 @@ class GraphConvolution(nn.Module):
             unique_targets = batch_offset + expanded_target
 
             # Use scatter to aggregate messages to targets
-            flat_output = cast(torch.Tensor, scatter(
-                messages,
-                unique_targets,
-                dim=0,
-                dim_size=batch_size * num_nodes,
-                reduce="max",
-            ))
+            flat_output = cast(
+                torch.Tensor,
+                scatter(
+                    messages,
+                    unique_targets,
+                    dim=0,
+                    dim_size=batch_size * num_nodes,
+                    reduce="max",
+                ),
+            )
             out = flat_output.view(batch_size, num_nodes, self.out_channels)
         elif self.aggregation == "mean":
             # Check if mask is batched (B, V, V) or shared (1, V, V) / (V, V)
@@ -124,7 +127,10 @@ class GraphConvolution(nn.Module):
         if self.aggregation == "max":
             source_idx, target_idx = adj.nonzero(as_tuple=True)
             messages = support[source_idx]
-            out = cast(torch.Tensor, scatter(messages, target_idx, dim=0, dim_size=h.size(0), reduce="max"))
+            out = cast(
+                torch.Tensor,
+                scatter(messages, target_idx, dim=0, dim_size=h.size(0), reduce="max"),
+            )
         elif self.aggregation == "mean":
             degrees = adj.sum(dim=0).clamp(min=1)
             messages = torch.matmul(adj, support)

@@ -1,4 +1,5 @@
 """Stepwise Regression model implementation."""
+
 from typing import Any, Literal, cast
 
 import numpy as np
@@ -25,7 +26,7 @@ class StepwiseRegressionModel(ClassicalModel):
 
         # Handle literals for mypy/basedpyright
         sel_direction = cast(Literal["forward", "backward"], direction)
-        
+
         # SequentialFeatureSelector expects specific types for n_features_to_select
         self.model = SequentialFeatureSelector(
             self.base_estimator,
@@ -43,8 +44,12 @@ class StepwiseRegressionModel(ClassicalModel):
             raise ValueError("StepwiseRegressionModel requires y for fitting.")
 
         # Ensure we have numpy arrays for sklearn
-        X_np: npt.NDArray[Any] = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
-        y_np: npt.NDArray[Any] = y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
+        X_np: npt.NDArray[Any] = (
+            X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
+        )
+        y_np: npt.NDArray[Any] = (
+            y.detach().cpu().numpy() if isinstance(y, torch.Tensor) else y
+        )
 
         if X_np.ndim == 3:
             X_np = X_np.reshape(X_np.shape[0] * X_np.shape[1], -1)
@@ -55,7 +60,7 @@ class StepwiseRegressionModel(ClassicalModel):
         support = self.model.get_support()
         # Fix: Explicitly cast the support mask
         self.selected_features_ = np.asarray(support, dtype=bool)
-        
+
         self.final_model = LinearRegression()
         # Use boolean indexing safely
         self.final_model.fit(X_np[:, self.selected_features_], y_np)
@@ -75,7 +80,7 @@ class StepwiseRegressionModel(ClassicalModel):
 
         device = x.device
         x_np: npt.NDArray[Any] = x.detach().cpu().numpy()
-        
+
         # Handle time-series indexing
         if x_np.ndim == 3:
             x_np = x_np[:, -1, :]
@@ -93,12 +98,18 @@ class StepwiseRegressionModel(ClassicalModel):
         return torch.from_numpy(out_np).to(device).to(torch.float32)
 
     # Fix: Corrected Union typing and Return type
-    def predict(self, X: npt.NDArray[Any] | torch.Tensor) -> npt.NDArray[Any]:  # noqa: N803
+    def predict(self, X: npt.NDArray[Any] | torch.Tensor) -> npt.NDArray[Any]:
         """Predict using the fitted model."""
-        X_np: npt.NDArray[Any] = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
+        X_np: npt.NDArray[Any] = (
+            X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
+        )
 
-        if not self._is_fitted or self.selected_features_ is None or self.final_model is None:
+        if (
+            not self._is_fitted
+            or self.selected_features_ is None
+            or self.final_model is None
+        ):
             return np.zeros((X_np.shape[0], 1))
-            
+
         preds = self.final_model.predict(X_np[:, self.selected_features_])
         return np.asarray(preds)

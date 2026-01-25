@@ -28,10 +28,7 @@ class TestCalculateMetrics:
     def test_basic_positive_return(self):
         """Test calculation with positive returns."""
         # Simple growth from 10000 to 11000
-        history = [
-            {"step": i, "account_value": 10000.0 + i * 10}
-            for i in range(100)
-        ]
+        history = [{"step": i, "account_value": 10000.0 + i * 10} for i in range(100)]
 
         result = calculate_metrics(history)
 
@@ -48,10 +45,7 @@ class TestCalculateMetrics:
     def test_basic_negative_return(self):
         """Test calculation with negative returns."""
         # Simple decline from 10000 to 9000
-        history = [
-            {"step": i, "account_value": 10000.0 - i * 10}
-            for i in range(100)
-        ]
+        history = [{"step": i, "account_value": 10000.0 - i * 10} for i in range(100)]
 
         result = calculate_metrics(history)
 
@@ -67,10 +61,7 @@ class TestCalculateMetrics:
 
     def test_flat_returns(self):
         """Test with zero volatility (flat line)."""
-        history = [
-            {"step": i, "account_value": 10000.0}
-            for i in range(100)
-        ]
+        history = [{"step": i, "account_value": 10000.0} for i in range(100)]
 
         result = calculate_metrics(history)
 
@@ -86,7 +77,7 @@ class TestCalculateMetrics:
             {"step": 0, "account_value": 10000.0},
             {"step": 1, "account_value": 11000.0},  # Peak
             {"step": 2, "account_value": 10500.0},  # Draw down
-            {"step": 3, "account_value": 9900.0},   # Lowest point
+            {"step": 3, "account_value": 9900.0},  # Lowest point
             {"step": 4, "account_value": 10200.0},  # Recovery
         ]
 
@@ -112,10 +103,7 @@ class TestCalculateMetrics:
                 change = np.random.uniform(-0.01, 0)  # Negative
             values.append(values[-1] * (1 + change))
 
-        history = [
-            {"step": i, "account_value": v}
-            for i, v in enumerate(values)
-        ]
+        history = [{"step": i, "account_value": v} for i, v in enumerate(values)]
 
         result = calculate_metrics(history)
 
@@ -133,17 +121,14 @@ class TestCalculateMetrics:
 
         for i in range(1, 252):
             prev_value = history[-1]["account_value"]
-            history.append({
-                "step": i,
-                "account_value": prev_value * (1 + daily_return)
-            })
+            history.append(
+                {"step": i, "account_value": prev_value * (1 + daily_return)}
+            )
 
         result = calculate_metrics(history)
 
         # Annualized return should be approximately 252 * 0.1% = 25.2%
-        assert result["annualized_return"] == pytest.approx(
-            daily_return * 252, rel=0.1
-        )
+        assert result["annualized_return"] == pytest.approx(daily_return * 252, rel=0.1)
 
     def test_with_risk_free_rate(self):
         """Test sharpe ratio with non-zero risk-free rate."""
@@ -153,7 +138,7 @@ class TestCalculateMetrics:
         value = 10000.0
         for i in range(100):
             change = 0.002 + np.random.randn() * 0.01  # Positive drift with volatility
-            value *= (1 + change)
+            value *= 1 + change
             history.append({"step": i, "account_value": value})
 
         # Without risk-free rate
@@ -212,10 +197,7 @@ class TestCalculateMetrics:
             change = np.random.randn() * 0.05  # 5% daily vol
             values.append(max(values[-1] * (1 + change), 100))  # Floor at 100
 
-        history = [
-            {"step": i, "account_value": v}
-            for i, v in enumerate(values)
-        ]
+        history = [{"step": i, "account_value": v} for i, v in enumerate(values)]
 
         result = calculate_metrics(history)
 
@@ -228,8 +210,7 @@ class TestCalculateMetrics:
     def test_winning_streak(self):
         """Test metrics for consistent winning strategy."""
         history = [
-            {"step": i, "account_value": 10000.0 * (1.001 ** i)}
-            for i in range(100)
+            {"step": i, "account_value": 10000.0 * (1.001**i)} for i in range(100)
         ]
 
         result = calculate_metrics(history)
@@ -245,8 +226,7 @@ class TestCalculateMetrics:
     def test_losing_streak(self):
         """Test metrics for consistent losing strategy."""
         history = [
-            {"step": i, "account_value": 10000.0 * (0.999 ** i)}
-            for i in range(100)
+            {"step": i, "account_value": 10000.0 * (0.999**i)} for i in range(100)
         ]
 
         result = calculate_metrics(history)
@@ -266,7 +246,7 @@ class TestCalculateMetrics:
         # Down 20%, then recover to +10%
         history = [
             {"step": 0, "account_value": 10000.0},
-            {"step": 1, "account_value": 8000.0},   # -20%
+            {"step": 1, "account_value": 8000.0},  # -20%
             {"step": 2, "account_value": 8500.0},
             {"step": 3, "account_value": 9000.0},
             {"step": 4, "account_value": 10000.0},  # Back to start
@@ -287,10 +267,7 @@ class TestMetricsEdgeCases:
 
     def test_very_small_values(self):
         """Test with very small account values."""
-        history = [
-            {"step": i, "account_value": 0.001 * (1.01 ** i)}
-            for i in range(100)
-        ]
+        history = [{"step": i, "account_value": 0.001 * (1.01**i)} for i in range(100)]
 
         result = calculate_metrics(history)
 
@@ -301,10 +278,7 @@ class TestMetricsEdgeCases:
 
     def test_very_large_values(self):
         """Test with very large account values."""
-        history = [
-            {"step": i, "account_value": 1e12 * (1.001 ** i)}
-            for i in range(100)
-        ]
+        history = [{"step": i, "account_value": 1e12 * (1.001**i)} for i in range(100)]
 
         result = calculate_metrics(history)
 
@@ -328,10 +302,7 @@ class TestMetricsEdgeCases:
 
     def test_identical_values(self):
         """Test when all values are identical."""
-        history = [
-            {"step": i, "account_value": 10000.0}
-            for i in range(50)
-        ]
+        history = [{"step": i, "account_value": 10000.0} for i in range(50)]
 
         result = calculate_metrics(history)
 
@@ -341,10 +312,7 @@ class TestMetricsEdgeCases:
 
     def test_only_negative_returns(self):
         """Test sortino when there are only negative returns."""
-        history = [
-            {"step": i, "account_value": 10000.0 * (0.99 ** i)}
-            for i in range(50)
-        ]
+        history = [{"step": i, "account_value": 10000.0 * (0.99**i)} for i in range(50)]
 
         result = calculate_metrics(history)
 

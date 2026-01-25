@@ -66,7 +66,9 @@ class SAPOLoss(ClipPPOLoss):
     f(r) = (4/tau) * sigmoid(tau * (r - 1))
     """
 
-    def __init__(self, tau_pos: float = 0.1, tau_neg: float = 0.5, *args: Any, **kwargs: Any) -> None:
+    def __init__(
+        self, tau_pos: float = 0.1, tau_neg: float = 0.5, *args: Any, **kwargs: Any
+    ) -> None:
         """
         Initialize SAPO loss.
 

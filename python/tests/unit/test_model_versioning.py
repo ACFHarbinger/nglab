@@ -1,7 +1,7 @@
 """
 Unit tests for model versioning module.
 
-Tests ModelMetadata serialization, model save/load operations, 
+Tests ModelMetadata serialization, model save/load operations,
 ModelRegistry functionality, and version compatibility checking.
 """
 
@@ -150,7 +150,9 @@ def test_save_model_with_optimizer(simple_model, sample_metadata, tmp_path):
     loss.backward()
     optimizer.step()
 
-    save_model_with_metadata(simple_model, save_path, sample_metadata, optimizer=optimizer)
+    save_model_with_metadata(
+        simple_model, save_path, sample_metadata, optimizer=optimizer
+    )
 
     # Load and verify
     checkpoint = torch.load(save_path, weights_only=False, map_location="cpu")
@@ -178,7 +180,9 @@ def test_load_model_with_metadata(simple_model, sample_metadata, tmp_path):
     assert loaded_metadata.model_type == "test_model"
 
     # Verify model weights match
-    for param1, param2 in zip(simple_model.parameters(), loaded_model.parameters(), strict=False):
+    for param1, param2 in zip(
+        simple_model.parameters(), loaded_model.parameters(), strict=False
+    ):
         assert torch.allclose(param1, param2)
 
 
@@ -277,7 +281,9 @@ def test_model_registry_load(simple_model, sample_metadata, tmp_path):
 
     # Verify
     assert loaded_metadata.version == "1.0.0"
-    for param1, param2 in zip(simple_model.parameters(), loaded_model.parameters(), strict=False):
+    for param1, param2 in zip(
+        simple_model.parameters(), loaded_model.parameters(), strict=False
+    ):
         assert torch.allclose(param1, param2)
 
 
@@ -294,7 +300,9 @@ def test_model_registry_list_versions(simple_model, sample_metadata, tmp_path):
             metrics={},
             description=f"Version 1.0.{i}",
         )
-        registry.save(simple_model, model_type="test_model", version=f"1.0.{i}", metadata=meta)
+        registry.save(
+            simple_model, model_type="test_model", version=f"1.0.{i}", metadata=meta
+        )
 
     # List versions
     versions = registry.list_versions("test_model")
@@ -319,7 +327,9 @@ def test_model_registry_get_latest(simple_model, sample_metadata, tmp_path):
             metrics={},
             description=f"Version {version}",
         )
-        registry.save(simple_model, model_type="test_model", version=version, metadata=meta)
+        registry.save(
+            simple_model, model_type="test_model", version=version, metadata=meta
+        )
 
     # Get latest
     latest = registry.get_latest("test_model")
@@ -390,9 +400,7 @@ def test_compute_dataset_hash(tmp_path):
 def test_get_git_commit(mock_run):
     """Test getting git commit hash."""
     # Mock successful git command
-    mock_run.return_value = MagicMock(
-        stdout="a1b2c3d4e5f6\n", stderr="", returncode=0
-    )
+    mock_run.return_value = MagicMock(stdout="a1b2c3d4e5f6\n", stderr="", returncode=0)
 
     commit = get_git_commit()
 
@@ -405,6 +413,7 @@ def test_get_git_commit_not_repo(mock_run):
     """Test getting git commit when not in a repo."""
     # Mock failed git command
     from subprocess import CalledProcessError
+
     mock_run.side_effect = CalledProcessError(1, ["git", "rev-parse", "HEAD"])
 
     commit = get_git_commit()

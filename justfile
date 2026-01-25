@@ -21,7 +21,8 @@ setup:
     @echo ""
     @echo "[4/5] Installing pre-commit hooks..."
     pip install pre-commit || true
-    pre-commit install || echo "⚠️  pre-commit not available, skipping hooks"
+    pre-commit install --install-hooks || echo "⚠️  pre-commit not available, skipping hooks"
+    pre-commit install --hook-type post-commit || echo "⚠️  pre-commit not available, skipping post-commit hooks"
     @echo ""
     @echo "[5/5] Installing additional tools..."
     cargo install cargo-cache cargo-audit || true

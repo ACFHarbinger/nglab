@@ -19,7 +19,15 @@ class PolymarketDataset(torch.utils.data.Dataset[dict[str, torch.Tensor]]):
     """
 
     def __init__(  # noqa: PLR0913
-        self, name: str, dataset_dir: str, seq_len: int, pred_len: int, download: bool = False, transform: Callable[[dict[str, torch.Tensor]], dict[str, torch.Tensor]] | None = None
+        self,
+        name: str,
+        dataset_dir: str,
+        seq_len: int,
+        pred_len: int,
+        download: bool = False,
+        transform: (
+            Callable[[dict[str, torch.Tensor]], dict[str, torch.Tensor]] | None
+        ) = None,
     ) -> None:
         """
         Initialize the dataset.

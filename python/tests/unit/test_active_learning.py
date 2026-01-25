@@ -72,11 +72,13 @@ class TestEntropySampler:
         # Create probability distributions
         # Low entropy (certain): [0.99, 0.01]
         # High entropy (uncertain): [0.5, 0.5]
-        probs = torch.tensor([
-            [0.99, 0.01],  # Low entropy
-            [0.5, 0.5],    # Max entropy for binary
-            [0.8, 0.2],    # Medium entropy
-        ])
+        probs = torch.tensor(
+            [
+                [0.99, 0.01],  # Low entropy
+                [0.5, 0.5],  # Max entropy for binary
+                [0.8, 0.2],  # Medium entropy
+            ]
+        )
 
         indices = sampler.select(probs)
 
@@ -88,11 +90,13 @@ class TestEntropySampler:
         sampler = EntropySampler(budget=1)
 
         # 4-class predictions
-        probs = torch.tensor([
-            [0.97, 0.01, 0.01, 0.01],  # Low entropy
-            [0.25, 0.25, 0.25, 0.25],  # Maximum entropy (uniform)
-            [0.7, 0.1, 0.1, 0.1],      # Medium entropy
-        ])
+        probs = torch.tensor(
+            [
+                [0.97, 0.01, 0.01, 0.01],  # Low entropy
+                [0.25, 0.25, 0.25, 0.25],  # Maximum entropy (uniform)
+                [0.7, 0.1, 0.1, 0.1],  # Medium entropy
+            ]
+        )
 
         indices = sampler.select(probs)
 
@@ -103,10 +107,12 @@ class TestEntropySampler:
         sampler = EntropySampler(budget=1)
 
         # Should not fail with very small probabilities
-        probs = torch.tensor([
-            [1e-10, 1.0 - 1e-10],
-            [0.5, 0.5],
-        ])
+        probs = torch.tensor(
+            [
+                [1e-10, 1.0 - 1e-10],
+                [0.5, 0.5],
+            ]
+        )
 
         indices = sampler.select(probs)
 
@@ -121,11 +127,13 @@ class TestBaldSampler:
 
         # mc_preds: [num_samples, pool_size, num_classes]
         # High disagreement sample
-        mc_preds = torch.tensor([
-            [[0.9, 0.1], [0.5, 0.5], [0.8, 0.2]],  # Sample 1
-            [[0.1, 0.9], [0.5, 0.5], [0.8, 0.2]],  # Sample 2 (disagrees on first)
-            [[0.5, 0.5], [0.5, 0.5], [0.8, 0.2]],  # Sample 3
-        ])
+        mc_preds = torch.tensor(
+            [
+                [[0.9, 0.1], [0.5, 0.5], [0.8, 0.2]],  # Sample 1
+                [[0.1, 0.9], [0.5, 0.5], [0.8, 0.2]],  # Sample 2 (disagrees on first)
+                [[0.5, 0.5], [0.5, 0.5], [0.8, 0.2]],  # Sample 3
+            ]
+        )
 
         indices = sampler.select(mc_preds)
 

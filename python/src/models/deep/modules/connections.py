@@ -18,7 +18,9 @@ class Connections(nn.Module):
         super().__init__()
 
 
-def get_connection_module(module: nn.Module, embed_dim: int, connection_type: str = "skip", **kwargs: Any) -> nn.Module:
+def get_connection_module(
+    module: nn.Module, embed_dim: int, connection_type: str = "skip", **kwargs: Any
+) -> nn.Module:
     """
     Returns a connection module for the given type.
 

@@ -56,12 +56,14 @@ class RLLightningModule(BaseModule):
             critic_network=cast(Any, self.critic),
             clip_epsilon=cfg.get("clip_epsilon", 0.2),
             entropy_bonus=bool(cfg.get("ent_coef", 0.0)),
-            gamma=cfg.get("gamma", 0.99),
-            gae_lambda=cfg.get("gae_lambda", 0.95),
             loss_critic_type="l2_smooth",
         )
         self.loss_module.set_keys(advantage="advantage", value_target="value_target")
-        self.loss_module.make_value_estimator(ValueEstimators.GAE)
+        self.loss_module.make_value_estimator(
+            ValueEstimators.GAE,
+            gamma=cfg.get("gamma", 0.99),
+            lmbda=cfg.get("gae_lambda", 0.95),
+        )
 
         self.frames_per_batch = int(cfg.get("frames_per_batch", 1000))
         self.total_frames = int(cfg.get("total_frames", 1_000_000))
@@ -99,7 +101,7 @@ class RLLightningModule(BaseModule):
         # Return the collector as the dataloader source
         return self.collector
 
-    def training_step(self, batch: Any, batch_idx: int) -> None:  # type: ignore[override]
+    def training_step(self, batch: Any, batch_idx: int) -> None:
         """
         Perform a PPO training step on a collected batch.
         """
@@ -121,7 +123,7 @@ class RLLightningModule(BaseModule):
         # Flatten batch for mini-batch update
         batch = batch.reshape(-1)
         self.replay_buffer.extend(batch)
-        
+
         # Access optimizer correctly
         optimizers = self.optimizers()
         if isinstance(optimizers, list):

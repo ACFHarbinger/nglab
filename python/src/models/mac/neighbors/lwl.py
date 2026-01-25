@@ -1,4 +1,5 @@
 """Locally Weighted Learning model implementation."""
+
 from typing import Any, Literal, cast
 
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor

@@ -39,7 +39,9 @@ class AprioriAlgorithm:
         self.rules = self._generate_rules()
         return self
 
-    def _find_frequent_itemsets(self, transactions: list[list[Any]]) -> dict[int, dict[frozenset[Any], float]]:
+    def _find_frequent_itemsets(
+        self, transactions: list[list[Any]]
+    ) -> dict[int, dict[frozenset[Any], float]]:
         """Find frequent itemsets using Apriori logic."""
         n_transactions = len(transactions)
         item_counts: dict[frozenset[Any], int] = {}
@@ -80,7 +82,9 @@ class AprioriAlgorithm:
 
         return all_frequent
 
-    def _generate_candidates(self, prev_frequent: set[frozenset[Any]], k: int) -> set[frozenset[Any]]:
+    def _generate_candidates(
+        self, prev_frequent: set[frozenset[Any]], k: int
+    ) -> set[frozenset[Any]]:
         """Generate candidates of size k from frequent itemsets of size k-1."""
         items = list(prev_frequent)
         candidates: set[frozenset[Any]] = set()

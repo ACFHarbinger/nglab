@@ -310,7 +310,10 @@ class TestDriftDetectorInterface:
         "detector_class,kwargs",
         [
             (PageHinkley, {"min_instances": 10, "threshold": 5.0}),
-            (MovingAverageDrift, {"short_window": 5, "long_window": 20, "threshold": 2.0}),
+            (
+                MovingAverageDrift,
+                {"short_window": 5, "long_window": 20, "threshold": 2.0},
+            ),
         ],
     )
     def test_interface_compliance(self, detector_class, kwargs):
@@ -332,7 +335,10 @@ class TestDriftDetectorInterface:
         "detector_class,kwargs",
         [
             (PageHinkley, {"min_instances": 10, "threshold": 5.0}),
-            (MovingAverageDrift, {"short_window": 5, "long_window": 20, "threshold": 2.0}),
+            (
+                MovingAverageDrift,
+                {"short_window": 5, "long_window": 20, "threshold": 2.0},
+            ),
         ],
     )
     def test_handles_edge_values(self, detector_class, kwargs):
@@ -361,7 +367,10 @@ class TestDriftDetectorInterface:
         "detector_class,kwargs",
         [
             (PageHinkley, {"min_instances": 10, "threshold": 5.0}),
-            (MovingAverageDrift, {"short_window": 5, "long_window": 20, "threshold": 2.0}),
+            (
+                MovingAverageDrift,
+                {"short_window": 5, "long_window": 20, "threshold": 2.0},
+            ),
         ],
     )
     def test_recovers_after_drift(self, detector_class, kwargs):

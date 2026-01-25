@@ -160,11 +160,7 @@ class TestReadJson:
         """Test reading nested JSON data."""
         json_path = tmp_path / "nested.json"
         data = {
-            "level1": {
-                "level2": {
-                    "level3": ["a", "b", "c"]
-                }
-            },
+            "level1": {"level2": {"level3": ["a", "b", "c"]}},
             "array": [1, 2, 3],
         }
 

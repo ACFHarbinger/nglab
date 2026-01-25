@@ -1,4 +1,5 @@
 """Decision Stump model implementation."""
+
 from typing import Any
 
 from .decision_tree import DecisionTreeModel

@@ -1,4 +1,5 @@
 """Bagging ensemble model implementation."""
+
 from typing import Any
 
 from sklearn.ensemble import BaggingClassifier, BaggingRegressor

@@ -2,7 +2,6 @@
 Extreme Learning Machine (ELM) implementation.
 """
 
-
 from typing import Any
 
 import torch

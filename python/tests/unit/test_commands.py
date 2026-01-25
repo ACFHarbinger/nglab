@@ -17,16 +17,17 @@ class TestRegistry(unittest.TestCase):
         """Test get_parser creates parser and calls all add_*_args functions."""
         parser = get_parser()
         self.assertIsNotNone(parser)
-        
+
         # Verify all add_*_args functions were called
         for mock in mocks:
             mock.assert_called_once()
+
 
 class TestTrainParser(unittest.TestCase):
     def test_add_train_args(self):
         parser = argparse.ArgumentParser()
         add_train_args(parser)
-        
+
         # Parse with defaults
         args = parser.parse_args([])
         self.assertEqual(args.model, "lstm")
@@ -54,21 +55,27 @@ class TestTrainParser(unittest.TestCase):
         self.assertEqual(args.log_step, 1)
         self.assertFalse(args.distributed)
         self.assertEqual(args.local_rank, 0)
-    
+
     def test_add_train_args_custom(self):
         parser = argparse.ArgumentParser()
         add_train_args(parser)
-        
+
         # Parse with custom values
-        args = parser.parse_args([
-            "--model", "nstransformer",
-            "--n_epochs", "50",
-            "--batch_size", "32",
-            "--lr_model", "0.001",
-            "--no_cuda",
-            "--distributed"
-        ])
-        
+        args = parser.parse_args(
+            [
+                "--model",
+                "nstransformer",
+                "--n_epochs",
+                "50",
+                "--batch_size",
+                "32",
+                "--lr_model",
+                "0.001",
+                "--no_cuda",
+                "--distributed",
+            ]
+        )
+
         self.assertEqual(args.model, "nstransformer")
         self.assertEqual(args.n_epochs, 50)
         self.assertEqual(args.batch_size, 32)

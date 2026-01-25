@@ -73,3 +73,14 @@ class TimeSeriesBackbone(nn.Module):
         # We generally expect models to handle their return types.
         # Wrappers should return what's expected.
         return cast(torch.Tensor, out)
+
+    @property
+    def in_keys(self) -> list[str]:
+        return ["observation"]
+
+    @property
+    def out_keys(self) -> list[str]:
+        # If used as critic, output is value
+        # If used as backbone, output is embedding
+        # TorchRL might assume "state_value" for critic if not specified?
+        return ["state_value"]

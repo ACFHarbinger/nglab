@@ -2,7 +2,6 @@
 Hopfield Network implementation.
 """
 
-
 import torch
 from torch import nn
 
@@ -25,7 +24,13 @@ class HopfieldNetwork(nn.Module):
         w.fill_diagonal_(0)
         self.weights = w
 
-    def forward(self, x: torch.Tensor, iterations: int = 10, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        iterations: int = 10,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """
         Retrieval as a 'forward' pass.
         """

@@ -158,7 +158,13 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
         """
         if self._rust_env is not None:
             obs, reward, terminated, truncated, info = self._rust_env.step(action)
-            return np.array(obs), float(reward), bool(terminated), bool(truncated), dict(info)
+            return (
+                np.array(obs),
+                float(reward),
+                bool(terminated),
+                bool(truncated),
+                dict(info),
+            )
 
         # Python fallback implementation
         trade_cost = self._execute_action(action)
@@ -369,7 +375,9 @@ class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
         info = {
             "account_value": current_value,
             "collateral": (
-                self._collateral if self._arena is None else float(self._arena.collateral())
+                self._collateral
+                if self._arena is None
+                else float(self._arena.collateral())
             ),
         }
 
@@ -383,7 +391,10 @@ class PolymarketEnv(gym.Env[NDArray[Any], NDArray[Any]]):
             collateral = self._collateral
             pnl = 0.0
 
-        obs: list[float] = [collateral / self.initial_collateral, pnl / self.initial_collateral]
+        obs: list[float] = [
+            collateral / self.initial_collateral,
+            pnl / self.initial_collateral,
+        ]
 
         for market_id in self.market_ids:
             if self._arena is not None:

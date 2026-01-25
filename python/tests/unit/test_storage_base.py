@@ -200,8 +200,10 @@ class TestModelStorageBase:
 
     def test_compress_decompress_zstd(self):
         storage = ConcreteStorage(StorageConfig())
-        data = b"test data for compression" * 100  # Make data larger so compression works
-        
+        data = (
+            b"test data for compression" * 100
+        )  # Make data larger so compression works
+
         try:
             import zstandard  # noqa: F401
         except (ImportError, AttributeError):

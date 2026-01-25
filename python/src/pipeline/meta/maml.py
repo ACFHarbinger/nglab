@@ -90,7 +90,13 @@ class MAMLLightningModule(pl.LightningModule):
 
         return query_loss
 
-    def training_step(self, batch: dict[str, list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]], batch_idx: int) -> torch.Tensor:
+    def training_step(
+        self,
+        batch: dict[
+            str, list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
+        ],
+        batch_idx: int,
+    ) -> torch.Tensor:
         """
         Meta-training step across multiple tasks.
 
@@ -118,7 +124,13 @@ class MAMLLightningModule(pl.LightningModule):
 
         return meta_loss
 
-    def validation_step(self, batch: dict[str, list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]], batch_idx: int) -> torch.Tensor:
+    def validation_step(
+        self,
+        batch: dict[
+            str, list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
+        ],
+        batch_idx: int,
+    ) -> torch.Tensor:
         """
         Validation step to evaluate meta-learning performance.
 
@@ -205,7 +217,9 @@ class MAMLDataModule(pl.LightningDataModule):
         self.meta_batch_size = meta_batch_size
         self.num_workers = num_workers
 
-    def create_task(self, regime_data: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    def create_task(
+        self, regime_data: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Create a task (support/query split) from regime data.
 
@@ -247,7 +261,11 @@ class MAMLDataModule(pl.LightningDataModule):
 
         return support_x, support_y, query_x, query_y
 
-    def train_dataloader(self) -> Iterator[dict[str, list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]]]:
+    def train_dataloader(
+        self,
+    ) -> Iterator[
+        dict[str, list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]]
+    ]:
         """Create training dataloader with task batches."""
         # For simplicity, create a static list of task batches
         # In practice, you'd implement a proper Dataset/DataLoader
@@ -257,7 +275,9 @@ class MAMLDataModule(pl.LightningDataModule):
             batch = []
             for _ in range(self.meta_batch_size):
                 # Sample random regime
-                regime_id = int(torch.randint(0, len(self.regime_datasets), (1,)).item())
+                regime_id = int(
+                    torch.randint(0, len(self.regime_datasets), (1,)).item()
+                )
                 regime_data = self.regime_datasets[regime_id]
                 task = self.create_task(regime_data)
                 batch.append(task)
@@ -265,7 +285,11 @@ class MAMLDataModule(pl.LightningDataModule):
 
         return iter(task_batches)
 
-    def val_dataloader(self) -> Iterator[dict[str, list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]]]:
+    def val_dataloader(
+        self,
+    ) -> Iterator[
+        dict[str, list[tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]]
+    ]:
         """Create validation dataloader."""
         # Similar to train but with fewer batches
         task_batches = []
@@ -273,7 +297,9 @@ class MAMLDataModule(pl.LightningDataModule):
         for _ in range(20):  # 20 validation batches
             batch = []
             for _ in range(self.meta_batch_size):
-                regime_id = int(torch.randint(0, len(self.regime_datasets), (1,)).item())
+                regime_id = int(
+                    torch.randint(0, len(self.regime_datasets), (1,)).item()
+                )
                 regime_data = self.regime_datasets[regime_id]
                 task = self.create_task(regime_data)
                 batch.append(task)

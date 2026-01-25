@@ -41,12 +41,15 @@ class DummySpan:
     def __enter__(self):
         """Context manager entry."""
         return self
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit."""
         pass
+
     def set_attribute(self, key, value):
         """No-op for dummy span."""
         pass
+
 
 class DummyTracer:
     """Dummy tracer for when OpenTelemetry is disabled."""
@@ -54,6 +57,7 @@ class DummyTracer:
     def start_as_current_span(self, name):
         """Start a no-op span."""
         return DummySpan()
+
 
 try:
     tracer = trace.get_tracer(__name__)
@@ -99,7 +103,9 @@ class PredictionRequest(BaseModel):
         expected_len = len(v[0])
         for i, obs in enumerate(v):
             if len(obs) != expected_len:
-                raise ValueError(f"Observation at index {i} has inconsistent length {len(obs)}, expected {expected_len}")
+                raise ValueError(
+                    f"Observation at index {i} has inconsistent length {len(obs)}, expected {expected_len}"
+                )
         return v
 
 
@@ -127,7 +133,10 @@ class BatchInferenceHandler:
         Args:
             model_loader_func: Function to load the model singleton.
         """
-        self.queue: asyncio.Queue[tuple[PredictionRequest, asyncio.Future[list[list[float]]]]] | None = None
+        self.queue: (
+            asyncio.Queue[tuple[PredictionRequest, asyncio.Future[list[list[float]]]]]
+            | None
+        ) = None
         self.model_loader = model_loader_func
         self._shutdown = False
         self._worker_task: asyncio.Task[None] | None = None
@@ -152,14 +161,18 @@ class BatchInferenceHandler:
         """Add request to queue and await result."""
         if self.queue is None:
             raise RuntimeError("BatchInferenceHandler not started")
-        future: asyncio.Future[list[list[float]]] = asyncio.get_running_loop().create_future()
+        future: asyncio.Future[list[list[float]]] = (
+            asyncio.get_running_loop().create_future()
+        )
         await self.queue.put((request, future))
         return await future
 
     async def _worker_loop(self) -> None:
         """Background loop to process batches."""
         while not self._shutdown:
-            batch: list[tuple[PredictionRequest, asyncio.Future[list[list[float]]]]] = []
+            batch: list[tuple[PredictionRequest, asyncio.Future[list[list[float]]]]] = (
+                []
+            )
 
             # 1. Fetch first item (blocking)
             try:
@@ -231,8 +244,10 @@ class BatchInferenceHandler:
                 # Distribute results
                 cursor = 0
                 # Cast futures to correct type since zip result is Tuple[Any, ...]
-                typed_futures = cast(tuple[asyncio.Future[list[list[float]]], ...], futures)
-                
+                typed_futures = cast(
+                    tuple[asyncio.Future[list[list[float]]], ...], futures
+                )
+
                 for i, future in enumerate(typed_futures):
                     num_samples = splits[i]
                     result = output_list[cursor : cursor + num_samples]
@@ -242,7 +257,9 @@ class BatchInferenceHandler:
                         future.set_result(result)
 
             except Exception as e:
-                typed_futures_err = cast(tuple[asyncio.Future[list[list[float]]], ...], futures)
+                typed_futures_err = cast(
+                    tuple[asyncio.Future[list[list[float]]], ...], futures
+                )
                 for future in typed_futures_err:
                     if not future.done():
                         future.set_exception(e)

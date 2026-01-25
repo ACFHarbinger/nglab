@@ -67,7 +67,9 @@ class TSMamba(nn.Module):
 
         for layer_module in self.layers:
             layer = cast(MambaBlock, layer_module)
-            x_enc = x_enc + cast(torch.Tensor, layer(x_enc))  # Residual connection per block
+            x_enc = x_enc + cast(
+                torch.Tensor, layer(x_enc)
+            )  # Residual connection per block
 
         x_norm = cast(torch.Tensor, self.norm(x_enc))
 

@@ -1,4 +1,5 @@
 """Bayesian Network model implementation."""
+
 from typing import Any
 
 import numpy as np
@@ -29,7 +30,7 @@ class BayesianNetworkModel(ClassicalModel):
         self.model.fit(X_np, y_np.ravel())
         self._is_fitted = True
 
-    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:
         """Predict labels using the fitted Bayesian Network."""
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 

@@ -1,4 +1,5 @@
 """Health and readiness probe endpoints for NGLab API."""
+
 from typing import Any
 
 import psutil

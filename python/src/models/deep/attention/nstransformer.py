@@ -24,7 +24,12 @@ class EncoderLayer(nn.Module):
     """
 
     def __init__(
-        self, n_heads: int, embed_dim: int, hidden_dim: int, dropout_rate: float = 0.1, normalization: str = "layer"
+        self,
+        n_heads: int,
+        embed_dim: int,
+        hidden_dim: int,
+        dropout_rate: float = 0.1,
+        normalization: str = "layer",
     ) -> None:
         """
         Initialize.
@@ -44,13 +49,21 @@ class EncoderLayer(nn.Module):
         )
         self.norm = Normalization(embed_dim, normalization)
 
-    def forward(self, x: torch.Tensor, attn_mask: Any, tau: torch.Tensor | None, delta: torch.Tensor | None) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        attn_mask: Any,
+        tau: torch.Tensor | None,
+        delta: torch.Tensor | None,
+    ) -> torch.Tensor:
         """
         Forward pass.
         """
-        y = x = torch.as_tensor(self.norm(
-            self.attention(x, x, x, attn_mask=attn_mask, tau=tau, delta=delta)[0]
-        ))
+        y = x = torch.as_tensor(
+            self.norm(
+                self.attention(x, x, x, attn_mask=attn_mask, tau=tau, delta=delta)[0]
+            )
+        )
         y = torch.as_tensor(self.conv(y))
         return torch.as_tensor(self.norm(x + y))
 
@@ -60,7 +73,12 @@ class Encoder(nn.Module):
     Encoder network consisting of multiple layers.
     """
 
-    def __init__(self, attn_layers: list[EncoderLayer], conv_layers: list[nn.Module] | None = None, norm_layer: nn.Module | None = None) -> None:
+    def __init__(
+        self,
+        attn_layers: list[EncoderLayer],
+        conv_layers: list[nn.Module] | None = None,
+        norm_layer: nn.Module | None = None,
+    ) -> None:
         """
         Initialize.
         """
@@ -71,7 +89,13 @@ class Encoder(nn.Module):
         )
         self.norm = norm_layer
 
-    def forward(self, x: torch.Tensor, attn_mask: Any = None, tau: torch.Tensor | None = None, delta: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        attn_mask: Any = None,
+        tau: torch.Tensor | None = None,
+        delta: torch.Tensor | None = None,
+    ) -> torch.Tensor:
         """
         Forward pass.
         """
@@ -82,22 +106,22 @@ class Encoder(nn.Module):
             ):
                 delta_val = delta if i == 0 else None
                 out = attn_layer(x, attn_mask=attn_mask, tau=tau, delta=delta_val)
-                if isinstance(out, (tuple, list)):
+                if isinstance(out, tuple | list):
                     x = out[0]
                 else:
                     x = out
                 x = torch.as_tensor(conv_layer(x))
-            
+
             # Final attention layer
             last_out = self.attn_layers[-1](x, attn_mask=attn_mask, tau=tau, delta=None)
-            if isinstance(last_out, (tuple, list)):
-                 x = last_out[0]
+            if isinstance(last_out, tuple | list):
+                x = last_out[0]
             else:
-                 x = last_out
+                x = last_out
         else:
             for attn_layer in self.attn_layers:
                 out_loop = attn_layer(x, attn_mask=attn_mask, tau=tau, delta=delta)
-                if isinstance(out_loop, (tuple, list)):
+                if isinstance(out_loop, tuple | list):
                     x = out_loop[0]
                 else:
                     x = out_loop
@@ -114,7 +138,12 @@ class DecoderLayer(nn.Module):
     """
 
     def __init__(
-        self, n_heads: int, embed_dim: int, hidden_dim: int, dropout_rate: float = 0.1, normalization: str = "layer"
+        self,
+        n_heads: int,
+        embed_dim: int,
+        hidden_dim: int,
+        dropout_rate: float = 0.1,
+        normalization: str = "layer",
     ) -> None:
         """
         Initialize.
@@ -138,17 +167,27 @@ class DecoderLayer(nn.Module):
         self.norm = Normalization(embed_dim, normalization)
 
     def forward(  # noqa: PLR0913
-        self, x: torch.Tensor, cross: torch.Tensor, x_mask: Any = None, cross_mask: Any = None, tau: torch.Tensor | None = None, delta: torch.Tensor | None = None
+        self,
+        x: torch.Tensor,
+        cross: torch.Tensor,
+        x_mask: Any = None,
+        cross_mask: Any = None,
+        tau: torch.Tensor | None = None,
+        delta: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """
         Forward pass.
         """
-        x = torch.as_tensor(self.norm(self.attention(x, x, x, attn_mask=x_mask, tau=tau, delta=None)[0]))
-        x = torch.as_tensor(self.norm(
-            self.cross_attention(
-                x, cross, cross, attn_mask=cross_mask, tau=tau, delta=delta
-            )[0]
-        ))
+        x = torch.as_tensor(
+            self.norm(self.attention(x, x, x, attn_mask=x_mask, tau=tau, delta=None)[0])
+        )
+        x = torch.as_tensor(
+            self.norm(
+                self.cross_attention(
+                    x, cross, cross, attn_mask=cross_mask, tau=tau, delta=delta
+                )[0]
+            )
+        )
         y = torch.as_tensor(self.conv(x))
         return torch.as_tensor(self.norm(x + y))
 
@@ -158,7 +197,12 @@ class Decoder(nn.Module):
     Decoder network consisting of multiple layers.
     """
 
-    def __init__(self, layers: list[DecoderLayer], norm_layer: nn.Module | None = None, projection: nn.Module | None = None) -> None:
+    def __init__(
+        self,
+        layers: list[DecoderLayer],
+        norm_layer: nn.Module | None = None,
+        projection: nn.Module | None = None,
+    ) -> None:
         """
         Initialize.
         """
@@ -168,15 +212,23 @@ class Decoder(nn.Module):
         self.projection = projection
 
     def forward(  # noqa: PLR0913
-        self, x: torch.Tensor, cross: torch.Tensor, x_mask: Any = None, cross_mask: Any = None, tau: torch.Tensor | None = None, delta: torch.Tensor | None = None
+        self,
+        x: torch.Tensor,
+        cross: torch.Tensor,
+        x_mask: Any = None,
+        cross_mask: Any = None,
+        tau: torch.Tensor | None = None,
+        delta: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """
         Forward pass.
         """
         for layer in self.layers:
-            x = torch.as_tensor(layer(
-                x, cross, x_mask=x_mask, cross_mask=cross_mask, tau=tau, delta=delta
-            ))
+            x = torch.as_tensor(
+                layer(
+                    x, cross, x_mask=x_mask, cross_mask=cross_mask, tau=tau, delta=delta
+                )
+            )
 
         if self.norm is not None:
             x = torch.as_tensor(self.norm(x))
@@ -192,7 +244,13 @@ class Projector(nn.Module):
     """
 
     def __init__(  # noqa: PLR0913
-        self, enc_in: int, seq_len: int, hidden_dims: list[int], hidden_layers: int, output_dim: int, kernel_size: int = 3
+        self,
+        enc_in: int,
+        seq_len: int,
+        hidden_dims: list[int],
+        hidden_layers: int,
+        output_dim: int,
+        kernel_size: int = 3,
     ) -> None:
         """
         Initialize the Projector.
@@ -290,7 +348,13 @@ class NSTransformer(nn.Module):
         )
         self.label_len: int = 0
 
-    def forecast(self, x_enc: torch.Tensor, x_mark_enc: torch.Tensor | None, x_dec: torch.Tensor, x_mark_dec: torch.Tensor | None) -> torch.Tensor:
+    def forecast(
+        self,
+        x_enc: torch.Tensor,
+        x_mark_enc: torch.Tensor | None,
+        x_dec: torch.Tensor,
+        x_mark_dec: torch.Tensor | None,
+    ) -> torch.Tensor:
         """
         Forecasting function.
         """
@@ -303,7 +367,7 @@ class NSTransformer(nn.Module):
             torch.var(x_enc, dim=1, keepdim=True, unbiased=False) + 1e-5
         ).detach()  # B x 1 x E
         x_enc = x_enc / std_enc
-        
+
         tau = torch.as_tensor(self.tau_learner(x_raw, std_enc)).exp()
         delta = torch.as_tensor(self.delta_learner(x_raw, mean_enc))
 
@@ -320,16 +384,27 @@ class NSTransformer(nn.Module):
         )
 
         enc_out = torch.as_tensor(self.init_embedding(x_enc, x_mark_enc))
-        enc_out = torch.as_tensor(self.encoder(enc_out, attn_mask=None, tau=tau, delta=delta))
+        enc_out = torch.as_tensor(
+            self.encoder(enc_out, attn_mask=None, tau=tau, delta=delta)
+        )
 
         dec_out = torch.as_tensor(self.dec_embedding(x_dec_new, x_mark_dec))
-        dec_out = torch.as_tensor(self.decoder(
-            dec_out, enc_out, x_mask=None, cross_mask=None, tau=tau, delta=delta
-        ))
+        dec_out = torch.as_tensor(
+            self.decoder(
+                dec_out, enc_out, x_mask=None, cross_mask=None, tau=tau, delta=delta
+            )
+        )
         dec_out = dec_out * std_enc + mean_enc
         return dec_out
 
-    def forward(self, x_enc: torch.Tensor, x_mark_enc: torch.Tensor | None, x_dec: torch.Tensor, x_mark_dec: torch.Tensor | None, mask: Any = None) -> torch.Tensor:
+    def forward(
+        self,
+        x_enc: torch.Tensor,
+        x_mark_enc: torch.Tensor | None,
+        x_dec: torch.Tensor,
+        x_mark_dec: torch.Tensor | None,
+        mask: Any = None,
+    ) -> torch.Tensor:
         """
         Forward pass for the NSTransformer.
         """

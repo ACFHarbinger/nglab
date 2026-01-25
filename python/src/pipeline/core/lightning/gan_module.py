@@ -56,7 +56,9 @@ class GANLightningModule(BaseModule):
         """
         return cast(torch.Tensor, self.generator(x))
 
-    def configure_optimizers(self) -> Any:  # Returning Any to avoid complexity with PyTorch Lightning types
+    def configure_optimizers(
+        self,
+    ) -> Any:  # Returning Any to avoid complexity with PyTorch Lightning types
         """
         Configure optimizers for Generator and Discriminator.
         """
@@ -68,7 +70,7 @@ class GANLightningModule(BaseModule):
         )
         return [opt_g, opt_d], []
 
-    def training_step(self, batch: Any, batch_idx: int) -> None:  # type: ignore[override]
+    def training_step(self, batch: Any, batch_idx: int) -> None:
         """
         GAN Training Step.
         """
@@ -88,14 +90,14 @@ class GANLightningModule(BaseModule):
         # Optimizers
         optimizers = self.optimizers()
         if isinstance(optimizers, list):
-             # When return is List[LightningOptimizer], but typing says List[Optimizer]
-             # Lightining returns LightningOptimizer wrapper. Using untyped access or ignoring.
-             # Actually self.optimizers() usually returns a single optimizer or list.
-             # With Manual optimization, we access them via indices usually or just tuple unpacking if we know count.
-             opt_g, opt_d = optimizers[0], optimizers[1]
+            # When return is List[LightningOptimizer], but typing says List[Optimizer]
+            # Lightining returns LightningOptimizer wrapper. Using untyped access or ignoring.
+            # Actually self.optimizers() usually returns a single optimizer or list.
+            # With Manual optimization, we access them via indices usually or just tuple unpacking if we know count.
+            opt_g, opt_d = optimizers[0], optimizers[1]
         else:
-             # Should not happen given configure_optimizers returns list
-             raise RuntimeError("Expected list of optimizers")
+            # Should not happen given configure_optimizers returns list
+            raise RuntimeError("Expected list of optimizers")
 
         device = cast(torch.device, self.device)
 
@@ -111,7 +113,7 @@ class GANLightningModule(BaseModule):
 
         # Check dimensions
         # x: (B, Lx, F), y: (B, Ly, F), y_hat: (B, Ly, F)
-        
+
         # NOTE: If Feature dims don't match, we assume they do for TS prediction tasks.
         full_fake = torch.cat([x, y_hat], dim=1)
 
@@ -135,7 +137,7 @@ class GANLightningModule(BaseModule):
         if hasattr(opt_g, "optimizer"):
             opt_g.optimizer.zero_grad()
         else:
-            opt_g.zero_grad()  # type: ignore[attr-defined]
+            opt_g.zero_grad()
         self.manual_backward(g_loss)
         opt_g.step()
         self.untoggle_optimizer(opt_g)
@@ -157,7 +159,7 @@ class GANLightningModule(BaseModule):
         if hasattr(opt_d, "optimizer"):
             opt_d.optimizer.zero_grad()
         else:
-            opt_d.zero_grad()  # type: ignore[attr-defined]
+            opt_d.zero_grad()
         self.manual_backward(d_loss)
         opt_d.step()
         self.untoggle_optimizer(opt_d)
@@ -179,7 +181,7 @@ class GANLightningModule(BaseModule):
             x, y = batch
 
         if x is None or y is None:
-             raise ValueError("Validation batch must contain observation and target")
+            raise ValueError("Validation batch must contain observation and target")
 
         y_hat = self.generator(x)
         val_l1 = self.l1_loss(y_hat, y)

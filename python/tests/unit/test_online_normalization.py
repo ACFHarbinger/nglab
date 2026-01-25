@@ -61,11 +61,13 @@ class TestOnlineNormalizer:
         normalizer = OnlineNormalizer(num_features=3)
 
         # Single batch
-        x = torch.tensor([
-            [1.0, 2.0, 3.0],
-            [4.0, 5.0, 6.0],
-            [7.0, 8.0, 9.0],
-        ])
+        x = torch.tensor(
+            [
+                [1.0, 2.0, 3.0],
+                [4.0, 5.0, 6.0],
+                [7.0, 8.0, 9.0],
+            ]
+        )
 
         normalizer.update(x)
 

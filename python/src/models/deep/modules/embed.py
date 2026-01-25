@@ -39,7 +39,7 @@ class PositionalEmbedding(nn.Module):
         """
         Forward pass.
         """
-        return self.pe[:, : x.size(1)] # type: ignore
+        return self.pe[:, : x.size(1)]  # type: ignore
 
 
 class TokenEmbedding(nn.Module):
@@ -112,7 +112,9 @@ class TemporalEmbedding(nn.Module):
     Embedding for Temporal Features (Hour, Day, Month, etc).
     """
 
-    def __init__(self, d_model: int, embed_type: str = "fixed", freq: str = "h") -> None:
+    def __init__(
+        self, d_model: int, embed_type: str = "fixed", freq: str = "h"
+    ) -> None:
         """
         Initialize temporal embedding.
         """
@@ -153,7 +155,9 @@ class TimeFeatureEmbedding(nn.Module):
     Embedding for continuous time features.
     """
 
-    def __init__(self, d_model: int, embed_type: str = "timeF", freq: str = "h") -> None:
+    def __init__(
+        self, d_model: int, embed_type: str = "timeF", freq: str = "h"
+    ) -> None:
         """
         Initialize time feature embedding.
         """
@@ -175,7 +179,14 @@ class DataEmbedding(nn.Module):
     Standard Data Embedding combining value, position, and temporal embeddings.
     """
 
-    def __init__(self, c_in: int, d_model: int, embed_type: str = "fixed", freq: str = "h", dropout: float = 0.1) -> None:
+    def __init__(
+        self,
+        c_in: int,
+        d_model: int,
+        embed_type: str = "fixed",
+        freq: str = "h",
+        dropout: float = 0.1,
+    ) -> None:
         """
         Initialize data embedding.
         """
@@ -210,7 +221,14 @@ class DataEmbedding_inverted(nn.Module):  # noqa: N801
     Inverted Data Embedding for specific architectures.
     """
 
-    def __init__(self, c_in: int, d_model: int, embed_type: str = "fixed", freq: str = "h", dropout: float = 0.1) -> None:
+    def __init__(
+        self,
+        c_in: int,
+        d_model: int,
+        embed_type: str = "fixed",
+        freq: str = "h",
+        dropout: float = 0.1,
+    ) -> None:
         """
         Initialize inverted data embedding.
         """
@@ -237,7 +255,14 @@ class DataEmbedding_wo_pos(nn.Module):  # noqa: N801
     Data Embedding without Positional Embedding.
     """
 
-    def __init__(self, c_in: int, d_model: int, embed_type: str = "fixed", freq: str = "h", dropout: float = 0.1) -> None:
+    def __init__(
+        self,
+        c_in: int,
+        d_model: int,
+        embed_type: str = "fixed",
+        freq: str = "h",
+        dropout: float = 0.1,
+    ) -> None:
         """
         Initialize.
         """
@@ -268,7 +293,9 @@ class PatchEmbedding(nn.Module):
     Patch Embedding for PatchTST-style models.
     """
 
-    def __init__(self, d_model: int, patch_len: int, stride: int, padding: int, dropout: float) -> None:
+    def __init__(
+        self, d_model: int, patch_len: int, stride: int, padding: int, dropout: float
+    ) -> None:
         """
         Initialize patch embedding.
         """

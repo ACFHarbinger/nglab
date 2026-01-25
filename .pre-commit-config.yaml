@@ -16,8 +16,10 @@ repos:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
         types_or: [python, pyi]
+        stages: [post-commit]
       - id: ruff-format
         types_or: [python, pyi]
+        stages: [post-commit]
 
   # Python: Black for formatting
   - repo: https://github.com/psf/black
@@ -25,7 +27,7 @@ repos:
     hooks:
       - id: black
         types_or: [python, pyi]
-
+        stages: [post-commit]
   # Python: Type checking with mypy
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.14.1
@@ -39,6 +41,7 @@ repos:
           - numpy
           - pydantic
         types: [python]
+        stages: [post-commit]
 
   # Python: Security audit
   - repo: https://github.com/pypa/pip-audit
@@ -47,6 +50,7 @@ repos:
       - id: pip-audit
         args: ["--local"]
         files: ^python/.*$
+        stages: [post-commit]
 
   # Rust: Formatting and Linting
   - repo: local
@@ -58,6 +62,7 @@ repos:
         language: system
         types: [rust]
         pass_filenames: false
+        stages: [post-commit]
       - id: cargo-clippy
         name: cargo clippy
         description: Lint Rust code with clippy
@@ -65,6 +70,7 @@ repos:
         language: system
         types: [rust]
         pass_filenames: false
+        stages: [post-commit]
 
   # TypeScript/JavaScript: Prettier for formatting
   # Strictly restricted to TS/JS to avoid touching MD, JSON, YAML, etc.
@@ -74,6 +80,7 @@ repos:
       - id: prettier
         types_or: [ts, tsx, javascript, jsx]
         exclude: '^(package-lock\.json|.*\.lock)$'
+        stages: [post-commit]
 
   # Kotlin: Formatting with Gradle/ktlint
   - repo: local
@@ -85,6 +92,7 @@ repos:
         language: system
         files: ^android/.*$
         pass_filenames: false
+        stages: [post-commit]
 
   # General: Trailing whitespace and EOF fixes
   # Strictly restricted to core language files
@@ -93,18 +101,26 @@ repos:
     hooks:
       - id: trailing-whitespace
         types_or: [python, pyi, rust, ts, tsx, javascript, jsx, kotlin]
+        stages: [post-commit]
       - id: end-of-file-fixer
         types_or: [python, pyi, rust, ts, tsx, javascript, jsx, kotlin]
+        stages: [post-commit]
       - id: check-added-large-files
         args: [--maxkb=1000]
+        stages: [post-commit]
       - id: check-merge-conflict
+        stages: [post-commit]
       - id: mixed-line-ending
         args: [--fix=lf]
         types_or: [python, pyi, rust, ts, tsx, javascript, jsx, kotlin]
+        stages: [post-commit]
       - id: check-yaml
         args: [--unsafe]
         files: ^\.github/.*$ # Only check GitHub workflow YAMLs if needed
+        stages: [post-commit]
       - id: check-toml
         files: ^(pyproject\.toml|Cargo\.toml)$
+        stages: [post-commit]
       - id: check-json
         files: ^(package\.json|tsconfig\.json)$
+        stages: [post-commit]

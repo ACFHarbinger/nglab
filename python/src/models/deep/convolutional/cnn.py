@@ -110,6 +110,6 @@ class RollingWindowCNN(nn.Module):
         )
 
         if should_return_embedding:
-            return x_emb
+            return cast(torch.Tensor, x_emb)
 
         return cast(torch.Tensor, self.fc2(x_emb))

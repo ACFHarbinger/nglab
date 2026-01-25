@@ -1,4 +1,5 @@
 """One-Class SVM for anomaly detection."""
+
 from typing import Any
 
 import numpy as np

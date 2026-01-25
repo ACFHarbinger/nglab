@@ -44,7 +44,9 @@ def cache_key(*args: Any, **kwargs: Any) -> str:
 
 def cached_query(
     ttl: int = 300, key_prefix: str = "query"
-) -> Callable[[Callable[..., Coroutine[Any, Any, T]]], Callable[..., Coroutine[Any, Any, T]]]:
+) -> Callable[
+    [Callable[..., Coroutine[Any, Any, T]]], Callable[..., Coroutine[Any, Any, T]]
+]:
     """
     Decorator for caching query results in Redis.
 
@@ -62,6 +64,7 @@ def cached_query(
         func: Callable[..., Coroutine[Any, Any, T]],
     ) -> Callable[..., Coroutine[Any, Any, T]]:
         """Inner decorator function."""
+
         @functools.wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
             """Wrapper that handles Redis lookups and cache population."""

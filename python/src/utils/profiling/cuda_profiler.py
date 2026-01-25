@@ -178,10 +178,14 @@ class CUDAProfiler:
 
         # Calculate totals
         total_cuda_time = sum(
-            float(event.cuda_time_total) for event in key_averages if event.cuda_time_total
+            float(event.cuda_time_total)
+            for event in key_averages
+            if event.cuda_time_total
         )
         total_cpu_time = sum(
-            float(event.cpu_time_total) for event in key_averages if event.cpu_time_total
+            float(event.cpu_time_total)
+            for event in key_averages
+            if event.cpu_time_total
         )
 
         # Get memory stats

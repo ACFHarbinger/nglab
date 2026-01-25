@@ -1,4 +1,5 @@
 """t-SNE algorithm implementation."""
+
 from typing import Any, cast
 
 from numpy.typing import NDArray

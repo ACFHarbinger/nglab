@@ -195,6 +195,7 @@ class TransferProfiler:
 
         def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
             """Inner decorator for measurement."""
+
             @wraps(func)
             def wrapper(*args: Any, **kwargs: Any) -> Any:
                 """Wrapper that profiles array transfer."""
@@ -256,7 +257,9 @@ class TransferProfiler:
                 print(f"  Count: {int(stats_dict['count'])}")
                 print(f"  Total: {stats_dict['total_ms']:.2f}ms")
                 print(f"  Avg: {stats_dict['avg_ms']:.2f}ms")
-                print(f"  Min/Max: {stats_dict['min_ms']:.2f}ms / {stats_dict['max_ms']:.2f}ms")
+                print(
+                    f"  Min/Max: {stats_dict['min_ms']:.2f}ms / {stats_dict['max_ms']:.2f}ms"
+                )
 
     def clear(self) -> None:
         """Clear all profiles."""

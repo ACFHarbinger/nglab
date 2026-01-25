@@ -71,7 +71,9 @@ class GatedGraphConvolution(nn.Module):
             stdv = 1.0 / math.sqrt(param.size(-1))
             param.data.uniform_(-stdv, stdv)
 
-    def forward(self, h: torch.Tensor, e: torch.Tensor, mask: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    def forward(
+        self, h: torch.Tensor, e: torch.Tensor, mask: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         """
         Args:
             h: Input node features (B x V x H)
@@ -116,7 +118,12 @@ class GatedGraphConvolution(nn.Module):
 
         return h, e
 
-    def aggregate(self, Vh: torch.Tensor, mask: torch.Tensor, gates: torch.Tensor) -> torch.Tensor:  # noqa: N803
+    def aggregate(
+        self,
+        Vh: torch.Tensor,
+        mask: torch.Tensor,
+        gates: torch.Tensor,
+    ) -> torch.Tensor:
         """
         Args:
             Vh: Neighborhood features (B x V x V x H)

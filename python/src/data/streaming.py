@@ -97,7 +97,9 @@ class StreamingFinancialDataset(IterableDataset[dict[str, Any]]):
         # If we have a huge shuffle buffer, we would add to buffer here.
         # For simplicity, we iterate rows.
         for _, row in chunk.iterrows():
-            item = cast(dict[str, Any], row.to_dict())  # Or convert to Tensor directly if faster
+            item = cast(
+                dict[str, Any], row.to_dict()
+            )  # Or convert to Tensor directly if faster
             # Simple numeric conversion could happen here
             if self.transform:
                 item = self.transform(item)

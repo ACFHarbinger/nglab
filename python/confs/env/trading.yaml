@@ -1,0 +1,4 @@
+lookback: 30
+max_steps: 1000
+num_envs: 1
+device: ${device}

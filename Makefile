@@ -141,7 +141,8 @@ dev: install-hooks
 
 install-hooks:
 	@echo "$(CYAN)🪝 Installing pre-commit hooks...$(RESET)"
-	pre-commit install
+	pre-commit install --install-hooks
+	pre-commit install --hook-type post-commit
 	@echo "$(GREEN)✅ Pre-commit hooks installed!$(RESET)"
 
 # Tauri development

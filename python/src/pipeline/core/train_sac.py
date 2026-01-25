@@ -8,20 +8,25 @@ NOTE: SAC requires a continuous action space. TradingEnv uses Discrete(3).
 This script uses a custom wrapper to convert the discrete space to continuous.
 """
 
-import argparse
 import os
 from collections.abc import Callable
 from typing import Any, cast
 
 import gymnasium as gym
+import hydra
 import numpy as np
 from gymnasium import spaces
+from omegaconf import DictConfig
 from stable_baselines3 import SAC
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 
+from python.src.configs import register_configs
 from python.src.env import TradingEnv
+
+# Register structured configs
+register_configs()
 
 
 class ContinuousActionWrapper(gym.ActionWrapper[Any, Any, Any]):
@@ -36,7 +41,9 @@ class ContinuousActionWrapper(gym.ActionWrapper[Any, Any, Any]):
         """
         super().__init__(env)
         action_space = env.action_space
-        assert isinstance(action_space, spaces.Discrete), "Expected Discrete action space"
+        assert isinstance(
+            action_space, spaces.Discrete
+        ), "Expected Discrete action space"
         self.n_actions = int(cast(Any, action_space).n)
         self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
 
@@ -57,7 +64,9 @@ class ContinuousActionWrapper(gym.ActionWrapper[Any, Any, Any]):
             return 0  # Hold
 
 
-def make_env(rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000) -> Callable[[], gym.Env[Any, Any]]:
+def make_env(
+    rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000
+) -> Callable[[], gym.Env[Any, Any]]:
     """Create a wrapped TradingEnv instance for SAC."""
 
     def _init() -> gym.Env[Any, Any]:
@@ -69,20 +78,21 @@ def make_env(rank: int, seed: int = 0, lookback: int = 30, max_steps: int = 1000
     return _init
 
 
-def train_sac(args: argparse.Namespace) -> None:
+@hydra.main(version_base=None, config_path=None, config_name="config")
+def train_sac(cfg: DictConfig) -> None:
     """Train a SAC agent on TradingEnv."""
 
     # Create output directory
-    os.makedirs(args.save_dir, exist_ok=True)
-    log_dir = os.path.join(args.save_dir, "logs")
+    os.makedirs(cfg.algorithm.save_dir, exist_ok=True)
+    log_dir = os.path.join(cfg.algorithm.save_dir, "logs")
     os.makedirs(log_dir, exist_ok=True)
 
     # Create vectorized environment (SAC doesn't benefit much from parallel envs)
-    env = DummyVecEnv([make_env(0, args.seed, args.lookback, args.max_steps)])
+    env = DummyVecEnv([make_env(0, cfg.seed, cfg.env.lookback, cfg.env.max_steps)])
 
     # Evaluation environment
     eval_env = DummyVecEnv(
-        [make_env(0, args.seed + 100, args.lookback, args.max_steps)]
+        [make_env(0, cfg.seed + 100, cfg.env.lookback, cfg.env.max_steps)]
     )
 
     # Define the SAC model
@@ -90,44 +100,44 @@ def train_sac(args: argparse.Namespace) -> None:
         "MlpPolicy",
         env,
         verbose=1,
-        learning_rate=args.learning_rate,
-        buffer_size=args.buffer_size,
-        learning_starts=args.learning_starts,
-        batch_size=args.batch_size,
-        tau=args.tau,
-        gamma=args.gamma,
-        train_freq=args.train_freq,
-        gradient_steps=args.gradient_steps,
-        ent_coef=args.ent_coef,
+        learning_rate=cfg.algorithm.learning_rate,
+        buffer_size=cfg.algorithm.buffer_size,
+        learning_starts=cfg.algorithm.learning_starts,
+        batch_size=cfg.algorithm.batch_size,
+        tau=cfg.algorithm.tau,
+        gamma=cfg.algorithm.gamma,
+        train_freq=cfg.algorithm.train_freq,
+        gradient_steps=cfg.algorithm.gradient_steps,
+        ent_coef=cfg.algorithm.ent_coef,
         tensorboard_log=log_dir,
-        seed=args.seed,
+        seed=cfg.seed,
     )
 
     # Callbacks
     checkpoint_callback = CheckpointCallback(
-        save_freq=args.checkpoint_freq,
-        save_path=args.save_dir,
+        save_freq=cfg.algorithm.checkpoint_freq,
+        save_path=cfg.algorithm.save_dir,
         name_prefix="sac_trading",
     )
     eval_callback = EvalCallback(
         eval_env,
-        best_model_save_path=args.save_dir,
+        best_model_save_path=cfg.algorithm.save_dir,
         log_path=log_dir,
-        eval_freq=args.eval_freq,
+        eval_freq=cfg.algorithm.eval_freq,
         deterministic=True,
         render=False,
     )
 
     # Train
-    print(f"Starting SAC training for {args.total_timesteps} timesteps...")
+    print(f"Starting SAC training for {cfg.algorithm.total_timesteps} timesteps...")
     model.learn(
-        total_timesteps=args.total_timesteps,
+        total_timesteps=cfg.algorithm.total_timesteps,
         callback=[checkpoint_callback, eval_callback],
         progress_bar=True,
     )
 
     # Save final model
-    final_path = os.path.join(args.save_dir, "sac_final")
+    final_path = os.path.join(cfg.algorithm.save_dir, "sac_final")
     model.save(final_path)
     print(f"Training complete. Final model saved to {final_path}")
 
@@ -136,53 +146,4 @@ def train_sac(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train SAC on TradingEnv")
-    parser.add_argument(
-        "--total_timesteps", type=int, default=100_000, help="Total training timesteps"
-    )
-    parser.add_argument(
-        "--save_dir",
-        type=str,
-        default="models/sac_trading",
-        help="Directory to save models",
-    )
-    parser.add_argument(
-        "--lookback", type=int, default=30, help="Lookback window for observations"
-    )
-    parser.add_argument(
-        "--max_steps", type=int, default=1000, help="Max steps per episode"
-    )
-    parser.add_argument(
-        "--learning_rate", type=float, default=3e-4, help="Learning rate"
-    )
-    parser.add_argument(
-        "--buffer_size", type=int, default=100_000, help="Replay buffer size"
-    )
-    parser.add_argument(
-        "--learning_starts", type=int, default=1000, help="Steps before learning starts"
-    )
-    parser.add_argument("--batch_size", type=int, default=256, help="Minibatch size")
-    parser.add_argument(
-        "--tau", type=float, default=0.005, help="Soft update coefficient"
-    )
-    parser.add_argument("--gamma", type=float, default=0.99, help="Discount factor")
-    parser.add_argument("--train_freq", type=int, default=1, help="Training frequency")
-    parser.add_argument(
-        "--gradient_steps", type=int, default=1, help="Gradient steps per update"
-    )
-    parser.add_argument(
-        "--ent_coef",
-        type=str,
-        default="auto",
-        help="Entropy coefficient (auto or float)",
-    )
-    parser.add_argument(
-        "--checkpoint_freq", type=int, default=10_000, help="Checkpoint save frequency"
-    )
-    parser.add_argument(
-        "--eval_freq", type=int, default=5_000, help="Evaluation frequency"
-    )
-    parser.add_argument("--seed", type=int, default=42, help="Random seed")
-
-    args = parser.parse_args()
-    train_sac(args)
+    train_sac()

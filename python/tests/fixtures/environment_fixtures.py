@@ -11,10 +11,14 @@ from numpy.typing import NDArray
 def sample_prices() -> dict[str, NDArray[np.float64]]:
     """Generate various synthetic price series for testing."""
     np.random.seed(42)
-    
+
     return {
-        "trending_up": np.array([100.0 + i * 0.5 for i in range(200)], dtype=np.float64),
-        "trending_down": np.array([200.0 - i * 0.3 for i in range(200)], dtype=np.float64),
+        "trending_up": np.array(
+            [100.0 + i * 0.5 for i in range(200)], dtype=np.float64
+        ),
+        "trending_down": np.array(
+            [200.0 - i * 0.3 for i in range(200)], dtype=np.float64
+        ),
         "mean_reverting": np.array(
             [100.0 + 10.0 * np.sin(i / 10.0) for i in range(200)], dtype=np.float64
         ),
@@ -39,7 +43,7 @@ def trading_env_config() -> dict[str, float | int]:
 def trading_env(trading_env_config: dict[str, float | int], sample_prices):
     """Pre-initialized TradingEnv instance."""
     from python.src.env.envs import TradingEnv
-    
+
     env = TradingEnv(
         prices=sample_prices["trending_up"],
         initial_capital=float(trading_env_config["initial_capital"]),
@@ -54,7 +58,7 @@ def trading_env(trading_env_config: dict[str, float | int], sample_prices):
 def clob_env(trading_env_config: dict[str, float | int], sample_prices):
     """Pre-initialized ClobEnv instance."""
     from python.src.env.envs import ClobEnv
-    
+
     env = ClobEnv(
         prices=sample_prices["volatile"],
         initial_capital=float(trading_env_config["initial_capital"]),
@@ -69,7 +73,7 @@ def clob_env(trading_env_config: dict[str, float | int], sample_prices):
 def polymarket_env():
     """Pre-initialized PolymarketEnv instance."""
     from python.src.env.envs import PolymarketEnv
-    
+
     market_ids = ["market_1", "market_2", "market_3"]
     env = PolymarketEnv(
         market_ids=market_ids,

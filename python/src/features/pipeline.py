@@ -54,7 +54,9 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         self.selector: Any = None
         self.feature_names: list[str] = []
 
-    def fit(self, x: pd.DataFrame | np.ndarray[Any, Any], y: Any = None) -> "FeaturePipeline":
+    def fit(
+        self, x: pd.DataFrame | np.ndarray[Any, Any], y: Any = None
+    ) -> "FeaturePipeline":
         """
         Fit the pipeline components (e.g., scalers) on historical data.
 

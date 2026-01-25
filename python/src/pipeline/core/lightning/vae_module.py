@@ -115,7 +115,7 @@ class VAELightningModule(LightningModule):
         if current_epoch >= self.kl_anneal_epochs:
             return self.kl_weight
         else:
-            return self.kl_weight * (current_epoch / self.kl_anneal_epochs)
+            return float(self.kl_weight * (current_epoch / self.kl_anneal_epochs))
 
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         """Forward pass through VAE."""
@@ -161,7 +161,9 @@ class VAELightningModule(LightningModule):
         # Add latent statistics
         loss_dict["latent_mean"] = mean.mean()
         loss_dict["latent_std"] = torch.exp(0.5 * log_var).mean()
-        loss_dict["kl_weight_current"] = torch.tensor(float(current_kl_weight), device=cast(torch.device, self.device))
+        loss_dict["kl_weight_current"] = torch.tensor(
+            float(current_kl_weight), device=cast(torch.device, self.device)
+        )
 
         return loss_dict
 
@@ -205,9 +207,7 @@ class VAELightningModule(LightningModule):
         """
         if self.num_val_samples > 0:
             device = cast(torch.device, self.device)
-            samples = self.model.sample(
-                num_samples=self.num_val_samples, device=device
-            )
+            samples = self.model.sample(num_samples=self.num_val_samples, device=device)
             # Log sample statistics
             self.log("val/sample_mean", samples.mean())
             self.log("val/sample_std", samples.std())

@@ -2,7 +2,6 @@
 Restricted Boltzmann Machine (RBM).
 """
 
-
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
@@ -13,7 +12,9 @@ class RBM(nn.Module):
     Restricted Boltzmann Machine (RBM).
     """
 
-    def __init__(self, visible_dim: int, hidden_dim: int, output_type: str = "embedding") -> None:
+    def __init__(
+        self, visible_dim: int, hidden_dim: int, output_type: str = "embedding"
+    ) -> None:
         """Initialize RBM."""
         super().__init__()
         self.visible_dim = visible_dim
@@ -34,7 +35,12 @@ class RBM(nn.Module):
         prob = torch.sigmoid(F.linear(h, self.weights.t(), self.v_bias))
         return prob, torch.bernoulli(prob)
 
-    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """Forward pass - Gibbs sampling step."""
         # x is visible layer v
         if x.dim() == 3:

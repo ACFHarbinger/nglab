@@ -1,0 +1,14 @@
+name: sac
+learning_rate: 3e-4
+gamma: 0.99
+tau: 0.005
+buffer_size: 100_000
+learning_starts: 1000
+batch_size: 256
+train_freq: 1
+gradient_steps: 1
+ent_coef: auto
+checkpoint_freq: 10000
+eval_freq: 5000
+total_timesteps: 100000
+save_dir: models/sac_trading

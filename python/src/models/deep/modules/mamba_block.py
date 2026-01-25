@@ -55,7 +55,9 @@ class MambaBlock(nn.Module):
 
         # 4. S4D (Structured State Space) Parameters
         # a_mat is learnable, initializing the state transition matrix a
-        a_init = torch.arange(1, d_state + 1, dtype=torch.float32).repeat(self.d_inner, 1)
+        a_init = torch.arange(1, d_state + 1, dtype=torch.float32).repeat(
+            self.d_inner, 1
+        )
         self.A_log = nn.Parameter(torch.log(a_init))
         self.D = nn.Parameter(torch.ones(self.d_inner))
 

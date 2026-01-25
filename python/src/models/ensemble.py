@@ -144,11 +144,15 @@ def create_ensemble_from_configs(
     """
     # Cast to Sequence[nn.Module] to satisfy invariance
     models: Sequence[nn.Module] = [TimeSeriesBackbone(cfg) for cfg in configs]
-    
+
     # Cast strategy string to Literal
     strat_literal = cast(
-        Literal["average", "weighted", "voting", "stacking"], 
-        strategy if strategy in ["average", "weighted", "voting", "stacking"] else "average"
+        Literal["average", "weighted", "voting", "stacking"],
+        (
+            strategy
+            if strategy in ["average", "weighted", "voting", "stacking"]
+            else "average"
+        ),
     )
-    
+
     return EnsembleModel(models, strategy=strat_literal, weights=weights)

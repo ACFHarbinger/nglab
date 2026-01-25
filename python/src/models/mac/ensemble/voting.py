@@ -1,4 +1,5 @@
 """Voting ensemble model implementation."""
+
 from typing import Any
 
 from sklearn.ensemble import VotingClassifier, VotingRegressor

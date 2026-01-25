@@ -13,11 +13,7 @@ from python.src.pipeline.core.lightning.supervised_learning import (
 
 class TestLightningSupervised(unittest.TestCase):
     def setUp(self):
-        self.cfg = {
-            "hidden_dim": 64,
-            "output_dim": 1,
-            "learning_rate": 0.001
-        }
+        self.cfg = {"hidden_dim": 64, "output_dim": 1, "learning_rate": 0.001}
         self.backbone = nn.Linear(32, 64)
         self.module = SLLightningModule(self.backbone, self.cfg)
 
@@ -33,13 +29,10 @@ class TestLightningSupervised(unittest.TestCase):
 
     def test_training_step(self):
         # Mock batch as dict
-        batch = {
-            "observation": torch.randn(8, 32),
-            "target": torch.randn(8, 1)
-        }
+        batch = {"observation": torch.randn(8, 32), "target": torch.randn(8, 1)}
         # We need to mock .log to avoid Lightning module error if not in trainer
         self.module.log = MagicMock()
-        
+
         loss = self.module.training_step(batch, 0)
         self.assertIsInstance(loss, torch.Tensor)
         self.module.log.assert_called_with("train/sl_loss", ANY)
@@ -48,17 +41,14 @@ class TestLightningSupervised(unittest.TestCase):
         # Mock batch as tuple
         batch = (torch.randn(8, 32), torch.randn(8, 1))
         self.module.log = MagicMock()
-        
+
         loss = self.module.training_step(batch, 0)
         self.assertIsInstance(loss, torch.Tensor)
 
     def test_validation_step(self):
-        batch = {
-            "observation": torch.randn(8, 32),
-            "target": torch.randn(8, 1)
-        }
+        batch = {"observation": torch.randn(8, 32), "target": torch.randn(8, 1)}
         self.module.log = MagicMock()
-        
+
         loss = self.module.validation_step(batch, 0)
         self.assertIsInstance(loss, torch.Tensor)
         self.module.log.assert_called_with("val/sl_loss", ANY)

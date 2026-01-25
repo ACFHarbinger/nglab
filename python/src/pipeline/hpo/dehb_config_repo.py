@@ -62,7 +62,9 @@ class ConfigRepository:
         self.configs = []
         self.initial_configs: list[ConfigItem] = []
 
-    def announce_config(self, config: np.ndarray[Any, Any], fidelity: float | None = None) -> int:
+    def announce_config(
+        self, config: np.ndarray[Any, Any], fidelity: float | None = None
+    ) -> int:
         """Announces a new configuration with the respective fidelity it should be evaluated on.
 
         The configuration is then added to the list of so far seen configurations and the ID of the
@@ -85,7 +87,9 @@ class ConfigRepository:
         self.configs.append(config_item)
         return config_id
 
-    def announce_population(self, population: np.ndarray[Any, Any], fidelity: float | None = None) -> np.ndarray[Any, Any]:
+    def announce_population(
+        self, population: np.ndarray[Any, Any], fidelity: float | None = None
+    ) -> np.ndarray[Any, Any]:
         """Announce population, retrieving ids for the population.
 
         Args:
@@ -121,7 +125,12 @@ class ConfigRepository:
         config_item.results[fidelity] = ResultItem(np.inf, -1, {})
 
     def tell_result(
-        self, config_id: int, fidelity: float, score: float, cost: float, info: dict[Any, Any]
+        self,
+        config_id: int,
+        fidelity: float,
+        score: float,
+        cost: float,
+        info: dict[Any, Any],
     ) -> None:
         """Logs the achieved performance, cost etc. of a specific configuration-fidelity pair.
 

@@ -19,7 +19,11 @@ class DSAttention(nn.Module):
     """
 
     def __init__(
-        self, mask_flag: bool = True, attention_dropout: float = 0.1, output_attention: bool = False, scale: float | None = None
+        self,
+        mask_flag: bool = True,
+        attention_dropout: float = 0.1,
+        output_attention: bool = False,
+        scale: float | None = None,
     ) -> None:
         """
         Initialize.
@@ -31,7 +35,13 @@ class DSAttention(nn.Module):
         self.dropout = nn.Dropout(attention_dropout)
 
     def forward(  # noqa: PLR0913
-        self, queries: torch.Tensor, keys: torch.Tensor, values: torch.Tensor, attn_mask: Any = None, tau: torch.Tensor | None = None, delta: torch.Tensor | None = None
+        self,
+        queries: torch.Tensor,
+        keys: torch.Tensor,
+        values: torch.Tensor,
+        attn_mask: Any = None,
+        tau: torch.Tensor | None = None,
+        delta: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """
         Forward pass.
@@ -40,7 +50,9 @@ class DSAttention(nn.Module):
         _, _S, _, _D = values.shape
         scale = self.scale or 1.0 / sqrt(E)
 
-        tau_val: float | torch.Tensor = 1.0 if tau is None else tau.unsqueeze(1).unsqueeze(1)  # B x 1 x 1 x 1
+        tau_val: float | torch.Tensor = (
+            1.0 if tau is None else tau.unsqueeze(1).unsqueeze(1)
+        )  # B x 1 x 1 x 1
         delta_val: float | torch.Tensor = (
             0.0 if delta is None else delta.unsqueeze(1).unsqueeze(1)
         )  # B x 1 x 1 x S
@@ -86,7 +98,13 @@ class FullAttention(nn.Module):
         self.dropout = nn.Dropout(attention_dropout)
 
     def forward(  # noqa: PLR0913
-        self, queries: torch.Tensor, keys: torch.Tensor, values: torch.Tensor, attn_mask: Any = None, tau: torch.Tensor | None = None, delta: torch.Tensor | None = None
+        self,
+        queries: torch.Tensor,
+        keys: torch.Tensor,
+        values: torch.Tensor,
+        attn_mask: Any = None,
+        tau: torch.Tensor | None = None,
+        delta: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """
         Forward pass.
@@ -135,7 +153,13 @@ class ProbAttention(nn.Module):
         self.output_attention = output_attention
         self.dropout = nn.Dropout(attention_dropout)
 
-    def _prob_QK(self, Q: torch.Tensor, K: torch.Tensor, sample_k: int, n_top: int) -> tuple[torch.Tensor, torch.Tensor]:  # noqa: N803, N802
+    def _prob_QK(  # noqa: N802
+        self,
+        Q: torch.Tensor,
+        K: torch.Tensor,
+        sample_k: int,
+        n_top: int,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
         B, H, L_K, E = K.shape
         _, _, L_Q, _ = Q.shape
 
@@ -154,7 +178,7 @@ class ProbAttention(nn.Module):
 
         return Q_K, M_top
 
-    def _get_initial_context(self, V: torch.Tensor, L_Q: int) -> torch.Tensor:  # noqa: N803
+    def _get_initial_context(self, V: torch.Tensor, L_Q: int) -> torch.Tensor:
         B, H, L_V, _D = V.shape
         if not self.mask_flag:
             V_sum = V.mean(dim=-2)
@@ -194,7 +218,13 @@ class ProbAttention(nn.Module):
             return context_in, None
 
     def forward(  # noqa: PLR0913
-        self, queries: torch.Tensor, keys: torch.Tensor, values: torch.Tensor, attn_mask: Any = None, tau: torch.Tensor | None = None, delta: torch.Tensor | None = None
+        self,
+        queries: torch.Tensor,
+        keys: torch.Tensor,
+        values: torch.Tensor,
+        attn_mask: Any = None,
+        tau: torch.Tensor | None = None,
+        delta: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """
         Forward pass.
@@ -217,7 +247,7 @@ class ProbAttention(nn.Module):
         scale = self.scale or 1.0 / sqrt(D)
         if scale is not None:
             scores_top = scores_top * scale
-        
+
         context = self._get_initial_context(values, L_Q)
         context, attn = self._update_context(
             context, values, scores_top, index, L_Q, attn_mask
@@ -231,7 +261,14 @@ class AttentionLayer(nn.Module):
     Attention Layer wrapping inner attention mechanisms.
     """
 
-    def __init__(self, attention: nn.Module, d_model: int, n_heads: int, d_keys: int | None = None, d_values: int | None = None) -> None:
+    def __init__(
+        self,
+        attention: nn.Module,
+        d_model: int,
+        n_heads: int,
+        d_keys: int | None = None,
+        d_values: int | None = None,
+    ) -> None:
         """
         Initialize.
         """
@@ -248,7 +285,13 @@ class AttentionLayer(nn.Module):
         self.n_heads = n_heads
 
     def forward(  # noqa: PLR0913
-        self, queries: torch.Tensor, keys: torch.Tensor, values: torch.Tensor, attn_mask: Any = None, tau: torch.Tensor | None = None, delta: torch.Tensor | None = None
+        self,
+        queries: torch.Tensor,
+        keys: torch.Tensor,
+        values: torch.Tensor,
+        attn_mask: Any = None,
+        tau: torch.Tensor | None = None,
+        delta: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, torch.Tensor | None]:
         """
         Forward pass.

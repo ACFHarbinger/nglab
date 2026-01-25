@@ -2,7 +2,6 @@
 Denoising AutoEncoder (DAE) implementation.
 """
 
-
 import torch
 
 from .ae import AutoEncoder

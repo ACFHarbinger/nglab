@@ -36,11 +36,11 @@ class SLLightningModule(BaseModule):
         super().__init__(cfg)
         self.save_hyperparameters(ignore=["backbone"])
         self.backbone = backbone
-        
+
         # Determine output dim
         hidden_dim = int(cfg.get("hidden_dim", 128))
         output_dim = int(cfg.get("output_dim", 1))
-        
+
         self.head = torch.nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -56,10 +56,10 @@ class SLLightningModule(BaseModule):
         """
         # Batch: {observation, target}
         if isinstance(batch, dict):
-             x = batch["observation"]
-             y = batch["target"]
+            x = batch["observation"]
+            y = batch["target"]
         else:
-             x, y = batch
+            x, y = batch
 
         pred = self(x)
         loss = F.mse_loss(pred, y)  # Or CrossEntropy relative to task
@@ -73,11 +73,11 @@ class SLLightningModule(BaseModule):
         Perform a validation step.
         """
         if isinstance(batch, dict):
-             x = batch["observation"]
-             y = batch["target"]
+            x = batch["observation"]
+            y = batch["target"]
         else:
-             x, y = batch
-             
+            x, y = batch
+
         pred = self(x)
         loss = F.mse_loss(pred, y)
         self.log("val/sl_loss", loss)
@@ -146,10 +146,9 @@ def train_from_csv(  # noqa: PLR0913, PLR0915
     # Add src to path
     sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-    from utils.model_versioning import ModelMetadata, save_model_with_metadata
-
     from data.time_series_dataset import TimeSeriesDataset
     from models.time_series import TimeSeriesBackbone
+    from utils.model_versioning import ModelMetadata, save_model_with_metadata
 
     # Create datasets
     train_dataset = TimeSeriesDataset(

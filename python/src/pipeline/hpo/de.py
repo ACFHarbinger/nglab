@@ -122,7 +122,12 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             new_vector[i] = np.max(np.array(vector)[self.dim_map[i]])
         return new_vector
 
-    def f_objective(self, x: np.ndarray[Any, Any] | CS.Configuration, fidelity: float | None = None, **kwargs: Any) -> dict[str, Any]:
+    def f_objective(
+        self,
+        x: np.ndarray[Any, Any] | CS.Configuration,
+        fidelity: float | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         """Evaluate the objective for a given config or vector."""
         if self.f is None:
             raise NotImplementedError("An objective function needs to be passed.")
@@ -135,7 +140,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             if not isinstance(x, CS.Configuration):
                 # converts [0, 1] vector to a CS object
                 assert isinstance(x, np.ndarray)
-                config: np.ndarray[Any, Any] | CS.Configuration = self.vector_to_configspace(x)
+                config: np.ndarray[Any, Any] | CS.Configuration = (
+                    self.vector_to_configspace(x)
+                )
             else:
                 config = x
         elif isinstance(x, np.ndarray):
@@ -154,7 +161,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         assert "cost" in res
         return res
 
-    def init_eval_pop(self, fidelity: float | None = None, eval: bool = True, **kwargs: Any) -> tuple[list[float], list[float], list[Any]]:
+    def init_eval_pop(
+        self, fidelity: float | None = None, eval: bool = True, **kwargs: Any
+    ) -> tuple[list[float], list[float], list[Any]]:
         """Creates new population of 'pop_size' and evaluates individuals."""
         assert self.pop_size is not None
         self.population = self.init_population(self.pop_size)
@@ -191,13 +200,19 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             )
             traj.append(float(self.inc_score))
             runtime.append(c_val)
-            history.append(
-                (config.tolist(), f_val, float(fidelity or 0), info)
-            )
+            history.append((config.tolist(), f_val, float(fidelity or 0), info))
 
         return traj, runtime, history
 
-    def eval_pop(self, population: np.ndarray[Any, Any] | None = None, population_ids: np.ndarray[Any, Any] | None = None, fidelity: float | None = None, **kwargs: Any) -> tuple[list[float], list[float], list[Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
+    def eval_pop(
+        self,
+        population: np.ndarray[Any, Any] | None = None,
+        population_ids: np.ndarray[Any, Any] | None = None,
+        fidelity: float | None = None,
+        **kwargs: Any,
+    ) -> tuple[
+        list[float], list[float], list[Any], np.ndarray[Any, Any], np.ndarray[Any, Any]
+    ]:
         """Evaluates a population
 
         If population=None, the current population's fitness will be evaluated
@@ -236,22 +251,32 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             )
             traj.append(float(self.inc_score))
             runtime.append(c_val)
-            history.append(
-                (pop[i].tolist(), f_val, float(fidelity or 0), info)
-            )
+            history.append((pop[i].tolist(), f_val, float(fidelity or 0), info))
         if population is None:
             self.fitness = np.array(fitnesses)
             self.age = np.array(ages)
         return traj, runtime, history, np.array(fitnesses), np.array(ages)
 
-    def mutation_rand1(self, r1: np.ndarray[Any, Any], r2: np.ndarray[Any, Any], r3: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
+    def mutation_rand1(
+        self,
+        r1: np.ndarray[Any, Any],
+        r2: np.ndarray[Any, Any],
+        r3: np.ndarray[Any, Any],
+    ) -> np.ndarray[Any, Any]:
         """Performs the 'rand1' type of DE mutation"""
         assert self.mutation_factor is not None
         diff = r2 - r3
         mutant = r1 + self.mutation_factor * diff
         return cast(np.ndarray[Any, Any], mutant)
 
-    def mutation_rand2(self, r1: np.ndarray[Any, Any], r2: np.ndarray[Any, Any], r3: np.ndarray[Any, Any], r4: np.ndarray[Any, Any], r5: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
+    def mutation_rand2(
+        self,
+        r1: np.ndarray[Any, Any],
+        r2: np.ndarray[Any, Any],
+        r3: np.ndarray[Any, Any],
+        r4: np.ndarray[Any, Any],
+        r5: np.ndarray[Any, Any],
+    ) -> np.ndarray[Any, Any]:
         """Performs the 'rand2' type of DE mutation"""
         assert self.mutation_factor is not None
         diff1 = r2 - r3
@@ -259,7 +284,13 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         mutant = r1 + self.mutation_factor * diff1 + self.mutation_factor * diff2
         return cast(np.ndarray[Any, Any], mutant)
 
-    def mutation_currenttobest1(self, current: np.ndarray[Any, Any], best: np.ndarray[Any, Any], r1: np.ndarray[Any, Any], r2: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
+    def mutation_currenttobest1(
+        self,
+        current: np.ndarray[Any, Any],
+        best: np.ndarray[Any, Any],
+        r1: np.ndarray[Any, Any],
+        r2: np.ndarray[Any, Any],
+    ) -> np.ndarray[Any, Any]:
         """Perform the current-to-best/1 mutation variant."""
         assert self.mutation_factor is not None
         diff1 = best - current
@@ -267,7 +298,12 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         mutant = current + self.mutation_factor * diff1 + self.mutation_factor * diff2
         return cast(np.ndarray[Any, Any], mutant)
 
-    def mutation_rand2dir(self, r1: np.ndarray[Any, Any], r2: np.ndarray[Any, Any], r3: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
+    def mutation_rand2dir(
+        self,
+        r1: np.ndarray[Any, Any],
+        r2: np.ndarray[Any, Any],
+        r3: np.ndarray[Any, Any],
+    ) -> np.ndarray[Any, Any]:
         """Perform the rand/2 directional mutation variant."""
         assert self.mutation_factor is not None
         diff = r1 - r2 - r3
@@ -283,7 +319,11 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         """Performs DE mutation"""
         if self.mutation_strategy == "rand1":
             selection = self.sample_population(size=3, alt_pop=alt_pop)
-            r1, r2, r3 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1]), cast(np.ndarray[Any, Any], selection[2])
+            r1, r2, r3 = (
+                cast(np.ndarray[Any, Any], selection[0]),
+                cast(np.ndarray[Any, Any], selection[1]),
+                cast(np.ndarray[Any, Any], selection[2]),
+            )
             mutant = self.mutation_rand1(r1, r2, r3)
 
         elif self.mutation_strategy == "rand2":
@@ -299,12 +339,19 @@ class DifferentialEvolution(DifferentialEvolutionBase):
 
         elif self.mutation_strategy == "rand2dir":
             selection = self.sample_population(size=3, alt_pop=alt_pop)
-            r1, r2, r3 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1]), cast(np.ndarray[Any, Any], selection[2])
+            r1, r2, r3 = (
+                cast(np.ndarray[Any, Any], selection[0]),
+                cast(np.ndarray[Any, Any], selection[1]),
+                cast(np.ndarray[Any, Any], selection[2]),
+            )
             mutant = self.mutation_rand2dir(r1, r2, r3)
 
         elif self.mutation_strategy == "best1":
             selection = self.sample_population(size=2, alt_pop=alt_pop)
-            r1, r2 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1])
+            r1, r2 = (
+                cast(np.ndarray[Any, Any], selection[0]),
+                cast(np.ndarray[Any, Any], selection[1]),
+            )
             if best is None:
                 assert self.population is not None
                 assert self.fitness is not None
@@ -329,7 +376,10 @@ class DifferentialEvolution(DifferentialEvolutionBase):
 
         elif self.mutation_strategy == "currenttobest1":
             selection = self.sample_population(size=2, alt_pop=alt_pop)
-            r1, r2 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1])
+            r1, r2 = (
+                cast(np.ndarray[Any, Any], selection[0]),
+                cast(np.ndarray[Any, Any], selection[1]),
+            )
             if best is None:
                 assert self.population is not None
                 assert self.fitness is not None
@@ -340,7 +390,11 @@ class DifferentialEvolution(DifferentialEvolutionBase):
 
         elif self.mutation_strategy == "randtobest1":
             selection = self.sample_population(size=3, alt_pop=alt_pop)
-            r1, r2, r3 = cast(np.ndarray[Any, Any], selection[0]), cast(np.ndarray[Any, Any], selection[1]), cast(np.ndarray[Any, Any], selection[2])
+            r1, r2, r3 = (
+                cast(np.ndarray[Any, Any], selection[0]),
+                cast(np.ndarray[Any, Any], selection[1]),
+                cast(np.ndarray[Any, Any], selection[2]),
+            )
             if best is None:
                 assert self.population is not None
                 assert self.fitness is not None
@@ -352,7 +406,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
 
         return mutant
 
-    def crossover_bin(self, target: np.ndarray[Any, Any], mutant: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
+    def crossover_bin(
+        self, target: np.ndarray[Any, Any], mutant: np.ndarray[Any, Any]
+    ) -> np.ndarray[Any, Any]:
         """Performs the binomial crossover of DE"""
         assert self.dimensions is not None
         assert self.crossover_prob is not None
@@ -362,7 +418,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         offspring = np.where(cross_points, mutant, target)
         return offspring
 
-    def crossover_exp(self, target: np.ndarray[Any, Any], mutant: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
+    def crossover_exp(
+        self, target: np.ndarray[Any, Any], mutant: np.ndarray[Any, Any]
+    ) -> np.ndarray[Any, Any]:
         """Performs the exponential crossover of DE"""
         assert self.dimensions is not None
         assert self.crossover_prob is not None
@@ -374,7 +432,9 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             L = L + 1
         return target
 
-    def crossover(self, target: np.ndarray[Any, Any], mutant: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
+    def crossover(
+        self, target: np.ndarray[Any, Any], mutant: np.ndarray[Any, Any]
+    ) -> np.ndarray[Any, Any]:
         """Performs DE crossover"""
         if self.crossover_strategy == "bin":
             offspring = self.crossover_bin(target, mutant)
@@ -385,7 +445,11 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         return offspring
 
     def selection(
-        self, trials: np.ndarray[Any, Any], trial_ids: np.ndarray[Any, Any], fidelity: float | None = None, **kwargs: Any
+        self,
+        trials: np.ndarray[Any, Any],
+        trial_ids: np.ndarray[Any, Any],
+        fidelity: float | None = None,
+        **kwargs: Any,
     ) -> tuple[list[float], list[float], list[Any]]:
         """Carries out a parent-offspring competition given a set of trial population"""
         traj = []
@@ -423,12 +487,16 @@ class DifferentialEvolution(DifferentialEvolutionBase):
                 self.inc_id = int(self.population_ids[i])
             traj.append(float(self.inc_score))
             runtime.append(cost)
-            history.append(
-                (trials[i].tolist(), fitness, float(fidelity or 0), info)
-            )
+            history.append((trials[i].tolist(), fitness, float(fidelity or 0), info))
         return traj, runtime, history
 
-    def evolve_generation(self, fidelity: float | None = None, best: np.ndarray[Any, Any] | None = None, alt_pop: np.ndarray[Any, Any] | None = None, **kwargs: Any) -> tuple[list[float], list[float], list[Any]]:
+    def evolve_generation(
+        self,
+        fidelity: float | None = None,
+        best: np.ndarray[Any, Any] | None = None,
+        alt_pop: np.ndarray[Any, Any] | None = None,
+        **kwargs: Any,
+    ) -> tuple[list[float], list[float], list[Any]]:
         """Performs a complete DE evolution: mutation -> crossover -> selection"""
         trials = []
         trial_ids = []
@@ -446,10 +514,14 @@ class DifferentialEvolution(DifferentialEvolutionBase):
             trial_ids.append(trial_id)
         trials_arr = np.array(trials)
         trial_ids_arr = np.array(trial_ids)
-        traj, runtime, history = self.selection(trials_arr, trial_ids_arr, fidelity, **kwargs)
+        traj, runtime, history = self.selection(
+            trials_arr, trial_ids_arr, fidelity, **kwargs
+        )
         return traj, runtime, history
 
-    def sample_mutants(self, size: int, population: np.ndarray[Any, Any] | None = None) -> np.ndarray[Any, Any]:
+    def sample_mutants(
+        self, size: int, population: np.ndarray[Any, Any] | None = None
+    ) -> np.ndarray[Any, Any]:
         """Generates 'size' mutants from the population using rand1"""
         if population is None:
             population = self.population
@@ -467,7 +539,14 @@ class DifferentialEvolution(DifferentialEvolutionBase):
         self.mutation_strategy = old_strategy
         return mutants
 
-    def run(self, generations: int = 1, verbose: bool = False, fidelity: float | None = None, reset: bool = True, **kwargs: Any) -> tuple[np.ndarray[Any, Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
+    def run(
+        self,
+        generations: int = 1,
+        verbose: bool = False,
+        fidelity: float | None = None,
+        reset: bool = True,
+        **kwargs: Any,
+    ) -> tuple[np.ndarray[Any, Any], np.ndarray[Any, Any], np.ndarray[Any, Any]]:
         """Run DE for a fixed number of generations and return trackers."""
         # checking if a run exists
         if not hasattr(self, "traj") or reset:

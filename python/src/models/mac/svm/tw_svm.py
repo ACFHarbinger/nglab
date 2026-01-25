@@ -1,4 +1,5 @@
 """Twin Support Vector Machine (TWSVM) implementation."""
+
 from typing import Any
 
 import numpy as np
@@ -84,7 +85,7 @@ class TWSVMModel(ClassicalModel):
         self.classes_ = classes
         self._is_fitted = True
 
-    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:
         """Predict classes by comparing distances to the twin planes."""
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 

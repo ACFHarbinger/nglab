@@ -82,7 +82,9 @@ class EfficientGraphConvolution(MessagePassing):
         self.bases_weight = Parameter(
             torch.Tensor(in_channels, (out_channels // num_heads) * num_bases)
         )
-        self.comb_weight = Linear(in_channels, num_heads * num_bases * len(self.aggregators))
+        self.comb_weight = Linear(
+            in_channels, num_heads * num_bases * len(self.aggregators)
+        )
 
         if bias:
             self.bias = Parameter(torch.Tensor(out_channels))
@@ -123,7 +125,10 @@ class EfficientGraphConvolution(MessagePassing):
                         add_self_loops=self.add_self_loops,
                     )
                     if self.cached:
-                        self._cached_edge_index = (cast(Tensor, edge_index), symnorm_weight)
+                        self._cached_edge_index = (
+                            cast(Tensor, edge_index),
+                            symnorm_weight,
+                        )
                 else:
                     edge_index, symnorm_weight = cache
 
@@ -259,7 +264,7 @@ class EfficientGraphConvolution(MessagePassing):
         """
         x = kwargs.get("x")
         if x is None:
-             raise ValueError("x must be passed to message_and_aggregate")
+            raise ValueError("x must be passed to message_and_aggregate")
         aggregated = []
         if len(self.aggregators) > 1 and "symnorm" in self.aggregators:
             adj_t_nonorm = edge_index.set_value(None)

@@ -31,7 +31,14 @@ class BlackScholesPolicy(Policy):
         self.risk_free_rate: float = self.cfg.get("risk_free_rate", 0.05)
         self.volatility: float = self.cfg.get("volatility", 0.2)
 
-    def _black_scholes_call(self, S: float, K: float, T: float, r: float, sigma: float) -> float:  # noqa: N803
+    def _black_scholes_call(
+        self,
+        S: float,
+        K: float,
+        T: float,
+        r: float,
+        sigma: float,
+    ) -> float:
         """
         Calculate the Black-Scholes call price.
         """
@@ -52,12 +59,20 @@ class BlackScholesPolicy(Policy):
             S = float(observation.get("price", 100.0))
             K = float(observation.get("strike", 100.0))
             T = float(observation.get("time_to_maturity", 1.0))
-        elif isinstance(observation, (np.ndarray, torch.Tensor)):
+        elif isinstance(observation, np.ndarray | torch.Tensor):
             # Assuming tensor or array: [Price, Strike, TTM]
-            S, K, T = float(observation[0]), float(observation[1]), float(observation[2])
+            S, K, T = (
+                float(observation[0]),
+                float(observation[1]),
+                float(observation[2]),
+            )
         else:
             # Fallback for other sequence types
-            S, K, T = float(observation[0]), float(observation[1]), float(observation[2])
+            S, K, T = (
+                float(observation[0]),
+                float(observation[1]),
+                float(observation[2]),
+            )
 
         theoretical_price = self._black_scholes_call(
             S, K, T, self.risk_free_rate, self.volatility

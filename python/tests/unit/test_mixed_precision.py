@@ -295,8 +295,12 @@ def test_trainer_accumulation_steps(simple_model, sample_batch):
         return output.mean()
 
     # Accumulate gradients over 2 steps
-    loss1, _ = trainer.training_step(sample_batch, forward_fn, loss_fn, accumulation_steps=2)
-    loss2, _ = trainer.training_step(sample_batch, forward_fn, loss_fn, accumulation_steps=2)
+    loss1, _ = trainer.training_step(
+        sample_batch, forward_fn, loss_fn, accumulation_steps=2
+    )
+    loss2, _ = trainer.training_step(
+        sample_batch, forward_fn, loss_fn, accumulation_steps=2
+    )
 
     assert isinstance(loss1, torch.Tensor)
     assert isinstance(loss2, torch.Tensor)
@@ -418,7 +422,10 @@ def test_full_training_loop(simple_model):
         trainer.step(clip_grad_norm=1.0)
 
     # Model should have updated parameters
-    assert all(param.grad is not None or not param.requires_grad for param in simple_model.parameters())
+    assert all(
+        param.grad is not None or not param.requires_grad
+        for param in simple_model.parameters()
+    )
 
 
 def test_checkpoint_save_load_cycle(simple_model, tmp_path):

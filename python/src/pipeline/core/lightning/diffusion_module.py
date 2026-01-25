@@ -39,7 +39,7 @@ class DiffusionLightningModule(BaseModule):
             "betas", torch.linspace(self.beta_start, self.beta_end, self.timesteps)
         )
         self.betas: torch.Tensor
-        
+
         self.register_buffer("alphas", 1.0 - self.betas)
         self.alphas: torch.Tensor
 
@@ -103,7 +103,7 @@ class DiffusionLightningModule(BaseModule):
             cond, target = batch
 
         if target is None:
-             raise ValueError("Target is None in training batch")
+            raise ValueError("Target is None in training batch")
 
         batch_size = target.size(0)
         device = cast(torch.device, self.device)
@@ -142,7 +142,9 @@ class DiffusionLightningModule(BaseModule):
         Reverse step: p(x_{t-1} | x_t).
         """
         betas_t: torch.Tensor = self.betas[t]
-        sqrt_one_minus_alphas_cumprod_t: torch.Tensor = self.sqrt_one_minus_alphas_cumprod[t]
+        sqrt_one_minus_alphas_cumprod_t: torch.Tensor = (
+            self.sqrt_one_minus_alphas_cumprod[t]
+        )
         sqrt_recip_alphas_t: torch.Tensor = self.sqrt_recip_alphas[t]
 
         # Reshape for broadcasting
@@ -152,9 +154,7 @@ class DiffusionLightningModule(BaseModule):
 
         # Predict noise
         # Need to ensure t is a tensor of shape (B,) with value t_index
-        t_tensor = torch.full(
-            (batch_size,), t_index, device=device, dtype=torch.long
-        )
+        t_tensor = torch.full((batch_size,), t_index, device=device, dtype=torch.long)
 
         model_mean = cast(torch.Tensor, self.model(x, t_tensor, cond))
 
@@ -182,15 +182,15 @@ class DiffusionLightningModule(BaseModule):
 
         # Get device
         device = cast(torch.device, self.device)
-        
+
         # Determine output dim
         # Try to infer from model if possible, usually last linear layer out_features / forecast_horizon
         # But here we might just assume input_dim == output_dim if UNet1D
         if hasattr(self.model, "output_dim"):
             output_dim = int(getattr(self.model, "output_dim", 1))
         else:
-            output_dim = 1 # Fallback
-            
+            output_dim = 1  # Fallback
+
         img = torch.randn((batch_size, pred_len, output_dim), device=device)
 
         for i in reversed(range(0, self.timesteps)):

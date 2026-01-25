@@ -244,5 +244,5 @@ class ModelStorage(ABC):
                 import gzip
 
                 return gzip.decompress(data)
-    
+
         return data

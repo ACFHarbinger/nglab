@@ -1,4 +1,5 @@
 """Eclat algorithm implementation for association rule learning."""
+
 import itertools
 from typing import Any, cast
 
@@ -8,13 +9,17 @@ from numpy.typing import NDArray
 
 class EclatAlgorithm:
     """Eclat (Equivalence Class Transformation) Algorithm for Association Rule Learning."""
-    
-    def __init__(self, min_support: float = 0.5, min_confidence: float = 0.7, **kwargs: Any) -> None:
+
+    def __init__(
+        self, min_support: float = 0.5, min_confidence: float = 0.7, **kwargs: Any
+    ) -> None:
         """Initialize Eclat."""
         self.min_support = min_support
         self.min_confidence = min_confidence
         self.rules: list[dict[str, Any]] = []
-        self.frequent_itemsets: dict[frozenset[Any], int] = {}  # itemset -> support_count
+        self.frequent_itemsets: dict[frozenset[Any], int] = (
+            {}
+        )  # itemset -> support_count
 
     def fit(self, X: NDArray[Any] | Any) -> "EclatAlgorithm":  # noqa: N803
         """Fit the model."""
@@ -44,7 +49,12 @@ class EclatAlgorithm:
         self._generate_rules(n_transactions)
         return self
 
-    def _eclat(self, itemsets: list[frozenset[Any]], tid_sets: dict[frozenset[Any], set[int]], min_support_count: float) -> None:
+    def _eclat(
+        self,
+        itemsets: list[frozenset[Any]],
+        tid_sets: dict[frozenset[Any], set[int]],
+        min_support_count: float,
+    ) -> None:
         """Recursive DFS for Eclat."""
         for i in range(len(itemsets)):
             itemset_i = itemsets[i]
@@ -92,9 +102,15 @@ class EclatAlgorithm:
 
                     confidence = support_count / ant_support_count
                     if confidence >= self.min_confidence:
-                        consequent_support_count = self.frequent_itemsets.get(consequent_set, 0)
-                        lift = (confidence / (consequent_support_count / n_transactions)) if (consequent_support_count > 0) else 0.0
-                        
+                        consequent_support_count = self.frequent_itemsets.get(
+                            consequent_set, 0
+                        )
+                        lift = (
+                            (confidence / (consequent_support_count / n_transactions))
+                            if (consequent_support_count > 0)
+                            else 0.0
+                        )
+
                         self.rules.append(
                             {
                                 "antecedent": list(antecedent_set),

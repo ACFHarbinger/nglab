@@ -36,7 +36,9 @@ class FeedForward(nn.Module):
             stdv = 1.0 / math.sqrt(param.size(-1))
             param.data.uniform_(-stdv, stdv)
 
-    def forward(self, input: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(
+        self, input: torch.Tensor, mask: torch.Tensor | None = None
+    ) -> torch.Tensor:
         """
         Applies the feed-forward network to the input.
 

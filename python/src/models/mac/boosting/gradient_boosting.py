@@ -1,4 +1,5 @@
 """Gradient Boosting model implementation."""
+
 from typing import Any
 
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor

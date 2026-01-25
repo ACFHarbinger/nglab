@@ -163,7 +163,9 @@ class TestMAMLLightningModule:
         assert not adapted_model.training
 
         # Parameters should be different after adaptation
-        for _p1, _p2 in zip(maml_module.model.parameters(), adapted_model.parameters(), strict=False):
+        for _p1, _p2 in zip(
+            maml_module.model.parameters(), adapted_model.parameters(), strict=False
+        ):
             # Parameters might be similar but not identical
             pass  # Just checking the structure works
 
@@ -366,9 +368,7 @@ class TestMAMLIntegration:
         )
 
         # Create consistent regime datasets
-        regime_datasets = {
-            i: torch.randn(100, 6) for i in range(3)
-        }
+        regime_datasets = {i: torch.randn(100, 6) for i in range(3)}
 
         data_module = MAMLDataModule(
             regime_datasets=regime_datasets,

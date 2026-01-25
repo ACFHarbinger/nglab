@@ -250,7 +250,6 @@ class TestPolymarketEnvActions:
         env.reset()
 
         if env._arena is None:
-
             # Try to buy with insufficient collateral
             # Amount = 0.01 * 10.0 = 0.1, cost = 0.1 * 0.5 * 1.5 = 0.075
             # This should work, but if we drain it first...
@@ -298,7 +297,9 @@ class TestPolymarketEnvActions:
             # Calculate expected cost
             amount = env.initial_collateral * 0.01  # 100.0
             price = 0.5
-            expected_cost = amount * price * (1 + env.taker_fee)  # 100 * 0.5 * 1.01 = 50.5
+            expected_cost = (
+                amount * price * (1 + env.taker_fee)
+            )  # 100 * 0.5 * 1.01 = 50.5
 
             assert env._collateral == pytest.approx(
                 initial_collateral - expected_cost, rel=0.01
@@ -416,7 +417,7 @@ class TestPolymarketEnvReward:
         _, reward, _, _, _ = polymarket_env.step(np.array([0, 0, 0]))
 
         # Reward should be a float
-        assert isinstance(reward, (int, float))
+        assert isinstance(reward, int | float)
 
     def test_reward_positive_on_profit(self):
         """Test reward is positive when account value increases."""
@@ -434,7 +435,7 @@ class TestPolymarketEnvReward:
 
             # Reward might be positive (depends on implementation)
             # Just verify it's calculated
-            assert isinstance(reward, (int, float))
+            assert isinstance(reward, int | float)
 
 
 class TestPolymarketEnvTermination:
@@ -474,7 +475,7 @@ class TestPolymarketEnvInfo:
         _, _, _, _, info = polymarket_env.step(np.array([0, 0, 0]))
 
         assert "account_value" in info
-        assert isinstance(info["account_value"], (int, float))
+        assert isinstance(info["account_value"], int | float)
 
     def test_info_contains_collateral(self, polymarket_env):
         """Test info dict contains collateral."""
@@ -482,7 +483,7 @@ class TestPolymarketEnvInfo:
         _, _, _, _, info = polymarket_env.step(np.array([0, 0, 0]))
 
         assert "collateral" in info
-        assert isinstance(info["collateral"], (int, float))
+        assert isinstance(info["collateral"], int | float)
 
 
 class TestPolymarketEnvMultiMarket:
@@ -498,7 +499,7 @@ class TestPolymarketEnvMultiMarket:
         obs, reward, _terminated, _truncated, _info = polymarket_env.step(action)
 
         assert isinstance(obs, np.ndarray)
-        assert isinstance(reward, (int, float))
+        assert isinstance(reward, int | float)
 
     def test_independent_market_positions(self, polymarket_env):
         """Test positions are tracked independently per market."""

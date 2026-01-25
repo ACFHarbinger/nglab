@@ -1,4 +1,5 @@
 """Gaussian Mixture Model (GMM) algorithm implementation."""
+
 from typing import Any, cast
 
 import numpy as np

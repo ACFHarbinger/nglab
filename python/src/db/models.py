@@ -1,4 +1,5 @@
 """Database models for NGLab."""
+
 from datetime import datetime
 
 from sqlalchemy import (
@@ -16,11 +17,13 @@ from sqlalchemy.orm import DeclarativeBase
 
 class Base(DeclarativeBase):
     """Base class for all database models."""
+
     pass
 
 
 class Trade(Base):
     """Model for trading activity records."""
+
     __tablename__ = "trades"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -44,6 +47,7 @@ class Trade(Base):
 
 class PortfolioSnapshot(Base):
     """Model for agent portfolio state snapshots."""
+
     __tablename__ = "portfolio_snapshots"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -64,6 +68,7 @@ class PortfolioSnapshot(Base):
 
 class ModelCheckpoint(Base):
     """Model for tracking trained model checkpoints."""
+
     __tablename__ = "model_checkpoints"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -87,6 +92,7 @@ class ModelCheckpoint(Base):
 
 class MarketData(Base):
     """Model for historical market data storage."""
+
     __tablename__ = "market_data"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)

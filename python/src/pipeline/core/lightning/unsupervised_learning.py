@@ -69,7 +69,7 @@ class UnsupervisedModule(BaseModule):
         elif isinstance(batch, dict):
             x = batch["observation"]
         else:
-             raise ValueError(f"Unsupported batch type: {type(batch)}")
+            raise ValueError(f"Unsupported batch type: {type(batch)}")
 
         reconstruction = self(x)
         loss = F.mse_loss(reconstruction, x)

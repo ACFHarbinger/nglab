@@ -75,6 +75,7 @@ class TimeSeriesFeatureSelector:
 HAS_SHAP = False
 try:
     import shap
+
     HAS_SHAP = True
 except ImportError:
     shap = None

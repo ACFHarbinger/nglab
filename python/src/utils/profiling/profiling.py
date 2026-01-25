@@ -34,6 +34,7 @@ def profile(output_dir: str = "./profiles") -> Callable[[F], F]:
 
     def decorator(func: F) -> F:
         """Inner decorator that wraps the function."""
+
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             """Wrapper that profiles function execution."""

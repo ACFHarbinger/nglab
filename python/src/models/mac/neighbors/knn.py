@@ -1,4 +1,5 @@
 """k-Nearest Neighbors model suite."""
+
 from typing import Any
 
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
@@ -11,7 +12,9 @@ class kNNModel(ClassicalModel):  # noqa: N801
     k-Nearest Neighbors wrapper for classification or regression.
     """
 
-    def __init__(self, task: str = "regression", n_neighbors: int = 5, **kwargs: Any) -> None:
+    def __init__(
+        self, task: str = "regression", n_neighbors: int = 5, **kwargs: Any
+    ) -> None:
         """
         Initialize the k-NN model.
 

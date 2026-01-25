@@ -7,15 +7,17 @@ from python.src.pipeline.core.lightning.base import BaseModule
 
 class ConcreteModule(BaseModule):
     """Concrete implementation of BaseModule for testing."""
+
     def __init__(self, cfg):
         super().__init__(cfg)
         self.layer = torch.nn.Linear(10, 1)
-    
+
     def training_step(self, batch, batch_idx):
         return torch.tensor(0.5)
-    
+
     def validation_step(self, batch, batch_idx):
         return torch.tensor(0.3)
+
 
 class TestBaseModule(unittest.TestCase):
     def test_init_default_lr(self):

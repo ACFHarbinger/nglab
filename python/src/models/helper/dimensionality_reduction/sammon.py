@@ -1,4 +1,5 @@
 """Sammon Mapping algorithm implementation."""
+
 from typing import Any
 
 import numpy as np
@@ -9,8 +10,15 @@ from sklearn.decomposition import PCA
 
 class SammonMappingAlgorithm:
     """Sammon Mapping Dimensionality Reduction Algorithm."""
-    
-    def __init__(self, n_components: int = 2, max_iter: int = 100, tol: float = 1e-4, lr: float = 0.1, **kwargs: Any) -> None:
+
+    def __init__(
+        self,
+        n_components: int = 2,
+        max_iter: int = 100,
+        tol: float = 1e-4,
+        lr: float = 0.1,
+        **kwargs: Any,
+    ) -> None:
         """Initialize Sammon Mapping."""
         self.n_components = n_components
         self.max_iter = max_iter
@@ -22,7 +30,7 @@ class SammonMappingAlgorithm:
         """Fit the model (Sammon is transductive, usually calls fit_transform)."""
         return self
 
-    def fit_transform(self, X: NDArray[Any] | torch.Tensor) -> NDArray[np.float64]:  # noqa: N803
+    def fit_transform(self, X: NDArray[Any] | torch.Tensor) -> NDArray[np.float64]:
         """Fit and transform."""
         # Expecting numpy input, convert to torch
         if not isinstance(X, torch.Tensor):
@@ -45,9 +53,13 @@ class SammonMappingAlgorithm:
         try:
             pca = PCA(n_components=self.n_components)
             Y_init = pca.fit_transform(X_t.cpu().numpy())
-            Y = torch.tensor(Y_init, dtype=torch.float32, requires_grad=True, device=X_t.device)
+            Y = torch.tensor(
+                Y_init, dtype=torch.float32, requires_grad=True, device=X_t.device
+            )
         except Exception:
-            Y = torch.randn(n_samples, self.n_components, requires_grad=True, device=X_t.device)
+            Y = torch.randn(
+                n_samples, self.n_components, requires_grad=True, device=X_t.device
+            )
 
         optimizer = torch.optim.Adam([Y], lr=self.lr)
 

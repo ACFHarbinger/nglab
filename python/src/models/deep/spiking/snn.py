@@ -22,7 +22,7 @@ class SurrogateHeaviside(torch.autograd.Function):
         return (input > 0).float()
 
     @staticmethod
-    def backward(ctx: Any, grad_outputs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor | None]:
+    def backward(ctx: Any, grad_outputs: torch.Tensor) -> Any:
         """Backward pass with surrogate gradient."""
         (input_tensor,) = ctx.saved_tensors
         # Surrogate gradient: alpha / (1 + |alpha * input|)^2
@@ -43,7 +43,14 @@ class LIFCell(nn.Module):
     Leaky Integrate-and-Fire (LIF) Neuron Cell.
     """
 
-    def __init__(self, input_dim: int, hidden_dim: int, decay: float = 0.9, threshold: float = 1.0, alpha: float = 25.0) -> None:
+    def __init__(
+        self,
+        input_dim: int,
+        hidden_dim: int,
+        decay: float = 0.9,
+        threshold: float = 1.0,
+        alpha: float = 25.0,
+    ) -> None:
         """Initialize LIF Cell."""
         super().__init__()
         self.input_dim = input_dim
@@ -54,7 +61,9 @@ class LIFCell(nn.Module):
 
         self.linear = nn.Linear(input_dim, hidden_dim)
 
-    def forward(self, x: torch.Tensor, state: tuple[torch.Tensor, torch.Tensor] | None = None) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
+    def forward(
+        self, x: torch.Tensor, state: tuple[torch.Tensor, torch.Tensor] | None = None
+    ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
         """
         Forward pass.
         Returns:
@@ -119,7 +128,12 @@ class SNN(nn.Module):
         self.dropout = nn.Dropout(dropout) if dropout > 0 else nn.Identity()
         self.fc = nn.Linear(hidden_dim, output_dim) if output_dim else None
 
-    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """Forward pass."""
         _batch_size, seq_len, _ = x.size()
         current_input = x

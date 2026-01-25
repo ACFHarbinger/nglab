@@ -12,10 +12,12 @@ def hpo_config_space():
     cs.add_hyperparameter(CS.UniformFloatHyperparameter("y", lower=0.0, upper=1.0))
     return cs
 
+
 @pytest.fixture
 def hpo_config_repo():
     """Returns a fresh ConfigRepository."""
     return ConfigRepository()
+
 
 def sphere_function(config, fidelity=None, **kwargs):
     """
@@ -24,12 +26,13 @@ def sphere_function(config, fidelity=None, **kwargs):
     """
     x = config["x"]
     y = config["y"]
-    score = (x - 0.5)**2 + (y - 0.5)**2
+    score = (x - 0.5) ** 2 + (y - 0.5) ** 2
     return {
         "fitness": score,
         "cost": fidelity if fidelity is not None else 1.0,
-        "info": {}
+        "info": {},
     }
+
 
 @pytest.fixture
 def dummy_objective():

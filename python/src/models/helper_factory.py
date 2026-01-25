@@ -88,6 +88,7 @@ class HelperModelFactory:
             )
 
         from typing import cast
+
         return cast("ClassicalModel", model_class(**kwargs))
 
     @classmethod

@@ -543,7 +543,9 @@ class CloudCheckpointManager:
         try:
             self._backend.download(remote_key, temp_path)
 
-            checkpoint = cast(dict[str, Any], torch.load(temp_path, map_location=map_location))
+            checkpoint = cast(
+                dict[str, Any], torch.load(temp_path, map_location=map_location)
+            )
             model.load_state_dict(checkpoint["model_state_dict"])
 
             if optimizer is not None and "optimizer_state_dict" in checkpoint:

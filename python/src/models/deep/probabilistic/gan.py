@@ -2,7 +2,6 @@
 Time Series GAN Networks (Generator and Discriminator).
 """
 
-
 from typing import cast
 
 import torch
@@ -17,7 +16,13 @@ class TimeGANGenerator(nn.Module):
     """
 
     def __init__(  # noqa: PLR0913
-        self, input_dim: int, output_dim: int, seq_len: int, pred_len: int, hidden_dim: int = 64, n_layers: int = 2
+        self,
+        input_dim: int,
+        output_dim: int,
+        seq_len: int,
+        pred_len: int,
+        hidden_dim: int = 64,
+        n_layers: int = 2,
     ) -> None:
         """
         Initialize the Generator.

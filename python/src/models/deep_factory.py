@@ -88,7 +88,7 @@ DEEP_MODEL_NAMES: list[str] = [
 ]
 
 
-def create_deep_model(model_name: str, cfg: dict[str, Any]) -> nn.Module | None:  # noqa: PLR0911
+def create_deep_model(model_name: str, cfg: dict[str, Any]) -> nn.Module | None:
     """
     Factory function to create deep learning models.
 
@@ -279,7 +279,10 @@ def create_deep_model(model_name: str, cfg: dict[str, Any]) -> nn.Module | None:
         )
     elif model_name == "DBN":
         return DeepBeliefNetwork(
-            layer_sizes=[int(cfg.get("feature_dim", 12)), *cfg.get("hidden_dims", [64, 32])],
+            layer_sizes=[
+                int(cfg.get("feature_dim", 12)),
+                *cfg.get("hidden_dims", [64, 32]),
+            ],
             output_type=cfg.get("output_type", "prediction"),
         )
     elif model_name == "DCN":

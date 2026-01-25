@@ -1,0 +1,8 @@
+name: lstm
+seq_len: ${env.lookback}
+pred_len: 1
+embedding_dim: 128
+hidden_dim: 128
+n_encode_layers: 2
+dropout: 0.1
+return_sequence: false

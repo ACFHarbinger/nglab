@@ -203,7 +203,7 @@ class MixedPrecisionTrainer:
             "config": {
                 "precision": self.config.precision,
                 "enabled": self.config.enabled,
-            }
+            },
         }
         if self._scaler is not None:
             state["scaler"] = self._scaler.state_dict()

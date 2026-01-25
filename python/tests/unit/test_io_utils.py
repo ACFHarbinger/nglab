@@ -26,12 +26,12 @@ class TestModelVersioning:
             metrics={"acc": 0.9},
             training_date="2024-01-01",
             dataset_hash="abc",
-            tags=["test"]
+            tags=["test"],
         )
-        
+
         json_str = meta.to_json()
         loaded = ModelMetadata.from_json(json_str)
-        
+
         assert loaded.version == "1.0.0"
         assert loaded.metrics["acc"] == 0.9
         assert loaded.tags == ["test"]
@@ -39,16 +39,16 @@ class TestModelVersioning:
     def test_compute_dataset_hash_file(self, tmp_path):
         d_file = tmp_path / "data.txt"
         d_file.write_text("content")
-        
+
         h = compute_dataset_hash(d_file)
-        assert len(h) == 64 # sha256 hex digest length
+        assert len(h) == 64  # sha256 hex digest length
 
     def test_compute_dataset_hash_dir(self, tmp_path):
         d_dir = tmp_path / "data"
         d_dir.mkdir()
         (d_dir / "f1.txt").write_text("c1")
         (d_dir / "f2.txt").write_text("c2")
-        
+
         h = compute_dataset_hash(d_dir)
         assert len(h) == 64
 
@@ -61,9 +61,7 @@ class TestModelVersioning:
     def test_create_metadata_from_config(self, mock_git):
         mock_git.return_value = "commit_hash"
         meta = create_metadata_from_config(
-            model_type="Test",
-            config={"a": 1},
-            metrics={"b": 2}
+            model_type="Test", config={"a": 1}, metrics={"b": 2}
         )
         assert meta.git_commit == "commit_hash"
         assert meta.training_config == {"a": 1}
@@ -72,14 +70,14 @@ class TestModelVersioning:
         registry = ModelRegistry(tmp_path / "registry")
         model = torch.nn.Linear(10, 2)
         meta = create_metadata_from_config("Linear", {}, {})
-        
+
         path = registry.save(model, "Linear", "1.0.0", meta)
         assert path.exists()
         assert (path.parent / "v1.0.0.json").exists()
-        
+
         loaded_model = torch.nn.Linear(10, 2)
         loaded_model, loaded_meta = registry.load(loaded_model, "Linear", "1.0.0")
-        
+
         assert loaded_meta.version == "1.0.0"
         assert torch.equal(model.weight, loaded_model.weight)
 
@@ -87,14 +85,14 @@ class TestModelVersioning:
         registry = ModelRegistry(tmp_path)
         model = torch.nn.Linear(1, 1)
         meta = create_metadata_from_config("M", {}, {})
-        
+
         registry.save(model, "M", "1.0.0", meta)
         registry.save(model, "M", "1.1.0", meta)
-        
+
         versions = registry.list_versions("M")
         assert versions == ["1.1.0", "1.0.0"]
         assert registry.get_latest("M") == "1.1.0"
-        
+
         registry.delete("M", "1.1.0")
         assert registry.list_versions("M") == ["1.0.0"]
 
@@ -108,41 +106,41 @@ class TestCloudCheckpointManager:
     def test_manager_save_s3(self, mock_s3_backend):
         mock_backend = mock_s3_backend.return_value
         mock_backend.upload.return_value = "s3://uri"
-        
+
         config = CloudStorageConfig(bucket="bucket")
         manager = CloudCheckpointManager(config, backend="s3")
-        
+
         model = torch.nn.Linear(1, 1)
         uri = manager.save_checkpoint(
             model, "test_model", "1.0.0", metrics={"loss": 0.5}
         )
-        
+
         assert uri == "s3://uri"
         mock_backend.upload.assert_called()
         # Verify metadata passed to upload contains core info
         call_args = mock_backend.upload.call_args
-        metadata = call_args[0][2] # 3rd arg is metadata
+        metadata = call_args[0][2]  # 3rd arg is metadata
         assert metadata["model_type"] == "test_model"
         assert metadata["version"] == "1.0.0"
 
     @patch("python.src.utils.io.cloud_storage.GCSBackend")
     def test_manager_load_gcs(self, mock_gcs_backend):
         mock_backend = mock_gcs_backend.return_value
-        
+
         # Mock download to write a dummy checkpoint to temp file
         def side_effect_download(key, path):
             # Create a dummy checkpoint
-            ckpt = {"model_state_dict": torch.nn.Linear(1,1).state_dict()}
+            ckpt = {"model_state_dict": torch.nn.Linear(1, 1).state_dict()}
             torch.save(ckpt, path)
-            
+
         mock_backend.download.side_effect = side_effect_download
-        
+
         config = CloudStorageConfig(bucket="bucket")
         manager = CloudCheckpointManager(config, backend="gcs")
-        
+
         model = torch.nn.Linear(1, 1)
         ckpt = manager.load_checkpoint(model, "test_model", "1.0.0")
-        
+
         assert "model_state_dict" in ckpt
         mock_backend.download.assert_called()
 
@@ -153,9 +151,9 @@ class TestCloudCheckpointManager:
         manager._backend = MagicMock()
         manager._backend.list_objects.return_value = [
             {"key": "model/v1.0.0/checkpoint.pt.zst"},
-            {"key": "model/v2.0.0/checkpoint.pt.zst"}
+            {"key": "model/v2.0.0/checkpoint.pt.zst"},
         ]
-        
+
         versions = manager.list_versions("model")
         assert versions == ["1.0.0", "2.0.0"]
 
@@ -164,19 +162,20 @@ class TestCloudCheckpointManager:
         with pytest.raises(ValueError, match="Unknown backend"):
             CloudCheckpointManager(config, backend="ftp")
 
+
 @patch("python.src.utils.io.cloud_storage.zstd")
 class TestCloudBackends:
     # Minimal tests for Backend classes assuming clients are mocked
     # Since we tested logic in storage module, we focus on upload/download flow here
-    
+
     def test_s3_backend_upload(self, mock_zstd, tmp_path):
         tmp_file = tmp_path / "model.pt"
         tmp_file.write_bytes(b"data")
-        
+
         CloudStorageConfig(bucket="bucket")
         with patch("python.src.utils.io.cloud_storage.S3Backend.client"):
             # We need to mock client property which imports boto3
-            # OR better: mock boto3 import using sys.modules like before 
+            # OR better: mock boto3 import using sys.modules like before
             # But here we can patch the property if S3Backend is imported.
             pass
 

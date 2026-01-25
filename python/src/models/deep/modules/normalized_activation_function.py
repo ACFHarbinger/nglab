@@ -53,10 +53,14 @@ class NormalizedActivationFunction(nn.Module):
                 # However, if it's default -1, we might have a problem.
                 # In most cases in this codebase, embed_dim is passed.
                 pass
-            
+
             # Ensure cutoffs is list
-            actual_cutoffs = list(cutoffs) if cutoffs is not None else [n_classes // 4, n_classes // 2, 3 * n_classes // 4]
-            
+            actual_cutoffs = (
+                list(cutoffs)
+                if cutoffs is not None
+                else [n_classes // 4, n_classes // 2, 3 * n_classes // 4]
+            )
+
             self.norm_activation = nn.AdaptiveLogSoftmaxWithLoss(
                 in_features=dim,
                 n_classes=n_classes,
@@ -77,7 +81,9 @@ class NormalizedActivationFunction(nn.Module):
                 stdv = 1.0 / math.sqrt(param.size(-1))
                 param.data.uniform_(-stdv, stdv)
 
-    def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor | Any:
+    def forward(
+        self, x: torch.Tensor, mask: torch.Tensor | None = None
+    ) -> torch.Tensor | Any:
         """
         Applies the normalized activation function to the input.
 

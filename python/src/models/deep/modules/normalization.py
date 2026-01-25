@@ -65,7 +65,10 @@ class Normalization(nn.Module):
         elif norm_name == "group":
             actual_n_groups = n_groups if n_groups is not None else 1
             self.normalizer = nn.GroupNorm(
-                actual_n_groups, eps=eps_alpha, num_channels=embed_dim, affine=learn_affine
+                actual_n_groups,
+                eps=eps_alpha,
+                num_channels=embed_dim,
+                affine=learn_affine,
             )
         elif norm_name == "local_response":
             self.normalizer = nn.LocalResponseNorm(
@@ -85,7 +88,9 @@ class Normalization(nn.Module):
                 stdv = 1.0 / math.sqrt(param.size(-1))
                 param.data.uniform_(-stdv, stdv)
 
-    def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
+    def forward(
+        self, x: torch.Tensor, mask: torch.Tensor | None = None
+    ) -> torch.Tensor:
         """
         Applies the normalization to the input.
 
@@ -97,16 +102,22 @@ class Normalization(nn.Module):
             Normalized tensor.
         """
         if isinstance(self.normalizer, nn.BatchNorm1d):
-            return cast(torch.Tensor, self.normalizer(x.view(-1, x.size(-1)))).view(*x.size())
+            return cast(torch.Tensor, self.normalizer(x.view(-1, x.size(-1)))).view(
+                *x.size()
+            )
         elif isinstance(self.normalizer, nn.InstanceNorm1d):
             # InstanceNorm1d expects (N, C, L)
-            return cast(torch.Tensor, self.normalizer(x.permute(0, 2, 1))).permute(0, 2, 1)
+            return cast(torch.Tensor, self.normalizer(x.permute(0, 2, 1))).permute(
+                0, 2, 1
+            )
         elif isinstance(self.normalizer, nn.LayerNorm):
             return cast(torch.Tensor, self.normalizer(x)).view(*x.size())
-        elif isinstance(self.normalizer, (nn.GroupNorm, nn.LocalResponseNorm)):
+        elif isinstance(self.normalizer, nn.GroupNorm | nn.LocalResponseNorm):
             # GroupNorm usually expects (N, C, ...)
             if x.dim() == 3:
-                return cast(torch.Tensor, self.normalizer(x.transpose(1, 2))).transpose(1, 2)
+                return cast(torch.Tensor, self.normalizer(x.transpose(1, 2))).transpose(
+                    1, 2
+                )
             return cast(torch.Tensor, self.normalizer(x))
         else:
             return x

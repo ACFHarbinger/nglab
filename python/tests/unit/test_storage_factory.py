@@ -27,10 +27,10 @@ class TestStorageFactory:
         assert isinstance(storage, GCSStorage)
 
     def test_create_from_env(self):
-        with patch.dict(os.environ, {
-            "NGLAB_MODEL_STORAGE": "local",
-            "MODEL_WEIGHTS_DIR": "/tmp/test"
-        }):
+        with patch.dict(
+            os.environ,
+            {"NGLAB_MODEL_STORAGE": "local", "MODEL_WEIGHTS_DIR": "/tmp/test"},
+        ):
             storage = create_storage()
             assert isinstance(storage, LocalStorage)
             assert str(storage.base_path) == "/tmp/test"

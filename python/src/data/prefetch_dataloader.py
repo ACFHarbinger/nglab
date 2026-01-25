@@ -98,7 +98,7 @@ class CUDAPrefetcher:
             return data.to(self.device, non_blocking=True)
         elif isinstance(data, dict):
             return {k: self._to_device(v) for k, v in data.items()}
-        elif isinstance(data, (list, tuple)):
+        elif isinstance(data, list | tuple):
             return type(data)(self._to_device(v) for v in data)
         return data
 
@@ -172,7 +172,7 @@ class BackgroundPrefetcher:
             self._stop_event.set()
             if self._thread is not None:
                 self._thread.join(timeout=1.0)
-            
+
             # Check for exceptions again
             if self._exception is not None:
                 raise self._exception
@@ -403,7 +403,7 @@ def benchmark_dataloader(
         # Get batch size
         if isinstance(batch, torch.Tensor):
             batch_sizes.append(batch.shape[0])
-        elif isinstance(batch, (list, tuple)):
+        elif isinstance(batch, list | tuple):
             batch_sizes.append(batch[0].shape[0])
         elif isinstance(batch, dict):
             first_key = next(iter(batch.keys()))

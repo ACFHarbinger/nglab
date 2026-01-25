@@ -9,12 +9,15 @@ warnings.filterwarnings("ignore", message=".*torch_geometric.distributed.*")
 warnings.filterwarnings("ignore", category=ImportWarning)
 try:
     from sklearn.exceptions import LinAlgWarning
+
     warnings.filterwarnings("ignore", category=LinAlgWarning)
 except ImportError:
     pass
 
 # Filter unawaited coroutine warnings if they persist (though we aim to fix them)
-warnings.filterwarnings("ignore", message=".*coroutine.*was never awaited.*", category=RuntimeWarning)
+warnings.filterwarnings(
+    "ignore", message=".*coroutine.*was never awaited.*", category=RuntimeWarning
+)
 
 # Add project root to path
 # /home/pkhunter/Repositories/nglab/conftest.py -> .parent is /home/pkhunter/Repositories/nglab

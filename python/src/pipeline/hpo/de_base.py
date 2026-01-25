@@ -70,7 +70,7 @@ class DifferentialEvolutionBase:
         self.f = f
         self.dimensions: int | None = dimensions
         if dimensions is None and self.cs is not None:
-             self.dimensions = len(self.cs.get_hyperparameters())
+            self.dimensions = len(self.cs.get_hyperparameters())
 
         # DE related variables
         self.pop_size = pop_size
@@ -172,8 +172,8 @@ class DifferentialEvolutionBase:
     def init_population(self, pop_size: int | None = None) -> NDArray[np.float64]:
         """Initialize a population in unit hypercube or ConfigSpace representation."""
         if pop_size is None:
-             assert self.pop_size is not None
-             pop_size = self.pop_size
+            assert self.pop_size is not None
+            pop_size = self.pop_size
         if self.configspace:
             assert self.cs is not None
             # sample from CS s.t. conditional constraints (if any) are maintained
@@ -205,29 +205,27 @@ class DifferentialEvolutionBase:
         Else sample from the specified alternate population (alt_pop)
         """
         assert self.population is not None
-        
+
         target_pop: list[Any] | np.ndarray[Any, Any] = self.population
         if alt_pop is not None:
-             if isinstance(alt_pop, list):
-                 if any(indv is None for indv in alt_pop):
-                     target_pop = self.population
-                 else:
-                     target_pop = alt_pop
-             elif isinstance(alt_pop, np.ndarray):
-                 target_pop = alt_pop
+            if isinstance(alt_pop, list):
+                if any(indv is None for indv in alt_pop):
+                    target_pop = self.population
+                else:
+                    target_pop = alt_pop
+            elif isinstance(alt_pop, np.ndarray):
+                target_pop = alt_pop
 
         if isinstance(target_pop, list):
-             target_pop_arr = np.array(target_pop)
+            target_pop_arr = np.array(target_pop)
         else:
-             target_pop_arr = target_pop
+            target_pop_arr = target_pop
 
         # If target population is too small, mix with self.population
         if len(target_pop_arr) < size:
-             target_pop_arr = np.vstack((target_pop_arr, self.population))
+            target_pop_arr = np.vstack((target_pop_arr, self.population))
 
-        selection = self.rng.choice(
-            np.arange(len(target_pop_arr)), size, replace=False
-        )
+        selection = self.rng.choice(np.arange(len(target_pop_arr)), size, replace=False)
         return cast(NDArray[np.float64], target_pop_arr[selection])
 
     def boundary_check(self, vector: np.ndarray[Any, Any]) -> np.ndarray[Any, Any]:
@@ -329,11 +327,13 @@ class DifferentialEvolutionBase:
                 bounds = (hyper.lower, hyper.upper)
                 param_value = config[name]
                 if getattr(hyper, "log", False):
-                    vector[i] = float(np.log(param_value / bounds[0]) / np.log(
-                        bounds[1] / bounds[0]
-                    ))
+                    vector[i] = float(
+                        np.log(param_value / bounds[0]) / np.log(bounds[1] / bounds[0])
+                    )
                 else:
-                    vector[i] = float((config[name] - bounds[0]) / (bounds[1] - bounds[0]))
+                    vector[i] = float(
+                        (config[name] - bounds[0]) / (bounds[1] - bounds[0])
+                    )
         return np.array(vector, dtype=np.float64)
 
     def f_objective(self, *args: Any, **kwargs: Any) -> Any:

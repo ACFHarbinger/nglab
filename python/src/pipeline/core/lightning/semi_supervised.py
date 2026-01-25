@@ -74,9 +74,11 @@ class SemiSupervisedModule(BaseModule):
             # Re-compute logits (e.g. with augmentation/dropout enabled)
             # Here assuming simple consistency
             logits_u_strong = self(x_unlabeled)
-            loss_u_elements = F.cross_entropy(logits_u_strong, targets_u, reduction="none")
+            loss_u_elements = F.cross_entropy(
+                logits_u_strong, targets_u, reduction="none"
+            )
             loss_u = (loss_u_elements * mask).mean()
-            
+
             self.log("train/loss_u", loss_u)
             loss = loss + (self.lambda_u * loss_u)
 

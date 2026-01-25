@@ -48,7 +48,9 @@ class SynchronousHalvingBracketManager:
             #   or all jobs for that fidelity/rung are over
             # (sh_bracket[i] + _sh_bracket[i]) < n_configs[i] indicates a job has been scheduled
             #   and is queued/running and the bracket needs to be paused till results are retrieved
-            self.sh_bracket[float(fidelity)] = int(n_configs[i])  # each scheduled job does -= 1
+            self.sh_bracket[float(fidelity)] = int(
+                n_configs[i]
+            )  # each scheduled job does -= 1
             self._sh_bracket[float(fidelity)] = 0  # each retrieved job does +=1
         self.n_rungs = len(fidelities)
         self.current_rung = 0
@@ -106,7 +108,7 @@ class SynchronousHalvingBracketManager:
 
     def complete_job(self, fidelity: float) -> None:
         """Notifies the bracket that a job for a fidelity has been completed
-        
+
         This function must be called when a config for a fidelity has finished evaluation to inform
         the Bracket Manager that no job needs to be waited for and the next rung can begin for the
         synchronous Successive Halving case.
@@ -121,10 +123,7 @@ class SynchronousHalvingBracketManager:
     def _is_rung_waiting(self, rung: int) -> bool:
         """Returns True if at least one job is still pending/running and waits for results"""
         fidelity = float(self.fidelities[rung])
-        job_count = (
-            self._sh_bracket[fidelity]
-            + self.sh_bracket[fidelity]
-        )
+        job_count = self._sh_bracket[fidelity] + self.sh_bracket[fidelity]
         if job_count < int(self.n_configs[rung]):
             return True
         return False
@@ -149,15 +148,15 @@ class SynchronousHalvingBracketManager:
 
     def is_pending(self) -> bool:
         """Returns True if any of the rungs/fidelities have still a configuration to submit"""
-        return bool(np.any(
-            [self._is_rung_pending(i) for i, _ in enumerate(self.fidelities)]
-        ))
+        return bool(
+            np.any([self._is_rung_pending(i) for i, _ in enumerate(self.fidelities)])
+        )
 
     def is_waiting(self) -> bool:
         """Returns True if any of the rungs/fidelities have a configuration pending/running"""
-        return bool(np.any(
-            [self._is_rung_waiting(i) for i, _ in enumerate(self.fidelities)]
-        ))
+        return bool(
+            np.any([self._is_rung_waiting(i) for i, _ in enumerate(self.fidelities)])
+        )
 
     def reset_waiting_jobs(self) -> None:
         """Resets all waiting jobs and updates the current_rung pointer accordingly."""

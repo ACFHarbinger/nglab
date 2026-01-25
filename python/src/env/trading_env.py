@@ -20,7 +20,9 @@ class TradingEnv(gym.Env[NDArray[Any], NDArray[Any]]):
 
     metadata: dict[str, Any] = {"render_modes": ["human"]}  # noqa: RUF012
 
-    def __init__(self, lookback: int = 30, max_steps: int = 1000, feature_dim: int = 12) -> None:
+    def __init__(
+        self, lookback: int = 30, max_steps: int = 1000, feature_dim: int = 12
+    ) -> None:
         """
         Initialize the trading environment.
 
@@ -35,7 +37,9 @@ class TradingEnv(gym.Env[NDArray[Any], NDArray[Any]]):
         self.feature_dim = feature_dim
 
         # Action space: Buy, Sell, Hold (e.g. Discrete(3) or Continuous)
-        self.action_space: spaces.Space[Any] = spaces.Box(low=-1, high=1, shape=(1,), dtype=np.float32)
+        self.action_space: spaces.Space[Any] = spaces.Box(
+            low=-1, high=1, shape=(1,), dtype=np.float32
+        )
 
         # Observation space
         self.observation_space: spaces.Space[Any] = spaces.Box(
@@ -56,7 +60,9 @@ class TradingEnv(gym.Env[NDArray[Any], NDArray[Any]]):
         info: dict[str, Any] = {}
         return observation, info
 
-    def step(self, action: NDArray[Any]) -> tuple[NDArray[Any], float, bool, bool, dict[str, Any]]:
+    def step(
+        self, action: NDArray[Any]
+    ) -> tuple[NDArray[Any], float, bool, bool, dict[str, Any]]:
         """
         Execute one step in the environment.
         """

@@ -1,4 +1,5 @@
 """Multivariate Adaptive Regression Splines (MARS) model implementation."""
+
 from typing import Any
 
 import numpy as np
@@ -80,7 +81,7 @@ class MARSModel(ClassicalModel):
 
         return torch.from_numpy(out_np).to(device).to(torch.float32)
 
-    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:
         """Predict using the fitted MARS model."""
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 

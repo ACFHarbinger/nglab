@@ -98,7 +98,7 @@ class DifferentialEvolutionHyperbandBase:
             assert self.cs is not None
             self.cs.seed(self._original_seed)
             self.dimensions = len(list(self.cs.values()))
-        elif dimensions is None or not isinstance(dimensions, (int, np.integer)):
+        elif dimensions is None or not isinstance(dimensions, int | np.integer):
             raise ValueError(
                 "Need to specify `dimensions` as an int when `cs` is not available/specified!"
             )
@@ -127,7 +127,11 @@ class DifferentialEvolutionHyperbandBase:
         # Hyperband related variables
         self.min_fidelity = min_fidelity
         self.max_fidelity = max_fidelity
-        if self.max_fidelity is None or self.min_fidelity is None or self.max_fidelity <= self.min_fidelity:
+        if (
+            self.max_fidelity is None
+            or self.min_fidelity is None
+            or self.max_fidelity <= self.min_fidelity
+        ):
             self.logger.error(
                 "Only (Max Fidelity > Min Fidelity) is supported for DEHB."
             )
@@ -224,7 +228,9 @@ class DifferentialEvolutionHyperbandBase:
         """Initialize the DEHB population; implemented in subclasses."""
         raise NotImplementedError("Redefine!")
 
-    def _get_next_iteration(self, iteration: int) -> tuple[np.ndarray[Any, Any], np.ndarray[Any, Any]]:
+    def _get_next_iteration(
+        self, iteration: int
+    ) -> tuple[np.ndarray[Any, Any], np.ndarray[Any, Any]]:
         """Computes the Successive Halving spacing.
 
         Given the iteration index, computes the fidelity spacing to be used and
@@ -264,7 +270,9 @@ class DifferentialEvolutionHyperbandBase:
         """Converts CS configuration to vector; must be implemented in subclasses."""
         raise NotImplementedError("Redefine!")
 
-    def get_incumbents(self) -> tuple[dict[str, Any] | CS.Configuration | np.ndarray[Any, Any] | None, float]:
+    def get_incumbents(
+        self,
+    ) -> tuple[dict[str, Any] | CS.Configuration | np.ndarray[Any, Any] | None, float]:
         """Retrieve current incumbent configuration and score.
 
         Returns:

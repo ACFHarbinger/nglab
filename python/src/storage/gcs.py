@@ -23,7 +23,11 @@ class GCSStorage(ModelStorage):
         self._prefix = config.gcs_prefix.rstrip("/") + "/"
 
     @property
-    def client(self) -> Any:  # Use Any to avoid mandatory google-cloud-storage dependency for type checking
+    def client(
+        self,
+    ) -> (
+        Any
+    ):  # Use Any to avoid mandatory google-cloud-storage dependency for type checking
         """Lazy initialization of GCS client."""
         if self._client is None:
             try:

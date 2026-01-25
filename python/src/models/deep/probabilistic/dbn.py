@@ -32,7 +32,12 @@ class DeepBeliefNetwork(nn.Module):
             ]
         )
 
-    def forward(self, x: torch.Tensor, return_embedding: bool | None = None, return_sequence: bool = False) -> torch.Tensor:
+    def forward(
+        self,
+        x: torch.Tensor,
+        return_embedding: bool | None = None,
+        return_sequence: bool = False,
+    ) -> torch.Tensor:
         """Forward pass."""
         # Forward pass through the stack of RBMs
         current = x

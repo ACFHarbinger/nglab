@@ -79,9 +79,9 @@ def main() -> None:  # noqa: PLR0915
         if isinstance(loaded_model, TimeSeriesBackbone):
             model = loaded_model
         else:
-             # Should practically never happen if load_model_with_metadata returns the same instance type
-             # But for typing safety:
-             pass 
+            # Should practically never happen if load_model_with_metadata returns the same instance type
+            # But for typing safety:
+            pass
 
         model.eval()
 

@@ -1,4 +1,5 @@
 """Least-Squares SVM (LSSVM) implementation."""
+
 from typing import Any
 
 from sklearn.kernel_ridge import KernelRidge

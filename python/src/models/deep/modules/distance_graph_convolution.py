@@ -193,7 +193,10 @@ class DistanceAwareGraphConvolution(nn.Module):
         return out
 
     def single_graph_forward(
-        self, h: torch.Tensor, adj: torch.Tensor, dist_matrix: torch.Tensor | None = None
+        self,
+        h: torch.Tensor,
+        adj: torch.Tensor,
+        dist_matrix: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """
         Args:

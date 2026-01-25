@@ -1,4 +1,5 @@
 """Mixture Discriminant Analysis (MDA) algorithm implementation."""
+
 from typing import Any, cast
 
 import numpy as np
@@ -48,7 +49,9 @@ class MDAAlgorithm:
 
         n_samples = x.shape[0]
         n_classes = len(self.classes_)
-        log_probs: NDArray[np.float64] = np.zeros((n_samples, n_classes), dtype=np.float64)
+        log_probs: NDArray[np.float64] = np.zeros(
+            (n_samples, n_classes), dtype=np.float64
+        )
 
         for c in range(n_classes):
             # weighted log prob
@@ -63,9 +66,7 @@ class MDAAlgorithm:
 
         return cast(NDArray[np.float64], probs)
 
-    def fit_transform(
-        self, x: NDArray[Any], y: NDArray[Any]
-    ) -> NDArray[np.float64]:
+    def fit_transform(self, x: NDArray[Any], y: NDArray[Any]) -> NDArray[np.float64]:
         """Fit and transform."""
         self.fit(x, y)
         return self.transform(x)

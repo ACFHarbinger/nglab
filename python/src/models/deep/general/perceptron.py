@@ -2,7 +2,6 @@
 Perceptron implementation.
 """
 
-
 from typing import Any, cast
 
 import torch

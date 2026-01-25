@@ -1,4 +1,5 @@
 """ID3 model implementation."""
+
 from typing import Any
 
 from .decision_tree import DecisionTreeModel

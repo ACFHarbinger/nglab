@@ -1,4 +1,5 @@
 """Linear SVM model implementation."""
+
 from typing import Any
 
 from sklearn.svm import LinearSVC, LinearSVR

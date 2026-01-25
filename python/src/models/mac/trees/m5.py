@@ -1,4 +1,5 @@
 """M5 model tree implementation."""
+
 from typing import Any
 
 import numpy as np
@@ -54,7 +55,7 @@ class M5Model(ClassicalModel):
 
         self._is_fitted = True
 
-    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:
         """Predict values using the fitted model tree and leaf-level linear models."""
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 

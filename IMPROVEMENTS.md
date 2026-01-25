@@ -953,5 +953,885 @@ rust/src/
 
 ---
 
-*Last Updated: 2026-01-21*
-*Version: 3.0 (Feature-Focused Plan)*
+## Priority 7: Python Codebase Architecture (Based on WSmart-Route/logic)
+
+This section outlines architectural improvements for the Python codebase, derived from patterns and best practices observed in WSmart-Route/logic.
+
+### 7.1 Directory Structure Reorganization
+
+**Current State**: Scattered constants, implicit CLI, deep model hierarchy
+**Target State**: Domain-organized structure following WSmart patterns
+
+```
+Current Structure Issues:
+python/src/
+├── models/deep/          # 10+ nested subdirectories
+├── env/                  # Generic, unclear structure
+├── configs/              # Hydra-heavy, complex
+└── (no constants/)       # Constants scattered throughout
+
+Proposed Structure:
+python/src/
+├── cli/                  # NEW: Explicit CLI module
+│   ├── __init__.py
+│   ├── commands.py       # Subcommand routing
+│   ├── args.py           # Argument definitions
+│   └── validators.py     # Input validation
+├── constants/            # NEW: Domain-organized constants
+│   ├── __init__.py
+│   ├── models.py         # Model-related constants
+│   ├── paths.py          # File path templates
+│   ├── training.py       # Training hyperparameters
+│   ├── trading.py        # Trading-specific constants
+│   ├── system.py         # System-wide constants
+│   └── testing.py        # Test configuration
+├── configs/              # Simplified dataclasses-first
+│   ├── __init__.py
+│   ├── base.py           # Base config classes
+│   ├── model.py          # Model configurations
+│   ├── training.py       # Training configurations
+│   └── environment.py    # Environment configurations
+├── envs/                 # RENAME: env/ → envs/ with clear hierarchy
+│   ├── __init__.py
+│   ├── base.py           # RL4COEnvBase equivalent
+│   ├── trading.py        # Trading environment
+│   ├── polymarket.py     # Polymarket-specific
+│   └── generators.py     # Data generators
+├── models/               # FLATTEN: 2-3 level max hierarchy
+│   ├── modules/          # Atomic components
+│   ├── subnets/          # Composed encoder/decoder units
+│   ├── policies/         # Policy networks
+│   └── registry.py       # Central MODEL_REGISTRY
+└── ...
+```
+
+```
+Tasks:
+□ Create python/src/cli/ module
+  - Move CLI logic from main.py
+  - Implement subcommand routing (train, evaluate, backtest)
+  - Add argument validators
+□ Create python/src/constants/ with domain files
+  - Extract constants from configs into dedicated files
+  - Organize by: models, paths, training, trading, system, testing
+□ Flatten models/deep/ hierarchy
+  - Reorganize into modules/, subnets/, policies/
+  - Remove deep nesting (max 2-3 levels)
+□ Rename env/ to envs/ with clear inheritance
+  - Create base.py with abstract environment class
+  - Implement proper ABC hierarchy
+□ Update all imports after restructure
+□ Add __all__ exports to all __init__.py files
+```
+**Complexity**: High | **Impact**: High
+
+---
+
+### 7.2 Factory Pattern Implementation
+
+**Current State**: Direct instantiation, minimal factories
+**Target State**: Abstract factories with component registries (WSmart pattern)
+
+```python
+# TARGET: Factory interface pattern from WSmart
+
+# python/src/models/factories/base.py
+from abc import ABC, abstractmethod
+from typing import Any
+import torch.nn as nn
+
+class NeuralComponentFactory(ABC):
+    """Abstract factory for creating neural network components."""
+
+    @abstractmethod
+    def create_encoder(self, **kwargs: Any) -> nn.Module:
+        """Create encoder module."""
+        pass
+
+    @abstractmethod
+    def create_decoder(self, **kwargs: Any) -> nn.Module:
+        """Create decoder module."""
+        pass
+
+    @abstractmethod
+    def create_embedding(self, **kwargs: Any) -> nn.Module:
+        """Create embedding layer."""
+        pass
+
+# python/src/models/factories/attention.py
+class AttentionComponentFactory(NeuralComponentFactory):
+    """Factory for attention-based components."""
+
+    def create_encoder(self, **kwargs: Any) -> nn.Module:
+        from ..subnets.attention_encoder import AttentionEncoder
+        return AttentionEncoder(**kwargs)
+
+    def create_decoder(self, **kwargs: Any) -> nn.Module:
+        from ..subnets.attention_decoder import AttentionDecoder
+        return AttentionDecoder(**kwargs)
+
+# python/src/policies/factory.py
+class PolicyFactory:
+    """Factory for creating policy instances."""
+
+    @staticmethod
+    def get_policy(policy_name: str, **kwargs) -> "IPolicy":
+        if 'neural' in policy_name.lower():
+            return NeuralPolicy(**kwargs)
+        elif 'rule_based' in policy_name:
+            return RuleBasedPolicy(**kwargs)
+        elif 'ensemble' in policy_name:
+            return EnsemblePolicy(**kwargs)
+        else:
+            raise ValueError(
+                f"Unknown policy: {policy_name}. "
+                f"Available: {list(POLICY_REGISTRY.keys())}"
+            )
+```
+
+```
+Tasks:
+□ Create python/src/models/factories/ module
+  - Implement NeuralComponentFactory ABC
+  - Create concrete factories: AttentionFactory, ConvolutionalFactory, RecurrentFactory
+□ Create python/src/policies/factory.py
+  - Implement PolicyFactory with pattern matching
+  - Add clear error messages with available options
+□ Create python/src/envs/factory.py
+  - Implement environment factory
+  - Registry pattern for all environments
+□ Create python/src/pipeline/factory.py
+  - Pipeline component factory
+  - Trainer factory with algorithm selection
+□ Add component registries
+  - MODEL_REGISTRY, POLICY_REGISTRY, ENV_REGISTRY, PIPELINE_REGISTRY
+  - Registration decorators
+□ Update all instantiation sites to use factories
+```
+**Complexity**: High | **Impact**: High
+
+---
+
+### 7.3 Abstract Base Classes & Protocols
+
+**Current State**: Limited ABC usage, basic Policy ABC
+**Target State**: Comprehensive ABC hierarchy (WSmart pattern)
+
+```python
+# TARGET: Expanded ABC pattern from WSmart
+
+# python/src/envs/base.py
+from __future__ import annotations
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, Optional
+import torch
+
+if TYPE_CHECKING:
+    from tensordict import TensorDict
+
+class TradingEnvBase(ABC):
+    """Unified trading environment interface."""
+
+    name: str = "base"
+
+    @property
+    def batch_size(self) -> torch.Size:
+        return self._batch_size
+
+    @batch_size.setter
+    def batch_size(self, value: torch.Size) -> None:
+        if not isinstance(value, torch.Size):
+            value = torch.Size(value if isinstance(value, (list, tuple)) else [value])
+        self._batch_size = value
+
+    @abstractmethod
+    def reset(self, seed: Optional[int] = None) -> TensorDict:
+        """Reset environment and return initial state."""
+        pass
+
+    @abstractmethod
+    def step(self, action: TensorDict) -> TensorDict:
+        """Execute action and return next state."""
+        pass
+
+    @abstractmethod
+    def get_reward(self, td: TensorDict) -> torch.Tensor:
+        """Calculate reward from state."""
+        pass
+
+# python/src/models/policies/base.py
+class ConstructivePolicy(nn.Module, ABC):
+    """Base class for constructive policies with multiple inheritance."""
+
+    @abstractmethod
+    def forward(
+        self,
+        td: TensorDict,
+        env: TradingEnvBase,
+        decode_type: str = "sampling",
+        **kwargs
+    ) -> dict:
+        """Forward pass for policy."""
+        pass
+
+    @abstractmethod
+    def evaluate(self, td: TensorDict) -> dict:
+        """Evaluate policy without exploration."""
+        pass
+```
+
+```
+Tasks:
+□ Create comprehensive TradingEnvBase in python/src/envs/base.py
+  - Add property decorators with validation
+  - Implement error handling in setters
+  - Define all required abstract methods
+□ Expand Policy ABC in python/src/policies/base.py
+  - Add ConstructivePolicy for neural models
+  - Add ImprovementPolicy for iterative refinement
+  - Define evaluation protocol
+□ Create model ABCs in python/src/models/base.py
+  - BaseEncoder, BaseDecoder, BaseEmbedding
+  - Forward method signatures with type hints
+□ Create pipeline ABCs in python/src/pipeline/base.py
+  - BaseTrainer, BaseEvaluator, BaseCallback
+□ Add Protocol classes for duck typing where appropriate
+□ Update all concrete classes to inherit from ABCs
+```
+**Complexity**: Medium | **Impact**: High
+
+---
+
+### 7.4 Type Hints & Import Patterns
+
+**Current State**: Mixed type hint usage, inconsistent imports
+**Target State**: Comprehensive typing with TYPE_CHECKING pattern
+
+```python
+# TARGET: WSmart typing pattern
+
+# EVERY module should start with:
+from __future__ import annotations
+
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
+
+if TYPE_CHECKING:
+    # Imports only needed for type hints (avoids circular imports)
+    from python.src.envs.base import TradingEnvBase
+    from python.src.models.policies.base import ConstructivePolicy
+    from tensordict import TensorDict
+    import torch
+
+# Function signatures with comprehensive types
+def train_model(
+    model: nn.Module,
+    env: TradingEnvBase,
+    config: TrainConfig,
+    callbacks: Optional[List[Callback]] = None,
+    checkpoint_path: Optional[str] = None,
+) -> Tuple[nn.Module, Dict[str, float]]:
+    """
+    Train a model in the given environment.
+
+    Args:
+        model: The neural network model to train.
+        env: The trading environment instance.
+        config: Training configuration dataclass.
+        callbacks: Optional list of training callbacks.
+        checkpoint_path: Optional path to save checkpoints.
+
+    Returns:
+        Tuple of (trained_model, metrics_dict).
+
+    Raises:
+        ValueError: If config is invalid.
+        RuntimeError: If training fails.
+    """
+    ...
+```
+
+```
+Tasks:
+□ Add `from __future__ import annotations` to ALL modules
+□ Implement TYPE_CHECKING pattern for circular imports
+  - Identify all circular import issues
+  - Move type-only imports under TYPE_CHECKING
+□ Add comprehensive type hints to all functions
+  - Return types
+  - Parameter types
+  - Optional vs required distinction
+□ Create type stubs for complex protocols
+  - python/src/types.pyi or inline stubs
+□ Add comprehensive docstrings with Args/Returns/Raises
+  - Follow Google-style docstring format
+  - Document all parameters
+□ Configure mypy for strict type checking
+  - Add mypy.ini or pyproject.toml config
+  - Fix all type errors
+□ Add type: ignore comments only where absolutely necessary
+```
+**Complexity**: Medium | **Impact**: Medium
+
+---
+
+### 7.5 Configuration Management Simplification
+
+**Current State**: Heavy Hydra dependency, MISSING sentinels
+**Target State**: Dataclasses-first with optional YAML override
+
+```python
+# TARGET: WSmart-style dataclass configs
+
+# python/src/configs/base.py
+from dataclasses import dataclass, field
+from typing import Optional, List
+
+@dataclass
+class EnvConfig:
+    """Environment configuration."""
+    name: str = "trading"
+    num_envs: int = 1
+    max_steps: int = 1000
+    device: str = "cuda"
+
+@dataclass
+class ModelConfig:
+    """Model configuration."""
+    architecture: str = "transformer"
+    embedding_dim: int = 128
+    hidden_dim: int = 256
+    num_heads: int = 8
+    num_layers: int = 6
+    dropout: float = 0.1
+
+@dataclass
+class TrainConfig:
+    """Training configuration."""
+    algorithm: str = "ppo"
+    learning_rate: float = 3e-4
+    batch_size: int = 64
+    num_epochs: int = 100
+    gradient_clip: float = 1.0
+    seed: int = 42
+
+@dataclass
+class Config:
+    """Root configuration with nested configs."""
+    env: EnvConfig = field(default_factory=EnvConfig)
+    model: ModelConfig = field(default_factory=ModelConfig)
+    train: TrainConfig = field(default_factory=TrainConfig)
+
+    @classmethod
+    def from_yaml(cls, path: str) -> "Config":
+        """Load config from YAML file with overrides."""
+        import yaml
+        with open(path) as f:
+            overrides = yaml.safe_load(f)
+        return cls._apply_overrides(overrides)
+
+    @classmethod
+    def _apply_overrides(cls, overrides: dict) -> "Config":
+        """Apply dictionary overrides to default config."""
+        # Implementation...
+```
+
+```
+Tasks:
+□ Refactor configs to pure dataclasses
+  - Remove MISSING sentinels
+  - Add sensible defaults for all fields
+  - Nested composition with field(default_factory=...)
+□ Create Config.from_yaml() method
+  - Optional YAML override loading
+  - Validate loaded values
+□ Implement deep_sanitize() utility
+  - Convert DictConfig/ListConfig to primitives
+  - Use before passing to Lightning modules
+□ Remove Hydra decorator from main.py
+  - Use explicit config loading
+  - Keep CLI argument parsing separate
+□ Create config validation layer
+  - Validate ranges and constraints
+  - Clear error messages for invalid configs
+□ Add config serialization/deserialization
+  - to_dict(), from_dict() methods
+  - JSON/YAML export
+```
+**Complexity**: Medium | **Impact**: Medium
+
+---
+
+### 7.6 Error Handling & Validation
+
+**Current State**: Basic exceptions, minimal validation
+**Target State**: Explicit error handling with context (WSmart pattern)
+
+```python
+# TARGET: WSmart error handling pattern
+
+# python/src/exceptions.py
+class NGLabError(Exception):
+    """Base exception for NGLab."""
+    pass
+
+class ConfigurationError(NGLabError):
+    """Raised when configuration is invalid."""
+    pass
+
+class ModelNotFoundError(NGLabError):
+    """Raised when a model cannot be found."""
+    pass
+
+class EnvironmentError(NGLabError):
+    """Raised when environment encounters an error."""
+    pass
+
+# python/src/envs/base.py
+@batch_size.setter
+def batch_size(self, value: torch.Size) -> None:
+    """Set batch size with validation and error handling."""
+    if not isinstance(value, torch.Size):
+        if isinstance(value, int):
+            value = torch.Size([value])
+        elif isinstance(value, (list, tuple)):
+            value = torch.Size(value)
+        else:
+            raise TypeError(
+                f"batch_size must be torch.Size, int, list, or tuple. "
+                f"Got: {type(value).__name__}"
+            )
+
+    if any(v <= 0 for v in value):
+        raise ValueError(
+            f"batch_size must contain positive values. Got: {value}"
+        )
+
+    try:
+        self._batch_size = value
+        self._sync_spec_shapes()
+    except RuntimeError as e:
+        raise EnvironmentError(
+            f"Failed to set batch_size to {value}: {e}"
+        ) from e
+
+# python/src/models/registry.py
+def get_model(name: str) -> type:
+    """Get model class by name."""
+    if name not in MODEL_REGISTRY:
+        available = ", ".join(sorted(MODEL_REGISTRY.keys()))
+        raise ModelNotFoundError(
+            f"Unknown model: '{name}'. Available models: {available}"
+        )
+    return MODEL_REGISTRY[name]
+```
+
+```
+Tasks:
+□ Create python/src/exceptions.py with custom exceptions
+  - NGLabError base class
+  - Domain-specific exceptions (Config, Model, Env, Training)
+□ Add validation decorators
+  - @validate_config, @validate_input
+  - Reusable validation patterns
+□ Implement explicit error handling in property setters
+  - Type validation
+  - Range validation
+  - Graceful fallbacks where appropriate
+□ Add context to all error messages
+  - What went wrong
+  - What was expected
+  - Available alternatives (for registry lookups)
+□ Create error logging utilities
+  - Structured error logging
+  - Stack trace preservation
+□ Add input validation at system boundaries
+  - User input validation
+  - External API response validation
+```
+**Complexity**: Medium | **Impact**: Medium
+
+---
+
+### 7.7 Test Organization Enhancement
+
+**Current State**: 7 fixture modules, flat test structure
+**Target State**: 12+ fixture modules, organized by domain (WSmart pattern)
+
+```
+Current:
+python/tests/
+├── conftest.py
+├── fixtures/
+│   ├── model_fixtures.py
+│   ├── nglab_fixtures.py
+│   └── ... (7 files)
+└── test_*.py (flat)
+
+Target:
+python/tests/
+├── conftest.py                 # Central pytest config with plugin registration
+├── fixtures/
+│   ├── __init__.py
+│   ├── arg_fixtures.py         # CLI argument fixtures
+│   ├── config_fixtures.py      # Configuration fixtures
+│   ├── data_fixtures.py        # Data/dataset fixtures
+│   ├── env_fixtures.py         # Environment fixtures
+│   ├── model_fixtures.py       # Model fixtures
+│   ├── policy_fixtures.py      # Policy fixtures
+│   ├── pipeline_fixtures.py    # Training pipeline fixtures
+│   ├── integration_fixtures.py # Integration test fixtures
+│   ├── mock_fixtures.py        # Mock objects
+│   └── tensor_fixtures.py      # Tensor/tensor dict fixtures
+├── unit/
+│   ├── test_configs.py
+│   ├── test_models/
+│   │   ├── test_encoders.py
+│   │   ├── test_decoders.py
+│   │   └── test_policies.py
+│   ├── test_envs/
+│   └── test_utils/
+├── integration/
+│   ├── test_training_loop.py
+│   ├── test_env_integration.py
+│   └── test_pipeline.py
+└── properties/
+    └── test_model_properties.py
+```
+
+```python
+# TARGET: conftest.py with plugin registration (WSmart pattern)
+
+# python/tests/conftest.py
+import pytest
+
+pytest_plugins = [
+    "tests.fixtures.arg_fixtures",
+    "tests.fixtures.config_fixtures",
+    "tests.fixtures.data_fixtures",
+    "tests.fixtures.env_fixtures",
+    "tests.fixtures.model_fixtures",
+    "tests.fixtures.policy_fixtures",
+    "tests.fixtures.pipeline_fixtures",
+    "tests.fixtures.integration_fixtures",
+    "tests.fixtures.mock_fixtures",
+    "tests.fixtures.tensor_fixtures",
+]
+
+@pytest.fixture
+def temp_output_dir():
+    """Create temporary directory for test outputs."""
+    import tempfile
+    with tempfile.TemporaryDirectory() as temp_dir:
+        yield temp_dir
+
+@pytest.fixture
+def device():
+    """Get appropriate device for tests."""
+    import torch
+    return "cuda" if torch.cuda.is_available() else "cpu"
+```
+
+```
+Tasks:
+□ Reorganize tests/ into unit/, integration/, properties/
+□ Expand fixtures/ to 10+ domain-specific modules
+  - Add arg_fixtures.py, config_fixtures.py
+  - Add tensor_fixtures.py for TensorDict fixtures
+  - Add pipeline_fixtures.py
+□ Update conftest.py with pytest_plugins registration
+□ Add parametrized tests for factory methods
+  - Test all registry entries
+  - Test error cases
+□ Create test utilities module
+  - Common assertions
+  - Test data generators
+□ Add coverage configuration
+  - Minimum coverage thresholds
+  - Coverage report generation
+□ Implement property-based tests with hypothesis
+  - Model invariant testing
+  - Config validation testing
+```
+**Complexity**: Medium | **Impact**: Medium
+
+---
+
+### 7.8 Documentation Enhancement
+
+**Current State**: Basic CLAUDE.md, minimal module docstrings
+**Target State**: Comprehensive documentation (WSmart pattern - 400+ line CLAUDE.md)
+
+```
+Tasks:
+□ Expand CLAUDE.md significantly
+  - Add detailed section on codebase architecture
+  - Document all major modules and their responsibilities
+  - Add code patterns and conventions
+  - Include troubleshooting section
+  - Document config sanitization patterns
+□ Create ARCHITECTURE.md
+  - System diagrams (ASCII or Mermaid)
+  - Data flow documentation
+  - Component interaction descriptions
+□ Create CONTRIBUTING.md
+  - Code style guidelines
+  - PR process
+  - Testing requirements
+□ Add comprehensive module docstrings
+  - Every __init__.py should have module-level docstring
+  - Explain module purpose and contents
+□ Add inline documentation for complex logic
+  - Algorithm explanations
+  - Non-obvious design decisions
+□ Create API documentation
+  - Auto-generated from docstrings
+  - Usage examples
+```
+**Complexity**: Medium | **Impact**: High
+
+---
+
+### 7.9 Package Initialization Patterns
+
+**Current State**: Mixed star imports, inconsistent __all__
+**Target State**: Explicit imports with registries (WSmart pattern)
+
+```python
+# TARGET: WSmart __init__.py pattern
+
+# python/src/models/__init__.py
+"""
+Neural network models for NGLab trading system.
+
+This module provides:
+- MODEL_REGISTRY: Central registry of all model classes
+- get_model(): Factory function to instantiate models by name
+- Base classes for custom model implementation
+"""
+from __future__ import annotations
+
+from python.src.models.base import BaseModel, BaseEncoder, BaseDecoder
+from python.src.models.registry import MODEL_REGISTRY, get_model, register_model
+
+# Import concrete implementations to trigger registration
+from python.src.models import attention
+from python.src.models import convolutional
+from python.src.models import recurrent
+
+__all__ = [
+    # Base classes
+    "BaseModel",
+    "BaseEncoder",
+    "BaseDecoder",
+    # Registry
+    "MODEL_REGISTRY",
+    "get_model",
+    "register_model",
+]
+
+# python/src/envs/__init__.py
+"""
+Trading environments for reinforcement learning.
+
+Provides gym-compatible environments for training trading agents.
+"""
+from __future__ import annotations
+
+from python.src.envs.base import TradingEnvBase
+from python.src.envs.trading import TradingEnv
+from python.src.envs.polymarket import PolymarketEnv
+
+ENV_REGISTRY = {
+    "trading": TradingEnv,
+    "polymarket": PolymarketEnv,
+}
+
+def get_env(name: str, **kwargs) -> TradingEnvBase:
+    """
+    Get environment instance by name.
+
+    Args:
+        name: Environment name (trading, polymarket).
+        **kwargs: Environment configuration.
+
+    Returns:
+        Configured environment instance.
+
+    Raises:
+        ValueError: If environment name is unknown.
+    """
+    if name not in ENV_REGISTRY:
+        available = ", ".join(sorted(ENV_REGISTRY.keys()))
+        raise ValueError(f"Unknown environment: '{name}'. Available: {available}")
+    return ENV_REGISTRY[name](**kwargs)
+
+__all__ = [
+    "TradingEnvBase",
+    "TradingEnv",
+    "PolymarketEnv",
+    "ENV_REGISTRY",
+    "get_env",
+]
+```
+
+```
+Tasks:
+□ Remove all star imports (from x import *)
+□ Add explicit __all__ to every __init__.py
+□ Create central registries in each major module
+  - MODEL_REGISTRY, ENV_REGISTRY, POLICY_REGISTRY
+□ Implement get_*() factory functions
+  - get_model(), get_env(), get_policy()
+□ Add registration decorators
+  - @register_model, @register_env
+□ Add module-level docstrings to all packages
+□ Ensure consistent import ordering
+  - Standard library
+  - Third-party
+  - Local imports
+```
+**Complexity**: Medium | **Impact**: Medium
+
+---
+
+### 7.10 Lightning Configuration Sanitization
+
+**Current State**: Direct OmegaConf usage with Lightning
+**Target State**: Sanitized configs before Lightning (WSmart critical pattern)
+
+```python
+# TARGET: Config sanitization utility (WSmart CLAUDE.md critical pattern)
+
+# python/src/utils/config.py
+from typing import Any, Dict
+from omegaconf import DictConfig, ListConfig
+
+def deep_sanitize(cfg: DictConfig | Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Convert DictConfig/ListConfig to primitive Python types.
+
+    CRITICAL: Always use this before passing config to PyTorch Lightning
+    modules to avoid YAML serialization errors.
+
+    Args:
+        cfg: Configuration object (DictConfig or dict).
+
+    Returns:
+        Dict with only primitive Python types.
+
+    Example:
+        >>> from omegaconf import OmegaConf
+        >>> cfg = OmegaConf.create({"lr": 0.001, "layers": [64, 128]})
+        >>> sanitized = deep_sanitize(cfg)
+        >>> type(sanitized["layers"])
+        <class 'list'>  # Not ListConfig
+    """
+    if isinstance(cfg, DictConfig):
+        return {k: deep_sanitize(v) for k, v in cfg.items()}
+    elif isinstance(cfg, ListConfig):
+        return [deep_sanitize(v) for v in cfg]
+    elif isinstance(cfg, dict):
+        return {k: deep_sanitize(v) for k, v in cfg.items()}
+    elif isinstance(cfg, list):
+        return [deep_sanitize(v) for v in cfg]
+    else:
+        return cfg
+
+# USAGE PATTERN:
+# common_kwargs = deep_sanitize(cfg.model)
+# common_kwargs["env"] = env  # Inject non-serializable AFTER sanitization
+# model = MyLightningModule(**common_kwargs)
+```
+
+```
+Tasks:
+□ Create python/src/utils/config.py with deep_sanitize()
+□ Audit all Lightning module instantiations
+  - Find all places where configs are passed to Lightning
+  - Add deep_sanitize() calls
+□ Create helper for config injection pattern
+  - sanitize_and_inject() utility
+  - Standard pattern for env/model injection
+□ Add tests for config sanitization
+  - Test nested configs
+  - Test with actual Lightning modules
+□ Document in CLAUDE.md
+  - Add section on config sanitization
+  - Examples of correct usage
+```
+**Complexity**: Low | **Impact**: High
+
+---
+
+## Python Architecture Implementation Roadmap
+
+### Phase 1: Foundation (HIGH IMPACT)
+- [ ] Create `python/src/cli/` module (7.1)
+- [ ] Create `python/src/constants/` with domain files (7.1)
+- [ ] Implement deep_sanitize() utility (7.10)
+- [ ] Create custom exceptions (7.6)
+
+### Phase 2: Abstraction Layer (HIGH IMPACT)
+- [ ] Implement factory patterns (7.2)
+- [ ] Create comprehensive ABCs (7.3)
+- [ ] Add component registries (7.9)
+- [ ] Flatten model hierarchy (7.1)
+
+### Phase 3: Type Safety & Quality (MEDIUM IMPACT)
+- [ ] Add `from __future__ import annotations` everywhere (7.4)
+- [ ] Implement TYPE_CHECKING pattern (7.4)
+- [ ] Refactor configs to pure dataclasses (7.5)
+- [ ] Add explicit __all__ exports (7.9)
+
+### Phase 4: Testing & Documentation (MEDIUM IMPACT)
+- [ ] Reorganize test structure (7.7)
+- [ ] Expand to 10+ fixture modules (7.7)
+- [ ] Expand CLAUDE.md (7.8)
+- [ ] Create ARCHITECTURE.md (7.8)
+
+---
+
+## Quick Wins - Python Architecture
+
+1. **Add `from __future__ import annotations`** - Single line per file, enables forward references
+2. **Create deep_sanitize() utility** - Prevents Lightning YAML errors
+3. **Add __all__ to major __init__.py** - Explicit API surface
+4. **Create python/src/exceptions.py** - Centralized error types
+5. **Move constants to dedicated module** - Better organization
+6. **Add ENV_REGISTRY dict** - Simple factory lookup
+7. **Create temp_output_dir fixture** - Common test pattern
+8. **Add pytest_plugins to conftest.py** - Cleaner fixture loading
+9. **Add module docstrings** - Self-documenting packages
+10. **Remove star imports** - Explicit is better than implicit
+
+---
+
+## Summary: Key Improvements from WSmart-Route/logic
+
+| Pattern | Current Python | WSmart Target | Priority |
+|---------|---------------|---------------|----------|
+| Directory Structure | Scattered | Domain-organized | HIGH |
+| Factory Patterns | Minimal | ABC + Factories | HIGH |
+| Abstract Base Classes | Limited | Comprehensive | HIGH |
+| Type Hints | Partial | Universal | MEDIUM |
+| Constants | Ad-hoc | Dedicated module | HIGH |
+| Configuration | Hydra-heavy | Dataclasses-first | MEDIUM |
+| Error Handling | Basic | Explicit/defensive | MEDIUM |
+| Test Organization | Adequate | 12+ fixture modules | MEDIUM |
+| Documentation | Minimal | 400+ line CLAUDE.md | HIGH |
+| Package Init | Star imports | Explicit __all__ + registries | MEDIUM |
+| Config Sanitization | None | deep_sanitize() | HIGH |
+
+---
+
+*Last Updated: 2026-01-25*
+*Version: 4.0 (Feature + Python Architecture Plan)*

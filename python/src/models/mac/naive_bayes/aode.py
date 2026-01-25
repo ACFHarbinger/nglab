@@ -1,4 +1,5 @@
 """Averaged One-Dependence Estimators (AODE) model implementation."""
+
 from typing import Any
 
 import numpy as np
@@ -35,7 +36,9 @@ class AODEModel(ClassicalModel):
 
         candidates = list(range(n_features))
         if n_features > self.n_estimators:
-            candidates = list(np.random.choice(candidates, self.n_estimators, replace=False))
+            candidates = list(
+                np.random.choice(candidates, self.n_estimators, replace=False)
+            )
 
         for _ in candidates:
             clf = GaussianNB()
@@ -44,7 +47,7 @@ class AODEModel(ClassicalModel):
 
         self._is_fitted = True
 
-    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:  # noqa: N803
+    def predict(self, X: np.ndarray[Any, Any] | torch.Tensor) -> np.ndarray[Any, Any]:
         """Predict labels by averaging multiple Naive Bayes models."""
         X_np = X.detach().cpu().numpy() if isinstance(X, torch.Tensor) else X
 

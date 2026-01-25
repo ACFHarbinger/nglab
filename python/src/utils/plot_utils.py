@@ -63,11 +63,11 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
     """
 
     def plot_graphs_out(
-        plot_func: Callable[..., Any], 
-        graph_log: NDArray[Any], 
-        x_values: list[float] | None, 
-        linestyles: list[str] | None, 
-        markers: list[str] | None
+        plot_func: Callable[..., Any],
+        graph_log: NDArray[Any],
+        x_values: list[float] | None,
+        linestyles: list[str] | None,
+        markers: list[str] | None,
     ) -> dict[int, list[tuple[float, float]]]:
         """
         Helper to plot graphs for different policies.
@@ -82,8 +82,12 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
                     *lg,
                 )
 
-            line: str | None = linestyles[idx % len(linestyles)] if linestyles is not None else None
-            mark: str | None = markers[idx % len(markers)] if markers is not None else None
+            line: str | None = (
+                linestyles[idx % len(linestyles)] if linestyles is not None else None
+            )
+            mark: str | None = (
+                markers[idx % len(markers)] if markers is not None else None
+            )
 
             if not line and not mark:
                 plot_func(*to_plot)
@@ -194,6 +198,7 @@ def plot_linechart(  # noqa: PLR0913, PLR0915
     plt.show()
     return pareto_dominants if pareto_front else None
 
+
 def discrete_cmap(n: int, base_cmap: str | Any | None = None) -> Any:
     """
     Create an N-bin discrete colormap from the specified input map.
@@ -224,7 +229,7 @@ def plot_attention_maps_wrapper(  # noqa: PLR0913
     assert sample_idx >= 0, f"sample_idx {sample_idx} must be a non-negative integer"
 
     attention_weights = attention_dict[model_name][sample_idx]["attention_weights"]
-    
+
     assert layer_idx < attention_weights.shape[0]
     assert head_idx < attention_weights.shape[1]
     assert batch_idx < attention_weights.shape[2]
@@ -289,7 +294,7 @@ def plot_attention_maps_wrapper(  # noqa: PLR0913
     # Adjust annotations and font sizes
     max_ticsize = 8
     max_annotsize = 8
-    annot = (map_size <= 55)
+    annot = map_size <= 55
     tick_fontsize = max(max_ticsize, 14 - map_size // 10)
     annot_fontsize = max(max_annotsize, 12 - map_size // 10)
 
@@ -309,7 +314,7 @@ def plot_attention_maps_wrapper(  # noqa: PLR0913
         x_labels = [f"Vertex {i}" for i in range(attn_map.shape[0])]
     if y_labels is None:
         y_labels = [f"Vertex {i}" for i in range(attn_map.shape[1])]
-    
+
     plt.xticks(
         ticks=np.arange(attn_map.shape[1]) + 0.5,
         labels=x_labels,

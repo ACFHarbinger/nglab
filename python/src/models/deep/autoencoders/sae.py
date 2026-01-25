@@ -2,7 +2,6 @@
 Sparse AutoEncoder (SAE) implementation.
 """
 
-
 import torch
 
 from .ae import AutoEncoder

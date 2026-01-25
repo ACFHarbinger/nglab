@@ -314,7 +314,9 @@ class GPUBenchmark:
             torch.cuda.empty_cache()
             torch.cuda.reset_peak_memory_stats()
 
-        def train_step(opt: torch.optim.Optimizer, sclr: torch.cuda.amp.GradScaler | None) -> None:
+        def train_step(
+            opt: torch.optim.Optimizer, sclr: torch.cuda.amp.GradScaler | None
+        ) -> None:
             """Execute a single training step for benchmarking."""
             opt.zero_grad()
             if mixed_precision and sclr is not None:
