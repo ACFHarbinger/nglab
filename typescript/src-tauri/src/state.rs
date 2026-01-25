@@ -40,4 +40,6 @@ pub struct ArenaUpdate {
     pub current_var: f64,
     /** Complete snapshot of the order book for visualization. */
     pub orderbook: OrderBook,
+    /** Active algorithmic execution orders. */
+    pub algo_orders: Vec<nglab::execution::AlgoOrder>,
 }

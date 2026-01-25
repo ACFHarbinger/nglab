@@ -28,6 +28,8 @@ import { RecentTradesWidget, Trade } from "./RecentTradesWidget";
  * @description Form for placing buy/sell orders for the selected market.
  */
 import { TradingFormWidget } from "./TradingFormWidget";
+import { AlgoOrderWidget } from "./AlgoOrderWidget";
+import { useArena } from "../../hooks/useArena";
 import { MarketMetadata } from "../../hooks/usePolymarket";
 import { FavoriteMarket } from "../../hooks/useFavorites";
 import { Wallet, Settings } from "lucide-react";
@@ -219,6 +221,7 @@ export function TerminalLayout({
   favorites,
   toggleFavorite,
 }: Props) {
+  const { data: arenaData } = useArena();
   const [chartData, setChartData] = useState<any[]>([]);
   const [orderBook, setOrderBook] = useState<{ bids: any; asks: any }>({
     bids: {},
@@ -511,8 +514,15 @@ export function TerminalLayout({
           <OrderBookWidget bids={orderBook.bids} asks={orderBook.asks} />
         </div>
         {/* Recent Trades (Bottom 50%) */}
-        <div className="h-1/2">
+        <div className="flex-1">
           <RecentTradesWidget trades={recentTrades} />
+        </div>
+        {/* Algo Execution (Bottom) */}
+        <div className="h-64 border-t border-slate-800">
+          <AlgoOrderWidget
+            algo_orders={arenaData?.algo_orders || []}
+            current_step={arenaData?.step || 0}
+          />
         </div>
       </div>
 

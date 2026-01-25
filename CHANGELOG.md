@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced ARCHITECTURE.md with Kubernetes topology
 - Enhanced TROUBLESHOOTING.md with GPU/CUDA debugging guides
 - Interactive Jupyter notebook tutorial series (10 notebooks)
+- **Extended Order Types**: Implemented Fill-or-Kill (FOK), Immediate-or-Cancel (IOC), Good-Till-Date (GTD), and Bracket Orders in the Rust simulation engine.
+- **Tauri Integration**: Exposed advanced order types via new Tauri commands (`submit_fok_order`, `submit_ioc_order`, `submit_bracket_order`, `submit_pegged_order`).
+- **Trading UI Improvements**: Updated `TradingFormWidget` with an Order Type selector and dynamic inputs for advanced order parameters (Peg Reference, Peg Offset, Stop Loss, Take Profit).
 - **Pegged Orders**: Dynamic order pricing (e.g., Peg to Best Bid + Offset) with real-time updates via `PegReference` and `reprice_pegged_orders`.
 
 #### Deep Learning Framework

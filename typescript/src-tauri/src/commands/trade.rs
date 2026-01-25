@@ -74,3 +74,17 @@ pub fn submit_pegged_order(
     let orderbook = env.orderbook_mut();
     orderbook.submit_pegged_order(quantity, side, peg_reference, peg_offset)
 }
+
+/**
+ * Submit an Algorithmic Execution order (TWAP, VWAP, POV).
+ */
+#[tauri::command]
+pub fn submit_algo_order(
+    state: State<ArenaState>,
+    algo_type: nglab::execution::AlgoType,
+    params: nglab::execution::AlgoParams,
+) {
+    let mut env = state.env.lock().unwrap();
+    let start_step = env.info().total_steps;
+    env.algo_manager_mut().submit(algo_type, params, start_step);
+}

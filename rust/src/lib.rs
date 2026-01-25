@@ -54,6 +54,7 @@ use pyo3::prelude::*;
 pub mod config;
 /// Error handling types and enumerations.
 pub mod errors;
+pub mod execution;
 /// Mathematical and statistical functions.
 pub mod functions;
 /// Health check and status reporting.

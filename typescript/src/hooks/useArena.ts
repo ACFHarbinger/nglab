@@ -61,6 +61,8 @@ export interface ArenaUpdate {
   current_var: number;
   /** Current orderbook state */
   orderbook: OrderBook;
+  /** Active algorithmic execution orders */
+  algo_orders: any[];
 }
 
 /**

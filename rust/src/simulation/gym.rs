@@ -202,6 +202,8 @@ pub struct TradingEnv {
     circuit_breaker: CircuitBreaker,
     /** Manager for automated trading agents */
     agent_manager: AgentManager,
+    /** Manager for algorithmic execution orders */
+    algo_manager: crate::execution::AlgoManager,
 }
 
 // =========================================================================
@@ -391,6 +393,7 @@ impl TradingEnv {
             risk_manager: RiskManager::with_defaults(initial_capital),
             circuit_breaker: CircuitBreaker::new(CircuitBreakerConfig::default(), 0.0),
             agent_manager: AgentManager::new(),
+            algo_manager: crate::execution::AlgoManager::default(),
         }
     }
 
@@ -521,6 +524,11 @@ impl TradingEnv {
         // Step agents
         self.agent_manager
             .step(&mut self.orderbook, self.total_steps);
+
+        // Step algorithms
+        let market_volume = 100.0; // Mock volume for now, should come from orderbook trades/tape
+        self.algo_manager
+            .step(self.total_steps, &mut self.orderbook, market_volume);
 
         // Update risk manager
         self.risk_manager.update(portfolio_value);
@@ -703,6 +711,27 @@ impl TradingEnv {
     /** Mutable access to orderbook for direct order manipulation */
     pub fn orderbook_mut(&mut self) -> &mut OrderBook {
         &mut self.orderbook
+    }
+
+    /** Mutable access to algo manager */
+    pub fn algo_manager_mut(&mut self) -> &mut crate::execution::AlgoManager {
+        &mut self.algo_manager
+    }
+
+    /** Immutable access to algo manager */
+    pub fn algo_manager(&self) -> &crate::execution::AlgoManager {
+        &self.algo_manager
+    }
+
+    /** Get environment info */
+    pub fn info(&self) -> StepInfo {
+        StepInfo {
+            portfolio_value: self.portfolio_value(),
+            position: self.position,
+            cash: self.cash,
+            sharpe_ratio: self.calculate_sharpe(30),
+            total_steps: self.total_steps,
+        }
     }
 }
 
