@@ -65,7 +65,7 @@ const Sparkline = ({
  * Shows 24h volume, active traders, and peak activity hours with sparklines.
  */
 export function MarketStatsWidget() {
-  const { canStream } = useStreamingGuard();
+  const { canStream, isLoggedIn } = useStreamingGuard();
 
   return (
     <div className="flex flex-col gap-4 h-full">
@@ -80,16 +80,22 @@ export function MarketStatsWidget() {
               "flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all duration-300",
               canStream
                 ? "bg-green-500/20 text-green-400 border-green-500/30"
-                : "bg-rose-500/20 text-rose-400 border-rose-500/30",
+                : !isLoggedIn
+                  ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                  : "bg-rose-500/20 text-rose-400 border-rose-500/30",
             )}
           >
             <span
               className={clsx(
                 "w-1.5 h-1.5 rounded-full transition-colors duration-300",
-                canStream ? "bg-green-500 animate-pulse" : "bg-rose-500",
+                canStream
+                  ? "bg-green-500 animate-pulse"
+                  : !isLoggedIn
+                    ? "bg-amber-500"
+                    : "bg-rose-500",
               )}
             />
-            {canStream ? "LIVE" : "INACTIVE"}
+            {canStream ? "LIVE" : !isLoggedIn ? "LOGIN REQ" : "GATED"}
           </span>
         </div>
         <button className="text-[10px] text-slate-500 hover:text-white transition-colors uppercase font-bold flex items-center gap-1">

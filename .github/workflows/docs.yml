@@ -1,0 +1,155 @@
+name: Build and Deploy Docs
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # --- TypeScript Docs ---
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: typescript/package-lock.json
+
+      - name: Build TypeScript Docs
+        run: |
+          cd typescript
+          npm ci
+          npx typedoc
+        # Output is in typescript/docs according to typedoc.json
+
+      # --- Rust Docs ---
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Rust Docs
+        run: |
+          cd rust
+          cargo doc --no-deps --document-private-items
+        # Output is in rust/target/doc
+
+      # --- Python Docs ---
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: '3.11'
+
+      - name: Build Python Docs
+        run: |
+          uv run --with sphinx --with sphinx-rtd-theme --project . make -C python/docs html
+        # Output is in python/docs/_build/html
+
+      # --- Consolidation ---
+      - name: Consolidate Documentation
+        run: |
+          mkdir -p public_docs
+          
+          # Copy TypeScript docs
+          mkdir -p public_docs/typescript
+          cp -R typescript/docs/* public_docs/typescript/
+          
+          # Copy Rust docs
+          mkdir -p public_docs/rust
+          cp -R rust/target/doc/* public_docs/rust/
+          
+          # Copy Python docs
+          mkdir -p public_docs/python
+          cp -R python/docs/_build/html/* public_docs/python/
+          
+          # Create Landing Page
+          cat <<EOF > public_docs/index.html
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>NGLab Documentation</title>
+              <style>
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                      line-height: 1.6;
+                      color: #333;
+                      max-width: 800px;
+                      margin: 0 auto;
+                      padding: 2rem;
+                      background-color: #f4f4f9;
+                  }
+                  h1 {
+                      color: #2c3e50;
+                      border-bottom: 2px solid #3498db;
+                      padding-bottom: 0.5rem;
+                  }
+                  .card-container {
+                      display: grid;
+                      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                      gap: 1.5rem;
+                      margin-top: 2rem;
+                  }
+                  .card {
+                      background: white;
+                      padding: 1.5rem;
+                      border-radius: 8px;
+                      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                      transition: transform 0.2s;
+                      text-decoration: none;
+                      color: inherit;
+                      text-align: center;
+                  }
+                  .card:hover {
+                      transform: translateY(-5px);
+                      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+                  }
+                  .card h2 {
+                      margin-top: 0;
+                      color: #3498db;
+                  }
+                  .card p {
+                      font-size: 0.9rem;
+                      color: #666;
+                  }
+              </style>
+          </head>
+          <body>
+              <h1>NGLab Project Documentation</h1>
+              <p>Welcome to the consolidated documentation for the NGLab project. Select a module below to view its specific documentation.</p>
+              
+              <div class="card-container">
+                  <a href="typescript/index.html" class="card">
+                      <h2>TypeScript</h2>
+                      <p>Frontend & API Documentation</p>
+                  </a>
+                  <a href="rust/nglab/index.html" class="card">
+                      <h2>Rust</h2>
+                      <p>Core Simulation Logic & Backend</p>
+                  </a>
+                  <a href="python/index.html" class="card">
+                      <h2>Python</h2>
+                      <p>Training & Strategy Implementation</p>
+                  </a>
+              </div>
+          </body>
+          </html>
+          EOF
+
+      # --- Deployment ---
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: \${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public_docs
+          force_orphan: true

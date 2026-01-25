@@ -4,6 +4,7 @@ import {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   ReactNode,
 } from "react";
 
@@ -89,12 +90,20 @@ export function StreamingProvider({ children }: StreamingProviderProps) {
     setIsGlobalStreamingEnabledState(enabled);
   }, []);
 
-  const value: StreamingContextValue = {
-    isGlobalStreamingEnabled,
-    setGlobalStreamingEnabled,
-    isLoggedIn,
-    setIsLoggedIn,
-  };
+  const value: StreamingContextValue = useMemo(
+    () => ({
+      isGlobalStreamingEnabled,
+      setGlobalStreamingEnabled,
+      isLoggedIn,
+      setIsLoggedIn,
+    }),
+    [
+      isGlobalStreamingEnabled,
+      setGlobalStreamingEnabled,
+      isLoggedIn,
+      setIsLoggedIn,
+    ],
+  );
 
   return (
     <StreamingContext.Provider value={value}>

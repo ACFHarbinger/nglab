@@ -1,4 +1,5 @@
-import { useStreaming } from "../context/StreamingContext";
+import { useContext } from "react";
+import { StreamingContext } from "../context/StreamingContext";
 
 /**
  * @module hooks/useStreamingGuard
@@ -48,7 +49,25 @@ export interface StreamingGuardResult {
  * ```
  */
 export function useStreamingGuard(): StreamingGuardResult {
-  const { isGlobalStreamingEnabled, isLoggedIn } = useStreaming();
+  // We access specific context directly here to avoid throwing if the provider is missing
+  // This makes the widget portable (e.g. tests, storybook) without crashing
+  const context = useContext(StreamingContext);
+
+  // If context is missing, default to safe values (no streaming, not logged in)
+  if (!context) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        "useStreamingGuard: StreamingContext is missing. Defaulting to disabled/logged out.",
+      );
+    }
+    return {
+      canStream: false,
+      isGlobalStreamingEnabled: false,
+      isLoggedIn: false,
+    };
+  }
+
+  const { isGlobalStreamingEnabled, isLoggedIn } = context;
 
   return {
     canStream: isGlobalStreamingEnabled && isLoggedIn,

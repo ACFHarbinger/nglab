@@ -126,7 +126,7 @@ const NEWS_ITEMS = [
 export function GlobalActivityWidget() {
   const [activeTab, setActiveTab] = useState("All");
   const [activeIntelTab, setActiveIntelTab] = useState("OSINT");
-  const { canStream } = useStreamingGuard();
+  const { canStream, isLoggedIn } = useStreamingGuard();
 
   return (
     <div className="flex flex-col h-full bg-slate-900 border-l border-slate-800 w-full">
@@ -142,16 +142,22 @@ export function GlobalActivityWidget() {
               "flex items-center gap-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full border transition-all duration-300",
               canStream
                 ? "bg-green-500/20 text-green-400 border-green-500/30"
-                : "bg-rose-500/20 text-rose-400 border-rose-500/30",
+                : !isLoggedIn
+                  ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                  : "bg-rose-500/20 text-rose-400 border-rose-500/30",
             )}
           >
             <span
               className={clsx(
                 "w-1.5 h-1.5 rounded-full transition-colors duration-300",
-                canStream ? "bg-green-500 animate-pulse" : "bg-rose-500",
+                canStream
+                  ? "bg-green-500 animate-pulse"
+                  : !isLoggedIn
+                    ? "bg-amber-500"
+                    : "bg-rose-500",
               )}
             />
-            {canStream ? "LIVE" : "INACTIVE"}
+            {canStream ? "LIVE" : !isLoggedIn ? "LOGIN REQ" : "GATED"}
           </span>
         </div>
         <div className="flex border-b border-slate-800 bg-slate-950">

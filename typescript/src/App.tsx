@@ -100,6 +100,27 @@ function App() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
 
+  // --- SESSION RESTORATION: Check for active session on mount ---
+  useEffect(() => {
+    const restoreSession = async () => {
+      try {
+        const response = await invoke<{
+          success: boolean;
+          message: string;
+          username: string | null;
+        }>("get_current_user");
+        if (response.success && response.username) {
+          console.log("👤 Restored active session for:", response.username);
+          setCurrentUser(response.username);
+          refreshFavorites();
+        }
+      } catch (err) {
+        console.warn("Session restoration failed:", err);
+      }
+    };
+    restoreSession();
+  }, [refreshFavorites]);
+
   // --- LOGIN SYNC: Notify StreamingContext about login status ---
   useEffect(() => {
     setIsLoggedIn(currentUser !== null);
