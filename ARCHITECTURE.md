@@ -1635,67 +1635,21 @@ flowchart TB
 ```
 python/src/
 ├── main.py                          # Hydra entry point
-├── env/
-│   ├── trading_env.py               # TradingEnv (pure Python fallback)
-│   ├── envs.py                      # TradingEnv, ClobEnv, PolymarketEnv
-│   ├── env_wrapper.py               # TradingEnvWrapper (TorchRL)
-│   └── vectorized_env.py            # VectorizedTradingEnv, SubprocVecEnv
-├── models/
-│   ├── time_series.py               # TimeSeriesBackbone
-│   ├── deep_factory.py              # create_deep_model()
-│   ├── mac_factory.py               # create_mac_model()
+├── cli/                             # Subcommand routing & args
+├── configs/                         # Domain-organized dataclass configs
+├── envs/                            # Gym environments & factory
+├── models/                          # Multi-model library
 │   ├── deep/                        # DL architectures
-│   │   ├── attention/               # NSTransformer, Attention
-│   │   ├── recurrent/               # LSTM, GRU, xLSTM, TSMamba
-│   │   ├── convolutional/           # CNN, ResNet, Capsule
-│   │   ├── autoencoders/            # VAE, AE, SAE, DAE
-│   │   ├── probabilistic/           # GAN, RBM, Diffusion, Flow
-│   │   ├── spiking/                 # SNN
-│   │   ├── memory/                  # NTM, DNC
-│   │   └── general/                 # MLP, PINN, RBF
 │   └── mac/                         # Classical ML
-│       ├── linear/                  # Ridge, Lasso, MARS
-│       ├── trees/                   # RF, DecisionTree, XGBoost
-│       ├── svm/                     # SVM, NuSVM
-│       ├── neighbors/               # k-NN, LWL
-│       ├── naive_bayes/             # NB, GaussianNB
-│       └── ensemble/                # Voting, Stacking, Bagging
-├── policies/
-│   ├── base.py                      # Policy (ABC)
-│   ├── neural.py                    # NeuralPolicy
-│   ├── threshold.py                 # ThresholdPolicy
-│   ├── black_scholes.py             # BlackScholesPolicy
-│   └── regular.py                   # RegularPolicy
-├── pipeline/
-│   ├── train.py                     # rollout, train_epoch, train_batch
-│   ├── core/
-│   │   ├── train_ppo.py             # train_ppo()
-│   │   └── lightning/
-│   │       ├── base.py              # BaseModule
-│   │       ├── reinforcement_learning.py  # RLLightningModule
-│   │       ├── supervised_learning.py     # SLLightningModule
-│   │       ├── vae_module.py        # VAELightningModule
-│   │       ├── diffusion_module.py  # DiffusionModule
-│   │       └── gan_module.py        # GANLightningModule
-│   ├── hpo/                         # Hyperparameter optimization
-│   ├── meta/                        # MAML, regime detection
-│   └── online_learning/             # Online training, drift detection
-├── backtesting/
-│   ├── engine.py                    # BacktestEngine
-│   ├── strategy.py                  # BaseStrategy, Strategy protocol
-│   ├── metrics.py                   # calculate_metrics()
-│   └── sample_strategy.py           # SMACrossoverStrategy
-├── data/
-│   ├── dataloaders.py               # FinancialDataset, create_dataloader()
-│   ├── polymarket_dataset.py        # PolymarketDataset
-│   └── time_series_dataset.py       # TimeSeriesDataset
-├── api/
-│   ├── inference.py                 # BatchInferenceHandler, FastAPI
-│   └── health.py                    # health(), ready()
-├── db/
-│   ├── models.py                    # Trade, PortfolioSnapshot ORM
-│   └── cache.py                     # Redis caching
-└── utils/                           # Logging, profiling, security
+├── policies/                        # Action selection logic
+├── pipeline/                        # Training loops & Lightning modules
+├── backtesting/                     # Backtest engine & strategies
+├── data/                            # Dataloaders & dataset definitions
+├── api/                             # Inference & Health endpoints
+├── db/                              # DB models & caching
+├── constants/                       # Domain constants
+├── exceptions.py                    # Centralized error types
+└── utils/                           # Profiling, configuration, registries
 ```
 
 #### Core Classes & Relationships

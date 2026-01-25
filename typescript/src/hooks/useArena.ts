@@ -63,6 +63,12 @@ export interface ArenaUpdate {
   orderbook: OrderBook;
   /** Active algorithmic execution orders */
   algo_orders: any[];
+  /** Current position */
+  position: number;
+  /** Whether market maker mode is active */
+  mm_active: boolean;
+  /** Realized PnL from market making */
+  mm_realized_pnl: number;
 }
 
 /**

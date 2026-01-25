@@ -1,7 +1,4 @@
-
-"""
-Gymnasium-compatible environments wrapping the Rust arena
-"""
+from __future__ import annotations
 
 from typing import Any
 
@@ -9,6 +6,8 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 from numpy.typing import NDArray
+
+__all__ = ["TradingEnv", "ClobEnv", "PolymarketEnv", "HAS_RUST"]
 
 # Use Any for Rust objects to avoid complex type issues with optional imports
 RustTradingEnv: Any = None

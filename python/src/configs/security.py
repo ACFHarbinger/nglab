@@ -4,7 +4,11 @@ Security Configurations.
 Contains configurations for secrets management and authentication.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
+
+__all__ = ["VaultConfig"]
 
 
 @dataclass

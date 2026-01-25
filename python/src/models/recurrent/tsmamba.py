@@ -7,7 +7,7 @@ from typing import cast
 import torch
 from torch import nn
 
-from python.src.models.deep.modules.mamba_block import MambaBlock
+from python.src.models.modules.mamba_block import MambaBlock
 
 
 class TSMamba(nn.Module):

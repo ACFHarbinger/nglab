@@ -8,9 +8,11 @@ from typing import Any, cast
 import torch
 from torch import nn
 
+from python.src.utils.registry import register_pipeline
 from .base import BaseModule
 
 
+@register_pipeline("gan")
 class GANLightningModule(BaseModule):
     """
     Lightning Module for Time Series GAN (e.g., TimeGAN style or conditional forecasting GAN).

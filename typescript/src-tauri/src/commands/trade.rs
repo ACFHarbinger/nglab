@@ -88,3 +88,28 @@ pub fn submit_algo_order(
     let start_step = env.info().total_steps;
     env.algo_manager_mut().submit(algo_type, params, start_step);
 }
+
+/**
+ * Start the automated Market Maker.
+ */
+#[tauri::command]
+pub fn start_market_maker(
+    state: State<ArenaState>,
+    config: nglab::simulation::market_maker::MarketMakerConfig,
+) {
+    let mut env = state.env.lock().unwrap();
+    let mm = env.market_maker_mut();
+    mm.config = config;
+    mm.active = true;
+}
+
+/**
+ * Stop the automated Market Maker.
+ */
+#[tauri::command]
+pub fn stop_market_maker(state: State<ArenaState>) {
+    let mut env_guard = state.env.lock().unwrap();
+    let env = &mut *env_guard;
+    env.market_maker.active = false;
+    env.market_maker.cancel_quotes(&mut env.orderbook);
+}

@@ -19,6 +19,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Tauri Integration**: Exposed advanced order types via new Tauri commands (`submit_fok_order`, `submit_ioc_order`, `submit_bracket_order`, `submit_pegged_order`).
 - **Trading UI Improvements**: Updated `TradingFormWidget` with an Order Type selector and dynamic inputs for advanced order parameters (Peg Reference, Peg Offset, Stop Loss, Take Profit).
 - **Pegged Orders**: Dynamic order pricing (e.g., Peg to Best Bid + Offset) with real-time updates via `PegReference` and `reprice_pegged_orders`.
+- **Algorithmic Execution Engine**: Implemented institutional-grade TWAP, VWAP, and POV algorithms in Rust.
+- **Execution Dashboard**: Added a real-time progress visualization widget in the terminal to monitor active algorithmic orders.
+- **Python Architecture Overhaul**:
+  - Implemented central exception handling in `python/src/exceptions.py`.
+  - Added `deep_sanitize` utility for `OmegaConf` to primitive conversion in `python/src/utils/config.py`.
+  - Refactored CLI to support subcommand routing (`train`, `evaluate`, `backtest`) and argument validation.
+  - Implemented `PolicyFactory` and `PipelineFactory` for registry-based component instantiation.
+  - Centralized `MODEL_REGISTRY`, `POLICY_REGISTRY`, `ENV_REGISTRY`, and `PIPELINE_REGISTRY`.
+  - Comprehensive Abstract Base Classes (ABCs) for Environments, Policies, Models, and Training Pipelines with robust validation and consistent signatures.
+  - Flattened `models/deep/` hierarchy into a cleaner, 2-level directory structure for better maintainability and reduced import nesting.
+  - Standardized all major Python modules with `from __future__ import annotations` and explicit `__all__` exports for a cleaner public API surface.
+  - Enhanced `BaseConfig` with recursive dictionary parsing for nested dataclass support.
+  - Reorganized the unit test suite into a domain-organized directory structure (`api/`, `envs/`, `models/`, `pipeline/`, `storage/`, `utils/`).
+  - Expanded test infrastructure with 11+ global fixtures across specialized modules (`arg_fixtures.py`, `config_fixtures.py`, `tensor_fixtures.py`, `pipeline_fixtures.py`).
+  - Significantly expanded `CLAUDE.md` with comprehensive development guidelines, architecture detail, and repository standards.
+  - Resolved potential circular imports in the model factory and central CLI modules.
+  - Updated all major `__init__.py` files with explicit `__all__` exports and module docstrings.
 
 #### Deep Learning Framework
 - **Comprehensive Model Library**: Full implementation of 28+ advanced architectures in `python/src/models/deep/`

@@ -11,6 +11,7 @@ from .self_supervised import SelfSupervisedModule
 from .semi_supervised import SemiSupervisedModule
 from .supervised_learning import SLLightningModule
 from .unsupervised_learning import UnsupervisedModule
+from .vae_module import VAELightningModule
 
 __all__ = [
     "BaseModule",
@@ -21,4 +22,5 @@ __all__ = [
     "SelfSupervisedModule",
     "SemiSupervisedModule",
     "UnsupervisedModule",
+    "VAELightningModule",
 ]

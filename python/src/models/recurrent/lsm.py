@@ -1,16 +1,18 @@
-"""
-Liquid State Machine (LSM) model.
-"""
+from __future__ import annotations
 
-from typing import cast
+from typing import cast, TYPE_CHECKING
 
 import torch
 from torch import nn
 
-from python.src.models.deep.spiking.snn import LIFCell, surrogate_heaviside
+from python.src.models.base import BaseModel
+from python.src.models.spiking.snn import LIFCell, surrogate_heaviside
+
+if TYPE_CHECKING:
+    from torch import Tensor
 
 
-class LiquidStateMachine(nn.Module):
+class LiquidStateMachine(BaseModel):
     """
     Reservoir computing with spiking neurons.
     Fixed sparse recurrent connections (liquid).

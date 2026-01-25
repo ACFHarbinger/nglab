@@ -15,9 +15,11 @@ from torchrl.collectors import SyncDataCollector
 from torchrl.data import LazyTensorStorage, ReplayBuffer
 from torchrl.objectives import ClipPPOLoss, ValueEstimators
 
+from python.src.utils.registry import register_pipeline
 from .base import BaseModule
 
 
+@register_pipeline("rl")
 class RLLightningModule(BaseModule):
     """
     Lightning Module for Reinforcement Learning (PPO).

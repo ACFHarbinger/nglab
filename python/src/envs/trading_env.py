@@ -13,7 +13,10 @@ import numpy as np
 from gymnasium import spaces
 from numpy.typing import NDArray
 
+from python.src.utils.registry import register_env
 
+
+@register_env("trading")
 class TradingEnv(gym.Env[NDArray[Any], NDArray[Any]]):
     """
     A placeholder Trading Environment following Gymnasium API.

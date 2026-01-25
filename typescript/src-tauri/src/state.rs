@@ -42,4 +42,10 @@ pub struct ArenaUpdate {
     pub orderbook: OrderBook,
     /** Active algorithmic execution orders. */
     pub algo_orders: Vec<nglab::execution::AlgoOrder>,
+    /** Current position. */
+    pub position: f64,
+    /** Whether market maker mode is active. */
+    pub mm_active: bool,
+    /** Realized PnL from market making. */
+    pub mm_realized_pnl: f64,
 }

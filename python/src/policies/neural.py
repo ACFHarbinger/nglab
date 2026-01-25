@@ -12,9 +12,11 @@ from tensordict import TensorDict
 from tensordict.nn import TensorDictModuleBase
 from torch import nn
 
+from python.src.utils.registry import register_policy
 from .base import Policy
 
 
+@register_policy("neural")
 class NeuralPolicy(TensorDictModuleBase, Policy):
     """
     Policy that wraps a PyTorch/TorchRL module.

@@ -8,7 +8,7 @@ from typing import Any
 import torch
 from torch import nn
 
-from python.src.models.deep.modules import (
+from python.src.models.modules import (
     AttentionLayer,
     DataEmbedding,
     DSAttention,
@@ -286,7 +286,10 @@ class Projector(nn.Module):
 
         return y
 
+from python.src.utils.registry import register_model
 
+
+@register_model("nstransformer")
 class NSTransformer(nn.Module):
     """
     Non-stationary Transformer Model.

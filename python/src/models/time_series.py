@@ -9,8 +9,10 @@ from torch import nn
 
 from .deep_factory import DEEP_MODEL_NAMES, create_deep_model
 from .mac_factory import MAC_MODEL_NAMES, create_mac_model
+from python.src.utils.registry import register_model
 
 
+@register_model("TimeSeriesBackbone")
 class TimeSeriesBackbone(nn.Module):
     """
     Unified Backbone for Time Series.

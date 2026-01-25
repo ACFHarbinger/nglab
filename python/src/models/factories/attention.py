@@ -5,8 +5,8 @@ from typing import Any
 
 import torch.nn as nn
 
-from python.src.models.deep.attention.attention_net import AttentionNet
-from python.src.models.deep.attention.nstransformer import NSTransformer
+from python.src.models.attention.attention_net import AttentionNet
+from python.src.models.attention.nstransformer import NSTransformer
 from python.src.models.factories.base import NeuralComponentFactory
 
 

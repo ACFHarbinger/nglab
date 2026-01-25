@@ -1,16 +1,20 @@
-"""
-xLSTM Model wrapping xLSTMBlocks.
-"""
+from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any, cast, TYPE_CHECKING
 
 import torch
 from torch import nn
 
-from python.src.models.deep.modules.xlstm_block import xLSTMBlock
+from python.src.models.base import BaseModel
+from python.src.models.modules.xlstm_block import xLSTMBlock
+from python.src.utils.registry import register_model
+
+if TYPE_CHECKING:
+    from torch import Tensor
 
 
-class xLSTM(nn.Module):  # noqa: N801
+@register_model("xlstm")
+class xLSTM(BaseModel):  # noqa: N801
     """
     xLSTM Model (stacked sLSTM/mLSTM blocks) for Time Series or Sequence tasks.
     """

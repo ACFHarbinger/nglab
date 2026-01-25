@@ -1,8 +1,118 @@
+# NGLab - Next Gen Laboratory: Developer Guide & Agent Handbook
+
+## Overview
+NGLab is a specialized Multimodal Deep Reinforcement Learning platform for financial trading. It bridges high-performance Rust simulations with flexible Python training pipelines and a real-time reactive dashboard.
+
+---
+
+## Tech Stack & Tooling
+
+### Backend Core (Rust)
+- **Directory**: `rust/`, `typescript/src-tauri`
+- **Engine**: Custom simulation engine (`nglab` crate) handling CLOBs and prediction markets.
+- **InterOp**: `PyO3` for Python bindings, `ts-rs` for TypeScript type generation.
+- **Async**: `tokio` for simulation loops and event streaming.
+- **TUI**: `ratatui` for the terminal dashboard.
+
+### Machine Learning Layer (Python)
+- **Directory**: `python/`
+- **Frameworks**: `PyTorch`, `PyTorch Lightning`, `TorchRL`.
+- **Environment**: `Gymnasium` (Standard RL interface).
+- **Architecture**: Domain-organized modules with factory patterns and central registries.
+- **Configuration**: `Hydra` (primary) + `Dataclasses` (target).
+
+### Frontend Dashboard (TypeScript/React)
+- **Directory**: `typescript/`
+- **Core**: `Tauri 2.0`, `React 19`, `Vite`.
+- **Styling**: `Tailwind CSS`, `Shadcn UI`.
+- **Charting**: `lightweight-charts`.
+- **State**: Event-driven hooks (`useArena`) for real-time order book updates.
+
+---
+
+## Project Structure Reference
+
+```text
+nglab/
+├── rust/                   # Core Rust simulation engine
+├── python/                 # RL training & strategy layer
+│   └── src/
+│       ├── configs/        # Domain-organized dataclass configs
+│       ├── envs/           # Gym environments (Rust wrappers & fallbacks)
+│       ├── models/         # Multi-model library (Deep, MAC, TimeSeries)
+│       ├── policies/       # Action selection logic
+│       ├── pipeline/       # Training loops & Lightning modules
+│       ├── cli/            # Custom CLI module
+│       └── utils/          # Profiling, configuration, registries
+├── typescript/             # Tauri/React dashboard
+└── docs/                   # ADRs and technical documentation
+```
+
+---
+
+## Common Development Commands
+
+### Rust / Simulation
+- `cargo build --workspace` - Build all Rust components
+- `cargo test --workspace` - Run all Rust tests
+- `cargo run --bin nglab-tui` - Launch the terminal dashboard
+
+### Python / Machine Learning
+- `uv run python python/src/main.py` - Start training (default PPO)
+- `uv run pytest python/tests/` - Run full test suite
+- `uv run python python/src/main.py --help` - List available CLI commands
+- `uv run python python/src/main.py task=vae` - Switch training task
+
+### Frontend / Dashboard
+- `npm run tauri dev` - Start Tauri development environment
+- `npm run tauri build` - Build production executable
+
+---
+
+## Code Style & Standards
+
+### Rust Guidelines
+- Use `Result<T, ArenaError>` for domain operations.
+- Explicitly derive `TS` for structures shared with the frontend.
+- Follow `Clippy` recommendations (run `cargo clippy`).
+
+### Python Guidelines
+- **Annotations**: Always use `from __future__ import annotations`.
+- **Exports**: Use explicit `__all__` in `__init__.py` files.
+- **Docstrings**: Follow Google-style docstring format.
+- **Type Checking**: Use `TYPE_CHECKING` blocks for circular imports.
+- **Factories**: Access components via `ModelFactory`, `EnvFactory`, etc.
+
+### React / TypeScript Guidelines
+- Use functional components with `useMemo` for heavy chart-related calculations.
+- Leverage `lucide-react` for iconography.
+- Maintain strict type safety using generated types from Rust.
+
+---
+
+## Error Handling Pattern (Python)
+Always use custom exceptions from `python.src.exceptions`:
+- `ConfigurationError`: For invalid YAML/dataclass configs.
+- `ModelNotFoundError`: For registry lookup failures.
+- `EnvironmentError`: For simulation runtime issues.
+
+---
+
+## Testing Philosophy
+- **Unit Tests**: Organized by domain in `python/tests/unit/`.
+- **Fixtures**: Centralized in `python/tests/fixtures/`. Use `pytest_plugins` in `conftest.py`.
+- **GPU Tests**: Mark with `@pytest.mark.gpu`. They auto-skip if CUDA is unavailable.
+- **Mocks**: Global mock for `zstandard` is provided in `conftest.py`.
+
+---
+
 # NGLab Agents: The Intelligence Corps
 
 > **Focus**: Decision-Making Entities, Policies, and Learning Strategies.
 
 This document serves as the handbook for the "Pilots" of the NGLab platform. While `ARCHITECTURE.md` describes the ship, `AGENTS.md` describes the crew—the intelligent entities that inhabit and operate within the simulation.
+
+---
 
 ---
 

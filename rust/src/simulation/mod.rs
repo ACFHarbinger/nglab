@@ -8,6 +8,8 @@
 pub mod circuit_breaker;
 /// Reinforcement learning environment (Gym-compatible).
 pub mod gym;
+/// Market making logic and spread management.
+pub mod market_maker;
 /// Multi-agent simulation framework.
 pub mod multi_agent;
 /// Multi-asset market simulation.

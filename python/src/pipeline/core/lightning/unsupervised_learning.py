@@ -12,9 +12,11 @@ import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
+from python.src.utils.registry import register_pipeline
 from .base import BaseModule
 
 
+@register_pipeline("unsupervised")
 class UnsupervisedModule(BaseModule):
     """
     Module for Unsupervised Learning (e.g., Autoencoder or Clustering).

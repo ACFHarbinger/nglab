@@ -9,12 +9,13 @@ with support for beta-VAE, KL annealing, and various reconstruction losses.
 from typing import Any, Literal, cast
 
 import torch
-from pytorch_lightning import LightningModule
+from python.src.models.autoencoders.vae import VAE, vae_loss
+from python.src.utils.registry import register_pipeline
+from .base import BaseModule
 
-from python.src.models.deep.autoencoders.vae import VAE, vae_loss
 
-
-class VAELightningModule(LightningModule):
+@register_pipeline("vae")
+class VAELightningModule(BaseModule):
     """
     PyTorch Lightning module for training Variational Auto-Encoders.
 

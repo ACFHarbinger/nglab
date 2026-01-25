@@ -9,7 +9,7 @@ from typing import Any
 
 import pytorch_lightning as pl
 import torch
-from torch.optim import Optimizer
+
 
 
 class BaseModule(pl.LightningModule):
@@ -17,25 +17,25 @@ class BaseModule(pl.LightningModule):
     Base LightningModule with shared functionality for logging and configuration.
     """
 
-    def __init__(self, cfg: dict[str, Any]) -> None:
+    def __init__(self, cfg: dict[str, Any] | None = None) -> None:
         """
         Initialize the base module.
 
         Args:
-            cfg (Dict[str, Any]): Configuration dictionary containing learning rate, etc.
+            cfg (Dict[str, Any], optional): Configuration dictionary containing learning rate, etc.
         """
         super().__init__()
         self.save_hyperparameters()
         # Ensure cfg is set and accessible
-        self.cfg = cfg
+        self.cfg = cfg or {}
         self.learning_rate = float(self.cfg.get("learning_rate", 1e-3))
 
-    def configure_optimizers(self) -> Optimizer:
+    def configure_optimizers(self) -> Any:
         """
         Configure the default Adam optimizer.
 
         Returns:
-            torch.optim.Optimizer: The Adam optimizer instance.
+            Any: Optimizer or dict containing optimizer and scheduler.
         """
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optimizer

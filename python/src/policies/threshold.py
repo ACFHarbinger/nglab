@@ -6,9 +6,11 @@ Simple rule-based strategy that buys/sells based on fixed price thresholds.
 
 from typing import Any
 
+from python.src.utils.registry import register_policy
 from .base import Policy
 
 
+@register_policy("threshold")
 class ThresholdPolicy(Policy):
     """
     Simple threshold-based policy.

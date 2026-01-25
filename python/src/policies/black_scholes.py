@@ -11,9 +11,11 @@ import numpy as np
 import torch
 from scipy.stats import norm
 
+from python.src.utils.registry import register_policy
 from .base import Policy
 
 
+@register_policy("black_scholes")
 class BlackScholesPolicy(Policy):
     """
     Policy based on Black-Scholes option pricing model.

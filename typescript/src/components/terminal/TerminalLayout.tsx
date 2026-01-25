@@ -29,6 +29,7 @@ import { RecentTradesWidget, Trade } from "./RecentTradesWidget";
  */
 import { TradingFormWidget } from "./TradingFormWidget";
 import { AlgoOrderWidget } from "./AlgoOrderWidget";
+import { MarketMakerWidget } from "./MarketMakerWidget";
 import { useArena } from "../../hooks/useArena";
 import { MarketMetadata } from "../../hooks/usePolymarket";
 import { FavoriteMarket } from "../../hooks/useFavorites";
@@ -517,11 +518,19 @@ export function TerminalLayout({
         <div className="flex-1">
           <RecentTradesWidget trades={recentTrades} />
         </div>
-        {/* Algo Execution (Bottom) */}
-        <div className="h-64 border-t border-slate-800">
+        {/* Algo Execution */}
+        <div className="h-48 border-t border-slate-800">
           <AlgoOrderWidget
             algo_orders={arenaData?.algo_orders || []}
             current_step={arenaData?.step || 0}
+          />
+        </div>
+        {/* Market Maker Dashboard */}
+        <div className="h-48 border-t border-slate-800">
+          <MarketMakerWidget
+            mm_active={arenaData?.mm_active || false}
+            mm_realized_pnl={arenaData?.mm_realized_pnl || 0}
+            inventory={arenaData?.position || 0}
           />
         </div>
       </div>

@@ -1,15 +1,20 @@
-"""
-Recurrent Neural Network (RNN) implementations (LSTM, GRU).
-"""
+from __future__ import annotations
 
-from typing import cast
+from typing import cast, TYPE_CHECKING
 
 import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
+from python.src.models.base import BaseModel
+from python.src.utils.registry import register_model
 
-class LSTM(nn.Module):
+if TYPE_CHECKING:
+    from torch import Tensor
+
+
+@register_model("lstm")
+class LSTM(BaseModel):
     """
     Long Short-Term Memory (LSTM) network for sequence processing.
     """
@@ -77,7 +82,8 @@ class LSTM(nn.Module):
         return cast(torch.Tensor, output)
 
 
-class GRU(nn.Module):
+@register_model("gru")
+class GRU(BaseModel):
     """
     Gated Recurrent Unit (GRU) network for sequence processing.
     """

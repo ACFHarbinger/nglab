@@ -9,6 +9,8 @@ Provides decorators for:
 All results are logged and can be saved to disk for analysis.
 """
 
+from __future__ import annotations
+
 import cProfile
 import io
 import logging
@@ -21,6 +23,8 @@ from pathlib import Path
 from typing import Any, TypeVar, cast
 
 import psutil
+
+__all__ = ["profile", "timeit", "memory_profile"]
 
 logger = logging.getLogger(__name__)
 

@@ -2,6 +2,8 @@
 Trading Policies for NGLab.
 """
 
+from __future__ import annotations
+
 from .base import Policy
 from .black_scholes import BlackScholesPolicy
 from .neural import NeuralPolicy

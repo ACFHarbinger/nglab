@@ -1329,6 +1329,36 @@ impl OrderBook {
         None
     }
 
+    /// Check if an order exists in the book.
+    pub fn has_order(&self, order_id: u64) -> bool {
+        for level in self.bids.values() {
+            if level.orders.iter().any(|o| o.id == order_id) {
+                return true;
+            }
+        }
+        for level in self.asks.values() {
+            if level.orders.iter().any(|o| o.id == order_id) {
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Get the price of an order in the book.
+    pub fn get_order_price(&self, order_id: u64) -> Option<f64> {
+        for (&price, level) in &self.bids {
+            if level.orders.iter().any(|o| o.id == order_id) {
+                return Some(price as f64 / self.price_precision); // Wait, price is i64 in IndexMap?
+            }
+        }
+        for (&price, level) in &self.asks {
+            if level.orders.iter().any(|o| o.id == order_id) {
+                return Some(price as f64 / self.price_precision);
+            }
+        }
+        None
+    }
+
     /// Remove an order from the book and return it.
     pub fn pop_order(&mut self, order_id: u64) -> Option<Order> {
         let mut target = None;

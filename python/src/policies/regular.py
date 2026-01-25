@@ -6,9 +6,11 @@ Executes a specific action at fixed intervals (e.g., rebalancing).
 
 from typing import Any
 
+from python.src.utils.registry import register_policy
 from .base import Policy
 
 
+@register_policy("regular")
 class RegularPolicy(Policy):
     """
     Regular policy that executes an action every N steps.

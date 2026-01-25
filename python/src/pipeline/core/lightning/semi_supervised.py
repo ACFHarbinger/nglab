@@ -12,9 +12,11 @@ import torch
 import torch.nn.functional as F  # noqa: N812
 from torch import nn
 
+from python.src.utils.registry import register_pipeline
 from .base import BaseModule
 
 
+@register_pipeline("semi_supervised")
 class SemiSupervisedModule(BaseModule):
     """
     Module for Semi-Supervised Learning (e.g., FixMatch using Pseudo-labeling).

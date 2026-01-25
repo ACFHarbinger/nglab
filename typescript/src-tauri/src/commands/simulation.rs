@@ -53,6 +53,9 @@ pub fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
                     current_var: risk_status.current_var,
                     orderbook,
                     algo_orders: env.algo_manager().active_orders.clone(),
+                    position: env.info().position,
+                    mm_active: env.market_maker.active,
+                    mm_realized_pnl: env.market_maker.state.realized_pnl,
                 }
             };
 

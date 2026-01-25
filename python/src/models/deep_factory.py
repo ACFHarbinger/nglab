@@ -2,49 +2,58 @@
 Deep Learning Model Factory.
 """
 
+from __future__ import annotations
+
 from typing import Any
 
 from torch import nn
 
-from .deep import (
-    DCIGN,
-    DNC,
-    ELM,
-    GRU,
-    LSTM,
-    LVQ,
-    MLP,
-    NTM,
-    PINN,
-    RBF,
-    RBM,
-    SNN,
+__all__ = ["DEEP_MODEL_NAMES", "create_deep_model"]
+
+from .attention import AttentionNetwork, NSTransformer
+from .autoencoders import (
     VAE,
-    AttentionNetwork,
-    AutoDeconvNet,
     AutoEncoder,
-    BoltzmannMachine,
-    CapsuleLayer,
-    DeconvNet,
-    DeepBeliefNetwork,
-    DeepConvNet,
-    DeepResNet,
     DenoisingAE,
-    EchoStateNetwork,
-    HopfieldNetwork,
-    KohonenMap,
-    LiquidStateMachine,
-    MarkovChain,
-    NeuralODE,
-    NormalizingFlow,
-    NSTransformer,
-    Perceptron,
-    RollingWindowCNN,
     SparseAE,
     StackedAutoEncoder,
+)
+from .competitive import LVQ, KohonenMap
+from .convolutional import (
+    DCIGN,
+    AutoDeconvNet,
+    CapsuleLayer,
+    DeconvNet,
+    DeepConvNet,
+    DeepResNet,
+    RollingWindowCNN,
+)
+from .general import (
+    ELM,
+    MLP,
+    NeuralODE,
+    Perceptron,
+    PINN,
+    RBF,
+)
+from .memory import DNC, NTM
+from .probabilistic import (
+    RBM,
+    BoltzmannMachine,
+    DeepBeliefNetwork,
+    HopfieldNetwork,
+    MarkovChain,
+    NormalizingFlow,
+)
+from .recurrent import (
+    GRU,
+    LSTM,
+    EchoStateNetwork,
+    LiquidStateMachine,
     TSMamba,
     xLSTM,
 )
+from .spiking import SNN
 
 # List of deep model names
 DEEP_MODEL_NAMES: list[str] = [

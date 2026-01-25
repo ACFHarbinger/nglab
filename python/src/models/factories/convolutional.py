@@ -5,12 +5,12 @@ from typing import Any
 
 import torch.nn as nn
 
-from python.src.models.deep.convolutional.cnn import CNN
-from python.src.models.deep.convolutional.resnet import ResNet
-from python.src.models.deep.convolutional.capsule import CapsuleNet
-from python.src.models.deep.convolutional.dcign import DCIGN
-from python.src.models.deep.convolutional.dcn import DCN
-from python.src.models.deep.convolutional.deconv import DeconvNet
+from python.src.models.convolutional.cnn import CNN
+from python.src.models.convolutional.resnet import ResNet
+from python.src.models.convolutional.capsule import CapsuleNet
+from python.src.models.convolutional.dcign import DCIGN
+from python.src.models.convolutional.dcn import DCN
+from python.src.models.convolutional.deconv import DeconvNet
 from python.src.models.factories.base import NeuralComponentFactory
 
 

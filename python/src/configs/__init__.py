@@ -56,3 +56,19 @@ def register_configs() -> None:
 
 # Explicit exports
 Config = TrainConfig
+
+__all__ = [
+    "TrainConfig",
+    "Config",
+    "register_configs",
+    "AlgorithmConfig",
+    "PPOConfig",
+    "SACConfig",
+    "BaseConfig",
+    "DataConfig",
+    "PolymarketConfig",
+    "EnvConfig",
+    "TradingEnvConfig",
+    "ModelConfig",
+    "LSTMConfig",
+]

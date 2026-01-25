@@ -14,8 +14,10 @@ from torchrl.envs import GymWrapper
 
 from .trading_env import TradingEnv
 from .vectorized_env import make_vec_env
+from python.src.utils.registry import register_env
 
 
+@register_env("wrapper")
 class TradingEnvWrapper(GymWrapper):
     """
     Wrapper for TradingEnv to be compatible with TorchRL.

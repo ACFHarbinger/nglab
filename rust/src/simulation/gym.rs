@@ -165,7 +165,7 @@ type ReturnsHistory = SmallVec<[f64; 64]>;
 #[cfg_attr(feature = "python", pyclass)]
 pub struct TradingEnv {
     /** Order book for simulation */
-    orderbook: OrderBook,
+    pub orderbook: OrderBook,
     /** Price history for backtesting */
     prices: Vec<f64>,
     /** Current step index */
@@ -203,7 +203,9 @@ pub struct TradingEnv {
     /** Manager for automated trading agents */
     agent_manager: AgentManager,
     /** Manager for algorithmic execution orders */
-    algo_manager: crate::execution::AlgoManager,
+    pub algo_manager: crate::execution::AlgoManager,
+    /** Automated market making agent */
+    pub market_maker: crate::simulation::market_maker::MarketMaker,
 }
 
 // =========================================================================
@@ -394,6 +396,7 @@ impl TradingEnv {
             circuit_breaker: CircuitBreaker::new(CircuitBreakerConfig::default(), 0.0),
             agent_manager: AgentManager::new(),
             algo_manager: crate::execution::AlgoManager::default(),
+            market_maker: crate::simulation::market_maker::MarketMaker::default(),
         }
     }
 
@@ -529,6 +532,11 @@ impl TradingEnv {
         let market_volume = 100.0; // Mock volume for now, should come from orderbook trades/tape
         self.algo_manager
             .step(self.total_steps, &mut self.orderbook, market_volume);
+
+        // Step Market Maker
+        let inventory = self.position;
+        self.market_maker
+            .update_quotes(&mut self.orderbook, inventory);
 
         // Update risk manager
         self.risk_manager.update(portfolio_value);
@@ -716,6 +724,11 @@ impl TradingEnv {
     /** Mutable access to algo manager */
     pub fn algo_manager_mut(&mut self) -> &mut crate::execution::AlgoManager {
         &mut self.algo_manager
+    }
+
+    /** Mutable access to market maker */
+    pub fn market_maker_mut(&mut self) -> &mut crate::simulation::market_maker::MarketMaker {
+        &mut self.market_maker
     }
 
     /** Immutable access to algo manager */

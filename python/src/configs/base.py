@@ -7,6 +7,8 @@ from typing import Any, Dict, Type, TypeVar
 
 T = TypeVar("T", bound="BaseConfig")
 
+__all__ = ["BaseConfig", "deep_sanitize"]
+
 
 @dataclass
 class BaseConfig:
@@ -21,11 +23,17 @@ class BaseConfig:
 
     @classmethod
     def from_dict(cls: Type[T], data: Dict[str, Any]) -> T:
-        """Create configuration from a dictionary."""
-        return cls(**{
-            k: v for k, v in data.items()
-            if k in cls.__dataclass_fields__
-        })
+        """Create configuration from a dictionary, recursively handling nested configs."""
+        kwargs = {}
+        for k, v in data.items():
+            if k in cls.__dataclass_fields__:
+                field_type = cls.__dataclass_fields__[k].type
+                # Handle nested BaseConfig
+                if isinstance(field_type, type) and issubclass(field_type, BaseConfig) and isinstance(v, dict):
+                    kwargs[k] = field_type.from_dict(v)
+                else:
+                    kwargs[k] = v
+        return cls(**kwargs)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to a dictionary."""

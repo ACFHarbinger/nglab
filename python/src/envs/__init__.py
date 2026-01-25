@@ -1,4 +1,3 @@
-
 """
 nglab Arena - Python wrapper for Rust RL trading environment
 
@@ -7,6 +6,8 @@ This module provides Gymnasium-compatible environments for:
 - Polymarket prediction markets
 - General trading simulation
 """
+
+from __future__ import annotations
 
 from .envs import ClobEnv, PolymarketEnv, TradingEnv
 

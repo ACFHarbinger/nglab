@@ -1033,21 +1033,21 @@ python/src/
 
 ```
 Tasks:
-□ Create python/src/cli/ module
+[x] Create python/src/cli/ module
   - Move CLI logic from main.py
   - Implement subcommand routing (train, evaluate, backtest)
   - Add argument validators
-□ Create python/src/constants/ with domain files
+[x] Create python/src/constants/ with domain files
   - Extract constants from configs into dedicated files
   - Organize by: models, paths, training, trading, system, testing
-□ Flatten models/deep/ hierarchy
+[x] Flatten models/deep/ hierarchy
   - Reorganize into modules/, subnets/, policies/
   - Remove deep nesting (max 2-3 levels)
-□ Rename env/ to envs/ with clear inheritance
+[x] Rename env/ to envs/ with clear inheritance
   - Create base.py with abstract environment class
   - Implement proper ABC hierarchy
-□ Update all imports after restructure
-□ Add __all__ exports to all __init__.py files
+[x] Update all imports after restructure
+[x] Add __all__ exports to all __init__.py files
 ```
 **Complexity**: High | **Impact**: High
 
@@ -1117,22 +1117,22 @@ class PolicyFactory:
 
 ```
 Tasks:
-□ Create python/src/models/factories/ module
+[x] Create python/src/models/factories/ module
   - Implement NeuralComponentFactory ABC
   - Create concrete factories: AttentionFactory, ConvolutionalFactory, RecurrentFactory
-□ Create python/src/policies/factory.py
+[x] Create python/src/policies/factory.py
   - Implement PolicyFactory with pattern matching
   - Add clear error messages with available options
-□ Create python/src/envs/factory.py
+[x] Create python/src/envs/factory.py
   - Implement environment factory
   - Registry pattern for all environments
-□ Create python/src/pipeline/factory.py
+[x] Create python/src/pipeline/factory.py
   - Pipeline component factory
   - Trainer factory with algorithm selection
-□ Add component registries
+[x] Add component registries
   - MODEL_REGISTRY, POLICY_REGISTRY, ENV_REGISTRY, PIPELINE_REGISTRY
   - Registration decorators
-□ Update all instantiation sites to use factories
+[x] Update all instantiation sites to use factories
 ```
 **Complexity**: High | **Impact**: High
 
@@ -1208,18 +1208,18 @@ class ConstructivePolicy(nn.Module, ABC):
 
 ```
 Tasks:
-□ Create comprehensive TradingEnvBase in python/src/envs/base.py
+[x] Create comprehensive TradingEnvBase in python/src/envs/base.py
   - Add property decorators with validation
   - Implement error handling in setters
   - Define all required abstract methods
-□ Expand Policy ABC in python/src/policies/base.py
+[x] Expand Policy ABC in python/src/policies/base.py
   - Add ConstructivePolicy for neural models
   - Add ImprovementPolicy for iterative refinement
   - Define evaluation protocol
-□ Create model ABCs in python/src/models/base.py
+[x] Create model ABCs in python/src/models/base.py
   - BaseEncoder, BaseDecoder, BaseEmbedding
   - Forward method signatures with type hints
-□ Create pipeline ABCs in python/src/pipeline/base.py
+[x] Create pipeline ABCs in python/src/pipeline/base.py
   - BaseTrainer, BaseEvaluator, BaseCallback
 □ Add Protocol classes for duck typing where appropriate
 □ Update all concrete classes to inherit from ABCs
@@ -1462,7 +1462,7 @@ def get_model(name: str) -> type:
 
 ```
 Tasks:
-□ Create python/src/exceptions.py with custom exceptions
+[x] Create python/src/exceptions.py with custom exceptions
   - NGLabError base class
   - Domain-specific exceptions (Config, Model, Env, Training)
 □ Add validation decorators
@@ -1780,8 +1780,8 @@ def deep_sanitize(cfg: DictConfig | Dict[str, Any]) -> Dict[str, Any]:
 
 ```
 Tasks:
-□ Create python/src/utils/config.py with deep_sanitize()
-□ Audit all Lightning module instantiations
+[x] Create python/src/utils/config.py with deep_sanitize()
+[x] Audit all Lightning module instantiations
   - Find all places where configs are passed to Lightning
   - Add deep_sanitize() calls
 □ Create helper for config injection pattern
@@ -1801,43 +1801,43 @@ Tasks:
 ## Python Architecture Implementation Roadmap
 
 ### Phase 1: Foundation (HIGH IMPACT)
-- [ ] Create `python/src/cli/` module (7.1)
-- [ ] Create `python/src/constants/` with domain files (7.1)
-- [ ] Implement deep_sanitize() utility (7.10)
-- [ ] Create custom exceptions (7.6)
+[x] Create `python/src/cli/` module (7.1)
+[x] Create `python/src/constants/` with domain files (7.1)
+[x] Implement deep_sanitize() utility (7.10)
+[x] Create custom exceptions (7.6)
 
 ### Phase 2: Abstraction Layer (HIGH IMPACT)
-- [ ] Implement factory patterns (7.2)
-- [ ] Create comprehensive ABCs (7.3)
-- [ ] Add component registries (7.9)
-- [ ] Flatten model hierarchy (7.1)
+[x] Implement factory patterns (7.2)
+[x] Create comprehensive ABCs (7.3)
+[x] Add component registries (7.9)
+[x] Flatten model hierarchy (7.1)
 
 ### Phase 3: Type Safety & Quality (MEDIUM IMPACT)
-- [ ] Add `from __future__ import annotations` everywhere (7.4)
-- [ ] Implement TYPE_CHECKING pattern (7.4)
-- [ ] Refactor configs to pure dataclasses (7.5)
-- [ ] Add explicit __all__ exports (7.9)
+- [x] Add `from __future__ import annotations` everywhere (7.4) [/]
+- [x] Implement TYPE_CHECKING pattern (7.4) [/]
+- [/] Refactor configs to pure dataclasses (7.5)
+- [x] Add explicit __all__ exports (7.9) [/]
 
 ### Phase 4: Testing & Documentation (MEDIUM IMPACT)
-- [ ] Reorganize test structure (7.7)
-- [ ] Expand to 10+ fixture modules (7.7)
-- [ ] Expand CLAUDE.md (7.8)
-- [ ] Create ARCHITECTURE.md (7.8)
+- [x] Reorganize test structure (7.7) [x]
+- [x] Expand to 10+ fixture modules (7.7) [x]
+- [x] Expand CLAUDE.md (7.8) [x]
+- [x] Create/Update ARCHITECTURE.md (7.8) [x]
 
 ---
 
 ## Quick Wins - Python Architecture
 
 1. **Add `from __future__ import annotations`** - Single line per file, enables forward references
-2. **Create deep_sanitize() utility** - Prevents Lightning YAML errors
-3. **Add __all__ to major __init__.py** - Explicit API surface
-4. **Create python/src/exceptions.py** - Centralized error types
-5. **Move constants to dedicated module** - Better organization
-6. **Add ENV_REGISTRY dict** - Simple factory lookup
+2. **[x] Create deep_sanitize() utility** - Prevents Lightning YAML errors
+3. **[x] Add __all__ to major __init__.py** - Explicit API surface
+4. **[x] Create python/src/exceptions.py** - Centralized error types
+5. **[x] Move constants to dedicated module** - Better organization
+6. **[x] Add ENV_REGISTRY dict** - Simple factory lookup
 7. **Create temp_output_dir fixture** - Common test pattern
 8. **Add pytest_plugins to conftest.py** - Cleaner fixture loading
-9. **Add module docstrings** - Self-documenting packages
-10. **Remove star imports** - Explicit is better than implicit
+9. **[x] Add module docstrings** - Self-documenting packages
+10. **[x] Remove star imports** - Explicit is better than implicit
 
 ---
 
@@ -1859,5 +1859,5 @@ Tasks:
 
 ---
 
-*Last Updated: 2026-01-25 20:31*
-*Version: 4.1 (Feature + Python Architecture Plan)*
+*Last Updated: 2026-01-25 21:40*
+*Version: 5.0 (Phase 4: Testing & Documentation)*

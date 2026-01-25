@@ -5,11 +5,11 @@ from typing import Any
 
 import torch.nn as nn
 
-from python.src.models.deep.recurrent.esn import EchoStateNetwork as ESN
-from python.src.models.deep.recurrent.lsm import LSM
-from python.src.models.deep.recurrent.rnn import LSTM, GRU
-from python.src.models.deep.recurrent.tsmamba import TSMamba
-from python.src.models.deep.recurrent.xlstm import xLSTM
+from python.src.models.recurrent.esn import EchoStateNetwork as ESN
+from python.src.models.recurrent.lsm import LSM
+from python.src.models.recurrent.rnn import LSTM, GRU
+from python.src.models.recurrent.tsmamba import TSMamba
+from python.src.models.recurrent.xlstm import xLSTM
 from python.src.models.factories.base import NeuralComponentFactory
 
 
