@@ -11,20 +11,26 @@ from python.src.policies.factory import PolicyFactory
 from python.src.pipeline.factory import PipelineFactory
 from python.src.envs.factory import EnvFactory
 from python.src.utils.config import deep_sanitize
-from .validators import validate_train_config
-
+from python.src.cli.validators import validate_train_config, validate_eval_config, validate_backtest_config
+from python.src.configs import TrainConfig
+from python.src.utils.validation import validate_config
+from python.src.utils.profiling.system import profile_performance
 from python.src.models.time_series import TimeSeriesBackbone
 import python.src.pipeline.core.lightning  # noqa: F401
 import python.src.policies.neural  # noqa: F401
 
 
+@validate_config(schema=TrainConfig)
 def train(cfg: DictConfig) -> None:
     """
     Execute training pipeline based on configuration.
     """
+    # Convert to structured config for type safety
+    config = TrainConfig.from_dict(OmegaConf.to_container(cfg, resolve=True)) # type: ignore
+    
     validate_train_config(cfg)
     print(OmegaConf.to_yaml(cfg))
-    pl.seed_everything(cfg.seed)
+    pl.seed_everything(config.seed)
     
     # Sanitize config early
     sanitized_cfg = deep_sanitize(cfg)
@@ -104,22 +110,27 @@ def train(cfg: DictConfig) -> None:
         )
 
         trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
+@validate_config()
 def evaluate(cfg: DictConfig) -> None:
     """
     Execute evaluation pipeline.
     """
+    validate_eval_config(cfg)
     print(f"Evaluating with config: {OmegaConf.to_yaml(cfg)}")
     # TODO: Implement evaluation logic
     print("Evaluation logic not yet implemented.")
 
+@validate_config()
 def backtest(cfg: DictConfig) -> None:
     """
     Execute backtesting pipeline.
     """
+    validate_backtest_config(cfg)
     print(f"Backtesting with config: {OmegaConf.to_yaml(cfg)}")
     # TODO: Implement backtesting logic
     print("Backtesting logic not yet implemented.")
 
+@profile_performance
 def run_command(cfg: DictConfig) -> None:
     """
     Route to the appropriate command based on configuration.

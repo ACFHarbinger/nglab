@@ -13,7 +13,6 @@ import os
 from collections.abc import Callable
 from typing import Any
 
-import networkx as nx
 import numpy as np
 import plotly.express as px
 import seaborn as sns
@@ -21,22 +20,7 @@ import torch
 from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 
-from .io.file_utils import compose_dirpath
-
-
-def draw_graph(distance_matrix: NDArray[Any]) -> None:
-    """
-    Draws a networkx graph from a distance matrix using spring layout.
-
-    Args:
-        distance_matrix (np.ndarray): The adjacency/distance matrix.
-    """
-    G = nx.from_numpy_array(distance_matrix)
-    pos = nx.spring_layout(G)
-    nx.draw(G, pos, with_labels=True)
-    labels = {(u, v): str(attr["weight"]) for u, v, attr in G.edges(data=True)}
-    nx.draw_networkx_edge_labels(G, pos, edge_labels=labels)
-    plt.show()
+from ..io.file_utils import compose_dirpath
 
 
 def plot_linechart(  # noqa: PLR0913, PLR0915

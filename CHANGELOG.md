@@ -33,7 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced `BaseConfig` with recursive dictionary parsing for nested dataclass support.
   - Reorganized the unit test suite into a domain-organized directory structure (`api/`, `envs/`, `models/`, `pipeline/`, `storage/`, `utils/`).
   - Expanded test infrastructure with 11+ global fixtures across specialized modules (`arg_fixtures.py`, `config_fixtures.py`, `tensor_fixtures.py`, `pipeline_fixtures.py`).
-  - Significantly expanded `CLAUDE.md` with comprehensive development guidelines, architecture detail, and repository standards.
+  - Significantly expanded `CLAUDE.md` and consolidated technical documentation into `AGENTS.md`.
+  - Implemented `@validate_config` and `@validate_input` decorators for proactive error catching at system boundaries.
+  - Refactored CLI execution to use structured `TrainConfig` dataclasses with recursive parsing.
+  - Resolved potential circular imports in the model factory and central CLI modules.
   - Resolved potential circular imports in the model factory and central CLI modules.
   - Updated all major `__init__.py` files with explicit `__all__` exports and module docstrings.
 

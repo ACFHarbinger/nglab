@@ -19,6 +19,7 @@ pytest_plugins = [
     "python.tests.fixtures.pipeline_fixtures",
     "python.tests.fixtures.regression_fixtures",
     "python.tests.fixtures.tensor_fixtures",
+    "python.tests.fixtures.utils_fixtures",
 ]
 
 # Filter stubborn warnings that pyproject.toml misses
