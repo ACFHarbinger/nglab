@@ -2,7 +2,7 @@
  * Volume-Weighted Average Price (VWAP) execution algorithm.
  */
 
-use crate::simulation::orderbook::{OrderBook, Side};
+use crate::simulation::orderbook::{OrderBook, Side, Trade};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -47,14 +47,14 @@ impl VwapState {
     }
 
     /// Perform one execution step for the VWAP order based on the volume profile.
-    pub fn step(&mut self, current_step: u64, orderbook: &mut OrderBook) {
+    pub fn step(&mut self, current_step: u64, orderbook: &mut OrderBook) -> Vec<Trade> {
         if current_step < self.start_step || current_step >= self.end_step {
-            return;
+            return Vec::new();
         }
 
         let step_idx = (current_step - self.start_step) as usize;
         if step_idx >= self.volume_profile.len() {
-            return;
+            return Vec::new();
         }
 
         let total_expected_vol: f64 = self.volume_profile.iter().sum();
@@ -66,11 +66,13 @@ impl VwapState {
 
         if slice_qty > 0.0 {
             if let Ok((_, trades)) = orderbook.submit_market_order(slice_qty, self.side) {
-                for trade in trades {
+                for trade in &trades {
                     self.executed_quantity += trade.quantity;
                 }
+                return trades;
             }
         }
+        Vec::new()
     }
 
     /// Check if the VWAP order is finished.

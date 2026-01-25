@@ -71,10 +71,10 @@ Tasks:
 [x] Add Percentage of Volume (POV) algorithm
   - Target participation rate
   - Reaction to market volume
-□ Add Implementation Shortfall algorithm (Next)
+[x] Add Implementation Shortfall algorithm
   - Minimize execution cost vs. arrival price
   - Urgency parameter for trade-off
-□ Create execution analytics
+[x] Create execution analytics
   - Slippage measurement
   - Market impact estimation
   - Execution quality reports
@@ -91,17 +91,17 @@ Tasks:
 
 ```
 Tasks:
-□ Implement spread quoting engine
+[x] Implement spread quoting engine
   - Configurable bid-ask spread
   - Position-based skew adjustment
   - Inventory risk management
-□ Add quote refresh logic
+[x] Add quote refresh logic
   - Time-based requoting
   - Event-driven updates (trade, book change)
-□ Implement adverse selection protection
+[x] Implement adverse selection protection
   - Cancel quotes on large market orders
   - Asymmetric spread widening
-□ Create P&L tracking for market making
+[x] Create P&L tracking for market making
   - Realized spread capture
   - Inventory costs
   - Rebate tracking
@@ -111,8 +111,8 @@ Tasks:
 **Complexity**: High | **Impact**: Medium
 
 ### 1.4 Multi-Leg Order Support
-
-**Files**: `rust/src/simulation/orderbook.rs`, new types
+- [x] Define multi-leg order structures (Spread, Butterfly, Calendar) [rust/src/simulation/spreads.rs]
+- [x] Integrate spread execution logic into `MultiAssetEnv` [rust/src/simulation/multi_asset.rs]
 **Status**: Single-leg orders only
 **Impact**: Medium - Options and spread trading
 
@@ -157,7 +157,7 @@ Tasks:
   - Fibonacci retracements
   - Support/resistance zones
   - Text annotations
-□ Add technical indicators overlay
+[x] Add technical indicators overlay
   - Moving averages (SMA, EMA, WMA)
   - Bollinger Bands
   - MACD histogram
@@ -1825,11 +1825,11 @@ Tasks:
 - [x] Create/Update ARCHITECTURE.md (7.8)
 
 ### Phase 5: Performance & Reliability (MEDIUM IMPACT)
-- [ ] Implement validation decorators and reusable patterns (7.6) [/]
-- [ ] Add performance profiling hooks to CLI (7.10)
-- [ ] Implement property-based testing with Hypothesis (7.7)
-- [ ] Add memory usage tracking to Trainer (7.10)
-- [ ] Create specialized mocking fixtures for Rust objects (7.7)
+- [x] Implement validation decorators and reusable patterns (7.6)
+- [x] Add performance profiling hooks to CLI (7.10) [x]
+- [x] Implement property-based testing with Hypothesis (7.7) [x]
+- [x] Add memory usage tracking to Trainer (7.10) [x]
+- [x] Create specialized mocking fixtures for Rust objects (7.7) [x]
 
 ---
 
@@ -1866,5 +1866,5 @@ Tasks:
 
 ---
 
-*Last Updated: 2026-01-25 21:45*
-*Version: 5.1 (Phase 5: Performance & Reliability)*
+*Last Updated: 2026-01-25 21:55*
+*Version: 5.2 (Phase 5: Performance & Reliability - Completed)*

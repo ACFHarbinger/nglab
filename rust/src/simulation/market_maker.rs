@@ -136,6 +136,36 @@ impl MarketMaker {
         }
     }
 
+    /// Check for adverse selection conditions and cancel quotes if necessary.
+    pub fn check_adverse_selection(&mut self, orderbook: &mut OrderBook) {
+        // Simple metric: If order flow imbalance is too high against us, pull quotes.
+        let imbalance = orderbook.imbalance(); // -1.0 to 1.0
+        let threshold = 0.8; // Configurable?
+
+        // If we are quoting both sides, high imbalance is bad.
+        if imbalance.abs() > threshold {
+            self.cancel_quotes(orderbook);
+        }
+    }
+
+    /// Handle trade events to update P&L and Inventory.
+    /// Note: This implies the caller must notify MM of its own trades.
+    pub fn on_trade(&mut self, quantity: f64, price: f64, side: Side) {
+        // Calculate P&L if this trade closes an existing position
+        // For simplicity in this non-alloc implementation, we just track 'realized' as
+        // spread capture approximation or raw cash flow.
+
+        // Cash Flow method:
+        // Buy: -Price * Qty
+        // Sell: +Price * Qty
+        let cash_flow = match side {
+            Side::Bid => -price * quantity, // We bought
+            Side::Ask => price * quantity,  // We sold
+        };
+
+        self.state.realized_pnl += cash_flow;
+    }
+
     /// Cancel all active MM quotes.
     pub fn cancel_quotes(&mut self, orderbook: &mut OrderBook) {
         if let Some(id) = self.state.bid_id.take() {

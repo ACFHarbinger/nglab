@@ -237,9 +237,41 @@ impl TradingEnv {
     }
 
     /** Load historical price data */
-    #[pyo3(name = "load_prices")]
     pub fn load_prices_py(&mut self, prices: Vec<f64>) {
         self.load_prices(prices);
+    }
+
+    /// Submit an algorithmic order (Python API).
+    #[pyo3(name = "submit_algo_order_py")]
+    #[allow(clippy::too_many_arguments)]
+    pub fn submit_algo_order_py(
+        &mut self,
+        _asset: String, // Ignored in single-asset env
+        side_idx: i32,
+        quantity: f64,
+        duration: u64,
+        algo_type_str: String,
+        urgency: Option<f64>,
+        participation_rate: Option<f64>,
+    ) {
+        let side = if side_idx == 0 { Side::Bid } else { Side::Ask };
+        let algo_type = match algo_type_str.as_str() {
+            "TWAP" => crate::execution::AlgoType::TWAP,
+            "VWAP" => crate::execution::AlgoType::VWAP,
+            "POV" => crate::execution::AlgoType::POV,
+            "IS" => crate::execution::AlgoType::IS,
+            _ => crate::execution::AlgoType::TWAP,
+        };
+
+        let params = crate::execution::AlgoParams {
+            quantity,
+            side,
+            duration_steps: Some(duration),
+            urgency,
+            participation_rate,
+        };
+        self.algo_manager
+            .submit(algo_type, params, self.total_steps);
     }
 
     /** Reset the environment */

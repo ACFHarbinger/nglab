@@ -244,7 +244,7 @@ just build-python
 python python/src/pipeline/train_ppo.py
 
 # 5. Launch the GUI (optional)
-cd typescript && npm run tauri dev
+npm run tauri dev
 ```
 
 ### Verify Installation

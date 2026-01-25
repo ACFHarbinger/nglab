@@ -24,3 +24,4 @@ pub mod polymarket;
 pub mod risk;
 /// Scenario analysis and stress testing.
 pub mod scenarios;
+pub mod spreads;

@@ -2,7 +2,7 @@
  * Time-Weighted Average Price (TWAP) execution algorithm.
  */
 
-use crate::simulation::orderbook::{OrderBook, Side};
+use crate::simulation::orderbook::{OrderBook, Side, Trade};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -35,16 +35,17 @@ impl TwapState {
     }
 
     /// Perform one execution step for the TWAP order.
-    pub fn step(&mut self, current_step: u64, orderbook: &mut OrderBook) {
+    pub fn step(&mut self, current_step: u64, orderbook: &mut OrderBook) -> Vec<Trade> {
         if current_step < self.start_step || current_step >= self.end_step {
-            return;
+            return Vec::new();
         }
 
         let remaining_steps = self.end_step - current_step;
         let remaining_qty = self.total_quantity - self.executed_quantity;
+        let remaining_qty = self.total_quantity - self.executed_quantity;
 
         if remaining_steps == 0 || remaining_qty <= 0.0 {
-            return;
+            return Vec::new();
         }
 
         // Random jitter to avoid detection - slice size varies slightly
@@ -54,12 +55,19 @@ impl TwapState {
 
         if slice_qty > 0.0 {
             // Execute as Market Order for simplicity in this implementation
-            if let Ok((_, trades)) = orderbook.submit_market_order(slice_qty, self.side) {
-                for trade in trades {
-                    self.executed_quantity += trade.quantity;
+            match orderbook.submit_market_order(slice_qty, self.side) {
+                Ok((_, trades)) => {
+                    for trade in &trades {
+                        self.executed_quantity += trade.quantity;
+                    }
+                    return trades;
+                }
+                Err(_e) => {
+                    // Log or handle error
                 }
             }
         }
+        Vec::new()
     }
 
     /// Check if the TWAP order is finished.

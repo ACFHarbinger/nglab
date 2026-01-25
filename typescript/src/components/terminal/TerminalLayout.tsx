@@ -35,6 +35,8 @@ import { MarketMetadata } from "../../hooks/usePolymarket";
 import { FavoriteMarket } from "../../hooks/useFavorites";
 import { Wallet, Settings } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
+import { IndicatorOverlay, IndicatorConfig } from "../charts/IndicatorOverlay";
+import { nanoid } from "nanoid";
 
 // Mock Data Generators
 const generateMockMarkets = () => [
@@ -230,6 +232,23 @@ export function TerminalLayout({
   });
   const [recentTrades, setRecentTrades] = useState<Trade[]>([]);
   const [trendingMarkets, setTrendingMarkets] = useState<any[]>([]);
+
+  // Indicators State
+  const [activeIndicators, setActiveIndicators] = useState<IndicatorConfig[]>([]);
+
+  const handleAddIndicator = (config: Omit<IndicatorConfig, "id">) => {
+    setActiveIndicators([...activeIndicators, { ...config, id: nanoid() }]);
+  };
+
+  const handleRemoveIndicator = (id: string) => {
+    setActiveIndicators(activeIndicators.filter((i) => i.id !== id));
+  };
+
+  const handleUpdateIndicator = (id: string, updates: Partial<IndicatorConfig>) => {
+    setActiveIndicators(
+      activeIndicators.map((i) => (i.id === id ? { ...i, ...updates } : i))
+    );
+  };
 
   // Always use fresh mock data + trending state + favorites
   const markets = useMemo(() => {
@@ -500,10 +519,17 @@ export function TerminalLayout({
         </header>
 
         {/* Chart Area */}
-        <div className="flex-1 relative bg-slate-950">
+        <div className="flex-1 relative bg-slate-950 group">
+          <IndicatorOverlay
+            activeIndicators={activeIndicators}
+            onAddIndicator={handleAddIndicator}
+            onRemoveIndicator={handleRemoveIndicator}
+            onUpdateIndicator={handleUpdateIndicator}
+          />
           <TerminalChart
             data={chartData}
             color={selectedMarket.change24h >= 0 ? "#22c55e" : "#f43f5e"}
+            indicators={activeIndicators}
           />
         </div>
       </div>

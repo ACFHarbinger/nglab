@@ -97,3 +97,13 @@ def market_data() -> dict[str, list[str] | dict[str, list[float]]]:
             "FED_RATE": [0.60, 0.58, 0.55, 0.54, 0.52, 0.50],
         },
     }
+
+
+@pytest.fixture
+def mock_rust_env() -> MagicMock:
+    """Mock for the Rust environment exposed via PyO3."""
+    env = MagicMock()
+    env.step = MagicMock(return_value=(np.zeros((60,)), 0.0, False, False, {}))
+    env.reset = MagicMock(return_value=np.zeros((60,)))
+    env.portfolio_value = MagicMock(return_value=10000.0)
+    return env

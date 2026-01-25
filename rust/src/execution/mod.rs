@@ -4,6 +4,8 @@
  * Provides institutional-grade execution algorithms like TWAP, VWAP, and POV.
  */
 
+pub mod analytics;
+pub mod is;
 pub mod pov;
 pub mod twap;
 pub mod vwap;
@@ -21,6 +23,8 @@ pub enum AlgoType {
     VWAP,
     /// Percentage of Volume.
     POV,
+    /// Implementation Shortfall.
+    IS,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -39,10 +43,11 @@ pub struct AlgoParams {
     pub participation_rate: Option<f64>,
 }
 
+use crate::execution::is::IsState;
 use crate::execution::pov::PovState;
 use crate::execution::twap::TwapState;
 use crate::execution::vwap::VwapState;
-use crate::simulation::orderbook::{OrderBook, Side};
+use crate::simulation::orderbook::{OrderBook, Side, Trade};
 
 /// Internal state of an active algorithmic order.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -53,6 +58,8 @@ pub enum AlgoOrder {
     VWAP(VwapState),
     /// POV execution state.
     POV(PovState),
+    /// IS execution state.
+    IS(IsState),
 }
 
 /// Manager for handling multiple concurrent algorithmic orders.
@@ -84,18 +91,34 @@ impl AlgoManager {
                 params.side,
                 params.participation_rate.unwrap_or(0.1),
             )),
+            AlgoType::IS => AlgoOrder::IS(IsState::new(
+                params.quantity,
+                params.side,
+                start_step,
+                params.duration_steps.unwrap_or(100),
+                params.urgency.unwrap_or(0.5),
+            )),
         };
         self.active_orders.push(order);
     }
 
     /// Execute one simulation step for all active algorithmic orders.
-    pub fn step(&mut self, current_step: u64, orderbook: &mut OrderBook, market_volume: f64) {
+    pub fn step(
+        &mut self,
+        current_step: u64,
+        orderbook: &mut OrderBook,
+        market_volume: f64,
+    ) -> Vec<Trade> {
+        let mut executed_trades = Vec::new();
+
         for algo in &mut self.active_orders {
-            match algo {
+            let trades = match algo {
                 AlgoOrder::TWAP(state) => state.step(current_step, orderbook),
                 AlgoOrder::VWAP(state) => state.step(current_step, orderbook),
                 AlgoOrder::POV(state) => state.step(orderbook, market_volume),
-            }
+                AlgoOrder::IS(state) => state.step(current_step, orderbook),
+            };
+            executed_trades.extend(trades);
         }
 
         // Remove finished orders
@@ -103,6 +126,9 @@ impl AlgoManager {
             AlgoOrder::TWAP(state) => !state.is_finished(current_step),
             AlgoOrder::VWAP(state) => !state.is_finished(current_step),
             AlgoOrder::POV(state) => !state.is_finished(),
+            AlgoOrder::IS(state) => !state.is_finished(current_step),
         });
+
+        executed_trades
     }
 }

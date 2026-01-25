@@ -266,6 +266,42 @@ class TradingEnv(gym.Env[NDArray[np.float64], int]):
                 f"Cash: ${self.cash:.2f}"
             )
 
+    def submit_algo_order(
+        self,
+        asset: str,
+        side: int,  # 0=Bid, 1=Ask
+        quantity: float,
+        algo_type: str,
+        duration: int = 100,
+        urgency: float | None = None,
+        participation_rate: float | None = None,
+    ) -> None:
+        """
+        Submit an algorithmic order.
+        """
+        if self._rust_env is not None:
+            self._rust_env.submit_algo_order_py(
+                asset, side, quantity, duration, algo_type, urgency, participation_rate
+            )
+
+    def submit_algo_order(
+        self,
+        asset: str,
+        side: int,  # 0=Bid, 1=Ask
+        quantity: float,
+        algo_type: str,
+        duration: int = 100,
+        urgency: float | None = None,
+        participation_rate: float | None = None,
+    ) -> None:
+        """
+        Submit an algorithmic order.
+        """
+        if self._rust_env is not None:
+            self._rust_env.submit_algo_order_py(
+                asset, side, quantity, duration, algo_type, urgency, participation_rate
+            )
+
 
 class ClobEnv(TradingEnv):
     """

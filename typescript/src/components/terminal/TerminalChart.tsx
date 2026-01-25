@@ -4,8 +4,12 @@ import {
   IChartApi,
   ISeriesApi,
   AreaSeries,
+  LineSeries,
+  Time,
 } from "lightweight-charts";
 import { useEffect, useRef } from "react";
+import { IndicatorConfig } from "../charts/IndicatorOverlay";
+import { calculateSMA, calculateEMA, calculateBollingerBands, calculateRSI } from "../../utils/indicators";
 
 /**
  * Single data point for the chart.
@@ -27,6 +31,8 @@ interface TerminalChartProps {
   color?: string;
   /** Explicit height in pixels. */
   height?: number;
+  /** Active indicators configuration. */
+  indicators?: IndicatorConfig[];
 }
 
 /**
@@ -38,11 +44,16 @@ export function TerminalChart({
   data,
   color = "#22c55e",
   height,
+  indicators = [],
 }: TerminalChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
-  const seriesRef = useRef<ISeriesApi<"Area"> | null>(null);
+  const mainSeriesRef = useRef<ISeriesApi<"Area"> | null>(null);
 
+  // Keep track of indicator series to update/remove them
+  const indicatorSeriesRefs = useRef<Map<string, ISeriesApi<"Line"> | ISeriesApi<"Area">>>(new Map());
+
+  // Initialize Chart
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
@@ -95,7 +106,7 @@ export function TerminalChart({
     });
 
     chartRef.current = chart;
-    seriesRef.current = areaSeries;
+    mainSeriesRef.current = areaSeries;
 
     const handleResize = () => {
       if (chartContainerRef.current) {
@@ -111,18 +122,160 @@ export function TerminalChart({
     };
   }, [color, height]);
 
-  // Update data
+  // Update Main Data
   useEffect(() => {
-    if (!seriesRef.current) return;
-    // Sort data just in case, LWC requires sorted time
-    const sortedData = [...data].sort((a, b) => a.time - b.time);
-    seriesRef.current.setData(sortedData as any);
+    if (!mainSeriesRef.current || !chartRef.current) return;
 
-    // Auto-fit if we have data
-    if (sortedData.length > 0 && chartRef.current) {
-      chartRef.current.timeScale().fitContent();
+    // safe copy and sort
+    const sortedData = [...data].sort((a, b) => a.time - b.time);
+    mainSeriesRef.current.setData(sortedData as any);
+
+    // Only auto-fit on initial load or significant changes, otherwise it jumps too much? 
+    // Usually fitContent is good.
+    if (sortedData.length > 0) {
+      // Check if we are scrolled to end? For now just fit.
+      // chartRef.current.timeScale().fitContent(); 
     }
   }, [data]);
+
+  // Manage Indicators
+  useEffect(() => {
+    if (!chartRef.current || data.length === 0) return;
+
+    const chart = chartRef.current;
+    const activeIds = new Set(indicators.map(i => i.id));
+    const currentSeriesMap = indicatorSeriesRefs.current;
+
+    // Remove old indicators
+    for (const [id, series] of currentSeriesMap.entries()) {
+      if (!activeIds.has(id)) {
+        chart.removeSeries(series);
+        currentSeriesMap.delete(id);
+      }
+    }
+
+    // Prepare price data array for calculations
+    const prices = data.map(d => d.value);
+    const times = data.map(d => d.time as Time);
+
+    // Add/Update new indicators
+    indicators.forEach(ind => {
+      // Calculate data
+      let seriesData: { time: Time; value: number }[] = [];
+      let extraSeriesData: { time: Time; value: number }[] | null = null; // For bands
+
+      if (ind.type === "SMA") {
+        const sma = calculateSMA(prices, ind.period);
+        seriesData = sma.map((v, i) => ({ time: times[i], value: v || NaN })).filter(d => !isNaN(d.value));
+      } else if (ind.type === "EMA") {
+        const ema = calculateEMA(prices, ind.period);
+        seriesData = ema.map((v, i) => ({ time: times[i], value: v || NaN })).filter(d => !isNaN(d.value));
+      } else if (ind.type === "BollingerBands") {
+        const { upper, middle, lower } = calculateBollingerBands(prices, ind.period, ind.stdDev || 2);
+        // We will render middle as main, and upper/lower as additional lines?
+        // Actually, just rendering middle line for simplicity in this map structure is tricky.
+        // Let's render middle line.
+        // For bands, we ideally need multiple series per indicator config.
+        // Hack: We'll construct unique IDs like "id-upper", "id-lower".
+
+        // This loop handles the main series map. Special handling for multi-series indicators.
+      } else if (ind.type === "RSI") {
+        // RSI needs a separate pane/scale. Lightweight Charts supports panes by stacking charts, 
+        // but single chart overlay is harder for oscillator.
+        // We'll skip proper RSI for now or verify if we can add a separate scale.
+        // Adding separate scale:
+        // chart.addSeries(..., { priceScaleId: 'rsi-scale' });
+        // chart.priceScale('rsi-scale').applyOptions({ scaleMargins: { top: 0.7, bottom: 0 } });
+        const rsi = calculateRSI(prices, ind.period);
+        seriesData = rsi.map((v, i) => ({ time: times[i], value: v || NaN })).filter(d => !isNaN(d.value));
+      }
+
+      // Special handling for BB
+      if (ind.type === "BollingerBands") {
+        const { upper, middle, lower } = calculateBollingerBands(prices, ind.period, ind.stdDev || 2);
+
+        const updateLine = (suffix: string, values: (number | null)[], opacity: string = "") => {
+          const subId = `${ind.id}-${suffix}`;
+          let series = currentSeriesMap.get(subId) as ISeriesApi<"Line">;
+          if (!series) {
+            series = chart.addSeries(LineSeries, {
+              color: ind.color + opacity,
+              lineWidth: 1,
+              title: `${ind.type} ${suffix}`,
+              lastValueVisible: false,
+              priceLineVisible: false,
+            });
+            currentSeriesMap.set(subId, series);
+          }
+          const d = values.map((v, i) => ({ time: times[i], value: v || NaN })).filter(item => !isNaN(item.value));
+          series.setData(d as any);
+        };
+
+        updateLine("mid", middle);
+        updateLine("upper", upper, "80"); // faint
+        updateLine("lower", lower, "80");
+        return; // Done for BB
+      }
+
+      // Special handling for RSI (Oscillator)
+      if (ind.type === "RSI") {
+        let series = currentSeriesMap.get(ind.id) as ISeriesApi<"Line">;
+        if (!series) {
+          series = chart.addSeries(LineSeries, {
+            color: ind.color,
+            lineWidth: 2,
+            title: "RSI",
+            priceScaleId: "rsi", // Separate scale
+          });
+          // Configure the RSI scale to be at the bottom
+          chart.priceScale("rsi").applyOptions({
+            scaleMargins: {
+              top: 0.8, // Take up bottom 20%
+              bottom: 0,
+            },
+            borderVisible: false,
+          });
+          // Adjust main scale to not overlap
+          chart.priceScale("right").applyOptions({
+            scaleMargins: {
+              top: 0.1,
+              bottom: 0.25, // Leave room for RSI
+            },
+          });
+          currentSeriesMap.set(ind.id, series);
+        }
+        series.setData(seriesData as any);
+        return;
+      }
+
+
+      // Standard Line Indicators (SMA/EMA)
+      let series = currentSeriesMap.get(ind.id) as ISeriesApi<"Line">;
+      if (!series) {
+        series = chart.addSeries(LineSeries, {
+          color: ind.color,
+          lineWidth: 2,
+          title: `${ind.type} (${ind.period})`,
+        });
+        currentSeriesMap.set(ind.id, series);
+      }
+      series.setData(seriesData as any);
+
+    });
+
+    // Handle removal of sub-series for BB if switched off
+    // (This works via the activeIds check at start of effect)
+
+    // Restore margins if RSI removed
+    const hasRSI = indicators.some(i => i.type === "RSI");
+    if (!hasRSI) {
+      chart.priceScale("right").applyOptions({
+        scaleMargins: { top: 0.1, bottom: 0.1 },
+      });
+      // We can't easily remove the 'custom' scale but it won't show if no series attached?
+    }
+
+  }, [data, indicators]);
 
   return (
     <div ref={chartContainerRef} className="w-full h-full min-h-[300px]" />

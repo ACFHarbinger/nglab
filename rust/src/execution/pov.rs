@@ -2,7 +2,7 @@
  * Percentage of Volume (POV) execution algorithm.
  */
 
-use crate::simulation::orderbook::{OrderBook, Side};
+use crate::simulation::orderbook::{OrderBook, Side, Trade};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -32,23 +32,32 @@ impl PovState {
     }
 
     /// React to market volume by submitting a portion to the orderbook.
-    pub fn step(&mut self, orderbook: &mut OrderBook, market_volume: f64) {
+    pub fn step(&mut self, orderbook: &mut OrderBook, market_volume: f64) -> Vec<Trade> {
         let remaining_qty = self.total_quantity - self.executed_quantity;
         if remaining_qty <= 0.0 || market_volume <= 0.0 {
-            return;
+            return Vec::new();
         }
 
         // Target quantity is participation_rate of market volume
         let target_slice = market_volume * self.participation_rate;
         let slice_qty = target_slice.min(remaining_qty);
+        let target_slice = market_volume * self.participation_rate;
+        let slice_qty = target_slice.min(remaining_qty);
 
         if slice_qty > 0.0 {
-            if let Ok((_, trades)) = orderbook.submit_market_order(slice_qty, self.side) {
-                for trade in trades {
-                    self.executed_quantity += trade.quantity;
+            match orderbook.submit_market_order(slice_qty, self.side) {
+                Ok((_, trades)) => {
+                    for trade in &trades {
+                        self.executed_quantity += trade.quantity;
+                    }
+                    return trades;
+                }
+                Err(_e) => {
+                    // Log error
                 }
             }
         }
+        Vec::new()
     }
 
     /// Check if the POV order is finished.

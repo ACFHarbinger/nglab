@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Pegged Orders**: Dynamic order pricing (e.g., Peg to Best Bid + Offset) with real-time updates via `PegReference` and `reprice_pegged_orders`.
 - **Algorithmic Execution Engine**: Implemented institutional-grade TWAP, VWAP, and POV algorithms in Rust.
 - **Execution Dashboard**: Added a real-time progress visualization widget in the terminal to monitor active algorithmic orders.
+- **Python Algo API**: Updated `TradingEnv` and `MultiAssetEnv` Python bindings to support `submit_algo_order` with `urgency` (IS) and `participation_rate` (POV) parameters.
 - **Python Architecture Overhaul**:
   - Implemented central exception handling in `python/src/exceptions.py`.
   - Added `deep_sanitize` utility for `OmegaConf` to primitive conversion in `python/src/utils/config.py`.
@@ -36,7 +37,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Significantly expanded `CLAUDE.md` and consolidated technical documentation into `AGENTS.md`.
   - Implemented `@validate_config` and `@validate_input` decorators for proactive error catching at system boundaries.
   - Refactored CLI execution to use structured `TrainConfig` dataclasses with recursive parsing.
-  - Resolved potential circular imports in the model factory and central CLI modules.
+  - **Phase 5 (Performance & Reliability) Completed:**
+    - Added `@profile_performance` decorator for precision timing and memory tracking of CLI commands.
+    - Implemented `MemoryTrackingCallback` for per-epoch RSS/VMS monitor in PyTorch Lightning.
+    - Added property-based testing suite using `Hypothesis` for robust config validation.
+    - Finalized `mock_rust_env` fixture for pure Python testing of hybrid components.
+    - Verified `python/src/utils/validation.py` functionality and decorator application.
+  - **Priority 1 (Advanced Trading Features):**
+    - Implemented Implementation Shortfall (IS) execution algorithm with urgency-based schedule and adaptive pricing.
+    - Added `ExecutionAnalytics` module to calculate slippage (bps) and implementation shortfall costs for algorithmic orders.
+    - Enhanced `MarketMaker` simulation with adverse selection protection and active P&L tracking (spread capture).
   - Resolved potential circular imports in the model factory and central CLI modules.
   - Updated all major `__init__.py` files with explicit `__all__` exports and module docstrings.
 
