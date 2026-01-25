@@ -458,6 +458,7 @@ impl OrderBook {
 // =========================================================================
 
 impl OrderBook {
+    /// Create a new empty OrderBook.
     pub fn new() -> Self {
         OrderBook {
             bids: IndexMap::new(),
@@ -474,10 +475,12 @@ impl OrderBook {
         }
     }
 
+    /// Set simulated network latency in milliseconds.
     pub fn set_latency(&mut self, latency_ms: u64) {
         self.latency_ms = latency_ms;
     }
 
+    /// Process pending orders that have overcome latency.
     pub fn process_latency(&mut self, current_time: u64) -> Vec<Trade> {
         let mut trades = Vec::new();
         while let Some(pending) = self.pending_orders.front() {
@@ -503,14 +506,17 @@ impl OrderBook {
         }
     }
 
+    /// Set the tick size for price rounding.
     pub fn set_tick_size(&mut self, tick_size: f64) {
         self.tick_size = tick_size;
     }
 
+    /// Start an auction phase.
     pub fn begin_auction(&mut self, phase: AuctionPhase) {
         self.auction_state = Some(AuctionState::new(phase));
     }
 
+    /// End the auction and clear orders.
     pub fn end_auction(&mut self) -> Vec<Trade> {
         let mut trades = Vec::new();
         if let Some(state) = self.auction_state.take() {
@@ -528,6 +534,7 @@ impl OrderBook {
         trades
     }
 
+    /// Calculate the price that maximizes traded volume.
     pub fn calculate_clearing_price(&self, orders: &[Order]) -> Option<f64> {
         if orders.is_empty() {
             return None;
@@ -556,6 +563,7 @@ impl OrderBook {
         best_price
     }
 
+    /// Get the position of an order in the queue.
     pub fn get_queue_position(&self, order_id: u64) -> Option<usize> {
         for level in self.bids.values() {
             if let Some(pos) = level.orders.iter().position(|o| o.id == order_id) {
@@ -570,6 +578,7 @@ impl OrderBook {
         None
     }
 
+    /// Submit an order with advanced parameters (Iceberg, OCO, Bracket, etc).
     #[allow(clippy::too_many_arguments)]
     pub fn submit_advanced_order(
         &mut self,
@@ -619,6 +628,7 @@ impl OrderBook {
         order_id
     }
 
+    /// Check and trigger stop/trailing orders based on current price.
     pub fn check_triggers(&mut self, current_price: f64) -> Vec<Trade> {
         let mut triggered_trades = Vec::new();
         let mut activated_orders = Vec::new();
@@ -660,6 +670,7 @@ impl OrderBook {
         triggered_trades
     }
 
+    /// Get the best bid price.
     pub fn best_bid(&self) -> Option<f64> {
         self.bids
             .keys()
@@ -667,6 +678,7 @@ impl OrderBook {
             .map(|&p| p as f64 / self.price_precision)
     }
 
+    /// Get the best ask price.
     pub fn best_ask(&self) -> Option<f64> {
         self.asks
             .keys()
@@ -674,6 +686,7 @@ impl OrderBook {
             .map(|&p| p as f64 / self.price_precision)
     }
 
+    /// Get the mid price between best bid and best ask.
     pub fn mid_price(&self) -> Option<f64> {
         match (self.best_bid(), self.best_ask()) {
             (Some(bid), Some(ask)) => Some((bid + ask) / 2.0),
@@ -681,6 +694,7 @@ impl OrderBook {
         }
     }
 
+    /// Get the spread (ask - bid).
     pub fn spread(&self) -> Option<f64> {
         match (self.best_bid(), self.best_ask()) {
             (Some(bid), Some(ask)) => Some(ask - bid),
@@ -688,6 +702,7 @@ impl OrderBook {
         }
     }
 
+    /// Get the bid side depth up to `levels`.
     pub fn bid_depth(&self, levels: usize) -> Vec<(f64, f64)> {
         let mut keys: Vec<_> = self.bids.keys().copied().collect();
         keys.sort_by(|a, b| b.cmp(a));
@@ -702,6 +717,7 @@ impl OrderBook {
             .collect()
     }
 
+    /// Get the ask side depth up to `levels`.
     pub fn ask_depth(&self, levels: usize) -> Vec<(f64, f64)> {
         let mut keys: Vec<_> = self.asks.keys().copied().collect();
         keys.sort();
@@ -716,14 +732,17 @@ impl OrderBook {
             .collect()
     }
 
+    /// Get total volume on the bid side.
     pub fn total_bid_volume(&self) -> f64 {
         self.bids.values().map(|l| l.total_quantity).sum()
     }
 
+    /// Get total volume on the ask side.
     pub fn total_ask_volume(&self) -> f64 {
         self.asks.values().map(|l| l.total_quantity).sum()
     }
 
+    /// Calculate order book imbalance.
     pub fn imbalance(&self) -> f64 {
         let (b, a) = (self.total_bid_volume(), self.total_ask_volume());
         if b + a == 0.0 {
@@ -733,10 +752,12 @@ impl OrderBook {
         }
     }
 
+    /// Update the current timestamp of the order book.
     pub fn set_timestamp(&mut self, timestamp: u64) {
         self.timestamp = timestamp;
     }
 
+    /// Remove orders that have expired.
     pub fn prune_expired_orders(&mut self, current_timestamp: u64) {
         let prune = |levels: &mut IndexMap<i64, PriceLevel>| {
             for level in levels.values_mut() {
@@ -791,6 +812,7 @@ impl OrderBook {
         }
     }
 
+    /// Insert an order directly into the book (internal helper).
     pub fn submit_order_to_book(&mut self, order: Order) {
         let key = self.price_to_key(order.price);
         match order.side {
@@ -813,6 +835,7 @@ impl OrderBook {
         (price * self.price_precision).round() as i64
     }
 
+    /// Submit a Limit order.
     pub fn submit_limit_order(
         &mut self,
         price: f64,
@@ -835,6 +858,7 @@ impl OrderBook {
         Ok((id, self.match_order(order)))
     }
 
+    /// Submit a Market order.
     pub fn submit_market_order(
         &mut self,
         quantity: f64,
@@ -848,6 +872,7 @@ impl OrderBook {
         Ok((id, self.match_order(order)))
     }
 
+    /// Submit a Fill-or-Kill order.
     pub fn submit_fok_order(
         &mut self,
         price: f64,
@@ -869,6 +894,7 @@ impl OrderBook {
         Ok((id, self.match_order(order)))
     }
 
+    /// Submit an Immediate-or-Cancel order.
     pub fn submit_ioc_order(
         &mut self,
         price: f64,
@@ -890,6 +916,7 @@ impl OrderBook {
         Ok((id, self.match_order(order)))
     }
 
+    /// Submit a Bracket order (Limit entry + TP/SL).
     pub fn submit_bracket_order(
         &mut self,
         price: f64,
@@ -1169,6 +1196,7 @@ impl OrderBook {
         trades
     }
 
+    /// Cancel an order by ID. Returns true if found and cancelled.
     pub fn cancel_order(&mut self, order_id: u64) -> bool {
         let cancel = |levels: &mut IndexMap<i64, PriceLevel>| {
             for level in levels.values_mut() {
@@ -1192,6 +1220,7 @@ impl OrderBook {
         }
     }
 
+    /// Modify an existing order's price or quantity.
     pub fn modify_order(
         &mut self,
         order_id: u64,
@@ -1238,6 +1267,7 @@ impl OrderBook {
         None
     }
 
+    /// Clear all orders from the book.
     pub fn clear(&mut self) {
         self.bids.clear();
         self.asks.clear();

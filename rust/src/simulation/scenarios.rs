@@ -1,25 +1,42 @@
 use crate::simulation::options::OptionsMarket;
-use rand::prelude::*;
+
 use rand_distr::{Distribution, Normal};
 use serde::{Deserialize, Serialize};
 
-/// Types of scenarios that can be applied to the market
+/// Types of scenarios that can be applied to the market for stress testing.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Scenario {
-    /// Immediate price shock to an asset
-    PriceShock { asset: String, magnitude: f64 }, // e.g., 0.10 for +10%, -0.05 for -5%
-    /// Immediate volatility spike
-    VolatilitySpike { asset: String, magnitude: f64 }, // e.g., 0.20 for +20% absolute vol
-    /// Market crash scenario (combined shock and vol spike)
-    MarketCrash { asset: String, severity: f64 },
+    /// Immediate price shock to an asset.
+    PriceShock {
+        /// Concentrated asset symbol (e.g., "BTC").
+        asset: String,
+        /// Percentage change (e.g., 0.10 for +10%, -0.05 for -5%).
+        magnitude: f64,
+    },
+    /// Immediate volatility spike.
+    VolatilitySpike {
+        /// Concentrated asset symbol.
+        asset: String,
+        /// Absolute volatility increase (e.g., 0.20 for +20%).
+        magnitude: f64,
+    },
+    /// Market crash scenario (combined shock and vol spike).
+    MarketCrash {
+        /// Concentrated asset symbol.
+        asset: String,
+        /// Severity factor (1.0 = 10% drop, 20% vol spike).
+        severity: f64,
+    },
 }
 
-/// Engine for running scenarios against an OptionsMarket
+/// Engine for running scenarios against an OptionsMarket.
 pub struct ScenarioEngine {
+    /// The initial state of the options market.
     pub initial_market: OptionsMarket,
 }
 
 impl ScenarioEngine {
+    /// Create a new ScenarioEngine with a given market state.
     pub fn new(market: OptionsMarket) -> Self {
         Self {
             initial_market: market,
@@ -60,24 +77,33 @@ impl ScenarioEngine {
     }
 }
 
-/// Monte Carlo simulation results
+/// Monte Carlo simulation results.
 #[derive(Debug)]
 pub struct MonteCarloResult {
+    /// Mean final price across all paths.
     pub final_price_mean: f64,
+    /// Standard deviation of final prices.
     pub final_price_std: f64,
-    pub var_95: f64,          // Value at Risk (95%)
-    pub cvar_95: f64,         // Conditional VaR (95%)
-    pub paths: Vec<Vec<f64>>, // Optional: store full paths
+    /// Value at Risk (95%).
+    pub var_95: f64,
+    /// Conditional VaR (95%).
+    pub cvar_95: f64,
+    /// Optional: store full paths.
+    pub paths: Vec<Vec<f64>>,
 }
 
-/// Monte Carlo path generator
+/// Monte Carlo path generator.
 pub struct MonteCarlo {
+    /// Number of simulation paths to run.
     pub num_simulations: usize,
+    /// Number of time steps per path.
     pub time_steps: usize,
-    pub dt: f64, // Time step in years
+    /// Time step size in years (e.g., 1/252 for daily).
+    pub dt: f64,
 }
 
 impl MonteCarlo {
+    /// Create a new Monte Carlo simulator configuration.
     pub fn new(num_simulations: usize, time_steps: usize, dt: f64) -> Self {
         Self {
             num_simulations,

@@ -3,27 +3,42 @@ use crate::simulation::orderbook::OrderBook;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// Type of option contract (Call or Put).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum OptionType {
+    /// Call option: right to buy.
     Call,
+    /// Put option: right to sell.
     Put,
 }
 
+/// Represents a single option contract.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct OptionContract {
+    /// Unique identifier for the contract (e.g., "BTC-50k-C").
     pub id: String,
+    /// Symbol of the underlying asset (e.g., "BTC").
     pub underlying_symbol: String,
+    /// Strike price of the option.
     pub strike: f64,
+    /// Expiry timestamp (seconds or similar unit).
     pub expiry: u64,
+    /// Type of the option (Call or Put).
     pub contract_type: OptionType,
 }
 
+/// Calculated Greek risk parameters for an option.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Greeks {
+    /// Sensitivity to underlying price change.
     pub delta: f64,
+    /// Sensitivity of Delta to underlying price change.
     pub gamma: f64,
+    /// Time decay (sensitivity to time).
     pub theta: f64, // Not directly from BS result, but usually computed via finite difference or formula
+    /// Sensitivity to volatility change.
     pub vega: f64,
+    /// Sensitivity to interest rate change.
     pub rho: f64,
 }
 
@@ -39,6 +54,7 @@ impl Default for Greeks {
     }
 }
 
+/// Central market managing multiple option order books.
 #[derive(Clone)]
 pub struct OptionsMarket {
     /// Map from contract ID to its OrderBook
@@ -56,6 +72,7 @@ pub struct OptionsMarket {
 }
 
 impl OptionsMarket {
+    /// Create a new OptionsMarket with a global risk-free rate.
     pub fn new(risk_free_rate: f64) -> Self {
         Self {
             books: HashMap::new(),
@@ -67,6 +84,7 @@ impl OptionsMarket {
         }
     }
 
+    /// Register a new option contract and create its order book.
     pub fn add_contract(&mut self, contract: OptionContract) {
         let id = contract.id.clone();
         self.books.insert(id.clone(), OrderBook::new());
@@ -74,10 +92,12 @@ impl OptionsMarket {
         self.contracts.insert(id, contract);
     }
 
+    /// Update the spot price for an underlying asset.
     pub fn set_underlying_price(&mut self, symbol: &str, price: f64) {
         self.underlying_price.insert(symbol.to_string(), price);
     }
 
+    /// Update the volatility for an underlying asset.
     pub fn set_underlying_volatility(&mut self, symbol: &str, vol: f64) {
         self.underlying_volatility.insert(symbol.to_string(), vol);
     }
@@ -127,6 +147,7 @@ impl OptionsMarket {
         }
     }
 
+    /// Get a mutable reference to the order book for a specific contract.
     pub fn get_book_mut(&mut self, contract_id: &str) -> Option<&mut OrderBook> {
         self.books.get_mut(contract_id)
     }

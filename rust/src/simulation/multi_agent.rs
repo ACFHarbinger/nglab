@@ -271,7 +271,7 @@ mod tests {
         // Change mid price to trigger momentum
         book.submit_limit_order(103.0, 10.0, Side::Ask).unwrap();
 
-        let trades = manager.step(&mut book, 101);
+        let _trades = manager.step(&mut book, 101);
         // Momentum agent sees mid change, might submit market order
         // Noise agent continues.
         // Even if 0 trades, we verify it doesn't panic.
