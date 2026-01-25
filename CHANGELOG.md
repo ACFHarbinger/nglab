@@ -18,6 +18,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.10.0] - 2026-01-25
+
+> **Codename**: "Stability & Agents"
+
+### Added
+
+#### Market Stability
+- **Periodic Auctions**: Opening, Closing, and Volatility auction phases via `AuctionState`.
+- **Circuit Breakers**: Infrastructure for volatility auctions to prevent flash crashes.
+- **Order Expiration**: Good-Till-Date (GTD) support with `prune_expired_orders`.
+- **Advanced Order Types**: Full Bracket Order support (Entry + SL + TP) with OCO linking.
+
+#### Multi-Agent Simulation
+- **Agent Framework**: Extensible `Agent` trait in `simulation/multi_agent.rs` (`agents.rs`).
+- **Standard Agents**:
+  - `NoiseAgent`: Provides baseline liquidity.
+  - `MomentumAgent`: Trend-following strategy.
+- **Agent Manager**: Orchestration for multi-agent market scenarios via `AgentManager`.
+- **Performance Tracking**: `TradeRecord` attribution for agent analytics.
+
+#### Options Simulation
+- **Options Market**: New `OptionsMarket` managing multiple CLOBs for derivatives.
+- **Pricing Engine**: Integrated `black_scholes` for real-time Greeks (Delta, Gamma, Vega).
+- **Lifecycle**: Automatic expiry and exercise logic for ITM contracts.
+
+#### Scenario Analysis
+- **Scenario Engine**: Deterministic `Scenario` types (PriceShock, VolatilitySpike) for stress testing.
+- **Monte Carlo**: Geometric Brownian Motion (GBM) path generator for VaR and CVaR calculation.
+
+
+### Fixed
+- **Order Matching**: Consolidated `match_order` logic to correctly handle maker-side OCO/Bracket triggers.
+- **Microstructure**: Proper maker fill tracking and iceberg order replenishment.
+
+---
+
 ## [0.9.0] - 2026-01-20
 
 > **Codename**: "Testing Hardening"

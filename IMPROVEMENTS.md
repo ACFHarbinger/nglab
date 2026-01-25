@@ -28,16 +28,16 @@ NGLab has a strong foundation with a Rust simulation engine, Python ML layer, an
 
 ```
 Tasks:
-□ Implement Fill-or-Kill (FOK) orders
+[x] Implement Fill-or-Kill (FOK) orders
   - Execute entire order immediately or cancel
   - Add FOK flag to Order struct
-□ Implement Immediate-or-Cancel (IOC) orders
+[x] Implement Immediate-or-Cancel (IOC) orders
   - Execute what's available, cancel remainder
   - Partial fill tracking
-□ Add Good-Till-Date (GTD) orders
+[x] Add Good-Till-Date (GTD) orders
   - Expiration timestamp field
   - Background cleanup task for expired orders
-□ Implement bracket orders
+[x] Implement bracket orders
   - Entry + stop-loss + take-profit as atomic unit
   - Automatic child order creation on fill
 □ Add pegged orders
@@ -685,25 +685,25 @@ Tasks:
 
 ```
 Tasks:
-□ Implement auction mechanisms
+[x] Implement auction mechanisms
   - Opening auction simulation
   - Closing auction
   - Volatility auctions
-□ Add market maker simulation
+[x] Add market maker simulation
   - Automated liquidity provision
   - Spread dynamics
   - Inventory management
-□ Create latency simulation
+[x] Create latency simulation
   - Configurable order latency
   - Market data delay
   - Jitter modeling
-□ Implement queue position tracking
+[x] Implement queue position tracking
   - Accurate fill simulation
   - Queue priority visualization
-□ Add tick size rules
+[x] Add tick size rules
   - Price increment enforcement
   - Lot size rules
-□ Create circuit breaker simulation
+[x] Create circuit breaker simulation
   - Trading halts
   - Price limits
 ```
@@ -717,26 +717,26 @@ Tasks:
 
 ```
 Tasks:
-□ Create agent framework
+[x] Create agent framework
   - Agent trait definition
   - Agent lifecycle management
   - Inter-agent messaging
-□ Implement agent types
+[x] Implement agent types
   - Momentum traders
   - Mean reversion traders
   - Market makers
   - Noise traders
-□ Add agent parameterization
+[x] Add agent parameterization
   - Configurable aggression
   - Capital allocation
   - Strategy parameters
 □ Create market impact visualization
   - Agent activity heatmap
   - Price impact attribution
-□ Implement agent performance tracking
+[x] Implement agent performance tracking
   - Per-agent P&L
   - Market share metrics
-□ Add scenario builder
+[x] Add scenario builder
   - Configure agent population
   - Event injection
 ```
@@ -750,17 +750,17 @@ Tasks:
 
 ```
 Tasks:
-□ Implement options order book
+[x] Implement options order book
   - Separate books per strike/expiry
   - Options-specific order types
-□ Add Greeks calculation engine
+[x] Add Greeks calculation engine
   - Real-time Greeks updates
   - Portfolio-level Greeks
 □ Create options chain UI
   - Strike/expiry matrix
   - Bid/ask/last/volume
   - IV display
-□ Implement exercise/assignment
+[x] Implement exercise/assignment
   - American vs. European
   - Early exercise logic
   - Assignment simulation
@@ -782,17 +782,17 @@ Tasks:
 
 ```
 Tasks:
-□ Create scenario definition system
+[x] Create scenario definition system
   - Price shock scenarios
   - Volatility spike scenarios
   - Liquidity crisis scenarios
-□ Implement stress testing
+[x] Implement stress testing
   - Portfolio stress test execution
   - Multiple scenario comparison
 □ Add historical scenario replay
   - Flash crash replay
   - Major event replay
-□ Create Monte Carlo simulation
+[x] Create Monte Carlo simulation
   - Path generation
   - VaR/CVaR calculation
   - Distribution visualization

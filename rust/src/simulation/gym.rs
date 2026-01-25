@@ -10,6 +10,8 @@
 #[cfg_attr(not(feature = "python"), allow(unused_imports))]
 use crate::errors::{ArenaError, ArenaResult};
 use crate::functions::math::{safe_div, SafeFloat};
+use crate::simulation::circuit_breaker::{CircuitBreaker, CircuitBreakerConfig};
+use crate::simulation::multi_agent::{AgentManager, MomentumAgent, NoiseAgent};
 use crate::simulation::orderbook::{OrderBook, Side};
 use crate::simulation::risk::{RiskManager, RiskStatus};
 #[cfg(feature = "python")]
@@ -196,6 +198,10 @@ pub struct TradingEnv {
     rng: StdRng,
     /** Risk manager for monitoring and enforcing risk limits */
     risk_manager: RiskManager,
+    /** Circuit breaker for market volatility protection */
+    circuit_breaker: CircuitBreaker,
+    /** Manager for automated trading agents */
+    agent_manager: AgentManager,
 }
 
 // =========================================================================
@@ -359,7 +365,7 @@ impl TradingEnv {
         let rng = match seed {
             Some(s) => StdRng::seed_from_u64(s),
             None => {
-                // Use rand::rng() to generate a random seed (rand 0.9 API)
+                // Use rand::rng() to generate a random seed
                 use rand::Rng;
                 let random_seed = rand::rng().random::<u64>();
                 StdRng::seed_from_u64(random_seed)
@@ -383,6 +389,8 @@ impl TradingEnv {
             obs_buffer: ObservationBuffer::new(num_features, lookback),
             rng,
             risk_manager: RiskManager::with_defaults(initial_capital),
+            circuit_breaker: CircuitBreaker::new(CircuitBreakerConfig::default(), 0.0),
+            agent_manager: AgentManager::new(),
         }
     }
 
@@ -420,6 +428,16 @@ impl TradingEnv {
         self.prev_portfolio_value = self.initial_capital;
         self.orderbook.clear();
         self.risk_manager.reset(self.initial_capital);
+        self.circuit_breaker
+            .reset(self.prices.get(self.current_step).copied().unwrap_or(0.0));
+
+        // Add some default agents
+        self.agent_manager = AgentManager::new();
+        self.agent_manager
+            .add_agent(Box::new(NoiseAgent::new("noise-1", 42)));
+        self.agent_manager
+            .add_agent(Box::new(MomentumAgent::new("mom-1")));
+
         self.total_steps = 0;
 
         self.generate_observation_data()
@@ -461,6 +479,25 @@ impl TradingEnv {
     pub fn step_rs(&mut self, action: i32) -> (Vec<f64>, f64, bool, bool, StepInfo) {
         let action_type = ActionType::from(action);
 
+        // Check circuit breaker
+        let current_price = self.current_price().unwrap_or(0.0);
+        if self.circuit_breaker.check(current_price, self.total_steps) {
+            // Trading is halted, skip execution
+            return (
+                self.generate_observation_data(),
+                0.0,
+                false,
+                false,
+                StepInfo {
+                    portfolio_value: self.portfolio_value(),
+                    position: self.position,
+                    cash: self.cash,
+                    sharpe_ratio: self.calculate_sharpe(30),
+                    total_steps: self.total_steps,
+                },
+            );
+        }
+
         // Execute action
         let trade_cost = self.execute_action(action_type).unwrap_or(0.0);
 
@@ -477,6 +514,13 @@ impl TradingEnv {
         );
         self.returns.push(returns);
         self.prev_portfolio_value = portfolio_value;
+
+        // Process order expiration
+        self.orderbook.prune_expired_orders(self.total_steps); // Use steps as timestamp for now
+
+        // Step agents
+        self.agent_manager
+            .step(&mut self.orderbook, self.total_steps);
 
         // Update risk manager
         self.risk_manager.update(portfolio_value);
