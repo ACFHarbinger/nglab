@@ -310,7 +310,7 @@ dependencies = [
  "objc2-foundation 0.3.2",
  "parking_lot",
  "percent-encoding",
- "windows-sys 0.60.2",
+ "windows-sys 0.59.0",
  "x11rb",
 ]
 
@@ -928,38 +928,11 @@ dependencies = [
 
 [[package]]
 name = "axum"
-version = "0.7.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edca88bc138befd0323b20752846e6587272d3b03b0343c8ea28a6f819e6e71f"
-dependencies = [
- "async-trait",
- "axum-core 0.4.5",
- "bytes",
- "futures-util",
- "http",
- "http-body",
- "http-body-util",
- "itoa",
- "matchit 0.7.3",
- "memchr",
- "mime",
- "percent-encoding",
- "pin-project-lite",
- "rustversion",
- "serde",
- "sync_wrapper",
- "tower 0.5.3",
- "tower-layer",
- "tower-service",
-]
-
-[[package]]
-name = "axum"
 version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8b52af3cb4058c895d37317bb27508dccc8e5f2d39454016b297bf4a400597b8"
 dependencies = [
- "axum-core 0.5.6",
+ "axum-core",
  "bytes",
  "form_urlencoded",
  "futures-util",
@@ -969,7 +942,7 @@ dependencies = [
  "hyper",
  "hyper-util",
  "itoa",
- "matchit 0.8.4",
+ "matchit",
  "memchr",
  "mime",
  "percent-encoding",
@@ -980,30 +953,10 @@ dependencies = [
  "serde_urlencoded",
  "sync_wrapper",
  "tokio",
- "tower 0.5.3",
+ "tower",
  "tower-layer",
  "tower-service",
  "tracing",
-]
-
-[[package]]
-name = "axum-core"
-version = "0.4.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09f2bd6146b97ae3359fa0cc6d6b376d9539582c7b4220f041a33ec24c226199"
-dependencies = [
- "async-trait",
- "bytes",
- "futures-util",
- "http",
- "http-body",
- "http-body-util",
- "mime",
- "pin-project-lite",
- "rustversion",
- "sync_wrapper",
- "tower-layer",
- "tower-service",
 ]
 
 [[package]]
@@ -3047,7 +3000,7 @@ dependencies = [
  "libc",
  "option-ext",
  "redox_users",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3630,7 +3583,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -4924,7 +4877,7 @@ dependencies = [
  "libc",
  "percent-encoding",
  "pin-project-lite",
- "socket2 0.6.1",
+ "socket2",
  "system-configuration",
  "tokio",
  "tower-service",
@@ -5327,7 +5280,7 @@ dependencies = [
  "portable-atomic-util",
  "serde_core",
  "wasm-bindgen",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -5873,12 +5826,6 @@ checksum = "2532096657941c2fea9c289d370a250971c689d4f143798ff67113ec042024a5"
 
 [[package]]
 name = "matchit"
-version = "0.7.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e7465ac9959cc2b1404e8e2367b43684a6d13790fe23056cc8c6c5a6b7bcb94"
-
-[[package]]
-name = "matchit"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "47e1ffaa40ddd1f3ed91f717a33c8c0ee23fff369e3aa8772b9605cc1d22f4c3"
@@ -6260,7 +6207,7 @@ dependencies = [
  "numpy",
  "once_cell",
  "opentelemetry 0.27.1",
- "opentelemetry-otlp 0.27.0",
+ "opentelemetry-otlp",
  "opentelemetry_sdk 0.27.1",
  "password-hash",
  "prometheus",
@@ -6364,7 +6311,7 @@ version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -7103,25 +7050,6 @@ dependencies = [
 
 [[package]]
 name = "opentelemetry-otlp"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91cf61a1868dacc576bf2b2a1c3e9ab150af7272909e80085c3173384fe11f76"
-dependencies = [
- "async-trait",
- "futures-core",
- "http",
- "opentelemetry 0.27.1",
- "opentelemetry-proto 0.27.0",
- "opentelemetry_sdk 0.27.1",
- "prost 0.13.5",
- "thiserror 1.0.69",
- "tokio",
- "tonic 0.12.3",
- "tracing",
-]
-
-[[package]]
-name = "opentelemetry-otlp"
 version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a2366db2dca4d2ad033cad11e6ee42844fd727007af5ad04a1730f4cb8163bf"
@@ -7129,26 +7057,14 @@ dependencies = [
  "http",
  "opentelemetry 0.31.0",
  "opentelemetry-http",
- "opentelemetry-proto 0.31.0",
+ "opentelemetry-proto",
  "opentelemetry_sdk 0.31.0",
- "prost 0.14.3",
+ "prost",
  "reqwest",
  "thiserror 2.0.18",
  "tokio",
- "tonic 0.14.2",
+ "tonic",
  "tracing",
-]
-
-[[package]]
-name = "opentelemetry-proto"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6e05acbfada5ec79023c85368af14abd0b307c015e9064d249b2a950ef459a6"
-dependencies = [
- "opentelemetry 0.27.1",
- "opentelemetry_sdk 0.27.1",
- "prost 0.13.5",
- "tonic 0.12.3",
 ]
 
 [[package]]
@@ -7159,8 +7075,8 @@ checksum = "a7175df06de5eaee9909d4805a3d07e28bb752c34cab57fa9cff549da596b30f"
 dependencies = [
  "opentelemetry 0.31.0",
  "opentelemetry_sdk 0.31.0",
- "prost 0.14.3",
- "tonic 0.14.2",
+ "prost",
+ "tonic",
  "tonic-prost",
 ]
 
@@ -7987,35 +7903,12 @@ dependencies = [
 
 [[package]]
 name = "prost"
-version = "0.13.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2796faa41db3ec313a31f7624d9286acf277b52de526150b7e69f3debf891ee5"
-dependencies = [
- "bytes",
- "prost-derive 0.13.5",
-]
-
-[[package]]
-name = "prost"
 version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2ea70524a2f82d518bce41317d0fae74151505651af45faf1ffbd6fd33f0568"
 dependencies = [
  "bytes",
- "prost-derive 0.14.3",
-]
-
-[[package]]
-name = "prost-derive"
-version = "0.13.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a56d757972c98b346a9b766e3f02746cde6dd1cd1d1d563472929fdd74bec4d"
-dependencies = [
- "anyhow",
- "itertools 0.14.0",
- "proc-macro2",
- "quote",
- "syn 2.0.114",
+ "prost-derive",
 ]
 
 [[package]]
@@ -8025,7 +7918,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "27c6023962132f4b30eb4c172c91ce92d933da334c59c23cddee82358ddafb0b"
 dependencies = [
  "anyhow",
- "itertools 0.14.0",
+ "itertools 0.10.5",
  "proc-macro2",
  "quote",
  "syn 2.0.114",
@@ -8037,7 +7930,7 @@ version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b89455ef41ed200cafc47c76c552ee7792370ac420497e551f16123a9135f76e"
 dependencies = [
- "prost 0.14.3",
+ "prost",
  "prost-types",
 ]
 
@@ -8047,7 +7940,7 @@ version = "0.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8991c4cbdb8bc5b11f0b074ffe286c30e523de90fee5ba8132f1399f23cb3dd7"
 dependencies = [
- "prost 0.14.3",
+ "prost",
 ]
 
 [[package]]
@@ -8206,7 +8099,7 @@ dependencies = [
  "quinn-udp",
  "rustc-hash 2.1.1",
  "rustls",
- "socket2 0.6.1",
+ "socket2",
  "thiserror 2.0.18",
  "tokio",
  "tracing",
@@ -8243,9 +8136,9 @@ dependencies = [
  "cfg_aliases",
  "libc",
  "once_cell",
- "socket2 0.6.1",
+ "socket2",
  "tracing",
- "windows-sys 0.60.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -8609,8 +8502,8 @@ dependencies = [
  "thiserror 2.0.18",
  "tiny_http",
  "tokio",
- "tonic 0.14.2",
- "tower 0.5.3",
+ "tonic",
+ "tower",
  "url",
  "uuid",
  "wasm-bindgen",
@@ -9037,7 +8930,7 @@ dependencies = [
  "re_uri",
  "tokio",
  "tokio-stream",
- "tonic 0.14.2",
+ "tonic",
  "tracing",
  "wasm-bindgen-futures",
 ]
@@ -9115,7 +9008,7 @@ dependencies = [
  "thiserror 2.0.18",
  "tokio",
  "tokio-stream",
- "tonic 0.14.2",
+ "tonic",
  "tonic-web-wasm-client",
  "wasm-bindgen-futures",
  "web-time",
@@ -9146,7 +9039,7 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "tokio-util",
- "tonic 0.14.2",
+ "tonic",
  "tonic-web",
  "tower-http",
 ]
@@ -9338,7 +9231,7 @@ checksum = "a2ce801eeb807bad27595f921c77ec1bee2736904a98139a18dbdf536dc40152"
 dependencies = [
  "ahash",
  "anyhow",
- "axum 0.8.8",
+ "axum",
  "base64 0.22.1",
  "clap",
  "http",
@@ -9346,15 +9239,15 @@ dependencies = [
  "opentelemetry 0.31.0",
  "opentelemetry-appender-tracing",
  "opentelemetry-http",
- "opentelemetry-otlp 0.31.0",
+ "opentelemetry-otlp",
  "opentelemetry_sdk 0.31.0",
  "parking_lot",
  "prometheus-client",
  "serde",
  "serde_json",
  "tokio",
- "tonic 0.14.2",
- "tower 0.5.3",
+ "tonic",
+ "tower",
  "tower-http",
  "tracing",
  "tracing-opentelemetry 0.32.1",
@@ -9371,7 +9264,7 @@ dependencies = [
  "http",
  "jiff",
  "pin-project-lite",
- "prost 0.14.3",
+ "prost",
  "prost-types",
  "re_arrow_util",
  "re_build_info",
@@ -9383,9 +9276,9 @@ dependencies = [
  "re_types_core",
  "serde",
  "thiserror 2.0.18",
- "tonic 0.14.2",
+ "tonic",
  "tonic-prost",
- "tower 0.5.3",
+ "tower",
  "tracing",
  "url",
 ]
@@ -9520,9 +9413,9 @@ dependencies = [
  "thiserror 2.0.18",
  "tokio",
  "tokio-stream",
- "tonic 0.14.2",
+ "tonic",
  "tonic-web-wasm-client",
- "tower 0.5.3",
+ "tower",
  "tracing",
  "url",
 ]
@@ -10577,7 +10470,7 @@ dependencies = [
  "tokio-native-tls",
  "tokio-rustls",
  "tokio-util",
- "tower 0.5.3",
+ "tower",
  "tower-http",
  "tower-service",
  "url",
@@ -10862,7 +10755,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.11.0",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -11566,16 +11459,6 @@ name = "snap"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b6b67fb9a61334225b5b790716f609cd58395f895b3fe8b328786812a40bc3b"
-
-[[package]]
-name = "socket2"
-version = "0.5.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e22376abed350d73dd1cd119b57ffccad95b4e585a7cda43e286245ce23c0678"
-dependencies = [
- "libc",
- "windows-sys 0.52.0",
-]
 
 [[package]]
 name = "socket2"
@@ -12317,7 +12200,7 @@ dependencies = [
  "getrandom 0.3.4",
  "once_cell",
  "rustix 1.1.3",
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -12630,7 +12513,7 @@ dependencies = [
  "parking_lot",
  "pin-project-lite",
  "signal-hook-registry",
- "socket2 0.6.1",
+ "socket2",
  "tokio-macros",
  "windows-sys 0.61.2",
 ]
@@ -12803,42 +12686,12 @@ checksum = "ab16f14aed21ee8bfd8ec22513f7287cd4a91aa92e44edfe2c17ddd004e92607"
 
 [[package]]
 name = "tonic"
-version = "0.12.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "877c5b330756d856ffcc4553ab34a5684481ade925ecc54bcd1bf02b1d0d4d52"
-dependencies = [
- "async-stream",
- "async-trait",
- "axum 0.7.9",
- "base64 0.22.1",
- "bytes",
- "h2",
- "http",
- "http-body",
- "http-body-util",
- "hyper",
- "hyper-timeout",
- "hyper-util",
- "percent-encoding",
- "pin-project",
- "prost 0.13.5",
- "socket2 0.5.10",
- "tokio",
- "tokio-stream",
- "tower 0.4.13",
- "tower-layer",
- "tower-service",
- "tracing",
-]
-
-[[package]]
-name = "tonic"
 version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb7613188ce9f7df5bfe185db26c5814347d110db17920415cf2fbcad85e7203"
 dependencies = [
  "async-trait",
- "axum 0.8.8",
+ "axum",
  "base64 0.22.1",
  "bytes",
  "flate2",
@@ -12852,12 +12705,12 @@ dependencies = [
  "percent-encoding",
  "pin-project",
  "rustls-native-certs",
- "socket2 0.6.1",
+ "socket2",
  "sync_wrapper",
  "tokio",
  "tokio-rustls",
  "tokio-stream",
- "tower 0.5.3",
+ "tower",
  "tower-layer",
  "tower-service",
  "tracing",
@@ -12870,8 +12723,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "66bd50ad6ce1252d87ef024b3d64fe4c3cf54a86fb9ef4c631fdd0ded7aeaa67"
 dependencies = [
  "bytes",
- "prost 0.14.3",
- "tonic 0.14.2",
+ "prost",
+ "tonic",
 ]
 
 [[package]]
@@ -12886,7 +12739,7 @@ dependencies = [
  "http-body",
  "pin-project",
  "tokio-stream",
- "tonic 0.14.2",
+ "tonic",
  "tower-layer",
  "tower-service",
  "tracing",
@@ -12909,32 +12762,12 @@ dependencies = [
  "js-sys",
  "pin-project",
  "thiserror 2.0.18",
- "tonic 0.14.2",
+ "tonic",
  "tower-service",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-streams",
  "web-sys",
-]
-
-[[package]]
-name = "tower"
-version = "0.4.13"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8fa9be0de6cf49e536ce1851f987bd21a43b771b09473c3549a6c853db37c1c"
-dependencies = [
- "futures-core",
- "futures-util",
- "indexmap 1.9.3",
- "pin-project",
- "pin-project-lite",
- "rand 0.8.5",
- "slab",
- "tokio",
- "tokio-util",
- "tower-layer",
- "tower-service",
- "tracing",
 ]
 
 [[package]]
@@ -12969,7 +12802,7 @@ dependencies = [
  "http-body",
  "iri-string",
  "pin-project-lite",
- "tower 0.5.3",
+ "tower",
  "tower-layer",
  "tower-service",
  "tracing",
@@ -14196,7 +14029,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
