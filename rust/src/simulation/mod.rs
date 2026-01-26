@@ -18,6 +18,7 @@ pub mod multi_asset;
 pub mod options;
 /// Central Limit Order Book (CLOB).
 pub mod orderbook;
+pub mod paper_trading;
 /// Polymarket-specific simulation logic.
 pub mod polymarket;
 /// Risk management and position sizing.

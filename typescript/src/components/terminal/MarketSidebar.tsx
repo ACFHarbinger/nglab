@@ -10,6 +10,8 @@ import {
   Layers,
 } from "lucide-react";
 import clsx from "clsx";
+import { useExchange } from "../../hooks/useExchange";
+import { useMarket } from "../../hooks/useMarket";
 
 
 /**
@@ -70,6 +72,14 @@ export function MarketSidebar({
   favoriteIds,
   onToggleFavorite,
 }: MarketSidebarProps) {
+  const {
+    exchanges,
+    activeExchange,
+    setActiveExchange,
+    loading: loadingExchanges,
+  } = useExchange();
+  const { searchResults, isSearching, searchMarkets } = useMarket();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
   const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -276,16 +286,51 @@ export function MarketSidebar({
   return (
     <div className="flex flex-col h-full bg-slate-900 border-r border-slate-800 w-80">
       {/* Header / Search */}
-      <div className="p-3 border-b border-slate-800 space-y-2">
+      <div className="p-3 border-b border-slate-800 space-y-3">
+        {/* Exchange Selector */}
+        <div className="relative">
+          <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">
+            Exchange Source
+          </label>
+          <div className="flex items-center gap-2">
+            <select
+              value={activeExchange}
+              onChange={(e) => setActiveExchange(e.target.value)}
+              className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 appearance-none cursor-pointer"
+            >
+              {exchanges.map((ex) => (
+                <option key={ex} value={ex}>
+                  {ex}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-[26px] pointer-events-none">
+              <ChevronDown size={12} className="text-slate-500" />
+            </div>
+            {loadingExchanges && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />}
+          </div>
+        </div>
+
         <div className="relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
           <input
             type="text"
-            placeholder="Search markets..."
+            placeholder={`Search ${activeExchange} markets...`}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              // In a real app we'd debounce this
+              if (e.target.value.length > 2) {
+                searchMarkets(e.target.value);
+              }
+            }}
             className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
+          {isSearching && (
+            <div className="absolute right-3 top-2.5">
+              <div className="w-4 h-4 border-2 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+            </div>
+          )}
         </div>
 
         {/* Filter Dropdown */}
@@ -338,6 +383,32 @@ export function MarketSidebar({
 
       {/* Market List */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {/* Search Results if searching */}
+        {searchQuery.length > 2 && (
+          <div className="py-2 animate-in fade-in duration-300">
+            <div className="px-3 py-1 flex items-center justify-between text-[10px] font-bold text-indigo-400 uppercase tracking-widest bg-indigo-500/5 mb-1">
+              <span>{activeExchange} Results</span>
+              {isSearching && <span className="text-[9px] animate-pulse">Searching...</span>}
+            </div>
+            {searchResults.length === 0 && !isSearching ? (
+              <div className="px-4 py-8 text-center text-xs text-slate-600">
+                No results found for "{searchQuery}"
+              </div>
+            ) : (
+              searchResults.map((r) => renderMarketItem({
+                id: r.id,
+                symbol: r.id.substring(0, 10).toUpperCase(),
+                name: r.title,
+                price: 0,
+                change24h: 0,
+                volume24h: r.volume || 0,
+                marketData: { id: r.id, outcomes: r.outcomes.map(o => ({ id: o, name: o })) }
+              }))
+            )}
+            <div className="h-px bg-slate-800 my-4 mx-3" />
+          </div>
+        )}
+
         {filteredMarkets.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-slate-500 p-4">
             <Search size={32} className="mb-2 opacity-50" />

@@ -22,6 +22,16 @@ pub struct ArenaState {
 }
 
 /**
+ * Shared state for Paper Trading.
+ */
+pub struct PaperState {
+    /** Mutex-protected paper account. */
+    pub account: Mutex<nglab::simulation::paper_trading::PaperAccount>,
+    /** Flag indicating if paper mode is active in the UI. */
+    pub active: Arc<AtomicBool>,
+}
+
+/**
  * Real-time update event emitted to the frontend during simulation.
  */
 #[derive(serde::Serialize, Clone)]

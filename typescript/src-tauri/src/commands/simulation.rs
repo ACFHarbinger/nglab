@@ -25,6 +25,7 @@ pub fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
 
     tauri::async_runtime::spawn(async move {
         let state = app.state::<ArenaState>();
+        let paper_state = app.state::<crate::state::PaperState>();
         loop {
             // Check if we should keep running
             {
@@ -35,7 +36,7 @@ pub fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
             }
 
             // Perform simulation step
-            let update = {
+            let (update, paper_update) = {
                 let mut env = state.env.lock().unwrap();
                 // 0 = Hold action
                 let (_, _, _, _, step_info) = env.step_rs(0);
@@ -44,14 +45,14 @@ pub fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
                 let price = orderbook.mid_price().unwrap_or(0.0);
                 let risk_status = env.risk_status();
 
-                ArenaUpdate {
+                let arena_update = ArenaUpdate {
                     step: step_info.total_steps,
                     price,
                     portfolio_value: step_info.portfolio_value,
                     risk_score: risk_status.risk_score,
                     current_drawdown: risk_status.current_drawdown,
                     current_var: risk_status.current_var,
-                    orderbook,
+                    orderbook: orderbook.clone(),
                     algo_orders: env.algo_manager().active_orders.clone(),
                     position: env.info().position,
                     mm_active: env.market_maker.active,
@@ -60,11 +61,19 @@ pub fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
                     return_pct: step_info.return_pct,
                     max_drawdown: step_info.max_drawdown,
                     volatility: step_info.volatility,
-                }
+                };
+
+                // Handle Paper Trading
+                let mut paper_account = paper_state.account.lock().unwrap();
+                paper_account.check_fills("DEFAULT", &orderbook); // Currently single asset
+                let paper_account_clone = paper_account.clone();
+
+                (arena_update, paper_account_clone)
             };
 
-            // Emit event to frontend
+            // Emit events to frontend
             let _ = app.emit("arena-update", &update);
+            let _ = app.emit("paper-update", &paper_update);
 
             sleep(Duration::from_millis(100)).await;
         }

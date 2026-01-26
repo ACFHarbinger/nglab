@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Paper Trading Mode**: High-fidelity virtual trading environment with:
+  - Persistent virtual account management (`PaperAccount`) in Rust.
+  - Realistic fill simulation against the live order book.
+  - Dedicated Paper Trading Dashboard and global status indicators.
+  - Automated persistence and account reset capabilities.
 - Comprehensive documentation enhancements (DEVELOPMENT.md, TESTING.md)
 - Enhanced AGENTS.md with agent comparison matrix and reward library
 - Enhanced ARCHITECTURE.md with Kubernetes topology
@@ -33,6 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Training Dashboard**: New functional tab for monitoring machine learning model training jobs with real-time loss/reward charts and execution logs.
 - **Notification & Alert System**: Institutional-grade price and technical alert system with backend persistence and Activity Center UI.
 - **Execution Analytics**: Module to calculate implementation shortfall costs and slippage in basis points (bps).
+- **Python Architecture Hardening**:
+  - Implemented Protocol-based duck typing for Environments and Models (`EnvironmentProtocol`, `ModelProtocol`).
+  - Standardized configuration system using pure Python dataclasses with robust serialization.
+  - Introduced `@validate_config` and `@validate_input` decorators for system-wide validation.
+  - Reorganized test suite with centralized plugin registration and domain-specific fixtures.
 - **Market Maker Mode**: Enhanced spread quoting engine with position-based skew and adverse selection protection.
   - Resolved potential circular imports in the model factory and central CLI modules.
   - Updated all major `__init__.py` files with explicit `__all__` exports and module docstrings.

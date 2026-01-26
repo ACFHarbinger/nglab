@@ -46,8 +46,10 @@ import { StrategyBuilder } from "../strategy/StrategyBuilder";
 import { BacktestDashboard } from "../backtest/BacktestDashboard";
 import { PortfolioAllocation } from "../portfolio/PortfolioAllocation";
 import { TrainingDashboard } from "../training/TrainingDashboard";
+import { usePaperTrading } from "../../hooks/usePaperTrading";
+import { PaperTradingDashboard } from "./PaperTradingDashboard";
 
-type Tab = "Trading" | "Analytics" | "Strategy" | "Backtest" | "Portfolio" | "Training";
+type Tab = "Trading" | "Analytics" | "Strategy" | "Backtest" | "Portfolio" | "Training" | "Paper";
 
 // Mock Data Generators
 const generateMockMarkets = () => [
@@ -292,6 +294,7 @@ export function TerminalLayout({
   toggleFavorite,
 }: Props) {
   const { data: arenaData } = useArena();
+  const { isActive: paperActive } = usePaperTrading();
 
   // Charting State
   const [activeTab, setActiveTab] = useState<Tab>("Trading");
@@ -592,6 +595,11 @@ export function TerminalLayout({
               {selectedMarket.symbol}{" "}
               <span className="text-slate-500 font-normal text-sm">/ USD</span>
             </h1>
+            {paperActive && (
+              <span className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-400 uppercase tracking-tighter animate-pulse">
+                Paper Mode Active
+              </span>
+            )}
             <div className="flex flex-col">
               <span className="text-2xl font-mono font-bold text-white">
                 ${isFinite(currentPrice) ? currentPrice.toFixed(3) : "0.000"}
@@ -642,6 +650,7 @@ export function TerminalLayout({
           <TabButton active={activeTab === "Backtest"} onClick={() => setActiveTab("Backtest")} label="Backtest" />
           <TabButton active={activeTab === "Portfolio"} onClick={() => setActiveTab("Portfolio")} label="Portfolio" />
           <TabButton active={activeTab === "Training"} onClick={() => setActiveTab("Training")} label="Training Pipeline" />
+          <TabButton active={activeTab === "Paper"} onClick={() => setActiveTab("Paper")} label="Paper Trading" />
         </div>
 
         {/* Content Area */}
@@ -696,6 +705,12 @@ export function TerminalLayout({
           {activeTab === "Training" && (
             <div className="absolute inset-0 z-20 w-full h-full bg-slate-950">
               <TrainingDashboard />
+            </div>
+          )}
+
+          {activeTab === "Paper" && (
+            <div className="absolute inset-0 z-20 w-full h-full bg-slate-950">
+              <PaperTradingDashboard />
             </div>
           )}
         </div>

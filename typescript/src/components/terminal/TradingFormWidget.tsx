@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import clsx from "clsx";
 import { Wallet, Info, ChevronDown, Layers, Settings } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
+import { usePaperTrading } from "../../hooks/usePaperTrading";
 
 import { ComboBuilder, SpreadLeg } from "../trading/ComboBuilder";
 
@@ -101,6 +102,7 @@ export function TradingFormWidget({
   outcomes,
   livePrices,
 }: TradingFormProps) {
+  const { isActive: paperActive } = usePaperTrading();
   // Default to Yes/No if no outcomes provided
   const marketOutcomes = useMemo(() => {
     if (outcomes && outcomes.length > 0) return outcomes;
@@ -148,15 +150,8 @@ export function TradingFormWidget({
 
       switch (orderType) {
         case "Limit":
-          // Default limit logic (existing or new command? checks lib.rs... assumes submit_limit_order exists elsewhere or we use generic)
-          // If generic submit_order doesn't exist, we might need to add it or use a simpler assumption for now.
-          // However, for this task, I am implementing the NEW types.
-          // Assuming Limit runs via existing mechanisms or I should have added it?
-          // I'll stick to implementing the NEW ones clearly.
-          // If Limit, I won't touch it much, but wait, I need to know what command to call.
-          // `submit_limit_order` is NOT in my `trade.rs`. It might be in `simulation.rs` or directly in `TradingEnv` via wrapper?
-          // The existing code didn't show submit logic. I'll focus on the new ones.
-          console.log("Limit order submission not implementing in this pass");
+          command = "submit_limit_order";
+          args.price = price;
           break;
         case "FOK":
           command = "submit_fok_order";
@@ -716,8 +711,10 @@ export function TradingFormWidget({
                 side === "buy"
                   ? `${colorScheme.bg} ${colorScheme.bgHover} text-white shadow-emerald-900/20`
                   : "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-900/20",
+                paperActive && "ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-900"
               )}
             >
+              {paperActive ? "Paper " : ""}
               {side === "buy"
                 ? `Buy ${selectedOutcome.name}`
                 : `Sell ${selectedOutcome.name}`}

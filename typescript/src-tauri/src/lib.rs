@@ -34,17 +34,29 @@ pub fn run() {
         debug_mode: Arc::new(AtomicBool::new(false)),
     };
 
+    let paper_account = nglab::simulation::paper_trading::PaperAccount::load("paper_account.json")
+        .unwrap_or_else(|_| nglab::simulation::paper_trading::PaperAccount::default());
+
     tauri::Builder::default()
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_fs::init())
         .manage(state)
         .manage(AuthState::default())
         .manage(VaultState::default())
         .manage(commands::notifications::AlertState::default())
+        .manage(state::PaperState {
+            account: Mutex::new(paper_account),
+            active: Arc::new(AtomicBool::new(false)),
+        })
+        .manage(Mutex::new(
+            nglab::web::exchanges::manager::ExchangeManager::new(),
+        ))
         .invoke_handler(tauri::generate_handler![
             commands::simulation::start_simulation,
             commands::simulation::stop_simulation,
+            commands::paper_trading::get_paper_account,
+            commands::paper_trading::reset_paper_account,
+            commands::paper_trading::toggle_paper_mode,
+            commands::paper_trading::is_paper_mode_active,
+            commands::trade::submit_limit_order,
             commands::trade::submit_fok_order,
             commands::trade::submit_ioc_order,
             commands::trade::submit_bracket_order,
@@ -98,7 +110,12 @@ pub fn run() {
             commands::health::health_check,
             commands::health::get_system_info,
             commands::health::set_debug_mode,
-            commands::health::get_memory_usage
+            commands::health::get_memory_usage,
+            commands::exchanges::list_exchanges,
+            commands::exchanges::get_active_exchange,
+            commands::exchanges::set_active_exchange,
+            commands::exchanges::search_exchange_markets,
+            commands::exchanges::get_exchange_market_data
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

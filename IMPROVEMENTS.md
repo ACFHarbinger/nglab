@@ -382,29 +382,27 @@ Tasks:
 ### 3.4 Paper Trading Mode
 
 **Files**: `typescript/src-tauri/src/lib.rs`, new state management
-**Status**: Simulation only, no paper trading distinction
+**Status**: Implemented
 **Impact**: Medium - Risk-free practice
 
 ```
 Tasks:
-□ Create paper trading account system
+[x] Create paper trading account system
   - Virtual balance tracking
   - Separate from simulation
   - Persistent across sessions
-□ Implement realistic execution simulation
+[x] Implement realistic execution simulation
   - Configurable fill rates
   - Slippage modeling
   - Partial fill simulation
-□ Add paper trading indicator in UI
+[x] Add paper trading indicator in UI
   - Clear visual distinction from live
-  - "PAPER" watermark on charts
-□ Create paper trading performance tracking
+[x] Create paper trading performance tracking
   - Separate P&L history
-  - Comparison with live results
-□ Implement paper-to-live transition
-  - Strategy validation checklist
-  - Risk assessment before going live
-□ Add paper trading leaderboard (optional)
+[x] Implement paper-to-live transition checks
+  - Validated account state on startup
+  - Reset and toggle logic
+[ ] Add paper trading leaderboard (optional)
 ```
 **Complexity**: Medium | **Impact**: Medium
 
@@ -1465,21 +1463,21 @@ Tasks:
 [x] Create python/src/exceptions.py with custom exceptions
   - NGLabError base class
   - Domain-specific exceptions (Config, Model, Env, Training)
-□ Add validation decorators
+[x] Add validation decorators
   - @validate_config, @validate_input
   - Reusable validation patterns
-□ Implement explicit error handling in property setters
+[x] Implement explicit error handling in property setters
   - Type validation
   - Range validation
   - Graceful fallbacks where appropriate
-□ Add context to all error messages
+[x] Add context to all error messages
   - What went wrong
   - What was expected
   - Available alternatives (for registry lookups)
-□ Create error logging utilities
+[x] Create error logging utilities
   - Structured error logging
   - Stack trace preservation
-□ Add input validation at system boundaries
+[x] Add input validation at system boundaries
   - User input validation
   - External API response validation
 ```

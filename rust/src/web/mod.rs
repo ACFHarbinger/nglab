@@ -5,6 +5,8 @@
  * for historical data ingestion from platforms like Polymarket.
  */
 
+/// Unified exchange interface and adapters.
+pub mod exchanges;
 /// Polymarket integration and data handling.
 pub mod polymarket;
 /// Generic web scraping traits and utilities.
