@@ -45,7 +45,7 @@ def trading_env_config() -> dict[str, float | int]:
 @pytest.fixture
 def trading_env(trading_env_config: dict[str, float | int], sample_prices):
     """Pre-initialized TradingEnv instance."""
-    from python.src.env.envs import TradingEnv
+    from python.src.envs.envs import TradingEnv
 
     env = TradingEnv(
         prices=sample_prices["trending_up"],
@@ -60,7 +60,7 @@ def trading_env(trading_env_config: dict[str, float | int], sample_prices):
 @pytest.fixture
 def clob_env(trading_env_config: dict[str, float | int], sample_prices):
     """Pre-initialized ClobEnv instance."""
-    from python.src.env.envs import ClobEnv
+    from python.src.envs.envs import ClobEnv
 
     env = ClobEnv(
         prices=sample_prices["volatile"],
@@ -75,7 +75,7 @@ def clob_env(trading_env_config: dict[str, float | int], sample_prices):
 @pytest.fixture
 def polymarket_env():
     """Pre-initialized PolymarketEnv instance."""
-    from python.src.env.envs import PolymarketEnv
+    from python.src.envs.envs import PolymarketEnv
 
     market_ids = ["market_1", "market_2", "market_3"]
     env = PolymarketEnv(

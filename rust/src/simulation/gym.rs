@@ -93,7 +93,6 @@ pub struct StepInfo {
     /// Current rolling Sharpe ratio
     pub sharpe_ratio: f64,
     /// Total count of steps in the episode
-    /// Total count of steps in the episode
     pub total_steps: u64,
     /// Cumulative P&L
     pub pnl: f64,
@@ -457,7 +456,6 @@ impl TradingEnv {
             agent_manager: AgentManager::new(),
             algo_manager: crate::execution::AlgoManager::default(),
             market_maker: crate::simulation::market_maker::MarketMaker::default(),
-            market_maker: crate::simulation::market_maker::MarketMaker::default(),
             spread_orders: Vec::new(),
             max_drawdown: 0.0,
         }
@@ -566,6 +564,15 @@ impl TradingEnv {
                     cash: self.cash,
                     sharpe_ratio: self.calculate_sharpe(30),
                     total_steps: self.total_steps,
+                    pnl: self.portfolio_value() - self.initial_capital,
+                    return_pct: safe_div(
+                        self.portfolio_value() - self.initial_capital,
+                        self.initial_capital,
+                        0.0,
+                    ),
+                    drawdown: 0.0, // Simplify for circuit breaker
+                    max_drawdown: self.max_drawdown,
+                    volatility: 0.0,
                 },
             );
         }
@@ -876,6 +883,38 @@ impl TradingEnv {
             drawdown: current_drawdown,
             max_drawdown: self.max_drawdown.max(current_drawdown),
             volatility,
+        }
+    }
+
+    /** Process active multi-leg spread orders */
+    /** Submit a spread order */
+    pub fn submit_spread_order(&mut self, order: crate::simulation::spreads::SpreadOrder) {
+        self.spread_orders.push(order);
+    }
+
+    /** Process active multi-leg spread orders */
+    fn process_spread_orders(&mut self) {
+        // Simple mock implementation for now
+        // In reality, this would check if leg conditions are met and execute component orders
+        let current_price = self.current_price().unwrap_or(0.0);
+
+        let mut executed_indices = Vec::new();
+
+        for (i, order) in self.spread_orders.iter().enumerate() {
+            // Check trigger conditions (e.g. price limits)
+            // This is a simplified logic placeholder
+            let limit = order.limit_price;
+            // Mock logic: execute if current price is close enough (e.g. within 1%)
+            if (current_price - limit).abs() < limit.abs() * 0.01 {
+                executed_indices.push(i);
+            }
+        }
+
+        // Remove executed
+        for index in executed_indices.iter().rev() {
+            if *index < self.spread_orders.len() {
+                self.spread_orders.remove(*index);
+            }
         }
     }
 }

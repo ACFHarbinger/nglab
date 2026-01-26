@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 
+
 /**
  * Represents a market entity with essential trading data.
  */

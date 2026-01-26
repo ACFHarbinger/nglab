@@ -34,10 +34,16 @@ import { MarketMakerWidget } from "./MarketMakerWidget";
 import { useArena } from "../../hooks/useArena";
 import { MarketMetadata } from "../../hooks/usePolymarket";
 import { FavoriteMarket } from "../../hooks/useFavorites";
-import { Wallet, Settings } from "lucide-react";
+import { Wallet } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { IndicatorOverlay, IndicatorConfig } from "../charts/IndicatorOverlay";
 import { nanoid } from "nanoid";
+import { AnalyticsDashboard } from "../analytics/AnalyticsDashboard";
+import { StrategyBuilder } from "../strategy/StrategyBuilder";
+import { BacktestDashboard } from "../backtest/BacktestDashboard";
+import { PortfolioAllocation } from "../portfolio/PortfolioAllocation";
+
+type Tab = "Trading" | "Analytics" | "Strategy" | "Backtest" | "Portfolio";
 
 // Mock Data Generators
 const generateMockMarkets = () => [
@@ -284,6 +290,7 @@ export function TerminalLayout({
   const { data: arenaData } = useArena();
 
   // Charting State
+  const [activeTab, setActiveTab] = useState<Tab>("Trading");
   const [chartType, setChartType] = useState<ChartType>("Area");
   const [timeframe, setTimeframe] = useState<Timeframe>("1m");
 
@@ -555,7 +562,6 @@ export function TerminalLayout({
     drawdown: arenaData?.current_drawdown || 0,
     max_drawdown: arenaData?.max_drawdown || 0,
     volatility: arenaData?.volatility || 0,
-    cash: 0 // Placeholder
   };
 
   return (
@@ -599,36 +605,68 @@ export function TerminalLayout({
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded text-sm font-medium transition-colors">
-              <Wallet size={16} /> Connect
-            </button>
-            <button className="p-2 hover:bg-slate-800 rounded text-slate-400">
-              <Settings size={18} />
-            </button>
-          </div>
+          <button className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded text-sm font-medium transition-colors">
+            <Wallet size={16} />
+          </button>
         </header>
 
-        {/* Chart Area */}
-        <div className="flex-1 relative bg-slate-950 group">
-          <ChartToolbar
-            chartType={chartType}
-            setChartType={setChartType}
-            timeframe={timeframe}
-            setTimeframe={setTimeframe}
-          />
-          <IndicatorOverlay
-            activeIndicators={activeIndicators}
-            onAddIndicator={handleAddIndicator}
-            onRemoveIndicator={handleRemoveIndicator}
-            onUpdateIndicator={handleUpdateIndicator}
-          />
-          <TerminalChart
-            data={displayData}
-            color={selectedMarket.change24h >= 0 ? "#22c55e" : "#f43f5e"}
-            indicators={activeIndicators}
-            chartType={chartType}
-          />
+        {/* Tabs Bar */}
+        <div className="flex border-b border-slate-800 bg-slate-900/50 px-2">
+          <TabButton active={activeTab === "Trading"} onClick={() => setActiveTab("Trading")} label="Trading" />
+          <TabButton active={activeTab === "Analytics"} onClick={() => setActiveTab("Analytics")} label="Analytics" />
+          <TabButton active={activeTab === "Strategy"} onClick={() => setActiveTab("Strategy")} label="Strategy" />
+          <TabButton active={activeTab === "Backtest"} onClick={() => setActiveTab("Backtest")} label="Backtest" />
+          <TabButton active={activeTab === "Portfolio"} onClick={() => setActiveTab("Portfolio")} label="Portfolio" />
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 relative bg-slate-950 group overflow-hidden">
+          {activeTab === "Trading" && (
+            <>
+              <ChartToolbar
+                chartType={chartType}
+                setChartType={setChartType}
+                timeframe={timeframe}
+                setTimeframe={setTimeframe}
+              />
+              <IndicatorOverlay
+                activeIndicators={activeIndicators}
+                onAddIndicator={handleAddIndicator}
+                onRemoveIndicator={handleRemoveIndicator}
+                onUpdateIndicator={handleUpdateIndicator}
+              />
+              <TerminalChart
+                data={displayData}
+                color={selectedMarket.change24h >= 0 ? "#22c55e" : "#f43f5e"}
+                indicators={activeIndicators}
+                chartType={chartType}
+              />
+            </>
+          )}
+
+          {activeTab === "Analytics" && (
+            <div className="absolute inset-0 z-20 w-full h-full">
+              <AnalyticsDashboard info={stepInfo} />
+            </div>
+          )}
+
+          {activeTab === "Strategy" && (
+            <div className="absolute inset-0 z-20 w-full h-full bg-slate-950">
+              <StrategyBuilder />
+            </div>
+          )}
+
+          {activeTab === "Backtest" && (
+            <div className="absolute inset-0 z-20 w-full h-full bg-slate-950">
+              <BacktestDashboard />
+            </div>
+          )}
+
+          {activeTab === "Portfolio" && (
+            <div className="absolute inset-0 z-20 w-full h-full bg-slate-950">
+              <PortfolioAllocation />
+            </div>
+          )}
         </div>
       </div>
 
@@ -669,5 +707,19 @@ export function TerminalLayout({
         />
       </div>
     </div>
+  );
+}
+
+function TabButton({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${active
+        ? "border-indigo-500 text-indigo-400"
+        : "border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700"
+        }`}
+    >
+      {label}
+    </button>
   );
 }
