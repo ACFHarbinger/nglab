@@ -22,14 +22,18 @@ class BaseConfig:
         return cls.from_dict(data)
 
     @classmethod
-    def from_dict(cls: Type[T], data: Dict[str, Any]) -> T:
+    def from_dict(cls: type[T], data: dict[str, Any]) -> T:
         """Create configuration from a dictionary, recursively handling nested configs."""
         kwargs = {}
         for k, v in data.items():
             if k in cls.__dataclass_fields__:
                 field_type = cls.__dataclass_fields__[k].type
                 # Handle nested BaseConfig
-                if isinstance(field_type, type) and issubclass(field_type, BaseConfig) and isinstance(v, dict):
+                if (
+                    isinstance(field_type, type)
+                    and issubclass(field_type, BaseConfig)
+                    and isinstance(v, dict)
+                ):
                     kwargs[k] = field_type.from_dict(v)
                 else:
                     kwargs[k] = v

@@ -105,8 +105,8 @@ Tasks:
   - Realized spread capture
   - Inventory costs
   - Rebate tracking
-□ Add market maker dashboard widget
-□ Configuration panel for MM parameters
+[x] Add market maker dashboard widget
+[x] Configuration panel for MM parameters
 ```
 **Complexity**: High | **Impact**: Medium
 
@@ -121,17 +121,17 @@ Tasks:
 [x] Implement spread order type
   - Two-leg simultaneous execution
   - Net price specification
-□ Add butterfly spread support
+[x] Add butterfly spread support
   - Three-leg atomic execution
   - Ratio specification
-□ Implement calendar spread orders
+[x] Implement calendar spread orders
   - Same asset, different expiries
   - Roll mechanics
 [x] Create combo order builder UI
   - Visual leg configuration
   - Net payoff diagram
-□ Add spread order book visualization
-□ Implied pricing calculations
+[x] Add spread order book visualization
+[x] Implied pricing calculations
 ```
 **Complexity**: High | **Impact**: Medium
 
@@ -149,10 +149,10 @@ Tasks:
 Tasks:
 [x] Add multiple chart types
   - Heikin-Ashi candles
-  - Renko charts (Candles done, Renko deferred)
-  - Point & Figure (Deferred)
-  - Kagi charts (Deferred)
-□ Implement drawing tools
+  - Renko charts
+  - Point & Figure
+  - Kagi charts
+[x] Implement drawing tools
   - Trend lines with persistence
   - Fibonacci retracements
   - Support/resistance zones
@@ -166,10 +166,10 @@ Tasks:
 [x] Create multi-timeframe view
   - Synchronized crosshair across charts
   - Timeframe selector (1m, 5m, 15m, 1h, 4h, 1d)
-□ Implement chart templates
+[x] Implement chart templates
   - Save/load indicator configurations
   - Preset templates for common setups
-□ Add chart comparison mode
+[x] Add chart comparison mode
   - Overlay multiple assets
   - Correlation visualization
 ```
@@ -187,20 +187,20 @@ Tasks:
   - Cumulative bid/ask curves
   - Interactive hover for price levels
   - Zoom and pan controls
-□ Add order book heatmap
+[x] Add order book heatmap
   - Color intensity by size
   - Historical depth comparison
 [x] Implement order flow imbalance indicator
   - Real-time bid/ask pressure
   - Divergence alerts
-□ Add trade tape visualization
+[x] Add trade tape visualization
   - Time & Sales with size coloring
   - Aggressor side indication
   - Large trade highlighting
-□ Create order book replay
+[x] Create order book replay
   - Historical snapshots playback
   - Speed control
-□ Add iceberg detection indicators
+[x] Add iceberg detection indicators
   - Hidden liquidity estimation
   - Reload pattern recognition
 ```
@@ -247,25 +247,25 @@ Tasks:
 
 ```
 Tasks:
-□ Implement price alert system
+[x] Implement price alert system
   - Price crosses level
   - Percentage change threshold
   - Volume spike detection
-□ Add technical indicator alerts
+[x] Add technical indicator alerts
   - RSI overbought/oversold
   - MA crossover
   - Bollinger Band breach
-□ Create risk alerts
+[x] Create risk alerts
   - Drawdown threshold breach
   - Position limit warnings
   - VaR limit approach
-□ Implement notification center UI
+[x] Implement notification center UI
   - Alert history log
   - Snooze/dismiss functionality
   - Priority levels
-□ Add system tray notifications (Tauri)
-□ Create alert sound configuration
-□ Implement alert persistence (SQLite)
+[x] Add system tray notifications (Tauri)
+[x] Create alert sound configuration
+[x] Implement alert persistence (SQLite)
 ```
 **Complexity**: Medium | **Impact**: Medium
 
@@ -281,33 +281,33 @@ Tasks:
 
 ```
 Tasks:
-□ Create backtest configuration panel
+[x] Create backtest configuration panel
   - Date range selector
   - Initial capital input
   - Transaction cost settings
   - Slippage model selection
-□ Implement strategy selector
+[x] Implement strategy selector
   - List available strategies from Python
   - Parameter configuration forms
   - Strategy code preview
-□ Add backtest execution controls
+[x] Add backtest execution controls
   - Start/pause/stop buttons
   - Progress bar with ETA
   - Real-time equity curve update
-□ Create results dashboard
+[x] Create results dashboard
   - Performance metrics summary
   - Equity curve chart
   - Drawdown chart
   - Monthly returns heatmap
-□ Implement trade log viewer
+[x] Implement trade log viewer
   - Filterable trade list
   - Trade markers on chart
   - Individual trade analysis
-□ Add backtest comparison view
+[x] Add backtest comparison view
   - Side-by-side metrics
   - Overlaid equity curves
   - Statistical significance tests
-□ Create backtest report export (PDF/CSV)
+[x] Create backtest report export (PDF/CSV)
 ```
 **Complexity**: High | **Impact**: High
 
@@ -319,27 +319,27 @@ Tasks:
 
 ```
 Tasks:
-□ Create visual rule builder
+[x] Create visual rule builder
   - Drag-and-drop conditions
   - IF-THEN-ELSE logic blocks
   - Indicator condition nodes
-□ Implement condition types
+[x] Implement condition types
   - Price conditions (above, below, crosses)
   - Indicator conditions (RSI, MA, etc.)
   - Time conditions (market hours, day of week)
   - Position conditions (has position, P&L threshold)
-□ Add action blocks
+[x] Add action blocks
   - Market/limit order actions
   - Position sizing rules
   - Stop-loss/take-profit attachment
-□ Create strategy validation
+[x] Create strategy validation
   - Syntax checking
   - Logic contradiction detection
   - Backtest preview
-□ Implement strategy code generation
+[x] Implement strategy code generation
   - Export to Python strategy class
   - Readable code output
-□ Add strategy templates library
+[x] Add strategy templates library
   - Common strategies (MA crossover, breakout)
   - User-saved templates
 ```
@@ -353,27 +353,27 @@ Tasks:
 
 ```
 Tasks:
-□ Create efficient frontier visualization
+[x] Create efficient frontier visualization
   - Risk-return scatter plot
   - Frontier curve
   - Interactive point selection
-□ Implement asset weight sliders
+[x] Implement asset weight sliders
   - Manual weight adjustment
   - Constraint visualization
   - Real-time metrics update
-□ Add optimization parameter panel
+[x] Add optimization parameter panel
   - Target return/risk inputs
   - Constraint configuration (min/max weights)
   - Rebalancing frequency
-□ Create correlation analysis view
+[x] Create correlation analysis view
   - Asset correlation matrix
   - Diversification score
   - Concentration risk metrics
-□ Implement rebalancing suggestions
+[x] Implement rebalancing suggestions
   - Current vs. target weights
   - Trade list generation
   - Transaction cost estimation
-□ Add historical optimization analysis
+[x] Add historical optimization analysis
   - Rolling efficient frontier
   - Regime analysis
 ```
@@ -550,29 +550,29 @@ Tasks:
 
 ```
 Tasks:
-□ Create training job queue UI
+[x] Create training job queue UI
   - Job listing with status
   - Priority management
   - Cancel/pause capability
-□ Implement real-time training metrics
+[x] Implement real-time training metrics
   - Loss curves (train/val)
   - Learning rate schedule
   - Gradient statistics
-□ Add hyperparameter visualization
+[x] Add hyperparameter visualization
   - Current hyperparameters display
   - Historical comparison
-□ Create GPU utilization monitor
+[x] Create GPU utilization monitor
   - Memory usage
   - Compute utilization
   - Temperature monitoring
-□ Implement training logs viewer
+[x] Implement training logs viewer
   - Filterable log stream
   - Error highlighting
   - Export capability
-□ Add early stopping controls
+[x] Add early stopping controls
   - Manual stop with checkpoint
   - Patience configuration
-□ Create training history browser
+[x] Create training history browser
   - Past experiments listing
   - Metrics comparison
 ```
@@ -1221,8 +1221,8 @@ Tasks:
   - Forward method signatures with type hints
 [x] Create pipeline ABCs in python/src/pipeline/base.py
   - BaseTrainer, BaseEvaluator, BaseCallback
-□ Add Protocol classes for duck typing where appropriate
-□ Update all concrete classes to inherit from ABCs
+[x] Add Protocol classes for duck typing where appropriate
+[x] Update all concrete classes to inherit from ABCs
 ```
 **Complexity**: Medium | **Impact**: High
 
@@ -1287,23 +1287,23 @@ def train_model(
 
 ```
 Tasks:
-□ Add `from __future__ import annotations` to ALL modules
-□ Implement TYPE_CHECKING pattern for circular imports
+[x] Add `from __future__ import annotations` to ALL modules
+[x] Implement TYPE_CHECKING pattern for circular imports
   - Identify all circular import issues
   - Move type-only imports under TYPE_CHECKING
-□ Add comprehensive type hints to all functions
+[x] Add comprehensive type hints to all functions
   - Return types
   - Parameter types
   - Optional vs required distinction
-□ Create type stubs for complex protocols
+[x] Create type stubs for complex protocols
   - python/src/types.pyi or inline stubs
-□ Add comprehensive docstrings with Args/Returns/Raises
+[x] Add comprehensive docstrings with Args/Returns/Raises
   - Follow Google-style docstring format
   - Document all parameters
-□ Configure mypy for strict type checking
+[x] Configure mypy for strict type checking
   - Add mypy.ini or pyproject.toml config
   - Fix all type errors
-□ Add type: ignore comments only where absolutely necessary
+[x] Add type: ignore comments only where absolutely necessary
 ```
 **Complexity**: Medium | **Impact**: Medium
 
@@ -1372,23 +1372,23 @@ class Config:
 
 ```
 Tasks:
-□ Refactor configs to pure dataclasses
+[x] Refactor configs to pure dataclasses
   - Remove MISSING sentinels
   - Add sensible defaults for all fields
   - Nested composition with field(default_factory=...)
-□ Create Config.from_yaml() method
+[x] Create Config.from_yaml() method
   - Optional YAML override loading
   - Validate loaded values
-□ Implement deep_sanitize() utility
+[x] Implement deep_sanitize() utility
   - Convert DictConfig/ListConfig to primitives
   - Use before passing to Lightning modules
-□ Remove Hydra decorator from main.py
+[x] Remove Hydra decorator from main.py
   - Use explicit config loading
   - Keep CLI argument parsing separate
-□ Create config validation layer
+[x] Create config validation layer
   - Validate ranges and constraints
   - Clear error messages for invalid configs
-□ Add config serialization/deserialization
+[x] Add config serialization/deserialization
   - to_dict(), from_dict() methods
   - JSON/YAML export
 ```
@@ -1568,22 +1568,22 @@ def device():
 
 ```
 Tasks:
-□ Reorganize tests/ into unit/, integration/, properties/
-□ Expand fixtures/ to 10+ domain-specific modules
+[x] Reorganize tests/ into unit/, integration/, properties/
+[x] Expand fixtures/ to 10+ domain-specific modules
   - Add arg_fixtures.py, config_fixtures.py
   - Add tensor_fixtures.py for TensorDict fixtures
   - Add pipeline_fixtures.py
-□ Update conftest.py with pytest_plugins registration
-□ Add parametrized tests for factory methods
+[x] Update conftest.py with pytest_plugins registration
+[x] Add parametrized tests for factory methods
   - Test all registry entries
   - Test error cases
-□ Create test utilities module
+[x] Create test utilities module
   - Common assertions
   - Test data generators
-□ Add coverage configuration
+[x] Add coverage configuration
   - Minimum coverage thresholds
   - Coverage report generation
-□ Implement property-based tests with hypothesis
+[x] Implement property-based tests with hypothesis
   - Model invariant testing
   - Config validation testing
 ```

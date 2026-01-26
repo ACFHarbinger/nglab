@@ -2,14 +2,37 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Protocol, runtime_checkable
 
 import torch
 
 if TYPE_CHECKING:
     from tensordict import TensorDict
 
-__all__ = ["TradingEnvBase"]
+__all__ = ["TradingEnvBase", "EnvironmentProtocol", "SimulationProtocol"]
+
+
+@runtime_checkable
+class EnvironmentProtocol(Protocol):
+    """Protocol for environment-like objects to ensure duck typing compatibility."""
+
+    name: str
+
+    @property
+    def batch_size(self) -> torch.Size: ...
+
+    def reset(self, seed: Optional[int] = None) -> TensorDict: ...
+
+    def step(self, action: TensorDict) -> TensorDict: ...
+
+    def get_reward(self, td: TensorDict) -> torch.Tensor: ...
+
+
+@runtime_checkable
+class SimulationProtocol(Protocol):
+    """Protocol specifically for simulation engines."""
+
+    def run_simulation(self, steps: int) -> TensorDict: ...
 
 
 class TradingEnvBase(ABC):

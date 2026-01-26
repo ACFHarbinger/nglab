@@ -3,7 +3,7 @@ import { Activity, Play, CheckCircle, BarChart3 } from "lucide-react";
 
 interface AlgoOrderProps {
     algo_orders: any[];
-    current_step: u64;
+    current_step: number;
 }
 
 export function AlgoOrderWidget({ algo_orders, current_step }: AlgoOrderProps) {

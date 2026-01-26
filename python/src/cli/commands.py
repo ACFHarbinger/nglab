@@ -21,19 +21,23 @@ import python.src.policies.neural  # noqa: F401
 
 
 @validate_config(schema=TrainConfig)
-def train(cfg: DictConfig) -> None:
+def train(cfg: Any) -> None:
     """
     Execute training pipeline based on configuration.
     """
     # Convert to structured config for type safety
-    config = TrainConfig.from_dict(OmegaConf.to_container(cfg, resolve=True)) # type: ignore
-    
-    validate_train_config(cfg)
-    print(OmegaConf.to_yaml(cfg))
+    if isinstance(cfg, DictConfig):
+        config_dict = OmegaConf.to_container(cfg, resolve=True)
+        config = TrainConfig.from_dict(cast(dict[str, Any], config_dict))
+    else:
+        config = cfg
+
+    validate_train_config(cfg if isinstance(cfg, DictConfig) else OmegaConf.create(config.to_dict()))
+    print(OmegaConf.to_yaml(cfg) if isinstance(cfg, DictConfig) else config)
     pl.seed_everything(config.seed)
-    
+
     # Sanitize config early
-    sanitized_cfg = deep_sanitize(cfg)
+    sanitized_cfg = deep_sanitize(cfg) if isinstance(cfg, DictConfig) else config.to_dict()
 
     # 1. Instantiate Backbone
     backbone = TimeSeriesBackbone(cfg.model)

@@ -3,6 +3,7 @@
  * @description High-fidelity trading terminal layout with chart, order book, trades, and execution form.
  */
 import { useState, useEffect, useMemo } from "react";
+import clsx from "clsx";
 /**
  * @module components/terminal/MarketSidebar
  * @description Searchable sidebar for quickly switching between different trading pairs/markets.
@@ -34,7 +35,9 @@ import { MarketMakerWidget } from "./MarketMakerWidget";
 import { useArena } from "../../hooks/useArena";
 import { MarketMetadata } from "../../hooks/usePolymarket";
 import { FavoriteMarket } from "../../hooks/useFavorites";
-import { Wallet } from "lucide-react";
+import { Wallet, Bell, AlertCircle } from "lucide-react";
+import { NotificationCenter } from "../notifications/NotificationCenter";
+import { AlertConfig } from "../notifications/AlertConfig";
 import { invoke } from "@tauri-apps/api/core";
 import { IndicatorOverlay, IndicatorConfig } from "../charts/IndicatorOverlay";
 import { nanoid } from "nanoid";
@@ -42,8 +45,9 @@ import { AnalyticsDashboard } from "../analytics/AnalyticsDashboard";
 import { StrategyBuilder } from "../strategy/StrategyBuilder";
 import { BacktestDashboard } from "../backtest/BacktestDashboard";
 import { PortfolioAllocation } from "../portfolio/PortfolioAllocation";
+import { TrainingDashboard } from "../training/TrainingDashboard";
 
-type Tab = "Trading" | "Analytics" | "Strategy" | "Backtest" | "Portfolio";
+type Tab = "Trading" | "Analytics" | "Strategy" | "Backtest" | "Portfolio" | "Training";
 
 // Mock Data Generators
 const generateMockMarkets = () => [
@@ -291,6 +295,8 @@ export function TerminalLayout({
 
   // Charting State
   const [activeTab, setActiveTab] = useState<Tab>("Trading");
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showAlertConfig, setShowAlertConfig] = useState(false);
   const [chartType, setChartType] = useState<ChartType>("Area");
   const [timeframe, setTimeframe] = useState<Timeframe>("1m");
 
@@ -604,10 +610,28 @@ export function TerminalLayout({
                 %
               </span>
             </div>
+            <button
+              onClick={() => setShowAlertConfig(true)}
+              className="p-1.5 rounded bg-slate-800/50 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all ml-2"
+              title="Set Price Alert"
+            >
+              <AlertCircle size={16} />
+            </button>
           </div>
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded text-sm font-medium transition-colors">
-            <Wallet size={16} />
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className={clsx(
+                "p-2 rounded-lg transition-all",
+                showNotifications ? "bg-indigo-500/10 text-indigo-400" : "text-slate-400 hover:text-white hover:bg-slate-800"
+              )}
+            >
+              <Bell size={20} />
+            </button>
+            <button className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 rounded text-sm font-medium transition-colors">
+              <Wallet size={16} />
+            </button>
+          </div>
         </header>
 
         {/* Tabs Bar */}
@@ -617,6 +641,7 @@ export function TerminalLayout({
           <TabButton active={activeTab === "Strategy"} onClick={() => setActiveTab("Strategy")} label="Strategy" />
           <TabButton active={activeTab === "Backtest"} onClick={() => setActiveTab("Backtest")} label="Backtest" />
           <TabButton active={activeTab === "Portfolio"} onClick={() => setActiveTab("Portfolio")} label="Portfolio" />
+          <TabButton active={activeTab === "Training"} onClick={() => setActiveTab("Training")} label="Training Pipeline" />
         </div>
 
         {/* Content Area */}
@@ -667,6 +692,12 @@ export function TerminalLayout({
               <PortfolioAllocation />
             </div>
           )}
+
+          {activeTab === "Training" && (
+            <div className="absolute inset-0 z-20 w-full h-full bg-slate-950">
+              <TrainingDashboard />
+            </div>
+          )}
         </div>
       </div>
 
@@ -706,6 +737,29 @@ export function TerminalLayout({
           livePrices={livePrices}
         />
       </div>
+
+      {/* 5. Notification Center Sidebar */}
+      {showNotifications && (
+        <div className="fixed top-0 right-0 h-full z-[100] animate-in slide-in-from-right duration-300">
+          <NotificationCenter onClose={() => setShowNotifications(false)} />
+        </div>
+      )}
+
+      {/* 6. Alert Config Modal */}
+      {showAlertConfig && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md animate-in zoom-in-95 duration-200">
+            <AlertConfig
+              symbol={selectedMarket.symbol}
+              currentPrice={currentPrice}
+              onClose={() => setShowAlertConfig(false)}
+              onAlertCreated={() => {
+                // Could refresh alerts list if needed
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

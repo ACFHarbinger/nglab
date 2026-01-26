@@ -1,19 +1,20 @@
-"""
-Unified Backbone for Time Series Models.
-"""
+from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any, cast, TYPE_CHECKING
 
 import torch
-from torch import nn
 
 from .deep_factory import DEEP_MODEL_NAMES, create_deep_model
 from .mac_factory import MAC_MODEL_NAMES, create_mac_model
+from .base import BaseModel
 from python.src.utils.registry import register_model
+
+if TYPE_CHECKING:
+    from tensordict import TensorDict
 
 
 @register_model("TimeSeriesBackbone")
-class TimeSeriesBackbone(nn.Module):
+class TimeSeriesBackbone(BaseModel):
     """
     Unified Backbone for Time Series.
     Wraps specific implementations (Transformer, LSTM, etc).
@@ -43,38 +44,35 @@ class TimeSeriesBackbone(nn.Module):
 
         self.model = model
 
-    def forward(self, x: torch.Tensor | dict[str, torch.Tensor]) -> torch.Tensor:
+    def forward(self, td: TensorDict, **kwargs: Any) -> TensorDict:
         """
-        Forward pass.
+        Forward pass using TensorDict.
 
         Args:
-            x: Input tensor or dictionary containing 'observation'.
+            td: Input TensorDict containing 'observation'.
+            kwargs: Additional arguments (e.g., 'return_sequence').
 
         Returns:
-            Model output.
+            TensorDict with 'state_value' or 'embedding'.
         """
-        obs: torch.Tensor
-        if isinstance(x, dict):
-            obs = x["observation"]
-        else:
-            obs = x
-
-        kwargs: dict[str, Any] = {}
-        if self.cfg.get("return_sequence", False):
-            kwargs["return_sequence"] = True
+        obs = td["observation"]
 
         # Whitelist for models supporting return_sequence
         sequence_supported = DEEP_MODEL_NAMES + MAC_MODEL_NAMES
+        
+        # Merge kwargs with cfg defaults
+        forward_kwargs = {**kwargs}
+        if self.cfg.get("return_sequence", False):
+            forward_kwargs.setdefault("return_sequence", True)
 
-        if self.cfg.get("name") in sequence_supported:
-            pass
-        elif "return_sequence" in kwargs:
-            del kwargs["return_sequence"]
+        if self.cfg.get("name") not in sequence_supported:
+            forward_kwargs.pop("return_sequence", None)
 
-        out = self.model(obs, **kwargs)
-        # We generally expect models to handle their return types.
-        # Wrappers should return what's expected.
-        return cast(torch.Tensor, out)
+        out = self.model(obs, **forward_kwargs)
+        
+        # Return TensorDict
+        td.set("state_value", out)
+        return td
 
     @property
     def in_keys(self) -> list[str]:

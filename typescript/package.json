@@ -29,9 +29,11 @@
     "highcharts-react-official": "^3.2.3",
     "lightweight-charts": "^5.1.0",
     "lucide-react": "^0.562.0",
+    "nanoid": "^3.3.11",
     "papaparse": "^5.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "recharts": "^3.7.0",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.3.5"
   },

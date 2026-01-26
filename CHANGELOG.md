@@ -19,34 +19,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Tauri Integration**: Exposed advanced order types via new Tauri commands (`submit_fok_order`, `submit_ioc_order`, `submit_bracket_order`, `submit_pegged_order`).
 - **Trading UI Improvements**: Updated `TradingFormWidget` with an Order Type selector and dynamic inputs for advanced order parameters (Peg Reference, Peg Offset, Stop Loss, Take Profit).
 - **Pegged Orders**: Dynamic order pricing (e.g., Peg to Best Bid + Offset) with real-time updates via `PegReference` and `reprice_pegged_orders`.
-- **Algorithmic Execution Engine**: Implemented institutional-grade TWAP, VWAP, and POV algorithms in Rust.
-- **Execution Dashboard**: Added a real-time progress visualization widget in the terminal to monitor active algorithmic orders.
-- **Python Algo API**: Updated `TradingEnv` and `MultiAssetEnv` Python bindings to support `submit_algo_order` with `urgency` (IS) and `participation_rate` (POV) parameters.
-- **Python Architecture Overhaul**:
-  - Implemented central exception handling in `python/src/exceptions.py`.
-  - Added `deep_sanitize` utility for `OmegaConf` to primitive conversion in `python/src/utils/config.py`.
-  - Refactored CLI to support subcommand routing (`train`, `evaluate`, `backtest`) and argument validation.
-  - Implemented `PolicyFactory` and `PipelineFactory` for registry-based component instantiation.
-  - Centralized `MODEL_REGISTRY`, `POLICY_REGISTRY`, `ENV_REGISTRY`, and `PIPELINE_REGISTRY`.
-  - Comprehensive Abstract Base Classes (ABCs) for Environments, Policies, Models, and Training Pipelines with robust validation and consistent signatures.
-  - Flattened `models/deep/` hierarchy into a cleaner, 2-level directory structure for better maintainability and reduced import nesting.
-  - Standardized all major Python modules with `from __future__ import annotations` and explicit `__all__` exports for a cleaner public API surface.
-  - Enhanced `BaseConfig` with recursive dictionary parsing for nested dataclass support.
-  - Reorganized the unit test suite into a domain-organized directory structure (`api/`, `envs/`, `models/`, `pipeline/`, `storage/`, `utils/`).
-  - Expanded test infrastructure with 11+ global fixtures across specialized modules (`arg_fixtures.py`, `config_fixtures.py`, `tensor_fixtures.py`, `pipeline_fixtures.py`).
-  - Significantly expanded `CLAUDE.md` and consolidated technical documentation into `AGENTS.md`.
-  - Implemented `@validate_config` and `@validate_input` decorators for proactive error catching at system boundaries.
-  - Refactored CLI execution to use structured `TrainConfig` dataclasses with recursive parsing.
-  - **Phase 5 (Performance & Reliability) Completed:**
-    - Added `@profile_performance` decorator for precision timing and memory tracking of CLI commands.
-    - Implemented `MemoryTrackingCallback` for per-epoch RSS/VMS monitor in PyTorch Lightning.
-    - Added property-based testing suite using `Hypothesis` for robust config validation.
-    - Finalized `mock_rust_env` fixture for pure Python testing of hybrid components.
-    - Verified `python/src/utils/validation.py` functionality and decorator application.
-  - **Priority 1 (Advanced Trading Features):**
-    - Implemented Implementation Shortfall (IS) execution algorithm with urgency-based schedule and adaptive pricing.
-    - Added `ExecutionAnalytics` module to calculate slippage (bps) and implementation shortfall costs for algorithmic orders.
-    - Enhanced `MarketMaker` simulation with adverse selection protection and active P&L tracking (spread capture).
+- **Algorithmic Execution Engine**: Implemented institutional-grade TWAP with randomization, VWAP with historical profile integration, and Percentage of Volume (POV) algorithms in Rust.
+- **Implementation Shortfall (IS)**: Added IS execution strategy with urgency-based scheduling and adaptive pricing.
+- **Multi-Leg Order Support**: Implemented atomic execution for multi-leg orders (Spreads, Butterfly, Calendar) with net price specification in `rust/src/simulation/spreads.rs`.
+- **Advanced Visualization**:
+  - **Depth Chart**: Real-time cumulative bid/ask curves with interactive level inspection.
+  - **Order Flow Imbalance**: Real-time visualization of bid/ask pressure and liquidity skew.
+  - **Terminal Tab System**: Reorganized terminal into functional tabs: Trading, Analytics, Strategy, Backtest, and Portfolio.
+  - **Analytics Dashboard**: Performance attribution, trade metrics, correlation matrix, and drawdown visualization.
+  - **Strategy Builder UI**: Initial implementation of a no-code visual rule builder for trading strategies.
+  - **Backtest Dashboard**: Integrated backtesting interface with configuration panel and results visualization.
+  - **Portfolio Allocation**: Real-time asset weight management and risk metrics dashboard.
+- **Training Dashboard**: New functional tab for monitoring machine learning model training jobs with real-time loss/reward charts and execution logs.
+- **Notification & Alert System**: Institutional-grade price and technical alert system with backend persistence and Activity Center UI.
+- **Execution Analytics**: Module to calculate implementation shortfall costs and slippage in basis points (bps).
+- **Market Maker Mode**: Enhanced spread quoting engine with position-based skew and adverse selection protection.
   - Resolved potential circular imports in the model factory and central CLI modules.
   - Updated all major `__init__.py` files with explicit `__all__` exports and module docstrings.
 

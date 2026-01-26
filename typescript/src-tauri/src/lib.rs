@@ -41,6 +41,7 @@ pub fn run() {
         .manage(state)
         .manage(AuthState::default())
         .manage(VaultState::default())
+        .manage(commands::notifications::AlertState::default())
         .invoke_handler(tauri::generate_handler![
             commands::simulation::start_simulation,
             commands::simulation::stop_simulation,
@@ -90,6 +91,10 @@ pub fn run() {
             commands::integrations::get_open_polymarket_markets,
             commands::integrations::get_public_polymarket_markets,
             commands::integrations::search_public_polymarket_markets,
+            commands::notifications::add_alert,
+            commands::notifications::get_alerts,
+            commands::notifications::clear_notifications,
+            commands::notifications::get_notifications,
             commands::health::health_check,
             commands::health::get_system_info,
             commands::health::set_debug_mode,

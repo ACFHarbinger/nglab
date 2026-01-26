@@ -1,11 +1,6 @@
-"""
-Neural Network Policy for NGLab.
+from __future__ import annotations
 
-Wraps PyTorch or TorchRL modules to provide a consistent 'act' interface
-for model-based trading strategies.
-"""
-
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 import torch
 from tensordict import TensorDict
@@ -14,6 +9,9 @@ from torch import nn
 
 from python.src.utils.registry import register_policy
 from .base import Policy
+
+if TYPE_CHECKING:
+    pass
 
 
 @register_policy("neural")
@@ -43,13 +41,21 @@ class NeuralPolicy(TensorDictModuleBase, Policy):
 
     @property
     def in_keys(self) -> list[str]:
+        """Input keys for the policy."""
         return ["observation"]
+
+    @in_keys.setter
+    def in_keys(self, value: Any) -> None:
+        pass
 
     @property
     def out_keys(self) -> list[str]:
-        return [
-            "logits"
-        ]  # Assuming the backbone outputs logits for the action distribution
+        """Output keys for the policy."""
+        return ["logits"]
+
+    @out_keys.setter
+    def out_keys(self, value: Any) -> None:
+        pass
 
     def act(self, observation: torch.Tensor | TensorDict | dict[str, Any]) -> Any:
         """

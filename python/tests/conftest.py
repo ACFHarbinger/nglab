@@ -17,6 +17,7 @@ pytest_plugins = [
     "python.tests.fixtures.model_fixtures",
     "python.tests.fixtures.nglab_fixtures",
     "python.tests.fixtures.pipeline_fixtures",
+    "python.tests.fixtures.policy_fixtures",
     "python.tests.fixtures.regression_fixtures",
     "python.tests.fixtures.tensor_fixtures",
     "python.tests.fixtures.utils_fixtures",
