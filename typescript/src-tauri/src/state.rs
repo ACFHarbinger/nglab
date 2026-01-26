@@ -48,4 +48,8 @@ pub struct ArenaUpdate {
     pub mm_active: bool,
     /** Realized PnL from market making. */
     pub mm_realized_pnl: f64,
+    pub pnl: f64,
+    pub return_pct: f64,
+    pub max_drawdown: f64,
+    pub volatility: f64,
 }

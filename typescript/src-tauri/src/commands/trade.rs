@@ -111,5 +111,18 @@ pub fn stop_market_maker(state: State<ArenaState>) {
     let mut env_guard = state.env.lock().unwrap();
     let env = &mut *env_guard;
     env.market_maker.active = false;
+    env.market_maker.active = false;
     env.market_maker.cancel_quotes(&mut env.orderbook);
+}
+
+/**
+ * Submit a Multi-Leg Spread Order.
+ */
+#[tauri::command]
+pub fn submit_spread_order(
+    state: State<ArenaState>,
+    order: nglab::simulation::spreads::SpreadOrder,
+) {
+    let mut env = state.env.lock().unwrap();
+    env.submit_spread_order(order);
 }

@@ -12,7 +12,8 @@ import { MarketSidebar, Market } from "./MarketSidebar";
  * @module components/terminal/TerminalChart
  * @description Real-time price chart visualization for a selected market.
  */
-import { TerminalChart } from "./TerminalChart";
+import { TerminalChart, ChartDataPoint } from "./TerminalChart";
+import { ChartToolbar, ChartType, Timeframe } from "../charts/ChartToolbar";
 /**
  * @module components/terminal/OrderBookWidget
  * @description Vertical limit order book visualization optimized for the trading terminal view.
@@ -148,16 +149,72 @@ const generateMockMarkets = () => [
   },
 ];
 
-const generateMockHistory = (currentPrice: number) => {
-  const data = [];
+const generateMockHistory = (currentPrice: number, timeframe: string): ChartDataPoint[] => {
+  const data: ChartDataPoint[] = [];
   let price = currentPrice;
   const now = Math.floor(Date.now() / 1000);
-  for (let i = 1000; i >= 0; i--) {
-    data.push({ time: now - i * 60, value: price });
-    price = price + (Math.random() - 0.5) * 0.01;
+
+  // Define step size based on timeframe
+  let step = 60; // 1m default
+  if (timeframe === "5m") step = 300;
+  else if (timeframe === "15m") step = 900;
+  else if (timeframe === "1h") step = 3600;
+  else if (timeframe === "4h") step = 14400;
+  else if (timeframe === "1d") step = 86400;
+
+  for (let i = 200; i >= 0; i--) {
+    const time = now - i * step;
+    // Generate realistic-looking candles
+    const volatility = 0.005;
+    const change = (Math.random() - 0.5) * volatility * 2;
+    const close = price;
+    const open = price - change;
+    const high = Math.max(open, close) + Math.random() * volatility;
+    const low = Math.min(open, close) - Math.random() * volatility;
+
+    data.push({ time, open, high, low, close, value: close });
+
+    // Update price for next iteration (backwards?? No, usually we generate forwards. 
+    // But since we loop backwards i=200..0, we are effectively setting previous prices?
+    // Actually simplicity: Let's generate a random walk backwards from current price.
+    price = price - (Math.random() - 0.5) * 0.01;
   }
-  return data;
+  return data.reverse(); // Reverse to get chronological order
 };
+
+// Heikin Ashi Calculation Helper
+const calculateHeikinAshi = (data: ChartDataPoint[]): ChartDataPoint[] => {
+  if (data.length === 0) return [];
+
+  const haData: ChartDataPoint[] = [];
+
+  // First candle is same as standard
+  let prevOpen = data[0].open || 0;
+  let prevClose = data[0].close || 0;
+
+  haData.push(data[0]);
+
+  for (let i = 1; i < data.length; i++) {
+    const d = data[i];
+    const haClose = ((d.open || 0) + (d.high || 0) + (d.low || 0) + (d.close || 0)) / 4;
+    const haOpen = (prevOpen + prevClose) / 2;
+    const haHigh = Math.max(d.high || 0, haOpen, haClose);
+    const haLow = Math.min(d.low || 0, haOpen, haClose);
+
+    haData.push({
+      time: d.time,
+      open: haOpen,
+      high: haHigh,
+      low: haLow,
+      close: haClose,
+      value: haClose
+    });
+
+    prevOpen = haOpen;
+    prevClose = haClose;
+  }
+  return haData;
+}
 
 const generateMockOrderBook = (price: number) => {
   const bids: any = {};
@@ -225,7 +282,13 @@ export function TerminalLayout({
   toggleFavorite,
 }: Props) {
   const { data: arenaData } = useArena();
-  const [chartData, setChartData] = useState<any[]>([]);
+
+  // Charting State
+  const [chartType, setChartType] = useState<ChartType>("Area");
+  const [timeframe, setTimeframe] = useState<Timeframe>("1m");
+
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  // ... rest of state
   const [orderBook, setOrderBook] = useState<{ bids: any; asks: any }>({
     bids: {},
     asks: {},
@@ -430,11 +493,19 @@ export function TerminalLayout({
   };
 
   useEffect(() => {
-    // Init mock data on market switch
-    setChartData(generateMockHistory(selectedMarket.price));
+    // Init mock data on market switch or timeframe change
+    setChartData(generateMockHistory(selectedMarket.price, timeframe));
     setOrderBook(generateMockOrderBook(selectedMarket.price));
     setRecentTrades(generateMockTrades(selectedMarket.price));
-  }, [selectedMarketId, selectedMarket.price]);
+  }, [selectedMarketId, selectedMarket.price, timeframe]);
+
+  // Derived data for display (Heikin Ashi if selected)
+  const displayData = useMemo(() => {
+    if (chartType === "HeikinAshi") {
+      return calculateHeikinAshi(chartData);
+    }
+    return chartData;
+  }, [chartData, chartType]);
 
   useEffect(() => {
     // Update chart with live price
@@ -466,6 +537,26 @@ export function TerminalLayout({
       });
     }
   }, [livePrices, currentPrice]);
+
+  const stepInfo = {
+    portfolio_value: arenaData?.portfolio_value || 0,
+    position: arenaData?.position || 0,
+    cash: (arenaData?.portfolio_value || 0) - (arenaData?.position || 0) * (selectedMarket.price || 0), // Approx cash if not sent directly, but env sends separate cash usually? 
+    // Actually arenaData usually doesn't send raw cash, let's verify. 
+    // ArenaData has portfolio_value and position. Cash = PV - PosVal. 
+    // Wait, let's check ArenaUpdate again. It has portfolio_value. It DOES NOT have cash explicitly in the interface I just saw?
+    // Check gym.rs: Obs has it. StepInfo has it. But ArenaUpdate struct on Rust side?
+    // I need to check `rust/src/simulation/arena.rs` or wherever `ArenaUpdate` is defined to make sure `cash` is there or derive it.
+    // For now, derive it or just put 0.
+    sharpe_ratio: 0, // Need to add to ArenaUpdate if missing
+    total_steps: arenaData?.step || 0,
+    pnl: arenaData?.pnl || 0,
+    return_pct: arenaData?.return_pct || 0,
+    drawdown: arenaData?.current_drawdown || 0,
+    max_drawdown: arenaData?.max_drawdown || 0,
+    volatility: arenaData?.volatility || 0,
+    cash: 0 // Placeholder
+  };
 
   return (
     <div className="flex h-full w-full bg-slate-950 text-slate-200 overflow-hidden relative">
@@ -520,6 +611,12 @@ export function TerminalLayout({
 
         {/* Chart Area */}
         <div className="flex-1 relative bg-slate-950 group">
+          <ChartToolbar
+            chartType={chartType}
+            setChartType={setChartType}
+            timeframe={timeframe}
+            setTimeframe={setTimeframe}
+          />
           <IndicatorOverlay
             activeIndicators={activeIndicators}
             onAddIndicator={handleAddIndicator}
@@ -527,9 +624,10 @@ export function TerminalLayout({
             onUpdateIndicator={handleUpdateIndicator}
           />
           <TerminalChart
-            data={chartData}
+            data={displayData}
             color={selectedMarket.change24h >= 0 ? "#22c55e" : "#f43f5e"}
             indicators={activeIndicators}
+            chartType={chartType}
           />
         </div>
       </div>

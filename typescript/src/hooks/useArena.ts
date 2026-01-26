@@ -69,6 +69,14 @@ export interface ArenaUpdate {
   mm_active: boolean;
   /** Realized PnL from market making */
   mm_realized_pnl: number;
+  /** Cumulative P&L */
+  pnl: number;
+  /** Return percentage */
+  return_pct: number;
+  /** Maximum drawdown */
+  max_drawdown: number;
+  /** Rolling volatility */
+  volatility: number;
 }
 
 /**

@@ -3,6 +3,8 @@ import clsx from "clsx";
 import { Wallet, Info, ChevronDown, Layers, Settings } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 
+import { ComboBuilder, SpreadLeg } from "../trading/ComboBuilder";
+
 type OrderType = "Limit" | "Market" | "FOK" | "IOC" | "Bracket" | "Pegged" | "Algo";
 type AlgoType = "TWAP" | "VWAP" | "POV";
 type PegReference = "BestBid" | "BestAsk" | "MidPoint";
@@ -113,6 +115,10 @@ export function TradingFormWidget({
   const [selectedOutcomeIdx, setSelectedOutcomeIdx] = useState(0);
   const [amount, setAmount] = useState<string>("");
   const [showOutcomeDropdown, setShowOutcomeDropdown] = useState(false);
+
+  // Trading Mode: Standard vs Combo
+  const [tradingMode, setTradingMode] = useState<"Standard" | "Combo">("Standard");
+  const [spreadLegs, setSpreadLegs] = useState<SpreadLeg[]>([]);
 
   // Advanced Order State
   const [orderType, setOrderType] = useState<OrderType>("Limit");
@@ -246,449 +252,509 @@ export function TradingFormWidget({
 
   return (
     <div className="flex flex-col h-full bg-slate-900 border-l border-slate-800">
-      {/* Multi-outcome indicator */}
-      {isMultiOutcome && (
-        <div className="px-3 py-2 bg-indigo-500/10 border-b border-indigo-500/20 flex items-center gap-2">
-          <Layers size={14} className="text-indigo-400" />
-          <span className="text-xs text-indigo-300">
-            Multi-outcome market ({marketOutcomes.length} options)
-          </span>
-        </div>
-      )}
+      {/* Mode Tabs */}
+      <div className="grid grid-cols-2 border-b border-slate-800">
+        <button
+          onClick={() => setTradingMode("Standard")}
+          className={clsx(
+            "py-2 text-xs font-bold uppercase tracking-wider transition-colors",
+            tradingMode === "Standard" ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-800/50"
+          )}
+        >
+          Standard
+        </button>
+        <button
+          onClick={() => setTradingMode("Combo")}
+          className={clsx(
+            "py-2 text-xs font-bold uppercase tracking-wider transition-colors",
+            tradingMode === "Combo" ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-800/50"
+          )}
+        >
+          Combo
+        </button>
+      </div>
 
-      {/* Outcome Selector */}
-      {isMultiOutcome ? (
-        <div className="p-2 border-b border-slate-800">
-          <div className="relative">
+      {tradingMode === "Combo" ? (
+        <div className="flex flex-col h-full">
+          <ComboBuilder
+            markets={[{ id: "1", symbol: "BTC", price: 100 }, { id: "2", symbol: "ETH", price: 3000 }]} // Mock markets for now
+            onSpreadChange={setSpreadLegs}
+          />
+          <div className="p-4 border-t border-slate-800">
             <button
-              onClick={() => setShowOutcomeDropdown(!showOutcomeDropdown)}
-              className={clsx(
-                "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
-                colorScheme.bg,
-                colorScheme.bgHover,
-                "text-white",
-              )}
+              onClick={async () => {
+                try {
+                  // Convert legs to backend format
+                  const order = {
+                    spread_type: "Custom",
+                    legs: spreadLegs.map(l => ({
+                      asset: l.asset,
+                      side: l.side === "Buy" ? "Bid" : "Ask",
+                      ratio: l.ratio
+                    })),
+                    limit_price: 100.0, // Mock limit price for now
+                    quantity: 1.0
+                  };
+                  await invoke("submit_spread_order", { order });
+                  alert("Spread Order Submitted Successfully!");
+                } catch (e) {
+                  console.error(e);
+                  alert("Failed to submit spread order: " + e);
+                }
+              }}
+              className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-sm shadow-lg shadow-indigo-900/20 transition-all"
             >
-              <span className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-white/30" />
-                {selectedOutcome.name}
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-xs opacity-75">
-                  ${isFinite(activePrice) ? activePrice.toFixed(3) : "0.000"}
-                </span>
-                <ChevronDown
-                  size={14}
-                  className={clsx(
-                    "transition-transform",
-                    showOutcomeDropdown && "rotate-180",
-                  )}
-                />
-              </div>
+              Submit Spread Order
             </button>
-
-            {showOutcomeDropdown && (
-              <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl overflow-hidden max-h-60 overflow-y-auto">
-                {marketOutcomes.map((outcome, idx) => {
-                  const price = getOutcomePrice(outcome.id, idx);
-                  const colors = outcomeColors[idx % outcomeColors.length];
-                  return (
-                    <button
-                      key={outcome.id}
-                      onClick={() => {
-                        setSelectedOutcomeIdx(idx);
-                        setShowOutcomeDropdown(false);
-                      }}
-                      className={clsx(
-                        "w-full flex items-center justify-between px-3 py-2.5 text-sm transition-colors",
-                        selectedOutcomeIdx === idx
-                          ? `${colors.bgLight} ${colors.text}`
-                          : "text-slate-300 hover:bg-slate-700",
-                      )}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span
-                          className={clsx("w-2 h-2 rounded-full", colors.bg)}
-                        />
-                        {outcome.name}
-                      </span>
-                      <span className="font-mono text-xs">
-                        ${isFinite(price) ? price.toFixed(3) : "0.000"}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
           </div>
         </div>
       ) : (
-        /* Binary Outcome Toggle */
-        <div className="grid grid-cols-2 gap-1 p-2 border-b border-slate-800">
-          {marketOutcomes.map((outcome, idx) => {
-            const colors = outcomeColors[idx % outcomeColors.length];
-            return (
-              <button
-                key={outcome.id}
-                onClick={() => setSelectedOutcomeIdx(idx)}
-                className={clsx(
-                  "py-1.5 text-xs font-bold uppercase tracking-wider rounded transition-colors",
-                  selectedOutcomeIdx === idx
-                    ? `${colors.bg} text-white`
-                    : "bg-slate-800 text-slate-500 hover:bg-slate-700",
-                )}
-              >
-                {outcome.name}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Buy/Sell Tabs */}
-      <div className="flex border-b border-slate-800">
-        <button
-          onClick={() => setSide("buy")}
-          className={clsx(
-            "flex-1 py-3 text-sm font-bold uppercase tracking-wide transition-colors",
-            side === "buy"
-              ? "bg-emerald-600/10 text-emerald-400 border-b-2 border-emerald-500"
-              : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50",
-          )}
-        >
-          Buy
-        </button>
-        <button
-          onClick={() => setSide("sell")}
-          className={clsx(
-            "flex-1 py-3 text-sm font-bold uppercase tracking-wide transition-colors",
-            side === "sell"
-              ? "bg-rose-600/10 text-rose-400 border-b-2 border-rose-500"
-              : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50",
-          )}
-        >
-          Sell
-        </button>
-      </div>
-
-      <div className="px-4 pt-4">
-        {/* Order Type Selector */}
-        <div className="relative z-10">
-          <button
-            onClick={() => setShowOrderTypeDropdown(!showOrderTypeDropdown)}
-            className="w-full flex items-center justify-between bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 transition-colors"
-          >
-            <span className="flex items-center gap-2">
-              <Settings size={14} className="text-slate-400" />
-              {orderType} Order
-            </span>
-            <ChevronDown size={14} className={clsx("transition-transform", showOrderTypeDropdown && "rotate-180")} />
-          </button>
-
-          {showOrderTypeDropdown && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl overflow-hidden">
-              {(["Limit", "Market", "FOK", "IOC", "Bracket", "Pegged", "Algo"] as OrderType[]).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => {
-                    setOrderType(type);
-                    setShowOrderTypeDropdown(false);
-                  }}
-                  className={clsx(
-                    "w-full text-left px-3 py-2 text-sm transition-colors hover:bg-slate-700",
-                    orderType === type ? "text-indigo-400 bg-slate-700/50" : "text-slate-300"
-                  )}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="p-4 flex flex-col gap-4 flex-1">
-        {/* Current outcome price display */}
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-slate-400">{selectedOutcome.name} Price</span>
-          <span className={clsx("font-mono font-bold", colorScheme.text)}>
-            ${isFinite(activePrice) ? activePrice.toFixed(3) : "0.000"}
-          </span>
-        </div>
-
-        {/* Inputs */}
-        {orderType !== "Pegged" && orderType !== "Market" && orderType !== "Algo" && (
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs text-slate-400">
-              <span>{orderType} Price</span>
-              {orderType === "Limit" && (
-                <span
-                  className="text-indigo-400 cursor-pointer hover:underline"
-                  onClick={() => setOrderType("Market")}
-                >
-                  Market
-                </span>
-              )}
-            </div>
-            <div className="relative">
-              <input
-                key={`${selectedOutcome.id}-price`}
-                type="number"
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-right font-mono text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                placeholder="0.00"
-                defaultValue={
-                  isFinite(activePrice) ? activePrice.toFixed(3) : "0.000"
-                }
-              />
-              <span className="absolute left-3 top-2.5 text-slate-500 text-sm">
-                USDC
+        <>
+          {/* Multi-outcome indicator */}
+          {isMultiOutcome && (
+            <div className="px-3 py-2 bg-indigo-500/10 border-b border-indigo-500/20 flex items-center gap-2">
+              <Layers size={14} className="text-indigo-400" />
+              <span className="text-xs text-indigo-300">
+                Multi-outcome market ({marketOutcomes.length} options)
               </span>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Algo Inputs */}
-        {orderType === "Algo" && (
-          <div className="space-y-3">
-            <div className="flex gap-1">
-              {(["TWAP", "VWAP", "POV"] as AlgoType[]).map((t) => (
+          {/* Outcome Selector */}
+          {isMultiOutcome ? (
+            <div className="p-2 border-b border-slate-800">
+              <div className="relative">
                 <button
-                  key={t}
-                  onClick={() => setAlgoType(t)}
+                  onClick={() => setShowOutcomeDropdown(!showOutcomeDropdown)}
                   className={clsx(
-                    "flex-1 py-1.5 text-xs border rounded transition-colors",
-                    algoType === t
-                      ? "bg-indigo-500/20 border-indigo-500 text-indigo-300"
-                      : "bg-slate-950 border-slate-700 text-slate-400 hover:border-slate-500"
+                    "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                    colorScheme.bg,
+                    colorScheme.bgHover,
+                    "text-white",
                   )}
                 >
-                  {t}
+                  <span className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-white/30" />
+                    {selectedOutcome.name}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs opacity-75">
+                      ${isFinite(activePrice) ? activePrice.toFixed(3) : "0.000"}
+                    </span>
+                    <ChevronDown
+                      size={14}
+                      className={clsx(
+                        "transition-transform",
+                        showOutcomeDropdown && "rotate-180",
+                      )}
+                    />
+                  </div>
                 </button>
+
+                {showOutcomeDropdown && (
+                  <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl overflow-hidden max-h-60 overflow-y-auto">
+                    {marketOutcomes.map((outcome, idx) => {
+                      const price = getOutcomePrice(outcome.id, idx);
+                      const colors = outcomeColors[idx % outcomeColors.length];
+                      return (
+                        <button
+                          key={outcome.id}
+                          onClick={() => {
+                            setSelectedOutcomeIdx(idx);
+                            setShowOutcomeDropdown(false);
+                          }}
+                          className={clsx(
+                            "w-full flex items-center justify-between px-3 py-2.5 text-sm transition-colors",
+                            selectedOutcomeIdx === idx
+                              ? `${colors.bgLight} ${colors.text}`
+                              : "text-slate-300 hover:bg-slate-700",
+                          )}
+                        >
+                          <span className="flex items-center gap-2">
+                            <span
+                              className={clsx("w-2 h-2 rounded-full", colors.bg)}
+                            />
+                            {outcome.name}
+                          </span>
+                          <span className="font-mono text-xs">
+                            ${isFinite(price) ? price.toFixed(3) : "0.000"}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* Binary Outcome Toggle */
+            <div className="grid grid-cols-2 gap-1 p-2 border-b border-slate-800">
+              {marketOutcomes.map((outcome, idx) => {
+                const colors = outcomeColors[idx % outcomeColors.length];
+                return (
+                  <button
+                    key={outcome.id}
+                    onClick={() => setSelectedOutcomeIdx(idx)}
+                    className={clsx(
+                      "py-1.5 text-xs font-bold uppercase tracking-wider rounded transition-colors",
+                      selectedOutcomeIdx === idx
+                        ? `${colors.bg} text-white`
+                        : "bg-slate-800 text-slate-500 hover:bg-slate-700",
+                    )}
+                  >
+                    {outcome.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Buy/Sell Tabs */}
+          <div className="flex border-b border-slate-800">
+            <button
+              onClick={() => setSide("buy")}
+              className={clsx(
+                "flex-1 py-3 text-sm font-bold uppercase tracking-wide transition-colors",
+                side === "buy"
+                  ? "bg-emerald-600/10 text-emerald-400 border-b-2 border-emerald-500"
+                  : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50",
+              )}
+            >
+              Buy
+            </button>
+            <button
+              onClick={() => setSide("sell")}
+              className={clsx(
+                "flex-1 py-3 text-sm font-bold uppercase tracking-wide transition-colors",
+                side === "sell"
+                  ? "bg-rose-600/10 text-rose-400 border-b-2 border-rose-500"
+                  : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50",
+              )}
+            >
+              Sell
+            </button>
+          </div>
+
+          <div className="px-4 pt-4">
+            {/* Order Type Selector */}
+            <div className="relative z-10">
+              <button
+                onClick={() => setShowOrderTypeDropdown(!showOrderTypeDropdown)}
+                className="w-full flex items-center justify-between bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 hover:bg-slate-700 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <Settings size={14} className="text-slate-400" />
+                  {orderType} Order
+                </span>
+                <ChevronDown size={14} className={clsx("transition-transform", showOrderTypeDropdown && "rotate-180")} />
+              </button>
+
+              {showOrderTypeDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl overflow-hidden">
+                  {(["Limit", "Market", "FOK", "IOC", "Bracket", "Pegged", "Algo"] as OrderType[]).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => {
+                        setOrderType(type);
+                        setShowOrderTypeDropdown(false);
+                      }}
+                      className={clsx(
+                        "w-full text-left px-3 py-2 text-sm transition-colors hover:bg-slate-700",
+                        orderType === type ? "text-indigo-400 bg-slate-700/50" : "text-slate-300"
+                      )}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="p-4 flex flex-col gap-4 flex-1">
+            {/* Current outcome price display */}
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400">{selectedOutcome.name} Price</span>
+              <span className={clsx("font-mono font-bold", colorScheme.text)}>
+                ${isFinite(activePrice) ? activePrice.toFixed(3) : "0.000"}
+              </span>
+            </div>
+
+            {/* Inputs */}
+            {orderType !== "Pegged" && orderType !== "Market" && orderType !== "Algo" && (
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>{orderType} Price</span>
+                  {orderType === "Limit" && (
+                    <span
+                      className="text-indigo-400 cursor-pointer hover:underline"
+                      onClick={() => setOrderType("Market")}
+                    >
+                      Market
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    key={`${selectedOutcome.id}-price`}
+                    type="number"
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-right font-mono text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    placeholder="0.00"
+                    defaultValue={
+                      isFinite(activePrice) ? activePrice.toFixed(3) : "0.000"
+                    }
+                  />
+                  <span className="absolute left-3 top-2.5 text-slate-500 text-sm">
+                    USDC
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Algo Inputs */}
+            {orderType === "Algo" && (
+              <div className="space-y-3">
+                <div className="flex gap-1">
+                  {(["TWAP", "VWAP", "POV"] as AlgoType[]).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => setAlgoType(t)}
+                      className={clsx(
+                        "flex-1 py-1.5 text-xs border rounded transition-colors",
+                        algoType === t
+                          ? "bg-indigo-500/20 border-indigo-500 text-indigo-300"
+                          : "bg-slate-950 border-slate-700 text-slate-400 hover:border-slate-500"
+                      )}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+
+                {algoType !== "POV" ? (
+                  <div className="space-y-1">
+                    <div className="text-xs text-slate-400">Duration (Steps)</div>
+                    <input
+                      type="number"
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-right font-mono text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <div className="text-xs text-slate-400">Participation Rate</div>
+                    <input
+                      type="range"
+                      min="0.01"
+                      max="0.5"
+                      step="0.01"
+                      value={participationRate}
+                      onChange={(e) => setParticipationRate(e.target.value)}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                      <span>1%</span>
+                      <span className="text-indigo-400">{(parseFloat(participationRate) * 100).toFixed(0)}%</span>
+                      <span>50%</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Pegged Inputs */}
+            {orderType === "Pegged" && (
+              <>
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-400">Reference</div>
+                  <div className="flex gap-1">
+                    {(["BestBid", "BestAsk", "MidPoint"] as PegReference[]).map((ref) => (
+                      <button
+                        key={ref}
+                        onClick={() => setPegReference(ref)}
+                        className={clsx(
+                          "flex-1 py-1.5 text-xs border rounded transition-colors",
+                          pegReference === ref
+                            ? "bg-indigo-500/20 border-indigo-500 text-indigo-300"
+                            : "bg-slate-950 border-slate-700 text-slate-400 hover:border-slate-500"
+                        )}
+                      >
+                        {ref}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-400">Offset</div>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={pegOffset}
+                      onChange={(e) => setPegOffset(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-right font-mono text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                    <span className="absolute left-3 top-2.5 text-slate-500 text-sm">+/-</span>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Bracket Inputs */}
+            {orderType === "Bracket" && (
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-400">Stop Loss</div>
+                  <input
+                    type="number"
+                    value={bracketSL}
+                    onChange={(e) => setBracketSL(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-right font-mono text-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-500"
+                    placeholder="SL"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <div className="text-xs text-slate-400">Take Profit</div>
+                  <input
+                    type="number"
+                    value={bracketTP}
+                    onChange={(e) => setBracketTP(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-right font-mono text-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                    placeholder="TP"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs text-slate-400">
+                <span>Amount</span>
+                <div className="flex items-center gap-1">
+                  <Wallet size={10} />
+                  <span>
+                    {side === "buy"
+                      ? `${isFinite(maxBuy) ? maxBuy.toFixed(2) : "0.00"} USDC`
+                      : `${maxSell} Shares`}
+                  </span>
+                </div>
+              </div>
+              <div className="relative">
+                <input
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-right font-mono text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  placeholder="0.00"
+                />
+                <span className="absolute left-3 top-2.5 text-slate-500 text-sm">
+                  USDC
+                </span>
+              </div>
+            </div>
+
+            {/* Percentage Slider (Visual Only) */}
+            <div className="flex gap-1 h-1.5 w-full bg-slate-800 rounded overflow-hidden cursor-pointer">
+              {[25, 50, 75, 100].map((pct) => (
+                <div
+                  key={pct}
+                  onClick={() => setAmount(((maxBuy * pct) / 100).toFixed(2))}
+                  className="flex-1 hover:bg-indigo-500/50 bg-slate-700 border-l border-slate-900 first:border-l-0 transition-colors"
+                  title={`${pct}%`}
+                />
               ))}
             </div>
 
-            {algoType !== "POV" ? (
-              <div className="space-y-1">
-                <div className="text-xs text-slate-400">Duration (Steps)</div>
-                <input
-                  type="number"
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-right font-mono text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
+            {/* Summary Stats */}
+            <div className="bg-slate-950/50 rounded-lg p-3 space-y-2 border border-slate-800/50 mt-2">
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500">Est. Shares</span>
+                <span className="font-mono text-slate-200">
+                  {isFinite(estimatedShares) ? estimatedShares.toFixed(2) : "0.00"}
+                </span>
               </div>
-            ) : (
-              <div className="space-y-1">
-                <div className="text-xs text-slate-400">Participation Rate</div>
-                <input
-                  type="range"
-                  min="0.01"
-                  max="0.5"
-                  step="0.01"
-                  value={participationRate}
-                  onChange={(e) => setParticipationRate(e.target.value)}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-[10px] text-slate-500 font-mono">
-                  <span>1%</span>
-                  <span className="text-indigo-400">{(parseFloat(participationRate) * 100).toFixed(0)}%</span>
-                  <span>50%</span>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500">Potential Payout</span>
+                <span className="font-mono text-emerald-400">
+                  ${isFinite(potentialPayout) ? potentialPayout.toFixed(2) : "0.00"}
+                </span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500">Potential Profit</span>
+                <span
+                  className={clsx(
+                    "font-mono",
+                    potentialProfit >= 0 ? "text-emerald-400" : "text-rose-400",
+                  )}
+                >
+                  {potentialProfit >= 0 ? "+" : ""}$
+                  {isFinite(potentialProfit) ? potentialProfit.toFixed(2) : "0.00"}
+                </span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500 flex items-center gap-1">
+                  Fee <Info size={10} />
+                </span>
+                <span className="font-mono text-slate-200">
+                  ${isFinite(fee) ? fee.toFixed(4) : "0.0000"}
+                </span>
+              </div>
+              <div className="flex justify-between text-xs pt-2 border-t border-slate-800/50">
+                <span className="text-slate-400 font-bold">Total Cost</span>
+                <span className="font-mono text-white text-sm font-bold">
+                  ${isFinite(parsedAmount) ? parsedAmount.toFixed(2) : "0.00"}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex-1" />
+
+            {/* Action Button */}
+            <button
+              onClick={handleSubmit}
+              className={clsx(
+                "w-full py-3.5 rounded-lg font-bold text-sm tracking-wide shadow-lg transition-all active:scale-[0.98]",
+                side === "buy"
+                  ? `${colorScheme.bg} ${colorScheme.bgHover} text-white shadow-emerald-900/20`
+                  : "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-900/20",
+              )}
+            >
+              {side === "buy"
+                ? `Buy ${selectedOutcome.name}`
+                : `Sell ${selectedOutcome.name}`}
+            </button>
+
+            {/* Outcome probabilities summary for multi-outcome */}
+            {isMultiOutcome && (
+              <div className="mt-2 pt-2 border-t border-slate-800">
+                <div className="text-xs text-slate-500 mb-2">All Outcomes</div>
+                <div className="space-y-1">
+                  {marketOutcomes.map((outcome, idx) => {
+                    const price = getOutcomePrice(outcome.id, idx);
+                    const colors = outcomeColors[idx % outcomeColors.length];
+                    const probability = (price * 100).toFixed(1);
+                    return (
+                      <div
+                        key={outcome.id}
+                        className="flex items-center gap-2 text-xs"
+                      >
+                        <span
+                          className={clsx("w-1.5 h-1.5 rounded-full", colors.bg)}
+                        />
+                        <span className="text-slate-400 flex-1 truncate">
+                          {outcome.name}
+                        </span>
+                        <span className="font-mono text-slate-300">
+                          {probability}%
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
           </div>
-        )}
-
-        {/* Pegged Inputs */}
-        {orderType === "Pegged" && (
-          <>
-            <div className="space-y-1">
-              <div className="text-xs text-slate-400">Reference</div>
-              <div className="flex gap-1">
-                {(["BestBid", "BestAsk", "MidPoint"] as PegReference[]).map((ref) => (
-                  <button
-                    key={ref}
-                    onClick={() => setPegReference(ref)}
-                    className={clsx(
-                      "flex-1 py-1.5 text-xs border rounded transition-colors",
-                      pegReference === ref
-                        ? "bg-indigo-500/20 border-indigo-500 text-indigo-300"
-                        : "bg-slate-950 border-slate-700 text-slate-400 hover:border-slate-500"
-                    )}
-                  >
-                    {ref}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-xs text-slate-400">Offset</div>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={pegOffset}
-                  onChange={(e) => setPegOffset(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-right font-mono text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
-                <span className="absolute left-3 top-2.5 text-slate-500 text-sm">+/-</span>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Bracket Inputs */}
-        {orderType === "Bracket" && (
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <div className="text-xs text-slate-400">Stop Loss</div>
-              <input
-                type="number"
-                value={bracketSL}
-                onChange={(e) => setBracketSL(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-right font-mono text-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-500"
-                placeholder="SL"
-              />
-            </div>
-            <div className="space-y-1">
-              <div className="text-xs text-slate-400">Take Profit</div>
-              <input
-                type="number"
-                value={bracketTP}
-                onChange={(e) => setBracketTP(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-right font-mono text-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                placeholder="TP"
-              />
-            </div>
-          </div>
-        )}
-
-        <div className="space-y-1">
-          <div className="flex justify-between text-xs text-slate-400">
-            <span>Amount</span>
-            <div className="flex items-center gap-1">
-              <Wallet size={10} />
-              <span>
-                {side === "buy"
-                  ? `${isFinite(maxBuy) ? maxBuy.toFixed(2) : "0.00"} USDC`
-                  : `${maxSell} Shares`}
-              </span>
-            </div>
-          </div>
-          <div className="relative">
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-right font-mono text-white focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              placeholder="0.00"
-            />
-            <span className="absolute left-3 top-2.5 text-slate-500 text-sm">
-              USDC
-            </span>
-          </div>
-        </div>
-
-        {/* Percentage Slider (Visual Only) */}
-        <div className="flex gap-1 h-1.5 w-full bg-slate-800 rounded overflow-hidden cursor-pointer">
-          {[25, 50, 75, 100].map((pct) => (
-            <div
-              key={pct}
-              onClick={() => setAmount(((maxBuy * pct) / 100).toFixed(2))}
-              className="flex-1 hover:bg-indigo-500/50 bg-slate-700 border-l border-slate-900 first:border-l-0 transition-colors"
-              title={`${pct}%`}
-            />
-          ))}
-        </div>
-
-        {/* Summary Stats */}
-        <div className="bg-slate-950/50 rounded-lg p-3 space-y-2 border border-slate-800/50 mt-2">
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-500">Est. Shares</span>
-            <span className="font-mono text-slate-200">
-              {isFinite(estimatedShares) ? estimatedShares.toFixed(2) : "0.00"}
-            </span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-500">Potential Payout</span>
-            <span className="font-mono text-emerald-400">
-              ${isFinite(potentialPayout) ? potentialPayout.toFixed(2) : "0.00"}
-            </span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-500">Potential Profit</span>
-            <span
-              className={clsx(
-                "font-mono",
-                potentialProfit >= 0 ? "text-emerald-400" : "text-rose-400",
-              )}
-            >
-              {potentialProfit >= 0 ? "+" : ""}$
-              {isFinite(potentialProfit) ? potentialProfit.toFixed(2) : "0.00"}
-            </span>
-          </div>
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-500 flex items-center gap-1">
-              Fee <Info size={10} />
-            </span>
-            <span className="font-mono text-slate-200">
-              ${isFinite(fee) ? fee.toFixed(4) : "0.0000"}
-            </span>
-          </div>
-          <div className="flex justify-between text-xs pt-2 border-t border-slate-800/50">
-            <span className="text-slate-400 font-bold">Total Cost</span>
-            <span className="font-mono text-white text-sm font-bold">
-              ${isFinite(parsedAmount) ? parsedAmount.toFixed(2) : "0.00"}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex-1" />
-
-        {/* Action Button */}
-        <button
-          onClick={handleSubmit}
-          className={clsx(
-            "w-full py-3.5 rounded-lg font-bold text-sm tracking-wide shadow-lg transition-all active:scale-[0.98]",
-            side === "buy"
-              ? `${colorScheme.bg} ${colorScheme.bgHover} text-white shadow-emerald-900/20`
-              : "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-900/20",
-          )}
-        >
-          {side === "buy"
-            ? `Buy ${selectedOutcome.name}`
-            : `Sell ${selectedOutcome.name}`}
-        </button>
-
-        {/* Outcome probabilities summary for multi-outcome */}
-        {isMultiOutcome && (
-          <div className="mt-2 pt-2 border-t border-slate-800">
-            <div className="text-xs text-slate-500 mb-2">All Outcomes</div>
-            <div className="space-y-1">
-              {marketOutcomes.map((outcome, idx) => {
-                const price = getOutcomePrice(outcome.id, idx);
-                const colors = outcomeColors[idx % outcomeColors.length];
-                const probability = (price * 100).toFixed(1);
-                return (
-                  <div
-                    key={outcome.id}
-                    className="flex items-center gap-2 text-xs"
-                  >
-                    <span
-                      className={clsx("w-1.5 h-1.5 rounded-full", colors.bg)}
-                    />
-                    <span className="text-slate-400 flex-1 truncate">
-                      {outcome.name}
-                    </span>
-                    <span className="font-mono text-slate-300">
-                      {probability}%
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }

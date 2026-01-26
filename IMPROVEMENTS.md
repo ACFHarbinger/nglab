@@ -118,7 +118,7 @@ Tasks:
 
 ```
 Tasks:
-□ Implement spread order type
+[x] Implement spread order type
   - Two-leg simultaneous execution
   - Net price specification
 □ Add butterfly spread support
@@ -127,7 +127,7 @@ Tasks:
 □ Implement calendar spread orders
   - Same asset, different expiries
   - Roll mechanics
-□ Create combo order builder UI
+[x] Create combo order builder UI
   - Visual leg configuration
   - Net payoff diagram
 □ Add spread order book visualization
@@ -147,11 +147,11 @@ Tasks:
 
 ```
 Tasks:
-□ Add multiple chart types
+[x] Add multiple chart types
   - Heikin-Ashi candles
-  - Renko charts
-  - Point & Figure
-  - Kagi charts
+  - Renko charts (Candles done, Renko deferred)
+  - Point & Figure (Deferred)
+  - Kagi charts (Deferred)
 □ Implement drawing tools
   - Trend lines with persistence
   - Fibonacci retracements
@@ -163,7 +163,7 @@ Tasks:
   - MACD histogram
   - RSI with overbought/oversold zones
   - Volume profile
-□ Create multi-timeframe view
+[x] Create multi-timeframe view
   - Synchronized crosshair across charts
   - Timeframe selector (1m, 5m, 15m, 1h, 4h, 1d)
 □ Implement chart templates
@@ -183,14 +183,14 @@ Tasks:
 
 ```
 Tasks:
-□ Implement depth chart visualization
+[x] Implement depth chart visualization
   - Cumulative bid/ask curves
   - Interactive hover for price levels
   - Zoom and pan controls
 □ Add order book heatmap
   - Color intensity by size
   - Historical depth comparison
-□ Implement order flow imbalance indicator
+[x] Implement order flow imbalance indicator
   - Real-time bid/ask pressure
   - Divergence alerts
 □ Add trade tape visualization
@@ -214,25 +214,25 @@ Tasks:
 
 ```
 Tasks:
-□ Create performance attribution widget
+[x] Create performance attribution widget
   - P&L by asset
   - P&L by strategy
   - Time-based breakdown (hourly, daily)
-□ Implement trade analytics panel
+[x] Implement trade analytics panel
   - Win rate visualization
   - Average win vs. average loss
   - Profit factor trending
-□ Add position monitoring grid
+[x] Add position monitoring grid
   - All positions with real-time P&L
   - Unrealized vs. realized
   - Position aging
-□ Create correlation matrix heatmap
+[x] Create correlation matrix heatmap
   - Asset correlation visualization
   - Rolling correlation
-□ Implement drawdown visualization
+[x] Implement drawdown visualization
   - Underwater equity curve
   - Recovery time tracking
-□ Add volatility dashboard
+[x] Add volatility dashboard
   - Historical vs. implied vol
   - Vol surface visualization (3D)
   - Term structure chart

@@ -93,7 +93,18 @@ pub struct StepInfo {
     /// Current rolling Sharpe ratio
     pub sharpe_ratio: f64,
     /// Total count of steps in the episode
+    /// Total count of steps in the episode
     pub total_steps: u64,
+    /// Cumulative P&L
+    pub pnl: f64,
+    /// Return percentage
+    pub return_pct: f64,
+    /// Current drawdown
+    pub drawdown: f64,
+    /// Maximum drawdown
+    pub max_drawdown: f64,
+    /// Rolling volatility
+    pub volatility: f64,
 }
 
 /// Pre-allocated observation buffer for zero-allocation hot path.
@@ -206,6 +217,11 @@ pub struct TradingEnv {
     pub algo_manager: crate::execution::AlgoManager,
     /** Automated market making agent */
     pub market_maker: crate::simulation::market_maker::MarketMaker,
+    /** Active multi-leg spread orders */
+    /** Active multi-leg spread orders */
+    pub spread_orders: Vec<crate::simulation::spreads::SpreadOrder>,
+    /** Maximum drawdown tracked */
+    max_drawdown: f64,
 }
 
 // =========================================================================
@@ -333,12 +349,24 @@ impl TradingEnv {
 
         let obs_data = self.generate_observation_data();
 
+        let (current_drawdown, _) = self.calculate_drawdown();
+        self.max_drawdown = self.max_drawdown.max(current_drawdown);
+
+        let pnl = self.portfolio_value() - self.initial_capital;
+        let return_pct = safe_div(pnl, self.initial_capital, 0.0);
+        let volatility = self.calculate_volatility(30);
+
         let step_info = StepInfo {
             portfolio_value,
             position: self.position,
             cash: self.cash,
             sharpe_ratio: self.calculate_sharpe(30),
             total_steps: self.total_steps,
+            pnl,
+            return_pct,
+            drawdown: current_drawdown,
+            max_drawdown: self.max_drawdown,
+            volatility,
         };
 
         self.logger
@@ -429,6 +457,9 @@ impl TradingEnv {
             agent_manager: AgentManager::new(),
             algo_manager: crate::execution::AlgoManager::default(),
             market_maker: crate::simulation::market_maker::MarketMaker::default(),
+            market_maker: crate::simulation::market_maker::MarketMaker::default(),
+            spread_orders: Vec::new(),
+            max_drawdown: 0.0,
         }
     }
 
@@ -465,6 +496,9 @@ impl TradingEnv {
         self.returns.clear();
         self.prev_portfolio_value = self.initial_capital;
         self.orderbook.clear();
+        self.orderbook.clear();
+        self.spread_orders.clear();
+        self.max_drawdown = 0.0;
         self.risk_manager.reset(self.initial_capital);
         self.circuit_breaker
             .reset(self.prices.get(self.current_step).copied().unwrap_or(0.0));
@@ -570,6 +604,9 @@ impl TradingEnv {
         self.market_maker
             .update_quotes(&mut self.orderbook, inventory);
 
+        // Process spread orders
+        self.process_spread_orders();
+
         // Update risk manager
         self.risk_manager.update(portfolio_value);
 
@@ -585,12 +622,27 @@ impl TradingEnv {
         let obs_data = self.generate_observation_data();
 
         // Collect info data
+        // Update max drawdown
+        let (current_drawdown, _) = self.calculate_drawdown();
+        self.max_drawdown = self.max_drawdown.max(current_drawdown);
+
+        // Calculate metrics
+        let pnl = self.portfolio_value() - self.initial_capital;
+        let return_pct = safe_div(pnl, self.initial_capital, 0.0);
+        let volatility = self.calculate_volatility(30);
+
+        // Collect info data
         let step_info = StepInfo {
             portfolio_value,
             position: self.position,
             cash: self.cash,
             sharpe_ratio: self.calculate_sharpe(30),
             total_steps: self.total_steps,
+            pnl,
+            return_pct,
+            drawdown: current_drawdown,
+            max_drawdown: self.max_drawdown,
+            volatility,
         };
 
         // Log simulation state (thread-safe)
@@ -737,6 +789,44 @@ impl TradingEnv {
         }
     }
 
+    /** Calculate current drawdown and max peak value */
+    fn calculate_drawdown(&self) -> (f64, f64) {
+        let max_value: f64 = self
+            .returns
+            .iter()
+            .scan(self.initial_capital, |acc, &r| {
+                *acc *= 1.0 + r;
+                Some(*acc)
+            })
+            .fold(self.initial_capital, f64::max);
+
+        let current_value = self.portfolio_value();
+        let drawdown = if max_value > 0.0 {
+            safe_div(max_value - current_value, max_value, 0.0)
+        } else {
+            0.0
+        };
+        (drawdown, max_value)
+    }
+
+    /** Calculate rolling volatility */
+    fn calculate_volatility(&self, window: usize) -> f64 {
+        if self.returns.len() < 2 {
+            return 0.0;
+        }
+        let recent: Vec<_> = self.returns.iter().rev().take(window).copied().collect();
+        if recent.len() < 2 {
+            return 0.0;
+        }
+        let mean: f64 = safe_div(recent.iter().sum::<f64>(), recent.len() as f64, 0.0);
+        let variance: f64 = safe_div(
+            recent.iter().map(|r| (r - mean).powi(2)).sum::<f64>(),
+            (recent.len() - 1) as f64,
+            0.0,
+        );
+        variance.sqrt() * (252.0_f64).sqrt() // Annualized
+    }
+
     /**
      * Set the random seed for reproducibility.
      *
@@ -770,12 +860,22 @@ impl TradingEnv {
 
     /** Get environment info */
     pub fn info(&self) -> StepInfo {
+        let (current_drawdown, _) = self.calculate_drawdown();
+        let pnl = self.portfolio_value() - self.initial_capital;
+        let return_pct = safe_div(pnl, self.initial_capital, 0.0);
+        let volatility = self.calculate_volatility(30);
+
         StepInfo {
             portfolio_value: self.portfolio_value(),
             position: self.position,
             cash: self.cash,
             sharpe_ratio: self.calculate_sharpe(30),
             total_steps: self.total_steps,
+            pnl,
+            return_pct,
+            drawdown: current_drawdown,
+            max_drawdown: self.max_drawdown.max(current_drawdown),
+            volatility,
         }
     }
 }

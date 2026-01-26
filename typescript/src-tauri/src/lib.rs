@@ -49,6 +49,7 @@ pub fn run() {
             commands::trade::submit_bracket_order,
             commands::trade::submit_pegged_order,
             commands::trade::submit_algo_order,
+            commands::trade::submit_spread_order,
             commands::trade::start_market_maker,
             commands::trade::stop_market_maker,
             commands::scraping::scrape_polymarket,

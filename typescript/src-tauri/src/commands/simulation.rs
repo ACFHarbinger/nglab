@@ -56,6 +56,10 @@ pub fn start_simulation(state: State<ArenaState>, app: tauri::AppHandle) {
                     position: env.info().position,
                     mm_active: env.market_maker.active,
                     mm_realized_pnl: env.market_maker.state.realized_pnl,
+                    pnl: step_info.pnl,
+                    return_pct: step_info.return_pct,
+                    max_drawdown: step_info.max_drawdown,
+                    volatility: step_info.volatility,
                 }
             };
 
