@@ -203,3 +203,37 @@ class GPUFeatureEngineer:
         lower = sma - (std * num_std)
 
         return upper, sma, lower
+    def compute_imbalance(self, bid_vol: torch.Tensor, ask_vol: torch.Tensor) -> torch.Tensor:
+        """
+        Calculate Order Book Imbalance.
+        (BidVol - AskVol) / (BidVol + AskVol)
+        """
+        bid_vol = self._to_tensor(bid_vol)
+        ask_vol = self._to_tensor(ask_vol)
+        return (bid_vol - ask_vol) / (bid_vol + ask_vol + 1e-10)
+
+    def compute_spread(self, best_bid: torch.Tensor, best_ask: torch.Tensor) -> torch.Tensor:
+        """Calculate Relative Spread: (Ask - Bid) / MidPrice."""
+        best_bid = self._to_tensor(best_bid)
+        best_ask = self._to_tensor(best_ask)
+        mid = (best_bid + best_ask) / 2.0
+        return (best_ask - best_bid) / (mid + 1e-10)
+
+    def compute_vwap(self, prices: torch.Tensor, volumes: torch.Tensor, window: int = 20) -> torch.Tensor:
+        """
+        Calculate Volume-Weighted Average Price (VWAP) over a rolling window.
+        """
+        prices = self._to_tensor(prices)
+        volumes = self._to_tensor(volumes)
+        
+        pv = prices * volumes
+        
+        sum_pv = self.moving_average(pv, window) * window # moving_average returns mean, so multiply by window
+        sum_vol = self.moving_average(volumes, window) * window
+        
+        return sum_pv / (sum_vol + 1e-10)
+
+    def compute_price_momentum(self, prices: torch.Tensor, window: int = 10) -> torch.Tensor:
+        """Calculate price momentum (rate of change)."""
+        prices = self._to_tensor(prices)
+        return (prices - prices.roll(window)) / (prices.roll(window) + 1e-10)

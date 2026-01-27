@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     import torch
     from tensordict import TensorDict
 
-__all__ = ["ModelProtocol", "BaseModel"]
+__all__ = ["ModelProtocol", "BaseModel", "BaseEncoder", "BaseDecoder"]
 
 
 @runtime_checkable
@@ -44,3 +44,13 @@ class BaseModel(nn.Module, ABC):
     def explain(self, td: TensorDict, **kwargs: Any) -> dict[str, Any]:
         """Default explanation logic (stub)."""
         return {"error": "Explanation not implemented for this model"}
+
+
+class BaseEncoder(BaseModel, ABC):
+    """Abstract base class for all encoders (e.g., VAE encoders)."""
+    pass
+
+
+class BaseDecoder(BaseModel, ABC):
+    """Abstract base class for all decoders (e.g., VAE decoders)."""
+    pass

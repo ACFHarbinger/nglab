@@ -10,11 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Paper Trading Mode**: High-fidelity virtual trading environment with:
-  - Persistent virtual account management (`PaperAccount`) in Rust.
-  - Realistic fill simulation against the live order book.
-  - Dedicated Paper Trading Dashboard and global status indicators.
-  - Automated persistence and account reset capabilities.
+- **Automated Feature Engineering**:
+  - Implemented `LOBFeatureGenerator` in `GPUFeatureEngineer` for real-time market microstructure features (imbalance, spread, VWAP).
+  - Added `MarketRegimeDetector` using Gaussian Mixture Models (GMM) for unsupervised market state clustering.
+  - Implemented `OnlineNormalizer` using Welford's algorithm for efficient real-time feature scaling.
+  - Enhanced `FeaturePipeline` to integrate LOB features, regime detection, and online normalization.
 - Comprehensive documentation enhancements (DEVELOPMENT.md, TESTING.md)
 - Enhanced AGENTS.md with agent comparison matrix and reward library
 - Enhanced ARCHITECTURE.md with Kubernetes topology

@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from python.src.features.pipeline import FeaturePipeline
-from python.src.utils.feature_selection import TimeSeriesFeatureSelector
+from python.src.features.feature_selection import TimeSeriesFeatureSelector
 
 
 @pytest.fixture

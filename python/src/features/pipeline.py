@@ -48,6 +48,10 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         self.selection_params = selection_params or {}
 
         # Components
+        from python.src.features.regime import MarketRegimeDetector
+        self.regime_detector = MarketRegimeDetector(n_regimes=self.selection_params.get("n_regimes", 3))
+
+        # Components
         # Components
         self.gpu_engineer: Any = None
         self.scaler: Any = None
@@ -65,59 +69,61 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         """
         # 1. Generate features temporarily to fit scaler
         features = self._generate_features(x)
+        features_clean = features.dropna()
 
-        # 2. Fit Scaler
+        # 2. Fit Regime Detector
+        self.regime_detector.fit(features_clean)
+        regime_one_hot = self.regime_detector.get_regime_one_hot(features_clean)
+        
+        # Combine base features and regimes
+        regime_df = pd.DataFrame(
+            regime_one_hot, 
+            index=features_clean.index, 
+            columns=[f"regime_{i}" for i in range(regime_one_hot.shape[1])]
+        )
+        full_features = pd.concat([features_clean, regime_df], axis=1)
+
+        # 3. Fit Scaler
         if self.scaler_type == "standard":
             self.scaler = StandardScaler()
         elif self.scaler_type == "robust":
             self.scaler = RobustScaler()
+        elif self.scaler_type == "online":
+            from python.src.features.normalization import OnlineNormalizer
+            self.scaler = OnlineNormalizer(feature_dim=full_features.shape[1])
         else:
             raise ValueError(f"Unknown scaler type: {self.scaler_type}")
 
         # Clean NaNs before fitting scaler
-        # (Drop initial rows required for lookback)
-        features_clean = features.dropna()
-        self.scaler.fit(features_clean)
+        self.scaler.fit(full_features)
 
-        # 3. Fit Selector
+        # 4. Fit Selector
         if self.selection_method == "variance":
             from sklearn.feature_selection import VarianceThreshold
 
             self.selector = VarianceThreshold(threshold=self.selection_threshold)
-            self.selector.fit(features_clean)
+            self.selector.fit(full_features)
         elif self.selection_method == "mi":
-            from python.src.utils.feature_selection import TimeSeriesFeatureSelector
-
-            mi_scores = TimeSeriesFeatureSelector.compute_mutual_info(
-                features_clean, y if y is not None else features_clean.iloc[:, 0]
-            )
-            mi_scores.head(self.selection_params.get("n_features", 10)).index.tolist()
-
-            # Create a simple PassThrough selector that just picks columns
-            from sklearn.ensemble import RandomForestRegressor
-
-            # We use SelectFromModel with a dummy if needed, but easier to just use a custom one
-            # For simplicity, we can use SelectKBest with MI
             from sklearn.feature_selection import SelectKBest, mutual_info_regression
+            from python.src.features.feature_selection import TimeSeriesFeatureSelector
 
             self.selector = SelectKBest(
                 mutual_info_regression, k=self.selection_params.get("n_features", 10)
             )
             self.selector.fit(
-                features_clean, y if y is not None else features_clean.iloc[:, 0]
+                full_features, y if y is not None else full_features.iloc[:, 0]
             )
         elif self.selection_method == "rfecv":
             from sklearn.ensemble import RandomForestRegressor
-
-            from python.src.utils.feature_selection import TimeSeriesFeatureSelector
+            from python.src.features.feature_selection import TimeSeriesFeatureSelector
 
             estimator = self.selection_params.get(
                 "estimator", RandomForestRegressor(n_estimators=10, n_jobs=-1)
             )
             self.selector, _ = TimeSeriesFeatureSelector.run_rfecv(
                 estimator,
-                features_clean,
-                y if y is not None else features_clean.iloc[:, 0],
+                full_features,
+                y if y is not None else full_features.iloc[:, 0],
                 step=self.selection_params.get("step", 1),
                 cv=self.selection_params.get("cv", 3),
             )
@@ -127,9 +133,9 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         # Update feature names
         if self.selector:
             selected_mask = self.selector.get_support()
-            if isinstance(features, pd.DataFrame):
+            if isinstance(full_features, pd.DataFrame):
                 self.feature_names = [
-                    str(features.columns[i])
+                    str(full_features.columns[i])
                     for i, selected in enumerate(selected_mask)
                     if selected
                 ]
@@ -147,16 +153,23 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         features = self._generate_features(x)
 
         # Handle recent NaNs (fill with 0 or forward fill)
-        # For production inference, we usually have a buffer history.
         if hasattr(features, "ffill"):
             features_filled = features.ffill().fillna(0.0)
         else:
             features_filled = pd.DataFrame(features).ffill().fillna(0.0)
 
+        # Add Regimes
+        regime_one_hot = self.regime_detector.get_regime_one_hot(features_filled)
+        regime_df = pd.DataFrame(
+            regime_one_hot, 
+            index=features_filled.index, 
+            columns=[f"regime_{i}" for i in range(regime_one_hot.shape[1])]
+        )
+        full_features = pd.concat([features_filled, regime_df], axis=1)
+
         if self.scaler:
-            scaled = self.scaler.transform(features_filled)
+            scaled = self.scaler.transform(full_features)
         else:
-            # Should reset/fit if not trained, but transform shouldn't fit
             raise RuntimeError("Pipeline must be fitted before transform")
 
         if self.selector:
@@ -205,6 +218,19 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
         # 4. Bollinger Bands
         # upper, mid, lower = self.gpu_engineer.bollinger_bands(close_tensor, window=20)
 
+        # 5. LOB Features (if present)
+        # Expected columns: bid_p0, ask_p0, bid_v0, ask_v0
+        lob_features = pd.DataFrame(index=df.index)
+        if all(c in df.columns for c in ["bid_p0", "ask_p0", "bid_v0", "ask_v0"]):
+            bid_v = torch.tensor(df["bid_v0"].values, dtype=torch.float32)
+            ask_v = torch.tensor(df["ask_v0"].values, dtype=torch.float32)
+            bid_p = torch.tensor(df["bid_p0"].values, dtype=torch.float32)
+            ask_p = torch.tensor(df["ask_p0"].values, dtype=torch.float32)
+            
+            lob_features["imbalance"] = self.gpu_engineer.compute_imbalance(bid_v, ask_v).cpu().numpy()
+            lob_features["spread"] = self.gpu_engineer.compute_spread(bid_p, ask_p).cpu().numpy()
+            lob_features["vwap"] = self.gpu_engineer.compute_vwap(close_tensor, df["volume"].values if "volume" in df.columns else bid_v).cpu().numpy()
+
         # Move back to CPU/Pandas for alignment
         # (For pure GPU pipeline we'd stay in tensor, but we need sklearn for now)
         features = pd.DataFrame(index=df.index)
@@ -215,8 +241,8 @@ class FeaturePipeline(BaseEstimator, TransformerMixin):
             df["close"].rolling(window=20).std().fillna(0)
         )  # CPU fallback for now if not in GPU lib
 
-        # Add basic time features if available
-        # if 'timestamp' in df.columns: ...
+        if not lob_features.empty:
+            features = pd.concat([features, lob_features], axis=1)
 
         return features
 

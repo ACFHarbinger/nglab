@@ -722,6 +722,18 @@ Tasks:
   - Agent trait definition
   - Agent lifecycle management
   - Inter-agent messaging
+[x] Implement `LOBFeatureGenerator` [Task 4.2.1]
+  - Define features: imbalance, spread, VWAP, derivatives
+  - Integrated into Gym step through `FeaturePipeline`
+[x] Implement Recursive Feature Elimination (RFE) [Task 4.2.2]
+  - Complete RFE implementation in `feature_selection.py`
+  - Integrated into `FeaturePipeline`
+[x] Implement `MarketRegimeDetector` [Task 4.2.3]
+  - GMM-based clustering of market states
+  - Integrated as one-hot input to policy
+[x] Add automated scaling using `OnlineNormalizer` [Task 4.2.4]
+  - Welford's algorithm for online mean/std calculation
+  - Integrated into `FeaturePipeline` as 'online' scaler
 [x] Implement agent types
   - Momentum traders
   - Mean reversion traders
