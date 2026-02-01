@@ -30,7 +30,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # CRITICAL: Convert repository name to lowercase to satisfy Docker requirements
       - name: Prepare Image Name
@@ -73,7 +73,7 @@ jobs:
     environment: production
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set up Kubeconfig
         run: |
           mkdir -p ~/.kube
