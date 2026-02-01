@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 from python.src.models import TimeSeriesBackbone
-from python.src.models.deep import (
+from python.src.models import (
     DCIGN,
     DNC,
     ELM,
@@ -36,7 +36,7 @@ from python.src.models.deep import (
     SparseAE,
     StackedAutoEncoder,
 )
-from python.src.models.deep.general.pinn import pinn_loss
+from python.src.models.general.pinn import pinn_loss
 
 # --- Feed-Forward & Basic Layers ---
 
@@ -263,7 +263,7 @@ class TestResNet:
 class TestSNN:
     def test_surrogate_gradient(self):
         x = torch.tensor([0.0], requires_grad=True)
-        from python.src.models.deep.spiking import surrogate_heaviside
+        from python.src.models.spiking import surrogate_heaviside
 
         y = surrogate_heaviside(x)
         y.backward()
@@ -378,7 +378,7 @@ class TestNeuralODE:
     def test_node_solver(self):
         # Test if simple decay exponential solution is valid
         # dy/dt = -y => y(t) = y0 * exp(-t)
-        from python.src.models.deep.general import odesolve
+        from python.src.models.general import odesolve
 
         class Decay(nn.Module):
             def forward(self, t, y):

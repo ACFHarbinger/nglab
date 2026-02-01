@@ -1,7 +1,7 @@
 import numpy as np
-import pandas as pd
-import pytest
+
 from python.src.features.regime import MarketRegimeDetector
+
 
 def test_regime_detector_fit_predict():
     detector = MarketRegimeDetector(n_regimes=2)

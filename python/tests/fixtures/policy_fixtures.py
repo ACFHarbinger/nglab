@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
-import torch
 from torch import nn
 
 from python.src.policies.neural import NeuralPolicy

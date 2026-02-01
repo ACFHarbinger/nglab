@@ -1,7 +1,7 @@
 import torch
-import numpy as np
-import pytest
+
 from python.src.utils.functions.gpu_features import GPUFeatureEngineer
+
 
 def test_compute_imbalance():
     engineer = GPUFeatureEngineer(device="cpu")

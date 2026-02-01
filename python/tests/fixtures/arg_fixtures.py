@@ -5,6 +5,7 @@ from typing import Any
 
 import pytest
 
+
 @pytest.fixture
 def mock_args() -> argparse.Namespace:
     """Mock CLI arguments."""

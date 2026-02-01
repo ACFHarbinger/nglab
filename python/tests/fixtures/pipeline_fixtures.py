@@ -4,6 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+
 @pytest.fixture
 def mock_trainer() -> MagicMock:
     """Mock PyTorch Lightning Trainer."""
@@ -29,4 +30,4 @@ def mock_callback() -> MagicMock:
     callback.on_validation_epoch_end = MagicMock()
     return callback
 
-__all__ = ["mock_trainer", "mock_lightning_module", "mock_callback"]
+__all__ = ["mock_callback", "mock_lightning_module", "mock_trainer"]

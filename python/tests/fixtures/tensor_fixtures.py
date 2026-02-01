@@ -4,6 +4,7 @@ import pytest
 import torch
 from tensordict import TensorDict
 
+
 @pytest.fixture
 def sample_tensor() -> torch.Tensor:
     """Sample 2D tensor fixture."""
@@ -30,4 +31,4 @@ def obs_tensordict() -> TensorDict:
         "observation": torch.randn(4, 30, 6),
     }, batch_size=[4])
 
-__all__ = ["sample_tensor", "sequence_tensor", "simple_tensordict", "obs_tensordict"]
+__all__ = ["obs_tensordict", "sample_tensor", "sequence_tensor", "simple_tensordict"]

@@ -1,6 +1,7 @@
 import numpy as np
-import pytest
+
 from python.src.features.normalization import OnlineNormalizer
+
 
 def test_online_normalizer_welford():
     normalizer = OnlineNormalizer(feature_dim=1)

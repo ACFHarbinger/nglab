@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator, Any
+from typing import Any
 
 import pytest
+
 
 @pytest.fixture
 def temp_output_dir() -> Generator[Path, None, None]:
@@ -18,4 +20,4 @@ def mock_logger() -> Generator[Any, None, None]:
     from unittest.mock import MagicMock
     yield MagicMock()
 
-__all__ = ["temp_output_dir", "mock_logger"]
+__all__ = ["mock_logger", "temp_output_dir"]

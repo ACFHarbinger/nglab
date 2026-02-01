@@ -2,12 +2,13 @@
 Fixtures for environment module testing.
 """
 
+from unittest.mock import MagicMock
+
 import numpy as np
 import pytest
-from unittest.mock import MagicMock
 from numpy.typing import NDArray
 
-__all__ = ["sample_prices", "trading_env_config", "trading_env", "clob_env", "polymarket_env", "market_data", "mock_rust_env"]
+__all__ = ["clob_env", "market_data", "mock_rust_env", "polymarket_env", "sample_prices", "trading_env", "trading_env_config"]
 
 
 @pytest.fixture

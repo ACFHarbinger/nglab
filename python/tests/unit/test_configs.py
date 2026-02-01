@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import pytest
-from python.src.configs import TrainConfig, ModelConfig, EnvConfig
+from python.src.configs import EnvConfig, ModelConfig, TrainConfig
+
 
 def test_config_from_dict():
     """Test loading config from dictionary with nested structures."""

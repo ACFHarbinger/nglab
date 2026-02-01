@@ -1,0 +1,3 @@
+[submodule "python/src"]
+	path = python/src
+	url = https://github.com/ACFHarbinger/Machine-Learning-Zoo.git

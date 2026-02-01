@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import pytest
+
 from python.src.configs import (
-    TrainConfig,
-    ModelConfig,
     EnvConfig,
+    ModelConfig,
     PPOConfig,
     TradingEnvConfig,
+    TrainConfig,
 )
+
 
 @pytest.fixture
 def base_config() -> TrainConfig:
@@ -45,4 +47,4 @@ def ppo_config() -> PPOConfig:
         batch_size=32
     )
 
-__all__ = ["base_config", "model_config", "env_config", "ppo_config"]
+__all__ = ["base_config", "env_config", "model_config", "ppo_config"]
