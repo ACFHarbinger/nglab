@@ -19,6 +19,8 @@ pub struct ArenaState {
     pub ws_running: Arc<AtomicBool>,
     /** Global debug mode toggle. */
     pub debug_mode: Arc<AtomicBool>,
+    /** Currently active machine learning model for inference. */
+    pub active_model: Mutex<Option<String>>,
 }
 
 /**

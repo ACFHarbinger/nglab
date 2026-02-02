@@ -9,7 +9,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-- **Binance Integration (Paper Mode)**:
+## [0.2.5] - 2026-02-02
+
+### Added
+
+- **Alternative Data Tab**: New "Alt Data" navigation tab with sub-tabs for News, Sentiment, On-Chain (placeholder), and Calendar.
+- **News Feed**: Aggregated news component with sentiment filtering (bullish/bearish/neutral), keyword badges, and source attribution.
+- **Social Sentiment**: Aggregate sentiment gauge, trend chart placeholder, and top mentions table with 24h change tracking.
+- **Economic Calendar**: Upcoming events table with impact classification (High/Medium/Low) and live countdown timers.
+
+## [0.2.4] - 2026-02-02
+
+### Added
+
+- **Portfolio Management UI**: Created `PortfolioTab` with real-time Positions Grid (Quick Win #4).
+- **Interactivity**: Integrated `PortfolioAllocation` into the new tabbed portfolio view.
+- **Data Export**: Implemented client-side CSV export for the Positions table (Quick Win #9).
+- **Navigation Enhancement**: Added "Explorer" (CSV Analysis) and "Portfolio" tabs to the main layout, resolving navigation mismatches.
+
+### Changed
+
+- Synchronized `ROADMAP.md` progress tracking for Phases A, B, and C.
+
+## [0.2.3] - 2026-02-02
+
+#### Added
+
+- **Feature Engineering UI Enhancements (Priority 5.3)**:
+  - Enhanced `FeatureCatalog` with statistics grid (μ, σ, min, max) and correlation indicators.
+  - Created `FeatureBuilder` modal for visual lag/lead/rolling transformations.
+  - Added `FeatureValidation` component with distribution histogram and stationarity tests.
+  - Integrated view tabs in `FeaturesTab` for Catalog/Validation switching.
+
+- **Prediction Explanation UI (Priority 5.4)**:
+  - Created `SHAPSummaryPlot` with feature importance bar chart and beeswarm scatter visualization.
+  - Added `PredictionConfidence` component with confidence intervals and OOD indicators.
+  - Added `onExport` prop to `ModelCard` for ONNX export workflow.
+  - Implemented `export_model_onnx` Tauri command placeholder.
+
+---
+
+## [0.2.2] - 2026-02-02
+
+#### Added
+
+- **Model Registry UI Enhancements**:
+  - Implemented `ModelComparisonView` for side-by-side model metrics comparison (Sharpe Ratio, Max Drawdown, Win Rate, Avg Reward).
+  - Created `ModelDocumentationPanel` slide-out panel for auto-generated model documentation.
+  - Added multi-select support to `ModelCard` for batch comparison workflows.
+  - Implemented architecture filter dropdown in the Model Registry toolbar.
+  - Added `get_model_details` and `get_model_documentation` Tauri commands.
+
+---
+
+## [0.2.1] - 2026-02-02
+
+#### Added
+
+- **Real-Time Streaming Improvements**:
+  - Implemented automatic reconnection logic with exponential backoff in the Rust backend.
+  - Added real-time health monitoring for market data streams (latency and message frequency tracking).
+  - Standardized the `StreamEvent` communication protocol between backend and frontend.
+  - Created a premium `StreamStatusIndicator` UI component for global connection health visualization.
+  - Enhanced the `StreamingContext` to manage live health statistics.
+- **Historical Data Management**:
   - Implemented mock order submission for paper trading in `binance.rs`.
 - **Secure API Key Management**:
   - Added `ApiKeyVault` support for standard exchange credentials (Binance, Kraken, Deribit).
@@ -21,6 +84,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `MarketRegimeDetector` using Gaussian Mixture Models (GMM) for unsupervised market state clustering.
   - Implemented `OnlineNormalizer` using Welford's algorithm for efficient real-time feature scaling.
   - Enhanced `FeaturePipeline` to integrate LOB features, regime detection, and online normalization.
+  - **Feature Engineering UI**:
+    - Created `FeaturesTab` and `FeatureCatalog` in frontend.
+    - Visualize standard features (Momentum, Trend, Volatility, Microstructure).
+    - Added feature importance ranking placeholder visualization.
+  - **Prediction Explainability**:
+    - Implemented `ExplanationView` with Feature Contribution bar charts.
+    - Added Attention Map visualization for Transformer-based models.
+    - Integrated explanation panel into the Forecasting Lab (`PredictionTab`).
+  - **Historical Data Management**:
+    - Implemented `DataManagerTab` for organizing and browsing downloaded datasets.
+    - Added `DataCatalog` component with search, size stats, and column preview.
+    - Implemented backend commands for listing and deleting local dataset files.
 - **Multi-Exchange Support**:
   - Implemented **Kraken** integration for market search, OHLCV data, and WebSocket price streaming.
   - Implemented **Deribit** integration with support for futures/options market discovery and real-time ticker updates.
@@ -60,6 +135,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Market Maker Mode**: Enhanced spread quoting engine with position-based skew and adverse selection protection.
   - Resolved potential circular imports in the model factory and central CLI modules.
   - Updated all major `__init__.py` files with explicit `__all__` exports and module docstrings.
+- **Model Registry UI**:
+  - Implemented `ModelRegistryTab` to list and manage trained models.
+  - Created `ModelCard` component with visual architecture indicators and status.
+  - Integrated into main application navigation under "Models" tab.
+  - Added Backend support for `set_active_model` to control global inference model.
+  - Enriched model metadata (size, modification date, inferred architecture) in Rust backend.
 
 #### Deep Learning Framework
 

@@ -1,4 +1,10 @@
 use crate::errors::{ArenaError, ArenaResult};
+use rand::SeedableRng;
+use std::collections::HashMap;
+
+use crate::execution::AlgoManager;
+#[allow(unused_imports)]
+use crate::execution::{AlgoParams, AlgoType};
 use crate::simulation::gym::ActionType;
 use crate::simulation::orderbook::{OrderBook, Side, Trade};
 use crate::simulation::risk::{RiskManager, RiskStatus};
@@ -11,10 +17,6 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use rand::rngs::StdRng;
 use rand::Rng;
-use rand::SeedableRng;
-use std::collections::HashMap;
-
-use crate::execution::AlgoManager;
 
 /// Step response for multi-asset environments.
 pub struct MultiAssetStepResult {

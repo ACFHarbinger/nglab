@@ -68,7 +68,7 @@ opentelemetry_sdk = { version = "0.27", features = ["rt-tokio"] }
 tracing-opentelemetry = "0.28"
 sysinfo = "0.33"
 async-trait = "0.1.89"
-uuid = "1.20.0"
+uuid = { version = "1.20.0", features = ["v4", "serde"] }
 
 [features]
 extension-module = ["pyo3/extension-module"]

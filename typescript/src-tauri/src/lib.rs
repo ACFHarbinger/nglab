@@ -33,6 +33,7 @@ pub fn run() {
         running: StdMutex::new(false),
         ws_running: Arc::new(AtomicBool::new(false)),
         debug_mode: Arc::new(AtomicBool::new(false)),
+        active_model: StdMutex::new(None),
     };
 
     let paper_account = nglab::simulation::paper_trading::PaperAccount::load("paper_account.json")
@@ -80,8 +81,12 @@ pub fn run() {
             commands::moon::run_prophet,
             commands::inference::list_trained_models,
             commands::inference::predict_trained_model,
+            commands::inference::set_active_model,
+            commands::inference::get_active_model,
             commands::inference::train_model,
             commands::inference::list_csv_columns,
+            commands::inference::get_model_details,
+            commands::inference::get_model_documentation,
             commands::auth::create_account,
             commands::auth::login,
             commands::auth::logout,
@@ -118,7 +123,9 @@ pub fn run() {
             commands::exchanges::set_active_exchange,
             commands::exchanges::search_exchange_markets,
             commands::exchanges::get_exchange_market_data,
-            commands::exchanges::reconnect_exchanges
+            commands::exchanges::reconnect_exchanges,
+            commands::datasets::list_datasets,
+            commands::datasets::delete_dataset
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

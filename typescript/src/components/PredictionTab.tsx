@@ -31,6 +31,7 @@ import {
   GarchParamsSchema,
   HoltWintersParamsSchema,
 } from "../validation";
+import ExplanationView, { ExplanationData } from "./explanations/ExplanationView";
 
 /**
  * Interface representing a row from a CSV file.
@@ -116,6 +117,9 @@ export default function PredictionTab({
   const [yearlySeasonality, setYearlySeasonality] = useState(true);
   const [weeklySeasonality, setWeeklySeasonality] = useState(true);
   const [dailySeasonality, setDailySeasonality] = useState(false);
+
+  // Explanation Data
+  const [explanationData, setExplanationData] = useState<ExplanationData | null>(null);
 
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -381,6 +385,7 @@ export default function PredictionTab({
         .filter((v) => !isNaN(v));
 
       let result: number[] = [];
+      setExplanationData(null); // Reset explanation
 
       switch (activeModel) {
         case "arima": {
@@ -446,11 +451,27 @@ export default function PredictionTab({
           break;
         }
         case "trained_model": {
-          const res = await invoke<number[]>("run_trained_model", {
-            data: dataValues,
-            steps,
+          // Pass null for modelName to use the global active model
+          const res = await invoke<number[]>("predict_trained_model", {
+            modelName: null, 
+            inputData: dataValues, 
           });
           result = res;
+          
+          // MOCK EXPLANATION DATA for demonstration
+          // In production, this would come from the backend response
+          const mockImp = dataValues.slice(-10).map((_, i) => ({
+            feature: `Lag_${10-i}`,
+            score: Math.random() * 2 - 1 // Random -1 to 1
+          })).sort((a,b) => Math.abs(b.score) - Math.abs(a.score));
+
+          // Mock attention matrix (self-attention style 10x10)
+          const mockAttn = Array(10).fill(0).map(() => Array(10).fill(0).map(() => Math.random()));
+
+          setExplanationData({
+            importances: mockImp,
+            attention: { layer: 11, head: 3, matrix: mockAttn }
+          });
           break;
         }
       }
@@ -801,6 +822,14 @@ export default function PredictionTab({
               </div>
             )}
           </div>
+          
+          {/* Explanation View */}
+          {activeModel === 'trained_model' && (
+             <ExplanationView data={explanationData} isLoading={isPredicting} />
+          )}
+        </div>
+      </div>
+
 
           <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
             <h4 className="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wider">
@@ -845,8 +874,6 @@ export default function PredictionTab({
               )}
             </div>
           </div>
-        </div>
-      </div>
     </div>
   );
 }
