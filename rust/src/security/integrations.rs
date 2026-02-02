@@ -21,6 +21,15 @@ pub struct PolymarketConfig {
     pub proxy_address: Option<String>,
 }
 
+/// Configuration for standard CEX integrations (Binance, Kraken, etc.).
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct StandardExchangeConfig {
+    /// API key for authentication.
+    pub api_key: String,
+    /// API secret for signing requests.
+    pub secret: String,
+}
+
 /// Enum holding configuration for different integration services.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "service", content = "config")]
@@ -28,6 +37,15 @@ pub enum IntegrationConfig {
     /// Polymarket service configuration.
     #[serde(rename = "polymarket")]
     Polymarket(PolymarketConfig),
+    /// Binance exchange configuration.
+    #[serde(rename = "binance")]
+    Binance(StandardExchangeConfig),
+    /// Kraken exchange configuration.
+    #[serde(rename = "kraken")]
+    Kraken(StandardExchangeConfig),
+    /// Deribit exchange configuration.
+    #[serde(rename = "deribit")]
+    Deribit(StandardExchangeConfig),
 }
 
 /// Represents a stored external integration entry.

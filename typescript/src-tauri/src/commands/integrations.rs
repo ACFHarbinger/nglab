@@ -5,6 +5,7 @@
 use crate::commands::vault::VaultState;
 use nglab::security::integrations::{
     ExternalIntegration, IntegrationConfig, IntegrationManager, PolymarketConfig,
+    StandardExchangeConfig,
 };
 use nglab::security::vault::{VaultManager, VaultResponse};
 use nglab::web::polymarket::{EventResponse, MarketSearchResult, PolymarketScraper};
@@ -41,6 +42,50 @@ pub async fn save_polymarket_integration(
     match integration_manager.save_integration(&master_key, "polymarket", config) {
         Ok(id) => Ok(VaultResponse::success(
             "Polymarket integration saved",
+            Some(id),
+        )),
+        Err(e) => Ok(VaultResponse::error(&format!(
+            "Failed to save integration: {}",
+            e
+        ))),
+    }
+}
+
+/// Save a generic exchange integration configuration (Binance, Kraken, Deribit).
+#[tauri::command]
+pub async fn save_exchange_integration(
+    exchange: String,
+    api_key: String,
+    secret: String,
+    state: State<'_, VaultState>,
+) -> Result<VaultResponse<i64>, String> {
+    let master_key = if let Ok(key_guard) = state.master_key.lock() {
+        match key_guard.as_ref() {
+            Some(key) => key.clone(),
+            None => return Ok(VaultResponse::error("Vault is locked")),
+        }
+    } else {
+        return Err("Failed to lock vault state".to_string());
+    };
+
+    let vault_manager = VaultManager::with_default_path().map_err(|e| e.to_string())?;
+    let integration_manager = IntegrationManager::new(vault_manager);
+
+    let config = match exchange.to_lowercase().as_str() {
+        "binance" => IntegrationConfig::Binance(StandardExchangeConfig { api_key, secret }),
+        "kraken" => IntegrationConfig::Kraken(StandardExchangeConfig { api_key, secret }),
+        "deribit" => IntegrationConfig::Deribit(StandardExchangeConfig { api_key, secret }),
+        _ => {
+            return Ok(VaultResponse::error(&format!(
+                "Unsupported exchange: {}",
+                exchange
+            )))
+        }
+    };
+
+    match integration_manager.save_integration(&master_key, &exchange.to_lowercase(), config) {
+        Ok(id) => Ok(VaultResponse::success(
+            &format!("{} integration saved", exchange),
             Some(id),
         )),
         Err(e) => Ok(VaultResponse::error(&format!(

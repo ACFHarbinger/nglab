@@ -438,22 +438,22 @@ Tasks:
   - Common interface for all exchanges
   - Unified order types mapping
   - Normalized market data format
-□ Implement Binance integration
-  - REST API for historical data
-  - WebSocket for real-time
-  - Order submission (paper mode)
-□ Add Kraken integration
+[x] Implement Binance integration
+  - [x] REST API for data fetching
+  - [x] WebSocket for real-time updates
+  - [x] Order submission (paper mode)
+[x] Implement Kraken integration
   - Spot and futures support
   - OHLCV data fetching
-□ Implement Deribit integration
+[x] Implement Deribit integration
   - Options data
   - Perpetual futures
-□ Create exchange selector in UI
-  - Connection status indicators
-  - API key management per exchange
-□ Add cross-exchange arbitrage view
-  - Price comparison
-  - Spread monitoring
+[x] Create exchange selector in UI
+  - [x] Connection status indicators
+  - [x] API key management per exchange
+[x] Add cross-exchange arbitrage view
+  - [x] Price comparison
+  - [x] Spread monitoring
 ```
 
 **Complexity**: High | **Impact**: High

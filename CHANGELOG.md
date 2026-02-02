@@ -9,15 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
-
-### Added
+- **Binance Integration (Paper Mode)**:
+  - Implemented mock order submission for paper trading in `binance.rs`.
+- **Secure API Key Management**:
+  - Added `ApiKeyVault` support for standard exchange credentials (Binance, Kraken, Deribit).
+  - Implemented `save_exchange_integration` and `reconnect_exchanges` Tauri commands.
+  - New **Settings** view in the dashboard for managing secure credentials.
 
 - **Automated Feature Engineering**:
   - Implemented `LOBFeatureGenerator` in `GPUFeatureEngineer` for real-time market microstructure features (imbalance, spread, VWAP).
   - Added `MarketRegimeDetector` using Gaussian Mixture Models (GMM) for unsupervised market state clustering.
   - Implemented `OnlineNormalizer` using Welford's algorithm for efficient real-time feature scaling.
   - Enhanced `FeaturePipeline` to integrate LOB features, regime detection, and online normalization.
+- **Multi-Exchange Support**:
+  - Implemented **Kraken** integration for market search, OHLCV data, and WebSocket price streaming.
+  - Implemented **Deribit** integration with support for futures/options market discovery and real-time ticker updates.
+  - Unified exchange management via `ExchangeManager` in Rust and `useExchange` hook in TypeScript.
+- **Cross-Exchange Arbitrage View**:
+  - Added real-time price comparison across all registered exchanges (Binance, Kraken, Deribit, Polymarket).
+  - Implemented negative spread detection and arbitrage opportunity highlighting.
+  - Added connection status indicators to the exchange selector.
 - Comprehensive documentation enhancements (DEVELOPMENT.md, TESTING.md)
 - Enhanced AGENTS.md with agent comparison matrix and reward library
 - Enhanced ARCHITECTURE.md with Kubernetes topology

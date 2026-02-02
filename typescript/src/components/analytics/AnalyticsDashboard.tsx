@@ -1,7 +1,7 @@
 
-import { useMemo } from "react";
 import clsx from "clsx";
-import { TrendingUp, TrendingDown, Activity, AlertTriangle, DollarSign, Percent } from "lucide-react";
+import { TrendingDown, Activity, AlertTriangle, DollarSign } from "lucide-react";
+import { ArbitrageWidget } from "./ArbitrageWidget";
 
 interface StepInfo {
     portfolio_value: number;
@@ -68,13 +68,13 @@ export function AnalyticsDashboard({ info }: AnalyticsDashboardProps) {
             </div>
 
             {/* Detailed Metrics */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="bg-slate-800 rounded-lg p-4 border border-slate-700">
                     <h3 className="text-sm font-semibold text-slate-400 mb-4 uppercase">Portfolio Status</h3>
                     <div className="space-y-3">
                         <Row label="Total Equity" value={fmtCurrency(info.portfolio_value)} />
                         <Row label="Cash Balance" value={fmtCurrency(info.cash)} />
-                        <Row label="Position Value" value={fmtCurrency(info.position * 100.0)} /> {/* Est. Price derived? or just show raw pos for now */}
+                        <Row label="Position Value" value={fmtCurrency(info.position * 100.0)} />
                         <Row label="Position Size" value={fmtNum(info.position)} />
                     </div>
                 </div>
@@ -87,6 +87,10 @@ export function AnalyticsDashboard({ info }: AnalyticsDashboardProps) {
                         <Row label="Sharpe Ratio" value={info.sharpe_ratio.toFixed(3)} />
                         <Row label="Volatility" value={fmtPct(info.volatility)} />
                     </div>
+                </div>
+
+                <div className="lg:col-span-1">
+                    <ArbitrageWidget />
                 </div>
             </div>
         </div>

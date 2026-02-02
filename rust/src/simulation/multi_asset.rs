@@ -14,7 +14,7 @@ use rand::Rng;
 use rand::SeedableRng;
 use std::collections::HashMap;
 
-use crate::execution::{AlgoManager, AlgoParams, AlgoType};
+use crate::execution::AlgoManager;
 
 /// Step response for multi-asset environments.
 pub struct MultiAssetStepResult {
@@ -646,7 +646,7 @@ mod tests {
         // NOTE: Currently AlgoManager does NOT bubble up trades to env positions/cash.
         // So checking env.positions won't work until we plug that gap.
         // For now, check the internal state of the algo (if possible) or just that it runs.
-        let executed_qty = env
+        let _executed_qty = env
             .algo_managers
             .get("BTC")
             .unwrap()
