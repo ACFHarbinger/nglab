@@ -6,7 +6,18 @@
 
 **A Comprehensive Multimodal Intelligence Framework for Quantitative Finance and Automated Gambling.**
 
+<a href="https://github.com/ACFHarbinger/nglab/actions/workflows/ci.yml"><img alt="CI Status" src="https://github.com/ACFHarbinger/nglab/actions/workflows/ci.yml/badge.svg"></a>
+<a href="https://codecov.io/gh/ACFHarbinger/nglab"><img alt="Codecov" src="https://codecov.io/gh/ACFHarbinger/nglab/branch/main/graph/badge.svg"></a>
+<img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+<a href="https://github.com/astral-sh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
+<br>
+<img alt="Python version" src="https://img.shields.io/badge/python-3.11-blue.svg">
+<img alt="Rust version" src="https://img.shields.io/badge/rust-1.80%2B-orange.svg">
+<img alt="Tauri version" src="https://img.shields.io/badge/Tauri-2.0-blue?logo=tauri&logoColor=white">
+<br>
 <a href="https://pytorch.org/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
+<a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL v3" src="https://img.shields.io/badge/License-AGPL_v3-blue.svg"></a>
 <a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/-Lightning-792ee5?logo=pytorchlightning&logoColor=white"></a>
 <a href="https://github.com/pytorch/rl"><img alt="base: TorchRL" src="https://img.shields.io/badge/base-TorchRL-red"></a>
 <a href="https://huggingface.co/transformers/"><img alt="Transformers" src="https://img.shields.io/badge/%F0%9F%A4%97%20Transformers-FFD21E"></a>
@@ -163,7 +174,8 @@ Start here! We have expanded our documentation to cover every aspect of the syst
 | **[TESTING.md](TESTING.md)**                 | **The Quality Guide.** Testing philosophy, coverage requirements, mocking strategies, and CI/CD integration.                     | All Engineers            |
 | **[CONTRIBUTING.md](CONTRIBUTING.md)**       | **The Developer Handbook.** Code style, PR process, RFC workflow, and release procedures.                                        | Contributors             |
 | **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | **The Field Repair Manual.** Common issues, diagnostic steps, GPU/CUDA debugging, and ML troubleshooting.                        | Everyone                 |
-| **[IMPROVEMENTS.md](IMPROVEMENTS.md)**       | **The Roadmap.** Active tasks, feature requests, and the long-term vision for the platform.                                      | Project Managers         |
+| **[ROADMAP.md](ROADMAP.md)**                 | **The Roadmap.** Active tasks, feature requests, and the long-term vision for the platform.                                      | Project Managers         |
+| **[DEPENDENCIES.md](DEPENDENCIES.md)**       | **The Supply Chain.** Comprehensive list of backend, frontend, and ML dependencies.                                              | All Engineers            |
 
 ### 📓 Interactive Notebooks
 

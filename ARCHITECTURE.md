@@ -1,5 +1,7 @@
 # NGLab Architecture: The Blueprint
 
+<a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL v3" src="https://img.shields.io/badge/License-AGPL_v3-blue.svg"></a>
+
 > **System Overview**: Design Patterns, Component Boundaries, and Data Flow.
 
 NGLab is a sophisticated **Multimodal Deep Reinforcement Learning Platform** for financial trading. It follows a strict **Hexagonal Architecture** (Ports & Adapters) to decouple the high-performance core from external interfaces.
@@ -14,15 +16,15 @@ Where does NGLab fit in the world?
 graph TD
     User[Quantitative Trader] -- "Views Dashboard" --> UI[Tauri GUI]
     User -- "Configures Exp" --> Hydra[Hydra Config]
-    
+
     subgraph "NGLab Platform"
         UI -- "Events/Cmds" --> RustCore[Rust Simulation Core]
         Hydra -- "Parametrizes" --> PythonBrain[Python Research Layer]
-        
+
         PythonBrain -- "Controls" --> RustCore
         RustCore -- "Feeds Data" --> PythonBrain
     end
-    
+
     Poly[Polymarket API] -- "Market Data" --> RustCore
     Exchange[Crypto Exchange] -- "Price Integration" --> RustCore
 ```
@@ -33,13 +35,13 @@ graph TD
 
 A quick reference to where the logic lives.
 
-| Directory | Layer | Purpose | Key Technologies |
-| :--- | :--- | :--- | :--- |
-| `/rust` | **Simulation** | Matching Engine, Risk, Gym Env | Tokio, PyO3, Serde |
-| `/python` | **Intelligence** | Models, Agents, Training Loops | PyTorch, Hydra, Optuna |
-| `/typescript` | **Interface** | GUI, Charts, Commands | React 19, Tauri 2.0, Vite |
-| `/deploy` | **Ops** | CI/CD, Docker, Kubernetes | GitHub Actions, Docker Compose |
-| `/scripts` | **Tools** | Setup, Benchmarks, Maintenance | Bash, Just |
+| Directory     | Layer            | Purpose                        | Key Technologies               |
+| :------------ | :--------------- | :----------------------------- | :----------------------------- |
+| `/rust`       | **Simulation**   | Matching Engine, Risk, Gym Env | Tokio, PyO3, Serde             |
+| `/python`     | **Intelligence** | Models, Agents, Training Loops | PyTorch, Hydra, Optuna         |
+| `/typescript` | **Interface**    | GUI, Charts, Commands          | React 19, Tauri 2.0, Vite      |
+| `/deploy`     | **Ops**          | CI/CD, Docker, Kubernetes      | GitHub Actions, Docker Compose |
+| `/scripts`    | **Tools**        | Setup, Benchmarks, Maintenance | Bash, Just                     |
 
 ---
 
@@ -50,11 +52,13 @@ A quick reference to where the logic lives.
 ### Core Components
 
 #### 1. TradingEnv (Gymnasium-compatible)
+
 **File:** `rust/src/simulation/gym.rs`
 
 A reinforcement learning environment following the Gymnasium API standard.
 
 **Features:**
+
 - **Action Space**: Discrete (hold, buy, sell) or continuous
 - **Observation Space**: Price history with configurable lookback window
 - **Reward Function**: Risk-adjusted returns (Sharpe ratio)
@@ -62,6 +66,7 @@ A reinforcement learning environment following the Gymnasium API standard.
 - **PyO3 Integration**: Zero-copy numpy array transfers to Python
 
 **Key Methods:**
+
 ```rust
 pub fn new(initial_cash: f64, lookback_window: usize, transaction_cost: f64) -> Self
 pub fn reset(&mut self, seed: Option<u64>) -> (Array1<f64>, HashMap<String, f64>)
@@ -69,16 +74,19 @@ pub fn step(&mut self, action: i32) -> StepResult
 ```
 
 **Performance Characteristics:**
+
 - Step execution: <1ms
 - Memory-efficient rolling window
 - No heap allocations in hot path
 
 #### 2. MultiAssetEnv (Portfolio Simulation)
+
 **File:** `rust/src/simulation/multi_asset.rs`
 
 Extension of the trading environment for multi-asset portfolio management.
 
 **Features:**
+
 - **Concurrent Simulation**: Simulates multiple order books and price series simultaneously.
 - **Portfolio Management**: Tracks cash, asset positions, and total portfolio value across all assets.
 - **Advanced Observations**: Generates flattened feature vectors per asset (price, returns, volatility, imbalance, position).
@@ -86,11 +94,13 @@ Extension of the trading environment for multi-asset portfolio management.
 - **Native & Python API**: Unified core logic with specialized entry points for Rust and Python.
 
 #### 3. OrderBook (Central Limit Order Book)
+
 **File:** `rust/src/simulation/orderbook.rs`
 
 A production-grade CLOB implementation with price-time priority matching.
 
 **Architecture:**
+
 ```
 OrderBook
 ├── bids: BTreeMap<OrderedFloat<f64>, PriceLevel>  (sorted descending)
@@ -104,9 +114,10 @@ PriceLevel
 ```
 
 **Features:**
+
 - **Matching Algorithm**: Price-time priority FIFO
 - **Queue Position Tracking**: For HFT simulation accuracy
-- **Advanced Orders**: 
+- **Advanced Orders**:
   - **Iceberg**: Only part of the order is visible; refills from hidden quantity and resets priority on refill.
   - **Trailing Stop**: Trigger price adjusts dynamically as market moves favorably.
   - **Stop-Loss/Take-Profit**: Standard price-triggered conversion to market/limit orders.
@@ -114,6 +125,7 @@ PriceLevel
 - **Performance**: O(log n) insertion, O(1) best bid/ask
 
 **Key Methods:**
+
 ```rust
 pub fn add_order(&mut self, order: Order) -> Vec<Trade>
 pub fn cancel_order(&mut self, order_id: u64) -> Result<Order>
@@ -123,11 +135,13 @@ pub fn get_price_levels(&self, depth: usize) -> (Vec<PriceLevel>, Vec<PriceLevel
 ```
 
 #### 4. PolymarketArena
+
 **File:** `rust/src/simulation/polymarket.rs`
 
 Prediction market simulation using conditional token framework.
 
 **Features:**
+
 - **Binary Outcome Markets**: Yes/No token pairs
 - **Collateral Management**: USDC-based accounts
 - **Market Making**: Automated market maker (AMM) simulation
@@ -135,6 +149,7 @@ Prediction market simulation using conditional token framework.
 - **Position Management**: Long/short position tracking
 
 **Architecture:**
+
 ```
 PolymarketArena
 ├── markets: HashMap<String, Market>
@@ -149,6 +164,7 @@ Market
 ```
 
 #### 5. Financial Models
+
 **Location:** `rust/src/models/`
 
 Advanced quantitative finance models for pricing and risk management.
@@ -159,6 +175,7 @@ Advanced quantitative finance models for pricing and risk management.
 - **Credit Risk** (`credit_risk.rs`): Default probability modeling
 
 #### 6. Time Series Forecasting ("Project Moon")
+
 **Location:** `rust/src/moon/`
 
 Classical time series forecasting methods.
@@ -169,11 +186,13 @@ Classical time series forecasting methods.
 - **Prophet** (`prophet.rs`): Changepoint-based forecasting (partial)
 
 #### 7. Web Scraping & Data Collection
+
 **Location:** `rust/src/web/`
 
 Real-time market data acquisition.
 
 **PolymarketScraper** (`polymarket.rs`):
+
 - Multiple frequency support (minutely to monthly)
 - Historical price replay
 - Asynchronous HTTP with Reqwest
@@ -188,11 +207,13 @@ Real-time market data acquisition.
 ### Core Components
 
 #### 1. Deep Learning Models
+
 **Location:** `python/src/models/`
 
 Comprehensive suite of time series and generative models.
 
 **Generative Models:**
+
 - **VAE** (`vae.py`): Variational Auto-Encoder for time series
   - Encoder types: Transformer, Mamba, LSTM, GRU, xLSTM
   - Reparameterization trick for gradient flow
@@ -201,6 +222,7 @@ Comprehensive suite of time series and generative models.
 - **TimeGAN** (`gan_networks.py`): Adversarial time series generation
 
 **Sequence Models:**
+
 - **CNN** (`cnn.py`): Rolling window convolutional networks
 - **RNN Variants** (`rnn.py`): LSTM, GRU with dropout
 - **xLSTM** (`xlstm.py`): Extended LSTM architecture
@@ -208,6 +230,7 @@ Comprehensive suite of time series and generative models.
 - **NSTransformer** (`nstransformer.py`): Non-stationary Transformer
 
 **Model Architecture:**
+
 ```python
 TimeSeriesBackbone
 ├── encoder: Union[TransformerEncoder, MambaBlock, LSTM, GRU]
@@ -222,11 +245,13 @@ VAE
 ```
 
 #### 2. Training Pipeline
+
 **Location:** `python/src/pipeline/`
 
 PyTorch Lightning-based training infrastructure.
 
 **Lightning Modules:**
+
 - `vae_module.py`: VAE training with KL annealing
 - `diffusion_module.py`: Diffusion model training
 - `gan_module.py`: GAN training with discriminator
@@ -234,31 +259,37 @@ PyTorch Lightning-based training infrastructure.
 - `rl_module.py`: Reinforcement learning
 
 **Hyperparameter Optimization:**
+
 - **Optuna Integration** (`hpo/`): Bayesian optimization
 - **Custom Objectives** (`objectives/`): Task-specific metrics
 - **Pruning**: Early stopping for unpromising trials
 
 **Training Scripts:**
+
 - `train.py`: Generic training entry point
 - `train_ppo.py`: Proximal Policy Optimization
 - `train_sac.py`: Soft Actor-Critic
 
 #### 3. Reinforcement Learning Agents
+
 **Location:** `python/src/agents/`
 
 TorchRL-based agent implementations.
 
 **TradingEnvWrapper** (`env_wrapper.py`):
+
 - Wraps Rust TradingEnv for TorchRL compatibility
 - TensorDict observation/action spaces
 - Automatic batching and GPU transfer
 
 **RL Algorithms:**
+
 - PPO (Proximal Policy Optimization)
 - SAC (Soft Actor-Critic)
 - Custom policy networks
 
 #### 4. Trading Policies
+
 **Location:** `python/src/policies/`
 
 Strategy implementations for trading.
@@ -270,6 +301,7 @@ Strategy implementations for trading.
 - **Black-Scholes** (`black_scholes.py`): Options pricing strategy
 
 #### 5. Configuration Management
+
 **Location:** `python/src/conf/`
 
 Hydra-based hierarchical configuration.
@@ -284,6 +316,7 @@ conf/
 ```
 
 **Benefits:**
+
 - Type-safe configuration with dataclasses
 - Composition and overrides
 - Experiment tracking integration
@@ -298,11 +331,13 @@ conf/
 ### Frontend Architecture (React)
 
 #### 1. Main Application
+
 **File:** `typescript/src/App.tsx`
 
 Tab-based navigation with real-time updates.
 
 **Tabs:**
+
 - **Simulation**: Live trading environment visualization
 - **Scraper**: Polymarket data collection interface
 - **Analysis**: Market analysis tools
@@ -312,11 +347,12 @@ Tab-based navigation with real-time updates.
 #### 2. Custom Hooks
 
 **useArena** (`hooks/useArena.ts`):
+
 ```typescript
 interface ArenaState {
-  stepInfo: StepInfo;        // Portfolio, position, cash, Sharpe
-  orderBook: OrderBook;      // Live order book snapshot
-  priceHistory: number[];    // Capped at 200 points
+  stepInfo: StepInfo; // Portfolio, position, cash, Sharpe
+  orderBook: OrderBook; // Live order book snapshot
+  priceHistory: number[]; // Capped at 200 points
   isRunning: boolean;
 }
 
@@ -325,6 +361,7 @@ const { arenaState, start, stop } = useArena();
 ```
 
 **usePolymarket** (`hooks/usePolymarket.ts`):
+
 - Live price streaming from Polymarket API
 - Market selection and filtering
 - Historical data replay
@@ -332,11 +369,13 @@ const { arenaState, start, stop } = useArena();
 #### 3. Components
 
 **PriceChart** (`components/charts/PriceChart.tsx`):
+
 - Lightweight-charts integration
 - Real-time candlestick/line charts
 - Performance-optimized (60 FPS target)
 
 **OrderBook** (`components/dashboard/OrderBook.tsx`):
+
 - Real-time bid/ask visualization
 - Depth chart display
 - Price level highlighting
@@ -346,9 +385,11 @@ const { arenaState, start, stop } = useArena();
 **Location:** `typescript/src-tauri`
 
 #### Tauri Backend (Rust)
+
 **File:** `src-tauri/src/lib.rs`
 
 **Architecture:**
+
 ```rust
 ArenaState
 ├── env: Arc<Mutex<TradingEnv>>    // Thread-safe environment
@@ -365,6 +406,7 @@ tokio::spawn(async move {
 ```
 
 **Tauri Commands:**
+
 ```rust
 #[tauri::command]
 async fn start_arena(state: State<'_, ArenaState>) -> Result<()>
@@ -377,6 +419,7 @@ fn get_orderbook() -> OrderBookSnapshot
 ```
 
 **Event Flow:**
+
 1. Frontend calls `invoke('start_arena')`
 2. Backend spawns Tokio task for simulation loop
 3. Each step emits `arena-update` event
@@ -460,6 +503,7 @@ fn get_orderbook() -> OrderBookSnapshot
 ```
 
 ---
+
 ## 6. Key Design Patterns
 
 ### 6.1 Zero-Copy Data Transfer (Rust ↔ Python)
@@ -553,7 +597,8 @@ async fn main() {
 Data moves through the system in three distinct loops.
 
 ### 7.1 The Fast Loop (Simulation)
-*Frequency: 10kHz+*
+
+_Frequency: 10kHz+_
 
 ```mermaid
 sequenceDiagram
@@ -575,7 +620,8 @@ sequenceDiagram
 4.  **Storage**: In-memory ring buffer.
 
 ### 7.2 The Learning Loop (RL)
-*Frequency: User Defined (e.g., 1 minute candles)*
+
+_Frequency: User Defined (e.g., 1 minute candles)_
 
 ```mermaid
 sequenceDiagram
@@ -599,7 +645,8 @@ sequenceDiagram
 5.  **Reward**: Rust computes $r_t$ and returns it.
 
 ### 7.3 The UI Loop (Visualization)
-*Frequency: 60Hz (Throttled)*
+
+_Frequency: 60Hz (Throttled)_
 
 ```mermaid
 sequenceDiagram
@@ -623,12 +670,15 @@ sequenceDiagram
 ## 8. Key Design Decisions
 
 ### 8.1 Why Rust for Simulation?
+
 Python is too slow for Order Book matching ($O(N)$ list operations vs Rust's $O(\log N)$ B-Trees). Garbage collection pauses in Python would destroy the determinism required for accurate backtesting.
 
 ### 8.2 Why Python for ML?
+
 The ecosystem. PyTorch, HuggingFace, and Optuna are unrivaled. We bridge the two worlds using `PyO3`, giving us "C++ speed with Python usability".
 
 ### 8.3 Why Tauri?
+
 Electron is bloated (Chromium + Node.js bundle). Tauri uses the OS's native webview (WebKit on Linux/macOS, WebView2 on Windows) and a lightweight Rust backend. This results in a <10MB binary vs >100MB for Electron.
 
 ---
@@ -636,37 +686,42 @@ Electron is bloated (Chromium + Node.js bundle). Tauri uses the OS's native webv
 ## 9. Performance Characteristics
 
 ### Rust Layer
-| Component | Metric | Target | Actual |
-|-----------|--------|--------|--------|
-| OrderBook Insert | Latency | <1ms | ~0.1ms |
-| TradingEnv Step | Latency | <1ms | ~0.5ms |
-| Order Matching | Throughput | >10k ops/sec | ~50k ops/sec |
-| Memory Usage | RAM | <100MB | ~50MB |
+
+| Component        | Metric     | Target       | Actual       |
+| ---------------- | ---------- | ------------ | ------------ |
+| OrderBook Insert | Latency    | <1ms         | ~0.1ms       |
+| TradingEnv Step  | Latency    | <1ms         | ~0.5ms       |
+| Order Matching   | Throughput | >10k ops/sec | ~50k ops/sec |
+| Memory Usage     | RAM        | <100MB       | ~50MB        |
 
 ### Python Layer
-| Component | Metric | Target | Notes |
-|-----------|--------|--------|-------|
-| Model Forward Pass | Latency | <10ms | Depends on model size |
-| Training Step | Latency | <100ms | Includes optimizer step |
-| Data Loading | Throughput | >1000 samples/sec | With prefetching |
+
+| Component          | Metric     | Target            | Notes                   |
+| ------------------ | ---------- | ----------------- | ----------------------- |
+| Model Forward Pass | Latency    | <10ms             | Depends on model size   |
+| Training Step      | Latency    | <100ms            | Includes optimizer step |
+| Data Loading       | Throughput | >1000 samples/sec | With prefetching        |
 
 ### Frontend Layer
-| Component | Metric | Target | Notes |
-|-----------|--------|--------|-------|
-| Chart Rendering | FPS | 60 | Lightweight-charts optimized |
-| Event Processing | Latency | <50ms | Tauri IPC overhead |
-| Memory Usage | RAM | <500MB | With 200-point history |
+
+| Component        | Metric  | Target | Notes                        |
+| ---------------- | ------- | ------ | ---------------------------- |
+| Chart Rendering  | FPS     | 60     | Lightweight-charts optimized |
+| Event Processing | Latency | <50ms  | Tauri IPC overhead           |
+| Memory Usage     | RAM     | <500MB | With 200-point history       |
 
 ---
 
 ## 10. Scalability Considerations
 
 ### Horizontal Scaling
+
 - **Training**: Distributed via PyTorch DDP or Ray
 - **Simulation**: Multiple environment instances in parallel
 - **Data Collection**: Sharded by market or time period
 
 ### Vertical Scaling
+
 - **GPU Acceleration**: Full PyTorch/TorchRL support
 - **Multi-threading**: Tokio runtime for concurrent I/O
 - **Memory Efficiency**: Streaming data processing, bounded buffers
@@ -676,16 +731,19 @@ Electron is bloated (Chromium + Node.js bundle). Tauri uses the OS's native webv
 ## 11. Security Considerations
 
 ### API Keys
+
 - Stored in environment variables
 - Never committed to version control
 - Validated before use
 
 ### Data Validation
+
 - Input sanitization at all boundaries
 - Type checking with strong typing (Rust, TypeScript)
 - Schema validation for external data
 
 ### Sandboxing
+
 - Tauri provides OS-level sandboxing
 - Limited filesystem access
 - Content Security Policy (CSP) for web views
@@ -695,10 +753,12 @@ Electron is bloated (Chromium + Node.js bundle). Tauri uses the OS's native webv
 ## 12. Deployment Topology
 
 ### Local Research (Dev)
+
 - **Single Machine**: 1 GPU, Multi-core CPU.
 - **Process**: `cargo run` hosts the simulation; Python is loaded as a dynamic library (`.so`).
 
 ### Development
+
 ```
 Developer Machine
 ├── Rust: cargo build
@@ -706,8 +766,8 @@ Developer Machine
 └── Tauri: npm run tauri dev
 ```
 
-
 ### Cloud Training (Prod - Planned)
+
 ```
 Cloud Infrastructure
 ├── Training Cluster (GPU)
@@ -735,7 +795,7 @@ graph TB
         API1[nglab-api Pod 1]
         API2[nglab-api Pod 2]
         API3[nglab-api Pod 3]
-        
+
         TRAIN1[Training Worker 1]
         TRAIN2[Training Worker 2]
     end
@@ -763,15 +823,15 @@ graph TB
 
 ### Kubernetes Resource Requirements
 
-| Component | Replicas | CPU (Request/Limit) | Memory (Request/Limit) | GPU |
-|-----------|----------|---------------------|------------------------|-----|
-| **nglab-api** | 2-5 | 500m / 2000m | 1Gi / 4Gi | No |
-| **training-worker** | 1-4 | 2000m / 8000m | 4Gi / 32Gi | Yes (1-2) |
-| **postgresql** | 1 (HA: 3) | 500m / 2000m | 1Gi / 4Gi | No |
-| **redis** | 1 (HA: 3) | 100m / 500m | 256Mi / 1Gi | No |
-| **prometheus** | 1 | 500m / 1000m | 2Gi / 4Gi | No |
-| **grafana** | 1 | 100m / 500m | 256Mi / 512Mi | No |
-| **jaeger** | 1 | 500m / 1000m | 1Gi / 2Gi | No |
+| Component           | Replicas  | CPU (Request/Limit) | Memory (Request/Limit) | GPU       |
+| ------------------- | --------- | ------------------- | ---------------------- | --------- |
+| **nglab-api**       | 2-5       | 500m / 2000m        | 1Gi / 4Gi              | No        |
+| **training-worker** | 1-4       | 2000m / 8000m       | 4Gi / 32Gi             | Yes (1-2) |
+| **postgresql**      | 1 (HA: 3) | 500m / 2000m        | 1Gi / 4Gi              | No        |
+| **redis**           | 1 (HA: 3) | 100m / 500m         | 256Mi / 1Gi            | No        |
+| **prometheus**      | 1         | 500m / 1000m        | 2Gi / 4Gi              | No        |
+| **grafana**         | 1         | 100m / 500m         | 256Mi / 512Mi          | No        |
+| **jaeger**          | 1         | 500m / 1000m        | 1Gi / 2Gi              | No        |
 
 ### Kustomize Overlay Structure
 
@@ -821,16 +881,19 @@ kubectl get pods -n nglab -w
 ## 13. Testing Strategy
 
 ### Unit Tests
+
 - **Rust**: `#[test]` modules, `cargo test`
 - **Python**: pytest, `tests/` directory
 - **TypeScript**: Jest/Vitest (future)
 
 ### Integration Tests
+
 - **Rust-Python**: PyO3 bindings verification
 - **Tauri Events**: Frontend-backend communication
 - **End-to-End**: Full training pipeline
 
 ### Benchmarks
+
 - **Criterion**: Rust performance regression testing
 - **pytest-benchmark**: Python performance testing
 - **Lighthouse**: Frontend performance audits (future)
@@ -840,18 +903,21 @@ kubectl get pods -n nglab -w
 ## 14. Future Architecture Enhancements
 
 ### Short-term (3-6 months)
+
 - [ ] Add model serving API (FastAPI/Actix-web)
 - [ ] Implement distributed training with Ray
 - [ ] Add real-time backtesting engine
 - [ ] Enhance monitoring with Prometheus/Grafana
 
 ### Medium-term (6-12 months)
+
 - [ ] Microservices architecture for scalability
 - [ ] Multi-asset trading support
 - [ ] Advanced risk management system
 - [ ] Cloud deployment automation
 
 ### Long-term (12+ months)
+
 - [ ] Multi-agent reinforcement learning
 - [ ] Causal inference integration
 - [ ] Explainable AI for trading decisions
@@ -870,27 +936,28 @@ We use a custom error enum for type-safe error handling:
 pub enum ArenaError {
     #[error("Invalid order: {0}")]
     InvalidOrder(String),
-    
+
     #[error("Insufficient funds: required {required}, available {available}")]
     InsufficientFunds { required: f64, available: f64 },
-    
+
     #[error("Order not found: {order_id}")]
     OrderNotFound { order_id: u64 },
-    
+
     #[error("Market closed")]
     MarketClosed,
-    
+
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 }
 ```
 
 **Error Propagation:**
+
 ```rust
 pub fn execute_trade(&mut self, order: Order) -> Result<Trade, ArenaError> {
     self.validate_order(&order)?;  // Propagate validation errors
     self.check_funds(&order)?;     // Propagate fund errors
-    
+
     let trade = self.match_order(order)?;
     Ok(trade)
 }
@@ -949,14 +1016,14 @@ graph LR
 
 ### 16.2 Key Metrics
 
-| Metric | Type | Description |
-|--------|------|-------------|
-| `nglab_orders_total` | Counter | Total orders processed |
+| Metric                   | Type      | Description              |
+| ------------------------ | --------- | ------------------------ |
+| `nglab_orders_total`     | Counter   | Total orders processed   |
 | `nglab_order_latency_ms` | Histogram | Order processing latency |
-| `nglab_portfolio_value` | Gauge | Current portfolio value |
-| `nglab_position` | Gauge | Current position size |
-| `nglab_training_loss` | Gauge | Current training loss |
-| `nglab_training_reward` | Gauge | Episode reward |
+| `nglab_portfolio_value`  | Gauge     | Current portfolio value  |
+| `nglab_position`         | Gauge     | Current position size    |
+| `nglab_training_loss`    | Gauge     | Current training loss    |
+| `nglab_training_reward`  | Gauge     | Episode reward           |
 
 ### 16.3 Tracing
 
@@ -1023,7 +1090,7 @@ CREATE TABLE price_ticks (
 );
 
 -- Index for time-series queries
-CREATE INDEX idx_price_ticks_market_time 
+CREATE INDEX idx_price_ticks_market_time
 ON price_ticks(market_id, timestamp);
 
 -- Agent positions
@@ -1040,13 +1107,13 @@ CREATE TABLE positions (
 
 ### 17.2 Model Registry (MLflow)
 
-| Table | Purpose |
-|-------|---------|
-| `experiments` | Experiment metadata |
-| `runs` | Individual training runs |
-| `metrics` | Training metrics (loss, reward) |
-| `params` | Hyperparameters |
-| `artifacts` | Model checkpoints |
+| Table         | Purpose                         |
+| ------------- | ------------------------------- |
+| `experiments` | Experiment metadata             |
+| `runs`        | Individual training runs        |
+| `metrics`     | Training metrics (loss, reward) |
+| `params`      | Hyperparameters                 |
+| `artifacts`   | Model checkpoints               |
 
 ---
 
@@ -1088,13 +1155,13 @@ logging:
 
 ### 18.2 Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `NGLAB_LOG_LEVEL` | Logging verbosity | `INFO` |
-| `NGLAB_DATA_DIR` | Data storage path | `./data` |
-| `NGLAB_CACHE_DIR` | Cache directory | `./cache` |
-| `CUDA_VISIBLE_DEVICES` | GPU selection | All |
-| `WANDB_API_KEY` | W&B authentication | - |
+| Variable                      | Description            | Default          |
+| ----------------------------- | ---------------------- | ---------------- |
+| `NGLAB_LOG_LEVEL`             | Logging verbosity      | `INFO`           |
+| `NGLAB_DATA_DIR`              | Data storage path      | `./data`         |
+| `NGLAB_CACHE_DIR`             | Cache directory        | `./cache`        |
+| `CUDA_VISIBLE_DEVICES`        | GPU selection          | All              |
+| `WANDB_API_KEY`               | W&B authentication     | -                |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | OpenTelemetry endpoint | `localhost:4317` |
 
 ---
@@ -1113,13 +1180,13 @@ impl TradingEnv {
     /// Create a new trading environment
     #[new]
     fn new(initial_cash: f64, lookback_window: usize, transaction_cost: f64) -> Self;
-    
+
     /// Reset the environment
     fn reset(&mut self, seed: Option<u64>) -> (Py<PyArray1<f64>>, PyObject);
-    
+
     /// Take a step in the environment
     fn step(&mut self, action: i32) -> PyResult<StepResult>;
-    
+
     /// Get current portfolio value
     #[getter]
     fn portfolio_value(&self) -> f64;
@@ -1141,10 +1208,10 @@ interface TauriCommands {
 
 // Backend → Frontend Events
 interface TauriEvents {
-  'arena-update': ArenaUpdate;
-  'trade-executed': TradeEvent;
-  'error': ErrorEvent;
-  'log': LogEvent;
+  "arena-update": ArenaUpdate;
+  "trade-executed": TradeEvent;
+  error: ErrorEvent;
+  log: LogEvent;
 }
 ```
 
@@ -1163,7 +1230,7 @@ paths:
       responses:
         200:
           description: Arena started
-  
+
   /api/v1/arena/step:
     post:
       summary: Execute a step
@@ -1178,7 +1245,7 @@ paths:
       responses:
         200:
           description: Step result
-  
+
   /api/v1/models:
     get:
       summary: List available models
@@ -2111,37 +2178,37 @@ sequenceDiagram
 
 #### Rust Files
 
-| File | Structs/Enums | Key Functions/Methods |
-|------|---------------|----------------------|
-| `rust/src/lib.rs:81-130` | `Arena` | `new()`, `step_count()`, `new_py()`, `step_count_py()` |
-| `rust/src/simulation/gym.rs:163-199` | `TradingEnv`, `StepResult`, `StepInfo`, `ObservationBuffer`, `ActionType` | `new()`, `load_prices()`, `reset_rs()`, `step_rs()`, `portfolio_value()`, `execute_action()`, `calculate_reward()`, `calculate_sharpe()` |
-| `rust/src/simulation/orderbook.rs:31-887` | `OrderBook`, `Order`, `PriceLevel`, `Trade`, `Side`, `OrderType` | `submit_limit_order()`, `submit_market_order()`, `match_order()`, `check_triggers()`, `best_bid()`, `best_ask()`, `mid_price()`, `imbalance()`, `cancel_order()`, `modify_order()` |
-| `rust/src/simulation/polymarket.rs:20-477` | `PolymarketArena`, `Market`, `Account`, `PriceTick` | `load_markets()`, `load_price_history()`, `buy_yes()`, `buy_no()`, `sell_yes()`, `merge()`, `split()`, `advance()`, `reset()`, `account_value()` |
-| `rust/src/simulation/multi_asset.rs:17-175` | `MultiAssetEnv`, `AlgoOrder`, `MultiAssetStepResult`, `AlgoType` | `new()`, `load_prices()`, `portfolio_value()`, `reset_native()`, `step_native()` |
-| `rust/src/simulation/risk.rs:15-200` | `RiskManager`, `RiskConfig`, `RiskStatus` | `new()`, `with_defaults()`, `update()`, `new_trading_day()`, `calculate_metrics()`, `calculate_var()` |
-| `rust/src/errors/mod.rs:13-82` | `ArenaError` | (enum variants for error types) |
-| `rust/src/validation/mod.rs:8-72` | — | `validate_price()`, `validate_quantity()`, `validate_asset()`, `validate_data_length()`, `validate_steps()` |
+| File                                        | Structs/Enums                                                             | Key Functions/Methods                                                                                                                                                              |
+| ------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rust/src/lib.rs:81-130`                    | `Arena`                                                                   | `new()`, `step_count()`, `new_py()`, `step_count_py()`                                                                                                                             |
+| `rust/src/simulation/gym.rs:163-199`        | `TradingEnv`, `StepResult`, `StepInfo`, `ObservationBuffer`, `ActionType` | `new()`, `load_prices()`, `reset_rs()`, `step_rs()`, `portfolio_value()`, `execute_action()`, `calculate_reward()`, `calculate_sharpe()`                                           |
+| `rust/src/simulation/orderbook.rs:31-887`   | `OrderBook`, `Order`, `PriceLevel`, `Trade`, `Side`, `OrderType`          | `submit_limit_order()`, `submit_market_order()`, `match_order()`, `check_triggers()`, `best_bid()`, `best_ask()`, `mid_price()`, `imbalance()`, `cancel_order()`, `modify_order()` |
+| `rust/src/simulation/polymarket.rs:20-477`  | `PolymarketArena`, `Market`, `Account`, `PriceTick`                       | `load_markets()`, `load_price_history()`, `buy_yes()`, `buy_no()`, `sell_yes()`, `merge()`, `split()`, `advance()`, `reset()`, `account_value()`                                   |
+| `rust/src/simulation/multi_asset.rs:17-175` | `MultiAssetEnv`, `AlgoOrder`, `MultiAssetStepResult`, `AlgoType`          | `new()`, `load_prices()`, `portfolio_value()`, `reset_native()`, `step_native()`                                                                                                   |
+| `rust/src/simulation/risk.rs:15-200`        | `RiskManager`, `RiskConfig`, `RiskStatus`                                 | `new()`, `with_defaults()`, `update()`, `new_trading_day()`, `calculate_metrics()`, `calculate_var()`                                                                              |
+| `rust/src/errors/mod.rs:13-82`              | `ArenaError`                                                              | (enum variants for error types)                                                                                                                                                    |
+| `rust/src/validation/mod.rs:8-72`           | —                                                                         | `validate_price()`, `validate_quantity()`, `validate_asset()`, `validate_data_length()`, `validate_steps()`                                                                        |
 
 #### Python Files
 
-| File | Classes | Key Functions/Methods |
-|------|---------|----------------------|
-| `python/src/env/envs.py` | `TradingEnv`, `ClobEnv`, `PolymarketEnv` | `reset()`, `step()`, `_get_observation()`, `_execute_action()`, `_portfolio_value()` |
-| `python/src/env/env_wrapper.py` | `TradingEnvWrapper` | `__init__()`, `_make_specs()` |
-| `python/src/env/vectorized_env.py` | `VectorizedTradingEnv`, `SubprocVecEnv` | `reset()`, `step()`, `step_async()`, `step_wait()`, `make_vec_env()` |
-| `python/src/policies/base.py` | `Policy` | `act()`, `__call__()`, `reset()` |
-| `python/src/policies/neural.py` | `NeuralPolicy` | `__init__()`, `act()` |
-| `python/src/models/time_series.py` | `TimeSeriesBackbone` | `__init__()`, `forward()` |
-| `python/src/models/deep_factory.py` | — | `create_deep_model()` |
-| `python/src/pipeline/core/lightning/reinforcement_learning.py` | `RLLightningModule` | `training_step()`, `validation_step()`, `on_train_epoch_end()` |
-| `python/src/pipeline/core/lightning/supervised_learning.py` | `SLLightningModule` | `training_step()`, `validation_step()` |
-| `python/src/backtesting/engine.py` | `BacktestEngine` | `set_strategy()`, `load_data()`, `run()`, `buy_yes()`, `buy_no()`, `sell_yes()` |
-| `python/src/backtesting/strategy.py` | `BaseStrategy`, `Strategy` | `set_engine()`, `on_market_data()`, `on_fill()` |
-| `python/src/backtesting/metrics.py` | — | `calculate_metrics()` |
-| `python/src/data/dataloaders.py` | `FinancialDataset` | `__init__()`, `__getitem__()`, `create_dataloader()` |
-| `python/src/data/polymarket_dataset.py` | `PolymarketDataset` | `__init__()`, `_load_multivariate_data()`, `__getitem__()` |
-| `python/src/api/inference.py` | `BatchInferenceHandler`, `PredictionRequest`, `PredictionResponse` | `queue_inference()`, `process_batch()` |
-| `python/src/main.py` | — | `main()` (Hydra entry point) |
+| File                                                           | Classes                                                            | Key Functions/Methods                                                                |
+| -------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `python/src/env/envs.py`                                       | `TradingEnv`, `ClobEnv`, `PolymarketEnv`                           | `reset()`, `step()`, `_get_observation()`, `_execute_action()`, `_portfolio_value()` |
+| `python/src/env/env_wrapper.py`                                | `TradingEnvWrapper`                                                | `__init__()`, `_make_specs()`                                                        |
+| `python/src/env/vectorized_env.py`                             | `VectorizedTradingEnv`, `SubprocVecEnv`                            | `reset()`, `step()`, `step_async()`, `step_wait()`, `make_vec_env()`                 |
+| `python/src/policies/base.py`                                  | `Policy`                                                           | `act()`, `__call__()`, `reset()`                                                     |
+| `python/src/policies/neural.py`                                | `NeuralPolicy`                                                     | `__init__()`, `act()`                                                                |
+| `python/src/models/time_series.py`                             | `TimeSeriesBackbone`                                               | `__init__()`, `forward()`                                                            |
+| `python/src/models/deep_factory.py`                            | —                                                                  | `create_deep_model()`                                                                |
+| `python/src/pipeline/core/lightning/reinforcement_learning.py` | `RLLightningModule`                                                | `training_step()`, `validation_step()`, `on_train_epoch_end()`                       |
+| `python/src/pipeline/core/lightning/supervised_learning.py`    | `SLLightningModule`                                                | `training_step()`, `validation_step()`                                               |
+| `python/src/backtesting/engine.py`                             | `BacktestEngine`                                                   | `set_strategy()`, `load_data()`, `run()`, `buy_yes()`, `buy_no()`, `sell_yes()`      |
+| `python/src/backtesting/strategy.py`                           | `BaseStrategy`, `Strategy`                                         | `set_engine()`, `on_market_data()`, `on_fill()`                                      |
+| `python/src/backtesting/metrics.py`                            | —                                                                  | `calculate_metrics()`                                                                |
+| `python/src/data/dataloaders.py`                               | `FinancialDataset`                                                 | `__init__()`, `__getitem__()`, `create_dataloader()`                                 |
+| `python/src/data/polymarket_dataset.py`                        | `PolymarketDataset`                                                | `__init__()`, `_load_multivariate_data()`, `__getitem__()`                           |
+| `python/src/api/inference.py`                                  | `BatchInferenceHandler`, `PredictionRequest`, `PredictionResponse` | `queue_inference()`, `process_batch()`                                               |
+| `python/src/main.py`                                           | —                                                                  | `main()` (Hydra entry point)                                                         |
 
 ---
 
@@ -2149,27 +2216,27 @@ sequenceDiagram
 
 This matrix shows which Python components call which Rust components:
 
-| Python Component | Rust Component Called | Method(s) Used |
-|------------------|----------------------|----------------|
-| `TradingEnv` (envs.py) | `_nglab.TradingEnv` | `reset()`, `step()`, `load_prices()`, `get_observation()` |
-| `ClobEnv` (envs.py) | `_nglab.OrderBook` | `best_bid()`, `best_ask()`, `imbalance()` |
-| `PolymarketEnv` (envs.py) | `_nglab.PolymarketArena` | `reset()`, `get_price()`, `get_position()`, `buy_yes()`, `buy_no()`, `sell_yes()`, `advance()` |
-| `BacktestEngine` (engine.py) | `_nglab.PolymarketArena` | `load_markets()`, `load_price_history()`, `buy_yes()`, `buy_no()`, `sell_yes()`, `merge()`, `split()`, `advance()`, `account_value()`, `collateral()` |
-| `VectorizedTradingEnv` | `_nglab.TradingEnv` (via TradingEnv) | All TradingEnv methods |
+| Python Component             | Rust Component Called                | Method(s) Used                                                                                                                                        |
+| ---------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TradingEnv` (envs.py)       | `_nglab.TradingEnv`                  | `reset()`, `step()`, `load_prices()`, `get_observation()`                                                                                             |
+| `ClobEnv` (envs.py)          | `_nglab.OrderBook`                   | `best_bid()`, `best_ask()`, `imbalance()`                                                                                                             |
+| `PolymarketEnv` (envs.py)    | `_nglab.PolymarketArena`             | `reset()`, `get_price()`, `get_position()`, `buy_yes()`, `buy_no()`, `sell_yes()`, `advance()`                                                        |
+| `BacktestEngine` (engine.py) | `_nglab.PolymarketArena`             | `load_markets()`, `load_price_history()`, `buy_yes()`, `buy_no()`, `sell_yes()`, `merge()`, `split()`, `advance()`, `account_value()`, `collateral()` |
+| `VectorizedTradingEnv`       | `_nglab.TradingEnv` (via TradingEnv) | All TradingEnv methods                                                                                                                                |
 
 ---
 
 ### 21.6 Summary Statistics
 
-| Metric | Rust | Python |
-|--------|------|--------|
-| Total Lines of Code | ~7,859 | ~15,000+ |
-| Main Modules | 11 | 12 |
-| Structs/Classes | ~20+ | ~50+ |
-| Public Functions/Methods | 100+ | 200+ |
-| PyO3 Exposed Classes | 7 | — |
-| Deep Learning Architectures | — | 30+ |
-| Classical ML Models | — | 25+ |
+| Metric                      | Rust   | Python   |
+| --------------------------- | ------ | -------- |
+| Total Lines of Code         | ~7,859 | ~15,000+ |
+| Main Modules                | 11     | 12       |
+| Structs/Classes             | ~20+   | ~50+     |
+| Public Functions/Methods    | 100+   | 200+     |
+| PyO3 Exposed Classes        | 7      | —        |
+| Deep Learning Architectures | —      | 30+      |
+| Classical ML Models         | —      | 25+      |
 
 ---
 
@@ -2177,35 +2244,35 @@ This matrix shows which Python components call which Rust components:
 
 ### Minimum Requirements
 
-| Component | Minimum | Recommended | Notes |
-|-----------|---------|-------------|-------|
-| **CPU** | 4 cores | 8+ cores | AMD64 architecture required |
-| **RAM** | 8 GB | 32 GB | 16 GB for multi-agent training |
-| **GPU** | None | NVIDIA RTX 3080+ | CUDA 11.8+ for training |
-| **Storage** | 20 GB SSD | 100 GB NVMe | Fast I/O for data loading |
-| **OS** | Ubuntu 22.04 | Ubuntu 24.04 | Also macOS 13+, Windows 11 |
+| Component   | Minimum      | Recommended      | Notes                          |
+| ----------- | ------------ | ---------------- | ------------------------------ |
+| **CPU**     | 4 cores      | 8+ cores         | AMD64 architecture required    |
+| **RAM**     | 8 GB         | 32 GB            | 16 GB for multi-agent training |
+| **GPU**     | None         | NVIDIA RTX 3080+ | CUDA 11.8+ for training        |
+| **Storage** | 20 GB SSD    | 100 GB NVMe      | Fast I/O for data loading      |
+| **OS**      | Ubuntu 22.04 | Ubuntu 24.04     | Also macOS 13+, Windows 11     |
 
 ### Software Dependencies
 
-| Software | Version | Purpose |
-|----------|---------|---------|
-| **Rust** | 1.75+ | Simulation engine |
-| **Python** | 3.11+ | ML pipeline |
-| **Node.js** | 20+ | Frontend development |
-| **CUDA** | 11.8+ | GPU acceleration (optional) |
-| **Docker** | 24+ | Containerization |
-| **kubectl** | 1.28+ | Kubernetes deployment |
+| Software    | Version | Purpose                     |
+| ----------- | ------- | --------------------------- |
+| **Rust**    | 1.75+   | Simulation engine           |
+| **Python**  | 3.11+   | ML pipeline                 |
+| **Node.js** | 20+     | Frontend development        |
+| **CUDA**    | 11.8+   | GPU acceleration (optional) |
+| **Docker**  | 24+     | Containerization            |
+| **kubectl** | 1.28+   | Kubernetes deployment       |
 
 ### Network Requirements
 
-| Port | Service | Protocol | Notes |
-|------|---------|----------|-------|
-| 8000 | API Server | HTTP/HTTPS | Main application |
-| 5432 | PostgreSQL | TCP | Database |
-| 6379 | Redis | TCP | Cache |
-| 4317 | Jaeger OTLP | gRPC | Tracing |
-| 3000 | Grafana | HTTP | Monitoring UI |
-| 9090 | Prometheus | HTTP | Metrics |
+| Port | Service     | Protocol   | Notes            |
+| ---- | ----------- | ---------- | ---------------- |
+| 8000 | API Server  | HTTP/HTTPS | Main application |
+| 5432 | PostgreSQL  | TCP        | Database         |
+| 6379 | Redis       | TCP        | Cache            |
+| 4317 | Jaeger OTLP | gRPC       | Tracing          |
+| 3000 | Grafana     | HTTP       | Monitoring UI    |
+| 9090 | Prometheus  | HTTP       | Metrics          |
 
 ---
 
@@ -2217,7 +2284,7 @@ This matrix shows which Python components call which Rust components:
 - [AGENTS.md](AGENTS.md) - Agent taxonomy and policies
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues and fixes
-- [IMPROVEMENTS.md](IMPROVEMENTS.md) - Development roadmap
+- [ROADMAP.md](ROADMAP.md) - Development roadmap
 - [README.md](README.md) - Getting started
 
 ---
@@ -2225,6 +2292,7 @@ This matrix shows which Python components call which Rust components:
 ## Changelog
 
 ### Version 2.4.0 (Current)
+
 - Added comprehensive Backend Internal Architecture section (Section 21)
   - Detailed Rust module structure and struct relationships
   - Complete class diagrams for all core Rust structs
@@ -2238,6 +2306,7 @@ This matrix shows which Python components call which Rust components:
   - Cross-component call matrix
 
 ### Version 2.3.0
+
 - Added Kubernetes Production Topology with Mermaid diagrams
 - Added Kubernetes Resource Requirements table
 - Added Kustomize Overlay Structure documentation
@@ -2245,6 +2314,7 @@ This matrix shows which Python components call which Rust components:
 - Updated Related Documentation links
 
 ### Version 2.2.0
+
 - Added Error Handling Patterns section
 - Added Observability & Monitoring with metrics definitions
 - Added Database Schema documentation
@@ -2253,11 +2323,13 @@ This matrix shows which Python components call which Rust components:
 - Added Dependency Graph visualization
 
 ### Version 2.1.0
+
 - Added System Context Diagram
 - Added Directory Structure Map
 - Added Data Flow Specification with Mermaid diagrams
 
 ### Version 2.0.0
+
 - Initial architecture document
 
 ---

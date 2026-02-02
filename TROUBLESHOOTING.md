@@ -1,5 +1,7 @@
 # NGLab Field Repair Manual: Troubleshooting Guide
 
+<a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL v3" src="https://img.shields.io/badge/License-AGPL_v3-blue.svg"></a>
+
 > **Diagnosis > Guesswork**.
 > This document maps "Symptoms" to "Root Causes" and "Cures".
 
@@ -34,6 +36,7 @@ just check-health
 ```
 
 **Expected Output:**
+
 ```text
 [✅] Rust: cargo 1.80.0
 [✅] Python: 3.11.4 (Active Venv: .venv)
@@ -46,12 +49,12 @@ If any of these fail, proceed to the relevant section below.
 
 ### Quick Fix Commands
 
-| Issue | Quick Fix |
-|-------|-----------|
-| Rust not found | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
-| Python venv missing | `uv sync` |
-| Node modules missing | `cd typescript && npm ci` |
-| Rust extension not built | `just build-python` |
+| Issue                    | Quick Fix                                                         |
+| ------------------------ | ----------------------------------------------------------------- |
+| Rust not found           | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
+| Python venv missing      | `uv sync`                                                         |
+| Node modules missing     | `cd typescript && npm ci`                                         |
+| Rust extension not built | `just build-python`                                               |
 
 ---
 
@@ -60,86 +63,97 @@ If any of these fail, proceed to the relevant section below.
 ### 2.1 Rust / Cargo
 
 #### Symptom: `error: linker 'cc' not found`
-*   **Cause**: Missing system build essentials.
-*   **Fix**:
-    ```bash
-    sudo apt update && sudo apt install build-essential pkg-config libssl-dev
-    ```
+
+- **Cause**: Missing system build essentials.
+- **Fix**:
+  ```bash
+  sudo apt update && sudo apt install build-essential pkg-config libssl-dev
+  ```
 
 #### Symptom: `PyO3: undefined symbol: _Py_NoneStruct`
-*   **Context**: Running a Rust binary that depends on `pyo3` but isn't a Python extension module.
-*   **Cause**: You cannot run `cargo run` on a `cdylib` crate meant for Python import.
-*   **Fix**:
-    *   Do NOT run `cargo run` for the library.
-    *   Use `maturin develop` to build and install into your venv.
-    *   Run the *Python entry point* that imports the Rust `.so`.
+
+- **Context**: Running a Rust binary that depends on `pyo3` but isn't a Python extension module.
+- **Cause**: You cannot run `cargo run` on a `cdylib` crate meant for Python import.
+- **Fix**:
+  - Do NOT run `cargo run` for the library.
+  - Use `maturin develop` to build and install into your venv.
+  - Run the _Python entry point_ that imports the Rust `.so`.
 
 #### Symptom: `custom-build` Metadata Error
-*   **Cause**: `protobuf-codegen` failing to find `protoc`.
-*   **Fix**:
-    ```bash
-    sudo apt install protobuf-compiler
-    ```
+
+- **Cause**: `protobuf-codegen` failing to find `protoc`.
+- **Fix**:
+  ```bash
+  sudo apt install protobuf-compiler
+  ```
 
 #### Symptom: `error[E0433]: failed to resolve: use of undeclared crate or module`
-*   **Cause**: Missing dependency in `Cargo.toml` or workspace member not configured.
-*   **Fix**:
-    ```bash
-    # Check if the crate is in workspace members
-    grep -r "members" Cargo.toml
-    # Add missing dependency
-    cargo add <crate_name>
-    ```
+
+- **Cause**: Missing dependency in `Cargo.toml` or workspace member not configured.
+- **Fix**:
+  ```bash
+  # Check if the crate is in workspace members
+  grep -r "members" Cargo.toml
+  # Add missing dependency
+  cargo add <crate_name>
+  ```
 
 ### 2.2 Python / UV
 
 #### Symptom: `ModuleNotFoundError: No module named 'nglab'`
-*   **Cause**: The Rust extension hasn't been built/installed into the current virtual environment.
-*   **Fix**:
-    ```bash
-    source .venv/bin/activate
-    just build-python # Runs maturin develop
-    ```
+
+- **Cause**: The Rust extension hasn't been built/installed into the current virtual environment.
+- **Fix**:
+  ```bash
+  source .venv/bin/activate
+  just build-python # Runs maturin develop
+  ```
 
 #### Symptom: `RuntimeError: PyTorch not compiled with CUDA enabled`
-*   **Cause**: You installed the CPU-only version of Torch.
-*   **Fix**:
-    ```bash
-    uv pip install torch --index-url https://download.pytorch.org/whl/cu118 --force-reinstall
-    ```
+
+- **Cause**: You installed the CPU-only version of Torch.
+- **Fix**:
+  ```bash
+  uv pip install torch --index-url https://download.pytorch.org/whl/cu118 --force-reinstall
+  ```
 
 #### Symptom: `ImportError: libcudnn.so.8: cannot open shared object file`
-*   **Cause**: CUDA libraries not in PATH.
-*   **Fix**:
-    ```bash
-    export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
-    # Add to ~/.bashrc for persistence
-    ```
+
+- **Cause**: CUDA libraries not in PATH.
+- **Fix**:
+  ```bash
+  export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+  # Add to ~/.bashrc for persistence
+  ```
 
 #### Symptom: `TypeError: 'NoneType' object is not subscriptable` during config loading
-*   **Cause**: Hydra configuration file missing or malformed.
-*   **Fix**:
-    *   Check that `python/src/conf/config.yaml` exists.
-    *   Validate YAML syntax: `python -c "import yaml; yaml.safe_load(open('config.yaml'))"`
+
+- **Cause**: Hydra configuration file missing or malformed.
+- **Fix**:
+  - Check that `python/src/conf/config.yaml` exists.
+  - Validate YAML syntax: `python -c "import yaml; yaml.safe_load(open('config.yaml'))"`
 
 ### 2.3 Tauri / Frontend
 
 #### Symptom: `WebView2Loader.dll not found` (Windows)
-*   **Cause**: Missing webview runtime.
-*   **Fix**: Install the "Evergreen Bootstrapper" from Microsoft.
+
+- **Cause**: Missing webview runtime.
+- **Fix**: Install the "Evergreen Bootstrapper" from Microsoft.
 
 #### Symptom: `EACCES: permission denied, access '/usr/lib/node_modules'`
-*   **Cause**: You are running npm with global permissions improperly.
-*   **Fix**: Do not use `sudo`. Use `nvm` to manage node versions.
+
+- **Cause**: You are running npm with global permissions improperly.
+- **Fix**: Do not use `sudo`. Use `nvm` to manage node versions.
 
 #### Symptom: `Cannot find module 'typescript'`
-*   **Cause**: Node modules not installed.
-*   **Fix**:
-    ```bash
-    cd typescript
-    rm -rf node_modules package-lock.json
-    npm install
-    ```
+
+- **Cause**: Node modules not installed.
+- **Fix**:
+  ```bash
+  cd typescript
+  rm -rf node_modules package-lock.json
+  npm install
+  ```
 
 ---
 
@@ -148,43 +162,48 @@ If any of these fail, proceed to the relevant section below.
 ### 3.1 Rust Build Failures
 
 #### Symptom: `error: could not compile 'nglab'`
-*   **Diagnosis**:
-    1.  Read the full error message—Rust errors are descriptive.
-    2.  Check for missing system dependencies.
-*   **Common Causes**:
-    *   Missing `openssl-dev`: `sudo apt install libssl-dev`
-    *   Missing `pkg-config`: `sudo apt install pkg-config`
+
+- **Diagnosis**:
+  1.  Read the full error message—Rust errors are descriptive.
+  2.  Check for missing system dependencies.
+- **Common Causes**:
+  - Missing `openssl-dev`: `sudo apt install libssl-dev`
+  - Missing `pkg-config`: `sudo apt install pkg-config`
 
 #### Symptom: `error[E0308]: mismatched types` in PyO3 code
-*   **Cause**: Rust-Python type mismatch.
-*   **Fix**: Check that your `#[pyfunction]` return types match PyO3 expectations.
+
+- **Cause**: Rust-Python type mismatch.
+- **Fix**: Check that your `#[pyfunction]` return types match PyO3 expectations.
 
 ### 3.2 Python Build Failures
 
 #### Symptom: `maturin develop` fails with `PEP 517` error
-*   **Cause**: Virtual environment not activated or corrupted.
-*   **Fix**:
-    ```bash
-    deactivate
-    rm -rf .venv
-    uv sync
-    source .venv/bin/activate
-    maturin develop
-    ```
+
+- **Cause**: Virtual environment not activated or corrupted.
+- **Fix**:
+  ```bash
+  deactivate
+  rm -rf .venv
+  uv sync
+  source .venv/bin/activate
+  maturin develop
+  ```
 
 ### 3.3 TypeScript Build Failures
 
 #### Symptom: `TS2307: Cannot find module` for internal imports
-*   **Cause**: TypeScript path aliases not configured.
-*   **Fix**: Check `tsconfig.json` for correct `paths` configuration.
+
+- **Cause**: TypeScript path aliases not configured.
+- **Fix**: Check `tsconfig.json` for correct `paths` configuration.
 
 #### Symptom: `FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory`
-*   **Cause**: Node.js running out of memory during build.
-*   **Fix**:
-    ```bash
-    export NODE_OPTIONS="--max-old-space-size=8192"
-    npm run build
-    ```
+
+- **Cause**: Node.js running out of memory during build.
+- **Fix**:
+  ```bash
+  export NODE_OPTIONS="--max-old-space-size=8192"
+  npm run build
+  ```
 
 ---
 
@@ -195,6 +214,7 @@ If any of these fail, proceed to the relevant section below.
 **Symptom**: The terminal says `thread 'main' panicked at '...'`.
 
 **Action**: Backtrace it.
+
 ```bash
 # Run with backtrace enabled
 RUST_BACKTRACE=1 cargo run --bin nglab-cli
@@ -202,12 +222,12 @@ RUST_BACKTRACE=1 cargo run --bin nglab-cli
 
 **Common Panics**:
 
-| Panic Message | Cause | Fix |
-|---------------|-------|-----|
-| `index out of bounds` | Accessing beyond array length | Check loop bounds, use `.get()` instead of `[]` |
-| `called Option::unwrap() on a None value` | Unwrapping empty Option | Use pattern matching or `if let` |
-| `borrow error` | RefCell double borrow | Reduce scope of first borrow |
-| `arithmetic overflow` | Integer overflow | Use `checked_add()` or `saturating_add()` |
+| Panic Message                             | Cause                         | Fix                                             |
+| ----------------------------------------- | ----------------------------- | ----------------------------------------------- |
+| `index out of bounds`                     | Accessing beyond array length | Check loop bounds, use `.get()` instead of `[]` |
+| `called Option::unwrap() on a None value` | Unwrapping empty Option       | Use pattern matching or `if let`                |
+| `borrow error`                            | RefCell double borrow         | Reduce scope of first borrow                    |
+| `arithmetic overflow`                     | Integer overflow              | Use `checked_add()` or `saturating_add()`       |
 
 ### 4.2 Python Segfaults (Segmentation Fault)
 
@@ -216,12 +236,14 @@ RUST_BACKTRACE=1 cargo run --bin nglab-cli
 **Root Cause**: Typically undefined behavior in the Rust `unsafe` block or invalid pointer access in PyO3.
 
 **Action**: Debug with GDB/LLDB.
+
 ```bash
 gdb --args python python/src/main.py
 (gdb) run
 # ... Wait for crash ...
 (gdb) bt
 ```
+
 Look for the top frame. If it's inside `libnglab.so`, it's a Rust bug. File a critical issue.
 
 ### 4.3 Python Exceptions
@@ -229,6 +251,7 @@ Look for the top frame. If it's inside `libnglab.so`, it's a Rust bug. File a cr
 **Symptom**: Standard Python traceback.
 
 **Diagnosis**:
+
 1.  Read the full traceback from bottom to top.
 2.  The last frame is where the error occurred.
 3.  Check the error type (KeyError, ValueError, etc.).
@@ -242,22 +265,23 @@ Look for the top frame. If it's inside `libnglab.so`, it's a Rust bug. File a cr
 **Diagnosis Checklist**:
 
 1.  **Check Normalization**: Are inputs normalized to $\mathcal{N}(0,1)$? Raw prices (e.g., 20,000) break neural net gradients.
-    *   *Fix*: Ensure `ObservationNormalizer` is active in `gym.rs`.
+    - _Fix_: Ensure `ObservationNormalizer` is active in `gym.rs`.
 2.  **Check Rewards**: Is the reward signal strictly zero?
-    *   *Fix*: Print `reward` at every step. Ensure `transaction_cost` isn't eating all profits.
+    - _Fix_: Print `reward` at every step. Ensure `transaction_cost` isn't eating all profits.
 3.  **Check Entropy**: If entropy drops to 0 immediately, the Learning Rate is too high.
-    *   *Fix*: Reduce LR by 10x.
+    - _Fix_: Reduce LR by 10x.
 4.  **Check Gradient Flow**: Are gradients NaN or zero?
-    *   *Fix*: Use gradient clipping and check for division by zero.
+    - _Fix_: Use gradient clipping and check for division by zero.
 
 ### 5.2 Order Book Desync
 
 **Symptom**: Frontend shows a price of $100, but Agent buys at $101.
 
 **Cause**: Physics/Rendering Latency mismatch.
-*   The Rust engine operates at 10kHz.
-*   The UI updates at 60Hz.
-*   The UI is showing "old news".
+
+- The Rust engine operates at 10kHz.
+- The UI updates at 60Hz.
+- The UI is showing "old news".
 
 **Fix**: Trust the logs, not the UI. The UI is a downsampled approximation of the truth.
 
@@ -266,11 +290,13 @@ Look for the top frame. If it's inside `libnglab.so`, it's a Rust bug. File a cr
 **Symptom**: The model always outputs the same action/prediction.
 
 **Causes**:
+
 1.  **Dead ReLU**: All neurons have become inactive.
 2.  **Collapsed VAE**: KL divergence dominating, latent space unused.
 3.  **Mode Collapse in GAN**: Generator found a single "safe" output.
 
 **Fixes**:
+
 1.  Use LeakyReLU instead of ReLU.
 2.  Implement KL annealing in VAE training.
 3.  Use spectral normalization in GAN.
@@ -280,6 +306,7 @@ Look for the top frame. If it's inside `libnglab.so`, it's a Rust bug. File a cr
 **Symptom**: Excellent training metrics, poor validation/test metrics.
 
 **Fixes**:
+
 1.  Add dropout layers.
 2.  Use data augmentation.
 3.  Reduce model capacity (fewer layers/parameters).
@@ -292,6 +319,7 @@ Look for the top frame. If it's inside `libnglab.so`, it's a Rust bug. File a cr
 ### 6.1 Slow Step Times (>10ms)
 
 **Action**: Profile it.
+
 ```bash
 # Install samply
 cargo install samply
@@ -299,24 +327,28 @@ cargo install samply
 # Profile the execution
 samply record python python/src/main.py
 ```
+
 View the flamegraph.
-*   If `PyO3::to_py_object` is huge: You are copying data. Switch to `numpy` views.
-*   If `Mutex::lock` is huge: You have high thread contention between the GUI reader and the simulation writer. Use `RwLock` or double-buffering.
+
+- If `PyO3::to_py_object` is huge: You are copying data. Switch to `numpy` views.
+- If `Mutex::lock` is huge: You have high thread contention between the GUI reader and the simulation writer. Use `RwLock` or double-buffering.
 
 ### 6.2 GPU Starvation (0% Util)
 
 **Cause**: The CPU isn't feeding data fast enough.
 
 **Fix**:
-*   Increase `num_envs` (Vectorized Environments).
-*   Move `ObservationNormalizer` to Rust (prevent Python GIL lock).
-*   Use async data loading with `num_workers > 0` in DataLoader.
+
+- Increase `num_envs` (Vectorized Environments).
+- Move `ObservationNormalizer` to Rust (prevent Python GIL lock).
+- Use async data loading with `num_workers > 0` in DataLoader.
 
 ### 6.3 Memory Leaks
 
 **Symptom**: Memory usage grows continuously over time.
 
 **Diagnosis**:
+
 ```bash
 # Python memory profiling
 pip install memory-profiler
@@ -324,6 +356,7 @@ python -m memory_profiler python/src/main.py
 ```
 
 **Common Causes**:
+
 1.  Storing all history in a list that never gets cleared.
 2.  Circular references preventing garbage collection.
 3.  Large tensors not being freed (use `del tensor; torch.cuda.empty_cache()`).
@@ -333,6 +366,7 @@ python -m memory_profiler python/src/main.py
 **Symptom**: Training takes hours/days when it should take minutes/hours.
 
 **Checklist**:
+
 1.  Is GPU being used? Check `nvidia-smi`.
 2.  Is data loading the bottleneck? Check if GPU util is <50%.
 3.  Is the model too large? Profile forward/backward pass times.
@@ -344,21 +378,23 @@ python -m memory_profiler python/src/main.py
 ### 7.1 Polymarket API Errors
 
 #### Symptom: `HTTPError: 429 Too Many Requests`
-*   **Cause**: Rate limiting.
-*   **Fix**: Implement exponential backoff:
-    ```python
-    import time
-    for i in range(5):
-        try:
-            response = api.request()
-            break
-        except RateLimitError:
-            time.sleep(2 ** i)
-    ```
+
+- **Cause**: Rate limiting.
+- **Fix**: Implement exponential backoff:
+  ```python
+  import time
+  for i in range(5):
+      try:
+          response = api.request()
+          break
+      except RateLimitError:
+          time.sleep(2 ** i)
+  ```
 
 #### Symptom: `ConnectionError: Connection refused`
-*   **Cause**: API server down or network issue.
-*   **Fix**: Check internet connection; retry later.
+
+- **Cause**: API server down or network issue.
+- **Fix**: Check internet connection; retry later.
 
 ### 7.2 WebSocket Disconnections
 
@@ -373,16 +409,18 @@ python -m memory_profiler python/src/main.py
 ### 8.1 SQLite Locked
 
 #### Symptom: `sqlite3.OperationalError: database is locked`
-*   **Cause**: Multiple instances of the scraper or backend accessing `markets.db`.
-*   **Fix**: 
-    *   Ensure only one process writes to the database.
-    *   Use `just reset-credentials` to clear local databases if they become corrupted.
+
+- **Cause**: Multiple instances of the scraper or backend accessing `markets.db`.
+- **Fix**:
+  - Ensure only one process writes to the database.
+  - Use `just reset-credentials` to clear local databases if they become corrupted.
 
 ### 8.2 Database Corruption
 
 **Symptom**: `database disk image is malformed`
 
 **Fix**:
+
 ```bash
 # Backup corrupted database
 mv markets.db markets.db.bak
@@ -400,10 +438,12 @@ python -c "from nglab.db import init_db; init_db()"
 **Symptom**: Tauri window opens but shows white/blank screen.
 
 **Causes**:
+
 1.  Frontend build failed.
 2.  Incorrect asset paths.
 
 **Fix**:
+
 ```bash
 cd typescript
 npm run build
@@ -412,14 +452,15 @@ npm run tauri dev
 
 ### 9.2 "arena-update" events not firing
 
-*   **Cause**: The Rust backend loop is not started or the Mutex is deadlocked.
-*   **Fix**: Check `src-tauri/src/main.rs` for Tokio task logs. Ensure `ArenaState` is correctly unlocked in and outside the loop.
+- **Cause**: The Rust backend loop is not started or the Mutex is deadlocked.
+- **Fix**: Check `src-tauri/src/main.rs` for Tokio task logs. Ensure `ArenaState` is correctly unlocked in and outside the loop.
 
 ### 9.3 Charts Not Rendering
 
 **Symptom**: Chart containers exist but no data appears.
 
 **Causes**:
+
 1.  Data format mismatch.
 2.  Chart library not initialized.
 
@@ -432,21 +473,25 @@ npm run tauri dev
 ### 10.1 Docker Build Failures
 
 #### Symptom: `COPY failed: file not found`
-*   **Cause**: File path in Dockerfile is relative to wrong context.
-*   **Fix**: Ensure `.dockerignore` isn't excluding required files.
+
+- **Cause**: File path in Dockerfile is relative to wrong context.
+- **Fix**: Ensure `.dockerignore` isn't excluding required files.
 
 #### Symptom: `OCI runtime create failed: container_linux.go:xxx: starting container process caused...`
-*   **Cause**: Binary incompatibility (e.g., built for wrong architecture).
-*   **Fix**: Ensure multi-arch build is configured correctly.
+
+- **Cause**: Binary incompatibility (e.g., built for wrong architecture).
+- **Fix**: Ensure multi-arch build is configured correctly.
 
 ### 10.2 Container Crashes on Startup
 
 **Diagnosis**:
+
 ```bash
 docker logs <container_id>
 ```
 
 **Common Causes**:
+
 1.  Missing environment variables.
 2.  Port already in use.
 3.  Insufficient memory.
@@ -454,24 +499,25 @@ docker logs <container_id>
 ### 10.3 Kubernetes Deployment Issues
 
 #### Symptom: Pod in `CrashLoopBackOff`
-*   **Diagnosis**: `kubectl logs <pod-name>` and `kubectl describe pod <pod-name>`
-*   **Common Fixes**:
-    *   Check resource limits (memory, CPU).
-    *   Verify secrets and configmaps are mounted.
+
+- **Diagnosis**: `kubectl logs <pod-name>` and `kubectl describe pod <pod-name>`
+- **Common Fixes**:
+  - Check resource limits (memory, CPU).
+  - Verify secrets and configmaps are mounted.
 
 ---
 
 ## 11. Common Error Messages Reference
 
-| Error Message | Likely Cause | Quick Fix |
-|---------------|--------------|-----------|
-| `ModuleNotFoundError: No module named 'nglab'` | Rust extension not built | `just build-python` |
-| `error: linker 'cc' not found` | Missing build tools | `sudo apt install build-essential` |
-| `CUDA out of memory` | Batch size too large | Reduce `batch_size` in config |
-| `RuntimeError: CUDA error: device-side assert triggered` | NaN in computation | Check for division by zero |
-| `OSError: [Errno 28] No space left on device` | Disk full | Free up disk space, check `/tmp` |
-| `TimeoutError` | Network or CPU timeout | Increase timeout, check connectivity |
-| `PermissionError` | File access denied | Check file permissions, avoid `sudo` |
+| Error Message                                            | Likely Cause             | Quick Fix                            |
+| -------------------------------------------------------- | ------------------------ | ------------------------------------ |
+| `ModuleNotFoundError: No module named 'nglab'`           | Rust extension not built | `just build-python`                  |
+| `error: linker 'cc' not found`                           | Missing build tools      | `sudo apt install build-essential`   |
+| `CUDA out of memory`                                     | Batch size too large     | Reduce `batch_size` in config        |
+| `RuntimeError: CUDA error: device-side assert triggered` | NaN in computation       | Check for division by zero           |
+| `OSError: [Errno 28] No space left on device`            | Disk full                | Free up disk space, check `/tmp`     |
+| `TimeoutError`                                           | Network or CPU timeout   | Increase timeout, check connectivity |
+| `PermissionError`                                        | File access denied       | Check file permissions, avoid `sudo` |
 
 ---
 
@@ -487,34 +533,40 @@ When opening an issue, provide the **"Crash Tuple"**:
 
 ### Issue Template
 
-```markdown
+````markdown
 ## Environment
+
 - OS: Ubuntu 22.04
 - Rust: 1.80.0
 - Python: 3.11.4
 - Commit: abc1234
 
 ## Steps to Reproduce
+
 1. Run `just setup`
 2. Run `just dev`
 3. Click "Start Arena"
 
 ## Expected Behavior
+
 Arena should start and emit events.
 
 ## Actual Behavior
+
 Application crashes with the following error:
-```error message here```
+`error message here`
 
 ## Full Stack Trace
-```paste here```
-```
+
+`paste here`
+````
 
 **Emergency Contacts**:
-*   **Infrastructure**: @devops-lead
-*   **Rust Core**: @rust-ace
-*   **Models**: @ml-researcher
-*   **Frontend**: @frontend-dev
+
+- **Infrastructure**: @devops-lead
+- **Rust Core**: @rust-ace
+- **Models**: @ml-researcher
+- **Frontend**: @frontend-dev
 
 ---
 
@@ -529,6 +581,7 @@ Application crashes with the following error:
 **Symptom**: `RuntimeError: CUDA out of memory`
 
 **Immediate Fixes**:
+
 ```python
 # Clear cache manually
 torch.cuda.empty_cache()
@@ -541,6 +594,7 @@ model.gradient_checkpointing_enable()
 ```
 
 **Monitoring**:
+
 ```bash
 # Watch GPU memory in real-time
 watch -n 1 nvidia-smi
@@ -554,6 +608,7 @@ python -c "import torch; print(torch.cuda.memory_summary())"
 **Symptom**: `torch.cuda.is_available()` returns `False`
 
 **Checklist**:
+
 1. Check driver: `nvidia-smi` should show GPU info
 2. Check CUDA version: `nvcc --version`
 3. Check PyTorch CUDA: `python -c "import torch; print(torch.version.cuda)"`
@@ -564,6 +619,7 @@ python -c "import torch; print(torch.cuda.memory_summary())"
 **Symptom**: `RuntimeError: cuDNN error: CUDNN_STATUS_EXECUTION_FAILED`
 
 **Fixes**:
+
 ```python
 # Disable cuDNN benchmarking (more stable, slightly slower)
 torch.backends.cudnn.benchmark = False
@@ -579,6 +635,7 @@ torch.backends.cudnn.deterministic = True
 **Symptom**: Training hangs with `NCCL timeout`
 
 **Fix**:
+
 ```bash
 export NCCL_DEBUG=INFO
 export NCCL_IB_DISABLE=1  # Disable InfiniBand if not available
@@ -591,6 +648,7 @@ export NCCL_SOCKET_IFNAME=eth0  # Specify network interface
 **Symptom**: `Address already in use` for distributed training
 
 **Fix**:
+
 ```bash
 # Find and kill process using port 29500
 lsof -i :29500 | awk 'NR>1 {print $2}' | xargs kill -9
@@ -604,6 +662,7 @@ export MASTER_PORT=29501
 **Symptom**: `Expected all tensors to be on the same device`
 
 **Diagnosis**:
+
 ```python
 # Check all model parameters are on the same device
 for name, param in model.named_parameters():
@@ -619,6 +678,7 @@ for name, param in model.named_parameters():
 **Symptom**: `Loss is NaN` after a few epochs
 
 **Diagnosis**:
+
 ```python
 # Enable anomaly detection
 torch.autograd.set_detect_anomaly(True)
@@ -630,12 +690,14 @@ for name, param in model.named_parameters():
 ```
 
 **Common Causes**:
+
 1. Learning rate too high → Reduce by 10x
 2. Log of zero/negative → Use `log(x + epsilon)`
 3. Division by zero → Add epsilon to denominator
 4. Exploding gradients → Enable gradient clipping
 
 **Fix**:
+
 ```python
 # Gradient clipping
 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
@@ -646,11 +708,13 @@ torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 **Symptom**: Loss suddenly jumps to very large values
 
 **Causes**:
+
 1. Learning rate schedule jumped
 2. Outlier in batch
 3. Numerical instability
 
 **Diagnosis**:
+
 ```python
 # Log loss at each step
 if torch.isinf(loss) or loss.item() > 1e6:
@@ -663,6 +727,7 @@ if torch.isinf(loss) or loss.item() > 1e6:
 **Symptom**: Early layers have near-zero gradients
 
 **Diagnosis**:
+
 ```python
 for name, param in model.named_parameters():
     if param.grad is not None:
@@ -670,6 +735,7 @@ for name, param in model.named_parameters():
 ```
 
 **Fixes**:
+
 1. Use residual connections
 2. Replace tanh/sigmoid with ReLU/GELU
 3. Use batch normalization
@@ -680,10 +746,12 @@ for name, param in model.named_parameters():
 **Symptom**: Agent finds exploit that maximizes reward but isn't useful
 
 **Examples**:
+
 - Agent trades rapidly to exploit transaction fee calculation bug
 - Agent consistently holds to avoid any negative reward
 
 **Diagnosis**:
+
 ```python
 # Log action distribution
 action_counts = Counter(episode_actions)
@@ -691,6 +759,7 @@ print(f"Action distribution: {action_counts}")
 ```
 
 **Fixes**:
+
 1. Add penalty terms for undesired behavior
 2. Use reward shaping that aligns with true objective
 3. Implement early stopping for degenerate behavior
@@ -699,15 +768,14 @@ print(f"Action distribution: {action_counts}")
 
 ## 16. Quick Reference: Error → Fix
 
-| Error | Quick Fix |
-|-------|-----------|
-| `ModuleNotFoundError: nglab` | `just build-python` |
-| `CUDA out of memory` | Reduce batch size, use gradient checkpointing |
-| `Loss is NaN` | Lower learning rate, check for log(0) |
-| `NCCL timeout` | Set `NCCL_IB_DISABLE=1` |
-| `Address already in use` | Kill process on port, or change `MASTER_PORT` |
-| `cuDNN error` | Set `torch.backends.cudnn.deterministic = True` |
-| `Gradient is NaN` | Enable `torch.autograd.set_detect_anomaly(True)` |
-| Agent not learning | Check reward signal, normalize observations |
-| Agent predicts constant | Check for dead neurons, mode collapse |
-
+| Error                        | Quick Fix                                        |
+| ---------------------------- | ------------------------------------------------ |
+| `ModuleNotFoundError: nglab` | `just build-python`                              |
+| `CUDA out of memory`         | Reduce batch size, use gradient checkpointing    |
+| `Loss is NaN`                | Lower learning rate, check for log(0)            |
+| `NCCL timeout`               | Set `NCCL_IB_DISABLE=1`                          |
+| `Address already in use`     | Kill process on port, or change `MASTER_PORT`    |
+| `cuDNN error`                | Set `torch.backends.cudnn.deterministic = True`  |
+| `Gradient is NaN`            | Enable `torch.autograd.set_detect_anomaly(True)` |
+| Agent not learning           | Check reward signal, normalize observations      |
+| Agent predicts constant      | Check for dead neurons, mode collapse            |

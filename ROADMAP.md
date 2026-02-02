@@ -1,4 +1,6 @@
-# NGLab Feature Improvement Plan
+# NGLab Roadmap
+
+<a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL v3" src="https://img.shields.io/badge/License-AGPL_v3-blue.svg"></a>
 
 This document outlines feature improvements for NGLab, focusing exclusively on backend and frontend capabilities. Each section includes actionable items with complexity and impact ratings.
 
@@ -9,6 +11,7 @@ This document outlines feature improvements for NGLab, focusing exclusively on b
 NGLab has a strong foundation with a Rust simulation engine, Python ML layer, and Tauri/React frontend. This plan focuses on expanding trading capabilities, enhancing the user interface, and adding new analytical features.
 
 **Focus Areas:**
+
 1. **Advanced Trading Features** - New order types, execution algorithms, market mechanics
 2. **Enhanced Visualization** - Charts, analytics, real-time dashboards
 3. **Portfolio & Strategy Tools** - Backtesting UI, strategy builder, portfolio analytics
@@ -46,6 +49,7 @@ Tasks:
 [x] Expose new order types via Tauri commands
 [x] Add order type selector in TradingFormWidget
 ```
+
 **Complexity**: Medium | **Impact**: High
 
 ### 1.2 Algorithmic Execution Engine
@@ -81,6 +85,7 @@ Tasks:
 [x] Add algorithm selector in Terminal UI
 [x] Real-time execution progress visualization
 ```
+
 **Complexity**: High | **Impact**: High
 
 ### 1.3 Market Maker Mode
@@ -108,13 +113,15 @@ Tasks:
 [x] Add market maker dashboard widget
 [x] Configuration panel for MM parameters
 ```
+
 **Complexity**: High | **Impact**: Medium
 
 ### 1.4 Multi-Leg Order Support
+
 - [x] Define multi-leg order structures (Spread, Butterfly, Calendar) [rust/src/simulation/spreads.rs]
 - [x] Integrate spread execution logic into `MultiAssetEnv` [rust/src/simulation/multi_asset.rs]
-**Status**: Single-leg orders only
-**Impact**: Medium - Options and spread trading
+      **Status**: Single-leg orders only
+      **Impact**: Medium - Options and spread trading
 
 ```
 Tasks:
@@ -133,6 +140,7 @@ Tasks:
 [x] Add spread order book visualization
 [x] Implied pricing calculations
 ```
+
 **Complexity**: High | **Impact**: Medium
 
 ---
@@ -173,6 +181,7 @@ Tasks:
   - Overlay multiple assets
   - Correlation visualization
 ```
+
 **Complexity**: Medium | **Impact**: High
 
 ### 2.2 Order Book Visualization Enhancements
@@ -204,6 +213,7 @@ Tasks:
   - Hidden liquidity estimation
   - Reload pattern recognition
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ### 2.3 Real-Time Analytics Dashboard
@@ -237,6 +247,7 @@ Tasks:
   - Vol surface visualization (3D)
   - Term structure chart
 ```
+
 **Complexity**: Medium | **Impact**: High
 
 ### 2.4 Notification & Alert System
@@ -267,6 +278,7 @@ Tasks:
 [x] Create alert sound configuration
 [x] Implement alert persistence (SQLite)
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ---
@@ -309,6 +321,7 @@ Tasks:
   - Statistical significance tests
 [x] Create backtest report export (PDF/CSV)
 ```
+
 **Complexity**: High | **Impact**: High
 
 ### 3.2 Strategy Builder (No-Code)
@@ -343,6 +356,7 @@ Tasks:
   - Common strategies (MA crossover, breakout)
   - User-saved templates
 ```
+
 **Complexity**: High | **Impact**: High
 
 ### 3.3 Portfolio Optimization UI
@@ -377,6 +391,7 @@ Tasks:
   - Rolling efficient frontier
   - Regime analysis
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ### 3.4 Paper Trading Mode
@@ -404,6 +419,7 @@ Tasks:
   - Reset and toggle logic
 [ ] Add paper trading leaderboard (optional)
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ---
@@ -439,6 +455,7 @@ Tasks:
   - Price comparison
   - Spread monitoring
 ```
+
 **Complexity**: High | **Impact**: High
 
 ### 4.2 Alternative Data Sources
@@ -470,6 +487,7 @@ Tasks:
   - Data completeness scores
 □ Create alternative data dashboard
 ```
+
 **Complexity**: High | **Impact**: Medium
 
 ### 4.3 Historical Data Management
@@ -503,6 +521,7 @@ Tasks:
   - Disk usage visualization
   - Old data cleanup
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ### 4.4 Real-Time Data Streaming Improvements
@@ -534,6 +553,7 @@ Tasks:
   - Subscription management
   - Level-of-detail control
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ---
@@ -574,6 +594,7 @@ Tasks:
   - Past experiments listing
   - Metrics comparison
 ```
+
 **Complexity**: Medium | **Impact**: High
 
 ### 5.2 Model Registry UI
@@ -608,6 +629,7 @@ Tasks:
   - ONNX export
   - Model sharing
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ### 5.3 Feature Engineering UI
@@ -641,6 +663,7 @@ Tasks:
   - Auto-generated descriptions
   - Usage statistics
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ### 5.4 Prediction Explanation UI
@@ -672,6 +695,7 @@ Tasks:
   - PDF reports
   - API for programmatic access
 ```
+
 **Complexity**: High | **Impact**: Medium
 
 ---
@@ -708,6 +732,7 @@ Tasks:
   - Trading halts
   - Price limits
 ```
+
 **Complexity**: High | **Impact**: Medium
 
 ### 6.2 Multi-Agent Simulation
@@ -753,6 +778,7 @@ Tasks:
   - Configure agent population
   - Event injection
 ```
+
 **Complexity**: High | **Impact**: Medium
 
 ### 6.3 Options Simulation
@@ -785,6 +811,7 @@ Tasks:
   - Payoff diagram
   - Break-even analysis
 ```
+
 **Complexity**: High | **Impact**: Medium
 
 ### 6.4 Scenario Analysis Engine
@@ -823,6 +850,7 @@ Tasks:
 **Impact**: High - State-of-the-art forecasting capabilities
 
 ```
+
 Tasks:
 [x] Implement Competitive Networks (LVQ, SOM)
 [x] Implement Convolutional Networks (CNN, ResNet, DCIGN, Capsule)
@@ -832,6 +860,7 @@ Tasks:
 [x] Implement Spiking Neural Networks (SNN, LIF)
 [x] Implement Graph Neural Networks (GCN, GatedGCN)
 [x] Create modular building blocks (Attention, Mamba, Embeddings)
+
 ```
 **Complexity**: High | **Impact**: High
   - Parameter sliders
@@ -839,6 +868,7 @@ Tasks:
   - P&L distribution
   - Risk metrics under stress
 ```
+
 **Complexity**: High | **Impact**: Medium
 
 ---
@@ -846,30 +876,35 @@ Tasks:
 ## Implementation Roadmap
 
 ### Phase A: Core Trading Features (Weeks 1-4)
+
 - [ ] Extended order types (1.1)
 - [ ] Advanced charting features (2.1)
 - [ ] Order book visualization (2.2)
 - [ ] Real-time analytics dashboard (2.3)
 
 ### Phase B: Strategy Tools (Weeks 5-8)
+
 - [ ] Visual backtesting interface (3.1)
 - [ ] Training dashboard (5.1)
 - [ ] Algorithmic execution engine (1.2)
 - [ ] Notification system (2.4)
 
 ### Phase C: Data & Integration (Weeks 9-12)
+
 - [ ] Multi-exchange support (4.1)
 - [ ] Model registry UI (5.2)
 - [ ] Historical data management (4.3)
 - [ ] Paper trading mode (3.4)
 
 ### Phase D: Advanced Features (Weeks 13-16)
+
 - [ ] Strategy builder (3.2)
 - [ ] Market microstructure features (6.1)
 - [ ] Options simulation (6.3)
 - [ ] Multi-agent simulation (6.2)
 
 ### Phase E: Polish & Extensions (Weeks 17-20)
+
 - [ ] Portfolio optimization UI (3.3)
 - [ ] Alternative data sources (4.2)
 - [ ] Feature engineering UI (5.3)
@@ -918,16 +953,16 @@ Multi-Exchange (4.1)
 
 ## Metrics for Success
 
-| Feature Area | Metric | Target |
-|-------------|--------|--------|
-| Order Types | Types supported | 10+ |
-| Charts | Indicator count | 20+ |
-| Backtesting | Avg backtest time | <30s for 1yr |
-| Data Sources | Exchanges integrated | 4+ |
-| ML UI | Training visibility | Full pipeline |
-| Simulation | Agents supported | 100+ concurrent |
-| UI Response | Chart render time | <16ms (60fps) |
-| Strategy Builder | Rule types | 15+ |
+| Feature Area     | Metric               | Target          |
+| ---------------- | -------------------- | --------------- |
+| Order Types      | Types supported      | 10+             |
+| Charts           | Indicator count      | 20+             |
+| Backtesting      | Avg backtest time    | <30s for 1yr    |
+| Data Sources     | Exchanges integrated | 4+              |
+| ML UI            | Training visibility  | Full pipeline   |
+| Simulation       | Agents supported     | 100+ concurrent |
+| UI Response      | Chart render time    | <16ms (60fps)   |
+| Strategy Builder | Rule types           | 15+             |
 
 ---
 
@@ -1059,6 +1094,7 @@ Tasks:
 [x] Update all imports after restructure
 [x] Add __all__ exports to all __init__.py files
 ```
+
 **Complexity**: High | **Impact**: High
 
 ---
@@ -1144,6 +1180,7 @@ Tasks:
   - Registration decorators
 [x] Update all instantiation sites to use factories
 ```
+
 **Complexity**: High | **Impact**: High
 
 ---
@@ -1234,6 +1271,7 @@ Tasks:
 [x] Add Protocol classes for duck typing where appropriate
 [x] Update all concrete classes to inherit from ABCs
 ```
+
 **Complexity**: Medium | **Impact**: High
 
 ---
@@ -1315,6 +1353,7 @@ Tasks:
   - Fix all type errors
 [x] Add type: ignore comments only where absolutely necessary
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ---
@@ -1402,6 +1441,7 @@ Tasks:
   - to_dict(), from_dict() methods
   - JSON/YAML export
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ---
@@ -1493,6 +1533,7 @@ Tasks:
   - User input validation
   - External API response validation
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ---
@@ -1597,6 +1638,7 @@ Tasks:
   - Model invariant testing
   - Config validation testing
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ---
@@ -1632,13 +1674,14 @@ Tasks:
   - Auto-generated from docstrings
   - Usage examples
 ```
+
 **Complexity**: Medium | **Impact**: High
 
 ---
 
 ### 7.9 Package Initialization Patterns
 
-**Current State**: Mixed star imports, inconsistent __all__
+**Current State**: Mixed star imports, inconsistent **all**
 **Target State**: Explicit imports with registries (WSmart pattern)
 
 ```python
@@ -1735,6 +1778,7 @@ Tasks:
   - Third-party
   - Local imports
 ```
+
 **Complexity**: Medium | **Impact**: Medium
 
 ---
@@ -1804,6 +1848,7 @@ Tasks:
   - Add section on config sanitization
   - Examples of correct usage
 ```
+
 **Complexity**: Low | **Impact**: High
 
 ---
@@ -1811,30 +1856,35 @@ Tasks:
 ## Python Architecture Implementation Roadmap
 
 ### Phase 1: Foundation (HIGH IMPACT)
+
 [x] Create `python/src/cli/` module (7.1)
 [x] Create `python/src/constants/` with domain files (7.1)
 [x] Implement deep_sanitize() utility (7.10)
 [x] Create custom exceptions (7.6)
 
 ### Phase 2: Abstraction Layer (HIGH IMPACT)
+
 [x] Implement factory patterns (7.2)
 [x] Create comprehensive ABCs (7.3)
 [x] Add component registries (7.9)
 [x] Flatten model hierarchy (7.1)
 
 ### Phase 3: Type Safety & Quality (MEDIUM IMPACT)
+
 - [x] Add `from __future__ import annotations` everywhere (7.4)
 - [x] Implement TYPE_CHECKING pattern (7.4)
 - [x] Refactor configs to pure dataclasses (7.5) [x]
-- [x] Add explicit __all__ exports (7.9)
+- [x] Add explicit **all** exports (7.9)
 
 ### Phase 4: Testing & Documentation (MEDIUM IMPACT)
+
 - [x] Reorganize test structure (7.7)
 - [x] Expand to 10+ fixture modules (7.7)
 - [x] Expand CLAUDE.md (7.8)
 - [x] Create/Update ARCHITECTURE.md (7.8)
 
 ### Phase 5: Performance & Reliability (MEDIUM IMPACT)
+
 - [x] Implement validation decorators and reusable patterns (7.6)
 - [x] Add performance profiling hooks to CLI (7.10) [x]
 - [x] Implement property-based testing with Hypothesis (7.7) [x]
@@ -1847,7 +1897,7 @@ Tasks:
 
 1. **Add `from __future__ import annotations`** - Single line per file, enables forward references
 2. **[x] Create deep_sanitize() utility** - Prevents Lightning YAML errors
-3. **[x] Add __all__ to major __init__.py** - Explicit API surface
+3. **[x] Add **all** to major **init**.py** - Explicit API surface
 4. **[x] Create python/src/exceptions.py** - Centralized error types
 5. **[x] Move constants to dedicated module** - Better organization
 6. **[x] Add ENV_REGISTRY dict** - Simple factory lookup
@@ -1860,21 +1910,21 @@ Tasks:
 
 ## Summary: Key Improvements from WSmart-Route/logic
 
-| Pattern | Current Python | WSmart Target | Priority |
-|---------|---------------|---------------|----------|
-| Directory Structure | Scattered | Domain-organized | HIGH |
-| Factory Patterns | Minimal | ABC + Factories | HIGH |
-| Abstract Base Classes | Limited | Comprehensive | HIGH |
-| Type Hints | Partial | Universal | MEDIUM |
-| Constants | Ad-hoc | Dedicated module | HIGH |
-| Configuration | Hydra-heavy | Dataclasses-first | MEDIUM |
-| Error Handling | Basic | Explicit/defensive | MEDIUM |
-| Test Organization | Adequate | 12+ fixture modules | MEDIUM |
-| Documentation | Minimal | 400+ line CLAUDE.md | HIGH |
-| Package Init | Star imports | Explicit __all__ + registries | MEDIUM |
-| Config Sanitization | None | deep_sanitize() | HIGH |
+| Pattern               | Current Python | WSmart Target                 | Priority |
+| --------------------- | -------------- | ----------------------------- | -------- |
+| Directory Structure   | Scattered      | Domain-organized              | HIGH     |
+| Factory Patterns      | Minimal        | ABC + Factories               | HIGH     |
+| Abstract Base Classes | Limited        | Comprehensive                 | HIGH     |
+| Type Hints            | Partial        | Universal                     | MEDIUM   |
+| Constants             | Ad-hoc         | Dedicated module              | HIGH     |
+| Configuration         | Hydra-heavy    | Dataclasses-first             | MEDIUM   |
+| Error Handling        | Basic          | Explicit/defensive            | MEDIUM   |
+| Test Organization     | Adequate       | 12+ fixture modules           | MEDIUM   |
+| Documentation         | Minimal        | 400+ line CLAUDE.md           | HIGH     |
+| Package Init          | Star imports   | Explicit **all** + registries | MEDIUM   |
+| Config Sanitization   | None           | deep_sanitize()               | HIGH     |
 
 ---
 
-*Last Updated: 2026-01-25 21:55*
-*Version: 5.2 (Phase 5: Performance & Reliability - Completed)*
+_Last Updated: 2026-01-25 21:55_
+_Version: 5.2 (Phase 5: Performance & Reliability - Completed)_

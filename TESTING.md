@@ -1,5 +1,11 @@
 # NGLab Testing Guide
 
+<a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL v3" src="https://img.shields.io/badge/License-AGPL_v3-blue.svg"></a>
+<a href="https://github.com/acfharbinger/nglab/actions/workflows/ci.yml"><img alt="Test" src="https://github.com/acfharbinger/nglab/actions/workflows/ci.yml/badge.svg"></a>
+<a href="https://app.codecov.io/github/acfharbinger/nglab"><img alt="codecov" src="https://codecov.io/gh/acfharbinger/nglab/branch/main/graph/badge.svg"></a>
+<a href="https://pytest.org/"><img alt="Pytest" src="https://img.shields.io/badge/Pytest-0A9EDC?logo=pytest&logoColor=white"></a>
+<a href="https://vitest.dev/"><img alt="Vitest" src="https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white"></a>
+
 > **Quality is not negotiable.** This document defines our testing philosophy, strategies, and best practices.
 
 ## Table of Contents
@@ -92,11 +98,11 @@ nglab/
 
 ### Naming Conventions
 
-| Language | Pattern | Example |
-|----------|---------|---------|
-| **Rust** | `test_<function>_<scenario>` | `test_add_order_limit_buy` |
-| **Python** | `test_<class>_<method>_<scenario>` | `test_vae_forward_batch_size_one` |
-| **TypeScript** | `<Component>.test.tsx` | `PriceChart.test.tsx` |
+| Language       | Pattern                            | Example                           |
+| -------------- | ---------------------------------- | --------------------------------- |
+| **Rust**       | `test_<function>_<scenario>`       | `test_add_order_limit_buy`        |
+| **Python**     | `test_<class>_<method>_<scenario>` | `test_vae_forward_batch_size_one` |
+| **TypeScript** | `<Component>.test.tsx`             | `PriceChart.test.tsx`             |
 
 ---
 
@@ -166,13 +172,13 @@ cd typescript && npm test -- --watch
 
 ### Targets by Component
 
-| Component | Coverage Target | Enforcement |
-|-----------|-----------------|-------------|
-| **Rust Core** | 80% | CI blocks PR |
-| **Python Models** | 70% | CI warning |
-| **Python Pipeline** | 70% | CI warning |
-| **TypeScript Components** | 60% | CI warning |
-| **Critical Paths** | 95% | CI blocks PR |
+| Component                 | Coverage Target | Enforcement  |
+| ------------------------- | --------------- | ------------ |
+| **Rust Core**             | 80%             | CI blocks PR |
+| **Python Models**         | 70%             | CI warning   |
+| **Python Pipeline**       | 70%             | CI warning   |
+| **TypeScript Components** | 60%             | CI warning   |
+| **Critical Paths**        | 95%             | CI blocks PR |
 
 ### Critical Paths (Must be 95%+)
 
@@ -302,9 +308,9 @@ class TestVAE:
     def test_forward_shape(self, device):
         model = VAE(input_dim=60, latent_dim=8).to(device)
         x = torch.randn(32, 60).to(device)
-        
+
         recon, mu, logvar = model(x)
-        
+
         assert recon.shape == (32, 60)
         assert mu.shape == (32, 8)
         assert logvar.shape == (32, 8)
@@ -312,10 +318,10 @@ class TestVAE:
     def test_loss_positive(self, device):
         model = VAE(input_dim=60, latent_dim=8).to(device)
         x = torch.randn(32, 60).to(device)
-        
+
         recon, mu, logvar = model(x)
         loss = model.loss_function(recon, x, mu, logvar)
-        
+
         assert loss > 0
 ```
 
@@ -331,9 +337,9 @@ from hypothesis import given, strategies as st
 def test_model_handles_variable_inputs(batch_size, seq_len):
     model = SimpleModel(input_dim=seq_len)
     x = torch.randn(batch_size, seq_len)
-    
+
     output = model(x)
-    
+
     assert output.shape[0] == batch_size
     assert not torch.isnan(output).any()
 ```
@@ -384,19 +390,19 @@ describe('PriceChart', () => {
 
 ```typescript
 // src/test/hooks/useArena.test.ts
-import { renderHook, act } from '@testing-library/react';
-import { useArena } from '../../hooks/useArena';
-import { vi } from 'vitest';
+import { renderHook, act } from "@testing-library/react";
+import { useArena } from "../../hooks/useArena";
+import { vi } from "vitest";
 
 // Mock Tauri
-vi.mock('@tauri-apps/api/event', () => ({
+vi.mock("@tauri-apps/api/event", () => ({
   listen: vi.fn().mockResolvedValue(() => {}),
 }));
 
-describe('useArena', () => {
-  it('initializes with default state', () => {
+describe("useArena", () => {
+  it("initializes with default state", () => {
     const { result } = renderHook(() => useArena());
-    
+
     expect(result.current.isRunning).toBe(false);
     expect(result.current.stepInfo).toBeNull();
   });
@@ -428,12 +434,12 @@ def test_orderbook_roundtrip():
         from nglab import OrderBook, Order, OrderType
     except ImportError:
         pytest.skip("Rust extension not built")
-    
+
     ob = OrderBook()
     order = Order(OrderType.Limit, "BUY", 100.0, 1.0, 0)
-    
+
     trades = ob.add_order(order)
-    
+
     assert ob.best_bid() == 100.0
     assert len(trades) == 0  # No matching asks
 
@@ -443,12 +449,12 @@ def test_trading_env_step():
         from nglab import TradingEnv
     except ImportError:
         pytest.skip("Rust extension not built")
-    
+
     env = TradingEnv()
     obs, info = env.reset()
-    
+
     obs2, reward, done, truncated, info = env.step(1)  # Buy
-    
+
     assert obs2.shape == obs.shape
     assert isinstance(reward, float)
 ```
@@ -494,15 +500,15 @@ cargo bench orderbook          # Run specific benchmark
 def test_vae_forward_speed(benchmark):
     model = VAE(input_dim=60, latent_dim=8)
     x = torch.randn(64, 60)
-    
+
     result = benchmark(model.forward, x)
-    
+
     assert result[0].shape == (64, 60)
 
 def test_environment_step_speed(benchmark):
     env = TradingEnv()
     env.reset()
-    
+
     benchmark(env.step, 1)
 ```
 
@@ -547,9 +553,9 @@ from unittest.mock import Mock, patch, AsyncMock
 def test_with_mock_api():
     with patch('requests.get') as mock_get:
         mock_get.return_value.json.return_value = {"price": 100.0}
-        
+
         result = fetch_price("BTC")
-        
+
         assert result == 100.0
         mock_get.assert_called_once()
 
@@ -557,9 +563,9 @@ def test_with_mock_api():
 async def test_async_function():
     with patch('aiohttp.ClientSession.get', new_callable=AsyncMock) as mock:
         mock.return_value.__aenter__.return_value.json = AsyncMock(return_value={})
-        
+
         result = await async_fetch()
-        
+
         assert result == {}
 ```
 
@@ -567,13 +573,13 @@ async def test_async_function():
 
 ```typescript
 // Mock Tauri invoke
-vi.mock('@tauri-apps/api/core', () => ({
+vi.mock("@tauri-apps/api/core", () => ({
   invoke: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 // Mock React hooks
-vi.mock('react', async () => {
-  const actual = await vi.importActual('react');
+vi.mock("react", async () => {
+  const actual = await vi.importActual("react");
   return {
     ...actual,
     useContext: vi.fn().mockReturnValue({ user: mockUser }),

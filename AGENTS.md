@@ -1,6 +1,11 @@
 # NGLab - Next Gen Laboratory: Developer Guide & Agent Handbook
 
+<a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL v3" src="https://img.shields.io/badge/License-AGPL_v3-blue.svg"></a>
+<a href="https://pytorch.org/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
+<a href="https://github.com/pytorch/rl"><img alt="base: TorchRL" src="https://img.shields.io/badge/base-TorchRL-red"></a>
+
 ## Overview
+
 NGLab is a specialized Multimodal Deep Reinforcement Learning platform for financial trading. It bridges high-performance Rust simulations with flexible Python training pipelines and a real-time reactive dashboard.
 
 ---
@@ -8,6 +13,7 @@ NGLab is a specialized Multimodal Deep Reinforcement Learning platform for finan
 ## Tech Stack & Tooling
 
 ### Backend Core (Rust)
+
 - **Directory**: `rust/`, `typescript/src-tauri`
 - **Engine**: Custom simulation engine (`nglab` crate) handling CLOBs and prediction markets.
 - **InterOp**: `PyO3` for Python bindings, `ts-rs` for TypeScript type generation.
@@ -15,6 +21,7 @@ NGLab is a specialized Multimodal Deep Reinforcement Learning platform for finan
 - **TUI**: `ratatui` for the terminal dashboard.
 
 ### Machine Learning Layer (Python)
+
 - **Directory**: `python/`
 - **Frameworks**: `PyTorch`, `PyTorch Lightning`, `TorchRL`.
 - **Environment**: `Gymnasium` (Standard RL interface).
@@ -22,6 +29,7 @@ NGLab is a specialized Multimodal Deep Reinforcement Learning platform for finan
 - **Configuration**: `Hydra` (primary) + `Dataclasses` (target).
 
 ### Frontend Dashboard (TypeScript/React)
+
 - **Directory**: `typescript/`
 - **Core**: `Tauri 2.0`, `React 19`, `Vite`.
 - **Styling**: `Tailwind CSS`, `Shadcn UI`.
@@ -53,17 +61,20 @@ nglab/
 ## Common Development Commands
 
 ### Rust / Simulation
+
 - `cargo build --workspace` - Build all Rust components
 - `cargo test --workspace` - Run all Rust tests
 - `cargo run --bin nglab-tui` - Launch the terminal dashboard
 
 ### Python / Machine Learning
+
 - `uv run python python/src/main.py` - Start training (default PPO)
 - `uv run pytest python/tests/` - Run full test suite
 - `uv run python python/src/main.py --help` - List available CLI commands
 - `uv run python python/src/main.py task=vae` - Switch training task
 
 ### Frontend / Dashboard
+
 - `npm run tauri dev` - Start Tauri development environment
 - `npm run tauri build` - Build production executable
 
@@ -72,11 +83,13 @@ nglab/
 ## Code Style & Standards
 
 ### Rust Guidelines
+
 - Use `Result<T, ArenaError>` for domain operations.
 - Explicitly derive `TS` for structures shared with the frontend.
 - Follow `Clippy` recommendations (run `cargo clippy`).
 
 ### Python Guidelines
+
 - **Annotations**: Always use `from __future__ import annotations`.
 - **Exports**: Use explicit `__all__` in `__init__.py` files.
 - **Docstrings**: Follow Google-style docstring format.
@@ -84,6 +97,7 @@ nglab/
 - **Factories**: Access components via `ModelFactory`, `EnvFactory`, etc.
 
 ### React / TypeScript Guidelines
+
 - Use functional components with `useMemo` for heavy chart-related calculations.
 - Leverage `lucide-react` for iconography.
 - Maintain strict type safety using generated types from Rust.
@@ -91,7 +105,9 @@ nglab/
 ---
 
 ## Error Handling Pattern (Python)
+
 Always use custom exceptions from `python.src.exceptions`:
+
 - `ConfigurationError`: For invalid YAML/dataclass configs.
 - `ModelNotFoundError`: For registry lookup failures.
 - `EnvironmentError`: For simulation runtime issues.
@@ -99,6 +115,7 @@ Always use custom exceptions from `python.src.exceptions`:
 ---
 
 ## Testing Philosophy
+
 - **Unit Tests**: Organized by domain in `python/tests/unit/`.
 - **Fixtures**: Centralized in `python/tests/fixtures/`. Use `pytest_plugins` in `conftest.py`.
 - **GPU Tests**: Mark with `@pytest.mark.gpu`. They auto-skip if CUDA is unavailable.
@@ -194,31 +211,34 @@ NGLab employs a diverse set of agents, ranging from simple hard-coded heuristics
 These agents learn via trial-and-error, optimizing the scalar reward signal $R_t$ provided by the environment.
 
 #### **PPO (Proximal Policy Optimization)**
+
 - **Role**: The "Steady Hand". Our default agent for stable, on-policy learning.
 - **Architecture**: Actor-Critic.
-    - **Actor**: $\pi(a|s)$. Outputs a probability distribution (Categorical for discrete, Gaussian for continuous) over actions.
-    - **Critic**: $V(s)$. Estimates the expected future discounted reward (the "value function").
+  - **Actor**: $\pi(a|s)$. Outputs a probability distribution (Categorical for discrete, Gaussian for continuous) over actions.
+  - **Critic**: $V(s)$. Estimates the expected future discounted reward (the "value function").
 - **Key Feature**: The "Clipped Objective" prevents the policy from updating too drastically in a single step, ensuring training stability during market regime shifts.
 - **Hyperparameters**:
-    - `clip_epsilon`: 0.2 (controls how much the policy can change per update)
-    - `entropy_coef`: 0.01 (encourages exploration)
-    - `value_loss_coef`: 0.5 (weight of critic loss)
+  - `clip_epsilon`: 0.2 (controls how much the policy can change per update)
+  - `entropy_coef`: 0.01 (encourages exploration)
+  - `value_loss_coef`: 0.5 (weight of critic loss)
 - **When to Use**: Start here. PPO is robust, well-understood, and suitable for most scenarios.
 
 #### **SAC (Soft Actor-Critic)**
+
 - **Role**: The "Explorer". An off-policy algorithm optimized for maximum entropy.
 - **Objective**: Maximize $ \mathbb{E}[R_t] + \alpha \mathcal{H}(\pi(\cdot|s_t)) $.
 - **Why it matters**: In financial markets, multiple actions might be equally valid. SAC encourages the agent to keep its options open (high entropy) rather than collapsing to a single deterministic strategy too early.
 - **Key Components**:
-    - **Twin Q-Networks**: Two separate Q-networks to reduce overestimation bias.
-    - **Automatic Temperature Tuning**: The $\alpha$ parameter is learned, balancing reward and entropy automatically.
+  - **Twin Q-Networks**: Two separate Q-networks to reduce overestimation bias.
+  - **Automatic Temperature Tuning**: The $\alpha$ parameter is learned, balancing reward and entropy automatically.
 - **Hyperparameters**:
-    - `tau`: 0.005 (soft update coefficient for target networks)
-    - `gamma`: 0.99 (discount factor)
-    - `buffer_size`: 1,000,000 (replay buffer capacity)
+  - `tau`: 0.005 (soft update coefficient for target networks)
+  - `gamma`: 0.99 (discount factor)
+  - `buffer_size`: 1,000,000 (replay buffer capacity)
 - **When to Use**: When exploration is critical, or when you suspect the optimal policy is stochastic.
 
-#### **DQN (Deep Q-Network)** *(Planned)*
+#### **DQN (Deep Q-Network)** _(Planned)_
+
 - **Role**: The "Classic". Foundational value-based method.
 - **Architecture**: Q-Network that maps states to action-values.
 - **Status**: Legacy support. Prefer PPO/SAC for new experiments.
@@ -228,6 +248,7 @@ These agents learn via trial-and-error, optimizing the scalar reward signal $R_t
 These agents do not "learn" but execute pre-defined logic. They serve as essential baselines to benchmark RL performance.
 
 #### **The "Market Maker"**
+
 - **Logic**: Places limit orders at `BestBid - Spread` and `BestAsk + Spread`.
 - **Goal**: Capture the bid-ask spread while remaining delta-neutral.
 - **Inventory Control**: As inventory deviates from 0, it skews its quotes to encourage trades that flatten the position.
@@ -239,20 +260,23 @@ These agents do not "learn" but execute pre-defined logic. They serve as essenti
   ```
 
 #### **The "Trend Follower"**
+
 - **Logic**: Computes EMA(Short) and EMA(Long).
-    - Buy if `EMA(Short) > EMA(Long)` (Golden Cross).
-    - Sell if `EMA(Short) < EMA(Long)` (Death Cross).
+  - Buy if `EMA(Short) > EMA(Long)` (Golden Cross).
+  - Sell if `EMA(Short) < EMA(Long)` (Death Cross).
 - **Goal**: Capture massive unidirectional moves (positive gamma).
 - **Parameters**:
-    - `short_window`: 12 (fast EMA period)
-    - `long_window`: 26 (slow EMA period)
+  - `short_window`: 12 (fast EMA period)
+  - `long_window`: 26 (slow EMA period)
 
 #### **The "Mean Reversion" Agent**
+
 - **Logic**: Uses Bollinger Bands. Buy when price touches the lower band; sell when it touches the upper band.
 - **Goal**: Profit from oscillations around a stable mean.
 - **Assumption**: The underlying asset is mean-reverting (not trending).
 
 #### **The "Random" Agent**
+
 - **Logic**: Selects actions uniformly at random.
 - **Goal**: Provides a lower-bound baseline. Any RL agent should significantly outperform this.
 
@@ -321,79 +345,79 @@ What does the agent actually "see"? The observation is a carefully designed feat
 
 ### 5.1 Market Microstructure
 
-| Feature | Description | Normalization |
-|---------|-------------|---------------|
-| **LOB Snapshot** | Top 20 levels of Bids/Asks (price + volume) | Log-transform volumes |
-| **Imbalance** | $\frac{Vol_{bid} - Vol_{ask}}{Vol_{bid} + Vol_{ask}}$ | Already in [-1, 1] |
-| **Spread** | $Ask_0 - Bid_0$ | Divide by mid-price |
-| **Mid-Price** | $(Ask_0 + Bid_0) / 2$ | Z-score normalization |
-| **Trade Flow** | Recent trades (price, volume, direction) | Rolling window |
+| Feature          | Description                                           | Normalization         |
+| ---------------- | ----------------------------------------------------- | --------------------- |
+| **LOB Snapshot** | Top 20 levels of Bids/Asks (price + volume)           | Log-transform volumes |
+| **Imbalance**    | $\frac{Vol_{bid} - Vol_{ask}}{Vol_{bid} + Vol_{ask}}$ | Already in [-1, 1]    |
+| **Spread**       | $Ask_0 - Bid_0$                                       | Divide by mid-price   |
+| **Mid-Price**    | $(Ask_0 + Bid_0) / 2$                                 | Z-score normalization |
+| **Trade Flow**   | Recent trades (price, volume, direction)              | Rolling window        |
 
 ### 5.2 Portfolio State
 
-| Feature | Description | Normalization |
-|---------|-------------|---------------|
-| **Cash** | Available USD | Divide by initial capital |
-| **Inventory** | Current net position (signed) | Divide by max position |
-| **Unrealized PnL** | Profit/loss if flattened | Divide by initial capital |
-| **Realized PnL** | Cumulative locked-in profit | Divide by initial capital |
+| Feature            | Description                   | Normalization             |
+| ------------------ | ----------------------------- | ------------------------- |
+| **Cash**           | Available USD                 | Divide by initial capital |
+| **Inventory**      | Current net position (signed) | Divide by max position    |
+| **Unrealized PnL** | Profit/loss if flattened      | Divide by initial capital |
+| **Realized PnL**   | Cumulative locked-in profit   | Divide by initial capital |
 
 ### 5.3 Derived Signals
 
-| Feature | Description | Calculation |
-|---------|-------------|-------------|
-| **Volatility** | Rolling standard deviation of returns | `std(returns[-window:])` |
-| **RSI** | Relative Strength Index (Momentum) | Standard 14-period formula |
-| **MACD** | Moving Average Convergence Divergence (Trend) | EMA(12) - EMA(26) |
-| **VWAP** | Volume-Weighted Average Price | Cumulative (Price × Volume) / Volume |
+| Feature        | Description                                   | Calculation                          |
+| -------------- | --------------------------------------------- | ------------------------------------ |
+| **Volatility** | Rolling standard deviation of returns         | `std(returns[-window:])`             |
+| **RSI**        | Relative Strength Index (Momentum)            | Standard 14-period formula           |
+| **MACD**       | Moving Average Convergence Divergence (Trend) | EMA(12) - EMA(26)                    |
+| **VWAP**       | Volume-Weighted Average Price                 | Cumulative (Price × Volume) / Volume |
 
 ### 5.4 Temporal Features
 
-| Feature | Description |
-|---------|-------------|
-| **Time of Day** | Encoded as sin/cos for cyclical pattern recognition |
-| **Day of Week** | One-hot encoded |
-| **Time Since Last Trade** | Seconds since the last executed trade |
+| Feature                   | Description                                         |
+| ------------------------- | --------------------------------------------------- |
+| **Time of Day**           | Encoded as sin/cos for cyclical pattern recognition |
+| **Day of Week**           | One-hot encoded                                     |
+| **Time Since Last Trade** | Seconds since the last executed trade               |
 
 ---
 
 ## 6. The Action Space
 
-What can the agent *do*?
+What can the agent _do_?
 
 ### 6.1 Discrete Action Space (Default)
 
 For simplicity and stability, the default action space is discrete:
 
-| Action | ID | Description |
-|--------|----|-------------|
-| **Hold** | 0 | Do nothing |
-| **Buy** | 1 | Submit a market buy order for 1 unit |
-| **Sell** | 2 | Submit a market sell order for 1 unit |
+| Action   | ID  | Description                           |
+| -------- | --- | ------------------------------------- |
+| **Hold** | 0   | Do nothing                            |
+| **Buy**  | 1   | Submit a market buy order for 1 unit  |
+| **Sell** | 2   | Submit a market sell order for 1 unit |
 
 ### 6.2 Multi-Discrete Action Space
 
 For more nuanced control:
 
-| Dimension | Options | Description |
-|-----------|---------|-------------|
-| **Direction** | {Hold, Buy, Sell} | Order side |
-| **Size** | {1, 5, 10, 25, 50} | Order quantity |
-| **Order Type** | {Market, Limit} | Execution type |
+| Dimension      | Options            | Description    |
+| -------------- | ------------------ | -------------- |
+| **Direction**  | {Hold, Buy, Sell}  | Order side     |
+| **Size**       | {1, 5, 10, 25, 50} | Order quantity |
+| **Order Type** | {Market, Limit}    | Execution type |
 
-### 6.3 Continuous Action Space *(Advanced)*
+### 6.3 Continuous Action Space _(Advanced)_
 
 For algorithms like SAC that handle continuous actions natively:
 
-| Dimension | Range | Description |
-|-----------|-------|-------------|
+| Dimension          | Range       | Description                               |
+| ------------------ | ----------- | ----------------------------------------- |
 | **Position Delta** | [-1.0, 1.0] | Target position change as fraction of max |
 
 ---
 
 ## 7. Reward Engineering
 
-The reward signal is the *only* feedback the RL agent receives. Designing it well is critical.
+The reward signal is the _only_ feedback the RL agent receives. Designing it well is critical.
 
 ### 7.1 Profit-Based Reward
 
@@ -468,8 +492,8 @@ sequenceDiagram
 1.  **Sense**: The environment wrapper collects raw data from Rust (`OrderBook`, `TradeHistory`).
 2.  **Process**: The Observation Buffer normalizes these values (z-score) and stacks them into a tensor.
 3.  **Think**: The Policy Network ($\pi_\theta$) performs a forward pass.
-    - *Inference Mode*: Returns the mode of the distribution (Deterministic).
-    - *Training Mode*: Samples from the distribution (Stochastic).
+    - _Inference Mode_: Returns the mode of the distribution (Deterministic).
+    - _Training Mode_: Samples from the distribution (Stochastic).
 4.  **Act**: The chosen action index is sent to the Rust engine.
 5.  **Learn**:
     - The `(State, Action, Reward, NextState)` tuple is pushed to a Replay Buffer.
@@ -482,6 +506,7 @@ sequenceDiagram
 ### 9.1 PyTorch Lightning Integration
 
 All training loops are managed by PyTorch Lightning for:
+
 - Automatic GPU/TPU distribution
 - Checkpointing and early stopping
 - Logging to TensorBoard/WandB
@@ -553,29 +578,29 @@ The project maintains professional software standards across all languages:
 
 Choose the right agent for your task:
 
-| Agent | Learning | Stability | Exploration | Compute | Best For |
-|-------|----------|-----------|-------------|---------|----------|
-| **PPO** | On-policy | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | Medium | Default choice, volatile markets |
-| **SAC** | Off-policy | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | High | Continuous actions, complex strategies |
-| **DQN** | Off-policy | ⭐⭐⭐ | ⭐⭐ | Low | Discrete actions, simple baselines |
-| **Market Maker** | None | ⭐⭐⭐⭐⭐ | N/A | Minimal | Spread capture, benchmarking |
-| **Trend Follower** | None | ⭐⭐⭐⭐ | N/A | Minimal | Trending markets, momentum |
-| **Mean Reversion** | None | ⭐⭐⭐ | N/A | Minimal | Range-bound markets |
-| **Random** | None | N/A | ⭐⭐⭐⭐⭐ | Minimal | Lower-bound baseline |
+| Agent              | Learning   | Stability  | Exploration | Compute | Best For                               |
+| ------------------ | ---------- | ---------- | ----------- | ------- | -------------------------------------- |
+| **PPO**            | On-policy  | ⭐⭐⭐⭐⭐ | ⭐⭐⭐      | Medium  | Default choice, volatile markets       |
+| **SAC**            | Off-policy | ⭐⭐⭐⭐   | ⭐⭐⭐⭐⭐  | High    | Continuous actions, complex strategies |
+| **DQN**            | Off-policy | ⭐⭐⭐     | ⭐⭐        | Low     | Discrete actions, simple baselines     |
+| **Market Maker**   | None       | ⭐⭐⭐⭐⭐ | N/A         | Minimal | Spread capture, benchmarking           |
+| **Trend Follower** | None       | ⭐⭐⭐⭐   | N/A         | Minimal | Trending markets, momentum             |
+| **Mean Reversion** | None       | ⭐⭐⭐     | N/A         | Minimal | Range-bound markets                    |
+| **Random**         | None       | N/A        | ⭐⭐⭐⭐⭐  | Minimal | Lower-bound baseline                   |
 
 ### Agent Performance Benchmarks
 
 Tested on 1-year BTC/USD historical data (2023):
 
-| Agent | Sharpe Ratio | Max Drawdown | Win Rate | Avg Trade |
-|-------|--------------|--------------|----------|-----------|
-| **PPO (Mamba)** | 1.82 | -12.3% | 54.2% | +0.18% |
-| **PPO (LSTM)** | 1.45 | -15.1% | 52.8% | +0.14% |
-| **SAC (Mamba)** | 1.67 | -14.8% | 53.1% | +0.16% |
-| **Market Maker** | 0.92 | -8.2% | 48.5% | +0.05% |
-| **Trend Follower** | 0.78 | -22.4% | 38.2% | +0.31% |
-| **Mean Reversion** | 0.45 | -18.7% | 42.1% | +0.08% |
-| **Random** | -0.12 | -35.6% | 33.3% | -0.02% |
+| Agent              | Sharpe Ratio | Max Drawdown | Win Rate | Avg Trade |
+| ------------------ | ------------ | ------------ | -------- | --------- |
+| **PPO (Mamba)**    | 1.82         | -12.3%       | 54.2%    | +0.18%    |
+| **PPO (LSTM)**     | 1.45         | -15.1%       | 52.8%    | +0.14%    |
+| **SAC (Mamba)**    | 1.67         | -14.8%       | 53.1%    | +0.16%    |
+| **Market Maker**   | 0.92         | -8.2%        | 48.5%    | +0.05%    |
+| **Trend Follower** | 0.78         | -22.4%       | 38.2%    | +0.31%    |
+| **Mean Reversion** | 0.45         | -18.7%       | 42.1%    | +0.08%    |
+| **Random**         | -0.12        | -35.6%       | 33.3%    | -0.02%    |
 
 > **Note**: Past performance does not guarantee future results. Benchmarks run with `SEED=42`.
 
@@ -673,7 +698,7 @@ import torch.nn as nn
 
 class MyCustomAgent(BasePolicy):
     """Custom agent with specific strategy."""
-    
+
     def __init__(self, obs_dim: int, action_dim: int, hidden_dim: int = 256):
         super().__init__()
         self.network = nn.Sequential(
@@ -684,10 +709,10 @@ class MyCustomAgent(BasePolicy):
             nn.Linear(hidden_dim, action_dim),
             nn.Softmax(dim=-1)
         )
-    
+
     def forward(self, obs: torch.Tensor) -> torch.Tensor:
         return self.network(obs)
-    
+
     def act(self, obs: torch.Tensor, deterministic: bool = False) -> int:
         probs = self.forward(obs)
         if deterministic:
@@ -740,13 +765,13 @@ def test_my_agent_forward():
 
 ## 13. 🚀 Future Roadmap for Agents
 
-| Timeline | Feature | Description |
-|----------|---------|-------------|
-| **Q1 2026** | Multi-Agent Simulation | Modeling competing RL agents in a single arena |
-| **Q2 2026** | Distributed Training | Scaling model learning across GPU clusters using Ray |
-| **Q3 2026** | Hierarchical RL | Manager-worker agent architectures for complex strategies |
-| **Q4 2026** | Causal Analysis | Integrating causal inference to understand market drivers |
-| **2027** | Foundation Models | Fine-tuning large pre-trained models for trading |
+| Timeline    | Feature                | Description                                               |
+| ----------- | ---------------------- | --------------------------------------------------------- |
+| **Q1 2026** | Multi-Agent Simulation | Modeling competing RL agents in a single arena            |
+| **Q2 2026** | Distributed Training   | Scaling model learning across GPU clusters using Ray      |
+| **Q3 2026** | Hierarchical RL        | Manager-worker agent architectures for complex strategies |
+| **Q4 2026** | Causal Analysis        | Integrating causal inference to understand market drivers |
+| **2027**    | Foundation Models      | Fine-tuning large pre-trained models for trading          |
 
 ---
 

@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   nglab-api:
@@ -17,7 +17,7 @@ services:
       - ./models:/app/models
     restart: unless-stopped
 
-  # Optional: Monitoring services as suggested in IMPROVEMENTS.md
+  # Optional: Monitoring services as suggested in ROADMAP.md
   prometheus:
     image: prom/prometheus:latest
     ports:

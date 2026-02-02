@@ -1,5 +1,10 @@
 # NGLab Development Guide
 
+<a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL v3" src="https://img.shields.io/badge/License-AGPL_v3-blue.svg"></a>
+<a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/Python-3.11-3776ab?logo=python&logoColor=white"></a>
+<a href="https://www.rust-lang.org/"><img alt="Rust" src="https://img.shields.io/badge/Rust-1.80%2B-000000?logo=rust&logoColor=white"></a>
+<a href="https://tauri.app/"><img alt="Tauri" src="https://img.shields.io/badge/Tauri-2.0-FFC131?logo=tauri&logoColor=white"></a>
+
 > **Your complete reference for setting up, running, and debugging NGLab.**
 
 ## Table of Contents
@@ -34,13 +39,13 @@ just test           # Verifies everything works
 
 ### Prerequisites
 
-| Tool | Version | Installation |
-|------|---------|--------------|
-| **Rust** | 1.75+ | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
-| **Python** | 3.11+ | `uv python install 3.11` or system package manager |
-| **Node.js** | 20+ | `nvm install 20` or [nodejs.org](https://nodejs.org) |
-| **uv** | Latest | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-| **Just** | Latest | `cargo install just` |
+| Tool        | Version | Installation                                                      |
+| ----------- | ------- | ----------------------------------------------------------------- |
+| **Rust**    | 1.75+   | `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \| sh` |
+| **Python**  | 3.11+   | `uv python install 3.11` or system package manager                |
+| **Node.js** | 20+     | `nvm install 20` or [nodejs.org](https://nodejs.org)              |
+| **uv**      | Latest  | `curl -LsSf https://astral.sh/uv/install.sh \| sh`                |
+| **Just**    | Latest  | `cargo install just`                                              |
 
 ### Automated Setup
 
@@ -51,6 +56,7 @@ just setup
 ```
 
 This command:
+
 1. Updates Rust toolchain and installs `rustfmt`, `clippy`
 2. Creates Python virtualenv and installs dependencies via `uv sync`
 3. Installs Node.js dependencies via `npm ci`
@@ -62,6 +68,7 @@ This command:
 If automated setup fails, follow these steps:
 
 **Rust:**
+
 ```bash
 rustup update stable
 rustup component add rustfmt clippy
@@ -69,6 +76,7 @@ cargo build
 ```
 
 **Python:**
+
 ```bash
 cd python
 uv sync                    # Creates .venv and installs deps
@@ -77,6 +85,7 @@ maturin develop --release  # Builds Rust extension
 ```
 
 **TypeScript:**
+
 ```bash
 cd typescript
 npm ci                     # Clean install
@@ -84,6 +93,7 @@ npm run build              # Build frontend
 ```
 
 **Tauri Dependencies (Linux):**
+
 ```bash
 # Ubuntu/Debian
 sudo apt install libwebkit2gtk-4.1-dev libgtk-3-dev libappindicator3-dev
@@ -99,6 +109,7 @@ sudo dnf install webkit2gtk4.1-devel gtk3-devel libappindicator-gtk3-devel
 ### VS Code (Recommended)
 
 **Required Extensions:**
+
 - `rust-analyzer` - Rust language support
 - `Python` - Microsoft Python extension
 - `ESLint` + `Prettier` - TypeScript linting/formatting
@@ -106,6 +117,7 @@ sudo dnf install webkit2gtk4.1-devel gtk3-devel libappindicator-gtk3-devel
 - `Even Better TOML` - Cargo.toml editing
 
 **Workspace Settings (`.vscode/settings.json`):**
+
 ```json
 {
   "rust-analyzer.cargo.features": "all",
@@ -120,6 +132,7 @@ sudo dnf install webkit2gtk4.1-devel gtk3-devel libappindicator-gtk3-devel
 ```
 
 **Launch Configurations (`.vscode/launch.json`):**
+
 ```json
 {
   "version": "0.2.0",
@@ -153,12 +166,14 @@ sudo dnf install webkit2gtk4.1-devel gtk3-devel libappindicator-gtk3-devel
 ### PyCharm / RustRover
 
 **PyCharm Setup:**
+
 1. Open `python/` as project root
 2. Set interpreter to `.venv/bin/python`
 3. Mark `src/` as Sources Root
 4. Enable pytest as test runner
 
 **RustRover Setup:**
+
 1. Open root directory containing `Cargo.toml`
 2. Configure Clippy as external linter
 3. Enable format on save with rustfmt
@@ -175,38 +190,38 @@ cp .env.example .env
 
 ### Core Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `NGLAB_ENV` | `development` | Environment: development, staging, production |
-| `DEBUG_MODE` | `false` | Enable debug logging and assertions |
-| `LOG_LEVEL` | `INFO` | Logging verbosity: DEBUG, INFO, WARNING, ERROR |
+| Variable     | Default       | Description                                    |
+| ------------ | ------------- | ---------------------------------------------- |
+| `NGLAB_ENV`  | `development` | Environment: development, staging, production  |
+| `DEBUG_MODE` | `false`       | Enable debug logging and assertions            |
+| `LOG_LEVEL`  | `INFO`        | Logging verbosity: DEBUG, INFO, WARNING, ERROR |
 
 ### Database
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `DB_HOST` | `localhost` | PostgreSQL host |
-| `DB_PORT` | `5432` | PostgreSQL port |
-| `DB_NAME` | `nglab` | Database name |
-| `DB_USER` | `postgres` | Database user |
-| `DB_PASSWORD` | - | Database password (required) |
+| Variable      | Default     | Description                  |
+| ------------- | ----------- | ---------------------------- |
+| `DB_HOST`     | `localhost` | PostgreSQL host              |
+| `DB_PORT`     | `5432`      | PostgreSQL port              |
+| `DB_NAME`     | `nglab`     | Database name                |
+| `DB_USER`     | `postgres`  | Database user                |
+| `DB_PASSWORD` | -           | Database password (required) |
 
 ### GPU / Training
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `CUDA_VISIBLE_DEVICES` | `0` | GPU device IDs (comma-separated) |
-| `NGLAB_DEVICE` | `cuda` | Training device: cuda, cpu, mps |
-| `NGLAB_BATCH_SIZE` | `64` | Training batch size |
-| `NGLAB_MIXED_PRECISION` | `true` | Enable FP16/BF16 training |
+| Variable                | Default | Description                      |
+| ----------------------- | ------- | -------------------------------- |
+| `CUDA_VISIBLE_DEVICES`  | `0`     | GPU device IDs (comma-separated) |
+| `NGLAB_DEVICE`          | `cuda`  | Training device: cuda, cpu, mps  |
+| `NGLAB_BATCH_SIZE`      | `64`    | Training batch size              |
+| `NGLAB_MIXED_PRECISION` | `true`  | Enable FP16/BF16 training        |
 
 ### Monitoring
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4317` | Jaeger/OTLP endpoint |
-| `WANDB_API_KEY` | - | Weights & Biases API key |
-| `MLFLOW_TRACKING_URI` | `http://localhost:5000` | MLflow server URI |
+| Variable                      | Default                 | Description              |
+| ----------------------------- | ----------------------- | ------------------------ |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4317` | Jaeger/OTLP endpoint     |
+| `WANDB_API_KEY`               | -                       | Weights & Biases API key |
+| `MLFLOW_TRACKING_URI`         | `http://localhost:5000` | MLflow server URI        |
 
 ---
 
@@ -215,18 +230,21 @@ cp .env.example .env
 ### Development Servers
 
 **Tauri Desktop App (Hot Reload):**
+
 ```bash
 just dev
 # or: cd typescript && npm run tauri dev
 ```
 
 **Python API Server:**
+
 ```bash
 cd python
 uvicorn src.api.app:app --reload --port 8000
 ```
 
 **Jupyter Notebooks:**
+
 ```bash
 just notebook
 # or: cd python && jupyter notebook
@@ -235,12 +253,14 @@ just notebook
 ### Watch Mode
 
 **Rust (auto-rebuild on change):**
+
 ```bash
 just watch
 # or: cargo watch -x check -x test
 ```
 
 **TypeScript (Vite hot reload):**
+
 ```bash
 cd typescript && npm run dev
 ```
@@ -270,12 +290,12 @@ just build  # Builds Rust, Python extension, TypeScript
 
 ### Individual Components
 
-| Component | Command | Output |
-|-----------|---------|--------|
-| **Rust Library** | `just build-rust` | `target/release/libnglab.so` |
-| **Python Extension** | `just build-python` | `python/nglab/*.so` |
-| **TypeScript/Web** | `just build-typescript` | `typescript/dist/` |
-| **Tauri Desktop** | `just build-tauri` | Platform-specific binary |
+| Component            | Command                 | Output                       |
+| -------------------- | ----------------------- | ---------------------------- |
+| **Rust Library**     | `just build-rust`       | `target/release/libnglab.so` |
+| **Python Extension** | `just build-python`     | `python/nglab/*.so`          |
+| **TypeScript/Web**   | `just build-typescript` | `typescript/dist/`           |
+| **Tauri Desktop**    | `just build-tauri`      | Platform-specific binary     |
 
 ### Release Builds
 
@@ -297,6 +317,7 @@ cd typescript && npm run tauri build
 ### Local PostgreSQL
 
 **Docker (Recommended):**
+
 ```bash
 docker run -d \
   --name nglab-postgres \
@@ -308,6 +329,7 @@ docker run -d \
 ```
 
 **System Install:**
+
 ```bash
 # Ubuntu
 sudo apt install postgresql
@@ -347,18 +369,21 @@ just reset-credentials
 ### Rust Profiling
 
 **Flamegraph (CPU):**
+
 ```bash
 just profile orderbook
 # or: cargo flamegraph --bench orderbook
 ```
 
 **Criterion Benchmarks:**
+
 ```bash
 just bench
 # or: cargo bench
 ```
 
 **Memory (Valgrind):**
+
 ```bash
 valgrind --tool=massif target/release/nglab
 ms_print massif.out.*
@@ -367,23 +392,27 @@ ms_print massif.out.*
 ### Python Profiling
 
 **py-spy (CPU sampling):**
+
 ```bash
 just profile-python python/src/pipeline/train_ppo.py
 # or: py-spy record -o profile.svg -- python script.py
 ```
 
 **cProfile (deterministic):**
+
 ```bash
 python -m cProfile -o profile.prof python/src/pipeline/train_ppo.py
 snakeviz profile.prof
 ```
 
 **Memory Profiling:**
+
 ```bash
 python -m memory_profiler python/src/main.py
 ```
 
 **PyTorch Profiler:**
+
 ```python
 import torch.profiler as profiler
 
@@ -410,6 +439,7 @@ python -c "import torch; print(torch.cuda.memory_summary())"
 ### Rust ↔ Python (PyO3)
 
 **Debug Rust from Python:**
+
 ```bash
 # Build with debug symbols
 cd python && maturin develop
@@ -419,27 +449,32 @@ rust-gdb --args python your_script.py
 ```
 
 **Common Issues:**
+
 - `ImportError: libnglab.so` → Run `maturin develop`
 - Segfault in Rust → Enable `RUST_BACKTRACE=full`
 
 ### Rust ↔ TypeScript (Tauri)
 
 **Debug Tauri Backend:**
+
 ```bash
 cd typescript
 RUST_BACKTRACE=1 npm run tauri dev
 ```
 
 **Inspect IPC Events:**
+
 ```typescript
 // In React component
-import { listen } from '@tauri-apps/api/event';
+import { listen } from "@tauri-apps/api/event";
 
 useEffect(() => {
-  const unlisten = listen('arena-update', (event) => {
-    console.log('Received:', event.payload);
+  const unlisten = listen("arena-update", (event) => {
+    console.log("Received:", event.payload);
   });
-  return () => { unlisten.then(f => f()); };
+  return () => {
+    unlisten.then((f) => f());
+  };
 }, []);
 ```
 
@@ -508,13 +543,13 @@ cd typescript && npm test -- --grep "MyComponent"
 
 ## Troubleshooting Development Issues
 
-| Issue | Solution |
-|-------|----------|
-| `ModuleNotFoundError: nglab` | Run `just build-python` |
+| Issue                               | Solution                                                |
+| ----------------------------------- | ------------------------------------------------------- |
+| `ModuleNotFoundError: nglab`        | Run `just build-python`                                 |
 | Rust build fails with linker errors | Install system deps: `sudo apt install build-essential` |
-| TypeScript types out of sync | Run `npm run build` to regenerate |
-| Pre-commit hooks failing | Run `just fix` to auto-fix |
-| GPU not detected | Check `CUDA_VISIBLE_DEVICES` and `nvidia-smi` |
+| TypeScript types out of sync        | Run `npm run build` to regenerate                       |
+| Pre-commit hooks failing            | Run `just fix` to auto-fix                              |
+| GPU not detected                    | Check `CUDA_VISIBLE_DEVICES` and `nvidia-smi`           |
 
 For more issues, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 

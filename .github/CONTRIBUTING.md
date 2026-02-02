@@ -1,5 +1,10 @@
 # Contributing to NGLab
 
+<a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL v3" src="https://img.shields.io/badge/License-AGPL_v3-blue.svg"></a>
+<a href="http://makeapullrequest.com"><img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square"></a>
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+<a href="https://github.com/astral-sh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
+
 Thank you for your interest in contributing to NGLab! This document provides guidelines and instructions for contributing to the project.
 
 > **Welcome, Engineer.**
@@ -50,17 +55,23 @@ Please be respectful and constructive in all interactions. We aim to foster an o
 Before writing a single line of code, internalize these three axioms:
 
 ### 1. "Zero-Copy or Die"
+
 Data movement is the enemy of latency. In the Rust-Python bridge, strictly prefer passing pointers over copying data.
+
 - **BAD**: Serializing a Rust struct to JSON to read it in Python.
 - **GOOD**: Exposing the raw memory address via `PyArray` and reading it with NumPy.
 
 ### 2. "Types are Documentation"
+
 We do not write vague code.
+
 - **Python**: Every function key must be typed. Use `mypy` strict mode.
 - **Rust**: Use NewTypes (`struct Price(f64)`) to prevent unit confusion (e.g., preventing adding Price to Volume).
 
 ### 3. "Determinism is King"
+
 The simulation must produce bit-exact results for the same seed, regardless of the hardware.
+
 - Avoid iterating over `HashMap` (random order). Use `BTreeMap` or `IndexMap` instead.
 - Avoid standard `RNG`. Use our seeded `ChaCha8` RNG wrapper.
 
@@ -102,6 +113,7 @@ just setup
 ```
 
 This will:
+
 - Install Rust toolchain components (rustfmt, clippy)
 - Install Python dependencies
 - Install TypeScript/Node.js dependencies
@@ -113,6 +125,7 @@ This will:
 If you prefer manual setup or the automated script fails:
 
 **Rust:**
+
 ```bash
 rustup update stable
 rustup component add rustfmt clippy
@@ -120,18 +133,21 @@ cargo build
 ```
 
 **Python:**
+
 ```bash
 cd python
 uv sync  # or: pip install -e ".[dev]"
 ```
 
 **TypeScript:**
+
 ```bash
 cd typescript
 npm ci
 ```
 
 **Pre-commit Hooks:**
+
 ```bash
 pip install pre-commit
 pre-commit install
@@ -140,6 +156,7 @@ pre-commit install
 ### VS Code Configuration
 
 Copy this into your `.vscode/settings.json` for optimal DX:
+
 ```json
 {
   "rust-analyzer.check.command": "clippy",
@@ -169,6 +186,7 @@ git checkout -b fix/your-bug-fix
 ```
 
 Branch naming conventions:
+
 - `feature/` - New features (e.g., `feature/mamba-backbone`)
 - `fix/` - Bug fixes (e.g., `fix/clob-matching`)
 - `docs/` - Documentation changes
@@ -194,6 +212,7 @@ just test
 ```
 
 Run specific test suites:
+
 ```bash
 just test-rust
 just test-python
@@ -209,6 +228,7 @@ just lint
 ```
 
 Auto-fix linting issues:
+
 ```bash
 just fix
 ```
@@ -226,6 +246,7 @@ Write clear, descriptive commit messages following [Conventional Commits](https:
 ```
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -235,6 +256,7 @@ Types:
 - `chore`: Maintenance tasks
 
 Examples:
+
 ```bash
 git commit -m "feat(python): add VAE model for time series generation"
 git commit -m "fix(rust): correct order matching logic in OrderBook"
@@ -262,14 +284,16 @@ Then create a Pull Request on GitHub.
 - Write unit tests for new functionality
 
 #### The "Do's and Don'ts"
-| Context | DO ✅ | DON'T ❌ |
-| :--- | :--- | :--- |
-| **Error Handling** | Return `Result<T, AppError>` | Use `.unwrap()` or `.expect()` (Instant reject) |
-| **Concurrency** | Use `tokio::select!` for cancellation | Use raw threads `std::thread::spawn` |
-| **Serialization** | Use `serde` with `#[serde(rename_all="camelCase")]` | Manually format JSON strings |
-| **Float Math** | Use `f64` and handle `NaN` implicitly | Use `f32` (precision loss in financial math) |
+
+| Context            | DO ✅                                               | DON'T ❌                                        |
+| :----------------- | :-------------------------------------------------- | :---------------------------------------------- |
+| **Error Handling** | Return `Result<T, AppError>`                        | Use `.unwrap()` or `.expect()` (Instant reject) |
+| **Concurrency**    | Use `tokio::select!` for cancellation               | Use raw threads `std::thread::spawn`            |
+| **Serialization**  | Use `serde` with `#[serde(rename_all="camelCase")]` | Manually format JSON strings                    |
+| **Float Math**     | Use `f64` and handle `NaN` implicitly               | Use `f32` (precision loss in financial math)    |
 
 **Example:**
+
 ```rust
 /// Calculates the Sharpe ratio for a series of returns.
 ///
@@ -293,15 +317,16 @@ pub fn sharpe_ratio(returns: &[f64], risk_free_rate: f64) -> f64 {
 - Maximum line length: 100 characters
 
 #### The "Do's and Don'ts"
-| Context | DO ✅ | DON'T ❌ |
-| :--- | :--- | :--- |
-| **Typing** | `def foo(x: float) -> list[int]:` | `def foo(x):` |
-| **Config** | Use `Hydra` for parameters | Hardcode magic numbers |
-| **Loops** | Use vectorized `numpy`/`torch` operations | Write `for` loops over data |
-| **Imports** | `from typing import Annotated` | `from typing import *` |
 
+| Context     | DO ✅                                     | DON'T ❌                    |
+| :---------- | :---------------------------------------- | :-------------------------- |
+| **Typing**  | `def foo(x: float) -> list[int]:`         | `def foo(x):`               |
+| **Config**  | Use `Hydra` for parameters                | Hardcode magic numbers      |
+| **Loops**   | Use vectorized `numpy`/`torch` operations | Write `for` loops over data |
+| **Imports** | `from typing import Annotated`            | `from typing import *`      |
 
 **Example:**
+
 ```python
 def calculate_sharpe_ratio(
     returns: np.ndarray,
@@ -331,13 +356,15 @@ def calculate_sharpe_ratio(
 - Use strict TypeScript configuration
 
 #### The "Do's and Don'ts"
-| Context | DO ✅ | DON'T ❌ |
-| :--- | :--- | :--- |
-| **State** | Use `React Query` or `Tauri Events` | Use `useEffect` for data fetching |
-| **Styles** | Use Tailwind utility classes | Write raw CSS/SCSS files |
-| **Types** | Define interfaces in `types/` | Use `any` type (Instant reject) |
+
+| Context    | DO ✅                               | DON'T ❌                          |
+| :--------- | :---------------------------------- | :-------------------------------- |
+| **State**  | Use `React Query` or `Tauri Events` | Use `useEffect` for data fetching |
+| **Styles** | Use Tailwind utility classes        | Write raw CSS/SCSS files          |
+| **Types**  | Define interfaces in `types/`       | Use `any` type (Instant reject)   |
 
 **Example:**
+
 ```typescript
 /**
  * Calculate the Sharpe ratio for a series of returns.
@@ -347,7 +374,7 @@ def calculate_sharpe_ratio(
  */
 export function calculateSharpeRatio(
   returns: number[],
-  riskFreeRate: number = 0.0
+  riskFreeRate: number = 0.0,
 ): number {
   // Implementation
 }
@@ -367,16 +394,19 @@ export function calculateSharpeRatio(
 ### Running Tests
 
 **All Tests:**
+
 ```bash
 just test
 ```
 
 **With Coverage:**
+
 ```bash
 just coverage
 ```
 
 **Specific Tests:**
+
 ```bash
 # Rust
 cargo test --test test_orderbook
@@ -391,6 +421,7 @@ cd typescript && npm test -- --testPathPattern=PriceChart
 ### Writing Tests
 
 **Rust:**
+
 ```rust
 #[cfg(test)]
 mod tests {
@@ -405,6 +436,7 @@ mod tests {
 ```
 
 **Python:**
+
 ```python
 def test_vae_forward_pass():
     """Test VAE forward pass produces correct output shapes."""
@@ -419,6 +451,7 @@ def test_vae_forward_pass():
 ```
 
 **TypeScript:**
+
 ```typescript
 describe('PriceChart', () => {
   it('should render with initial data', () => {
@@ -437,11 +470,11 @@ For major architectural changes (e.g., "Switching from PPO to DreamerV3" or "Por
 1.  **Create an Issue**: Tag it `proposal/rfc`.
 2.  **Draft the Document**: Create `rfc/000-my-proposal.md`.
 3.  **Structure**:
-    *   **Summary**: 1-paragraph explanation.
-    *   **Motivation**: Why are we doing this?
-    *   **Design**: Technical implementation details.
-    *   **Drawbacks**: What specific problems does this introduce?
-    *   **Alternatives**: What else did you consider?
+    - **Summary**: 1-paragraph explanation.
+    - **Motivation**: Why are we doing this?
+    - **Design**: Technical implementation details.
+    - **Drawbacks**: What specific problems does this introduce?
+    - **Alternatives**: What else did you consider?
 
 ---
 
@@ -450,15 +483,18 @@ For major architectural changes (e.g., "Switching from PPO to DreamerV3" or "Por
 ### Before Submitting
 
 1. **Sync with upstream:**
+
    ```bash
    git fetch upstream
    git rebase upstream/main
    ```
 
 2. **Run pre-push checks:**
+
    ```bash
    just pre-push
    ```
+
    This runs: formatting, linting, and all tests.
 
 3. **Update documentation** if needed (README, API docs, CLAUDE.md)
@@ -476,18 +512,22 @@ For major architectural changes (e.g., "Switching from PPO to DreamerV3" or "Por
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 How has this been tested?
 
 ## Checklist
+
 - [ ] Code follows style guidelines
 - [ ] Tests added/updated
 - [ ] Documentation updated
@@ -570,6 +610,7 @@ nglab/
 ### 11.1 Debugging Rust Code
 
 **Enable Debug Builds:**
+
 ```bash
 # Build with debug symbols
 cargo build
@@ -579,6 +620,7 @@ RUST_BACKTRACE=1 cargo run --bin nglab-cli
 ```
 
 **Using LLDB:**
+
 ```bash
 # Start debugger
 lldb target/debug/nglab-cli
@@ -589,6 +631,7 @@ lldb target/debug/nglab-cli
 ```
 
 **Logging:**
+
 ```rust
 use tracing::{info, debug, warn, error};
 
@@ -599,6 +642,7 @@ debug!(price = %order.price, "Processing order");
 ### 11.2 Debugging Python Code
 
 **Using pdb:**
+
 ```python
 import pdb; pdb.set_trace()  # Add breakpoint
 
@@ -607,6 +651,7 @@ breakpoint()
 ```
 
 **VS Code Launch Configuration:**
+
 ```json
 {
   "name": "Python: Train PPO",
@@ -623,11 +668,13 @@ breakpoint()
 ### 11.3 Debugging TypeScript/Tauri
 
 **Chrome DevTools:**
+
 1. Run `npm run tauri dev`
 2. Right-click in the app → Inspect
 3. Use Console, Network, and Performance tabs
 
 **Tauri Backend Logging:**
+
 ```rust
 // In src-tauri/src/lib.rs
 log::info!("Arena state: {:?}", state);
@@ -639,14 +686,15 @@ log::info!("Arena state: {:?}", state);
 
 ### 12.1 Rust Performance
 
-| Technique | When to Use | Example |
-|-----------|-------------|---------|
-| **Pre-allocation** | Known collection sizes | `Vec::with_capacity(1000)` |
-| **Iterators** | Processing sequences | Use `.iter()` over index loops |
-| **SIMD** | Numeric computations | `packed_simd` or `std::simd` |
-| **Arena Allocation** | Many small objects | `bumpalo` or `typed-arena` |
+| Technique            | When to Use            | Example                        |
+| -------------------- | ---------------------- | ------------------------------ |
+| **Pre-allocation**   | Known collection sizes | `Vec::with_capacity(1000)`     |
+| **Iterators**        | Processing sequences   | Use `.iter()` over index loops |
+| **SIMD**             | Numeric computations   | `packed_simd` or `std::simd`   |
+| **Arena Allocation** | Many small objects     | `bumpalo` or `typed-arena`     |
 
 **Profiling Tools:**
+
 ```bash
 # Flamegraph
 cargo install flamegraph
@@ -658,14 +706,15 @@ cargo bench --bench orderbook_bench
 
 ### 12.2 Python Performance
 
-| Technique | When to Use | Example |
-|-----------|-------------|---------|
-| **Vectorization** | Array operations | `np.dot(a, b)` over loops |
-| **JIT Compilation** | Hot functions | `@torch.jit.script` |
-| **Async I/O** | Network operations | `asyncio` / `aiohttp` |
-| **Data Loading** | Training loops | `num_workers > 0` in DataLoader |
+| Technique           | When to Use        | Example                         |
+| ------------------- | ------------------ | ------------------------------- |
+| **Vectorization**   | Array operations   | `np.dot(a, b)` over loops       |
+| **JIT Compilation** | Hot functions      | `@torch.jit.script`             |
+| **Async I/O**       | Network operations | `asyncio` / `aiohttp`           |
+| **Data Loading**    | Training loops     | `num_workers > 0` in DataLoader |
 
 **Profiling Tools:**
+
 ```python
 # cProfile
 python -m cProfile -o profile.prof train_ppo.py
@@ -680,11 +729,13 @@ print(prof.key_averages().table())
 ### 12.3 Memory Optimization
 
 **Rust:**
+
 - Use `Box<dyn Trait>` sparingly
 - Prefer stack allocation for small structs
 - Use `Cow<str>` for conditional ownership
 
 **Python:**
+
 - Use generators for large datasets
 - Clear GPU memory: `torch.cuda.empty_cache()`
 - Use `del` for large objects when done
@@ -712,6 +763,7 @@ api_key = os.environ["API_KEY"]
 ### 13.2 Input Validation
 
 **Rust:**
+
 ```rust
 pub fn set_position(&mut self, position: f64) -> Result<(), ArenaError> {
     if position.is_nan() || position.is_infinite() {
@@ -726,6 +778,7 @@ pub fn set_position(&mut self, position: f64) -> Result<(), ArenaError> {
 ```
 
 **Python:**
+
 ```python
 def validate_config(config: dict) -> None:
     """Validate configuration before use."""
@@ -733,7 +786,7 @@ def validate_config(config: dict) -> None:
     for key in required_keys:
         if key not in config:
             raise ValueError(f"Missing required config key: {key}")
-    
+
     if config["learning_rate"] <= 0:
         raise ValueError("Learning rate must be positive")
 ```
@@ -765,45 +818,53 @@ Create files in `docs/adr/` with the following format:
 # ADR-001: Use Rust for Simulation Engine
 
 ## Status
+
 Accepted
 
 ## Context
+
 We need a simulation engine that can process >10,000 orders per second
 with deterministic behavior across different platforms.
 
 ## Decision
+
 We will use Rust for the simulation engine with PyO3 bindings for Python.
 
 ## Consequences
+
 ### Positive
+
 - Microsecond-level latency
 - Memory safety without GC
 - Zero-copy data transfer to Python
 
 ### Negative
+
 - Steeper learning curve for Python developers
 - Longer compile times
 - Need to maintain PyO3 bindings
 
 ## Alternatives Considered
+
 1. **C++**: Rejected due to memory safety concerns
 2. **Pure Python with Numba**: Rejected due to GIL limitations
 3. **Go**: Rejected due to GC pauses
 
 ## References
+
 - [PyO3 Documentation](https://pyo3.rs/)
 - [Rust Performance Book](https://nnethercote.github.io/perf-book/)
 ```
 
 ### Existing ADRs
 
-| ADR | Title | Status |
-|-----|-------|--------|
+| ADR     | Title                   | Status   |
+| ------- | ----------------------- | -------- |
 | ADR-001 | Use Rust for Simulation | Accepted |
 | ADR-002 | PyTorch over TensorFlow | Accepted |
-| ADR-003 | Tauri over Electron | Accepted |
+| ADR-003 | Tauri over Electron     | Accepted |
 | ADR-004 | Hydra for Configuration | Accepted |
-| ADR-005 | TorchRL for RL | Accepted |
+| ADR-005 | TorchRL for RL          | Accepted |
 
 ---
 
@@ -827,6 +888,7 @@ We will use Rust for the simulation engine with PyO3 bindings for Python.
 ## Recognition & Credits
 
 Contributors are recognized in:
+
 - `CHANGELOG.md` for each release
 - `CONTRIBUTORS.md` (auto-generated from git history)
 - GitHub release notes
@@ -836,12 +898,14 @@ Contributors are recognized in:
 ## Questions?
 
 If you have questions or need help:
+
 1. Check existing issues and discussions
 2. Open a new issue with the `question` label
 3. Join our Discord community
 4. Reach out to maintainers
 
 **Response Time Expectations:**
+
 - Issues: 24-48 hours for initial response
 - PRs: 48-72 hours for first review
 - Critical bugs: Same-day response
