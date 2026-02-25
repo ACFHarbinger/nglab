@@ -50,7 +50,7 @@
     "@vitest/ui": "^4.0.17",
     "autoprefixer": "^10.4.23",
     "cypress": "^15.9.0",
-    "eslint": "^9.39.2",
+    "eslint": "^10.0.2",
     "jsdom": "^27.4.0",
     "postcss": "^8.5.6",
     "start-server-and-test": "^2.1.3",
