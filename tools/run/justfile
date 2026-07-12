@@ -1,0 +1,29 @@
+# tools/run — launch apps, training, notebooks, data.
+
+set shell := ["bash", "-c"]
+
+# Start the Tauri development server
+dev:
+    cd typescript && npm run tauri dev
+
+# Train a Python RL agent
+train MODEL="ppo":
+    cd python && python -m python.src.pipeline.train model={{MODEL}}
+
+# Evaluate a trained agent
+evaluate CHECKPOINT:
+    cd python && python -m python.src.pipeline.evaluate_agents --checkpoint={{CHECKPOINT}}
+
+# Start the Jupyter notebook server
+notebook:
+    cd python && jupyter notebook
+
+# Generate mock trading data for the simulation
+seed-data assets="BTC,ETH,SOL" days="7":
+    mkdir -p assets/data
+    cd python && uv run python ../scripts/seed_data.py --assets {{assets}} --days {{days}} --output ../assets/data/
+
+# Reset local credential databases
+reset-credentials:
+    rm -f assets/secrets/*.db
+    @echo "✅ Local databases deleted."

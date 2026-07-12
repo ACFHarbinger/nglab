@@ -1,0 +1,23 @@
+# tools/helper — presentation + project stats.
+
+set shell := ["bash", "-c"]
+
+bold := '\033[1m'
+cyan := '\033[0;36m'
+reset := '\033[0m'
+
+# Print the project banner
+[private]
+_print_header:
+    @printf '{{bold}}{{cyan}}NGLab — Nothing Gambles Like A Bot{{reset}}\n'
+    @printf 'Polyglot quantitative-trading platform (Rust · Go · C++ · Python · TypeScript)\n\n'
+
+# List every recipe across all sub-modules
+help: _print_header
+    @just --list --list-submodules
+
+# Show project statistics
+stats: _print_header
+    @echo "Lines of code:"; tokei || true
+    @echo; echo "Rust crates:"; cargo tree --depth 1 || true
+    @du -sh target/ 2>/dev/null || echo "No Rust build artifacts"

@@ -1,0 +1,41 @@
+# tools/dev — environment setup and maintenance.
+
+set shell := ["bash", "-c"]
+
+# Set up the full development environment (Rust, Python, TypeScript, hooks)
+setup:
+    @echo "🚀 Setting up NGLab development environment..."
+    rustup update stable
+    rustup component add rustfmt clippy
+    cd python && uv sync
+    cd typescript && npm ci
+    pip install pre-commit || true
+    pre-commit install --install-hooks || echo "⚠️  pre-commit not available"
+    pre-commit install --hook-type post-commit || true
+    cargo install cargo-cache cargo-audit || true
+    @echo "✅ Setup complete! Run 'just test-all' to verify."
+
+# Update all dependencies (cargo, uv, npm, go)
+update:
+    @echo "⬆️  Updating dependencies..."
+    cargo update
+    cd python && uv sync --upgrade
+    cd typescript && npm update
+    cd go && go get -u ./... && go mod tidy || echo "⚠️  go module not initialised yet"
+
+# Install development tools
+install-tools:
+    cargo install cargo-watch cargo-tarpaulin cargo-cache cargo-audit cargo-flamegraph
+    pip install pre-commit pytest-cov py-spy pip-audit detect-secrets
+
+# Run pre-commit hooks manually
+pre-commit:
+    pre-commit run --all-files
+
+# Clean build artifacts
+clean:
+    @./scripts/cleanup.sh || echo "⚠️  scripts/cleanup.sh not found"
+
+# Deep clean (including node_modules)
+clean-all: clean
+    rm -rf typescript/node_modules

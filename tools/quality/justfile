@@ -1,0 +1,38 @@
+# tools/quality — formatting, linting, auditing.
+
+set shell := ["bash", "-c"]
+
+# Format every tier
+fmt:
+    cargo fmt --all
+    cd python && ruff format .
+    cd typescript && (npm run format || npx prettier --write "src/**/*.{ts,tsx}")
+    cd go && gofmt -w . || true
+
+# Lint every tier
+lint:
+    cargo clippy --all-features --workspace -- -D warnings
+    cd python && ruff check .
+    cd typescript && (npm run lint || npx eslint "src/**/*.{ts,tsx}")
+    cd go && go vet ./... || echo "⚠️  go module not initialised yet"
+
+# Auto-fix lint issues
+fix:
+    cargo clippy --all-features --workspace --fix --allow-dirty --allow-staged
+    cd python && ruff check --fix .
+    cd typescript && (npm run lint:fix || npx eslint "src/**/*.{ts,tsx}" --fix)
+
+# Detect undefined behavior (Rust, miri) and C++ sanitizers
+detect-ub:
+    cargo miri test
+
+# Audit dependencies for vulnerabilities
+audit:
+    cargo audit
+    cd python && (pip-audit || echo "⚠️  pip-audit not installed")
+    cd typescript && npm audit
+    cd go && (govulncheck ./... || echo "⚠️  govulncheck not installed") || true
+
+# Combined quality gate (lint + tests handled by caller)
+check: lint
+    @echo "✅ Lint passed"

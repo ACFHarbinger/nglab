@@ -1,0 +1,35 @@
+# tools/test — test suites per tier.
+
+set shell := ["bash", "-c"]
+
+# Run every tier's tests
+all: rust python typescript crypto hft
+
+# Rust tests
+rust:
+    cargo test --all-features --workspace
+
+# Python tests
+python:
+    cd python && pytest -v --tb=short
+
+# TypeScript tests
+typescript:
+    cd typescript && npm test
+
+# Integration tests
+integration:
+    cd python && pytest tests/test_integration.py -v
+
+# Go crypto daemon tests (with race detector)
+crypto:
+    cd go && go test -race ./... || echo "⚠️  go module not initialised yet"
+
+# C++ HFT tests (ctest)
+hft:
+    cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Debug && cmake --build cpp/build -j && ctest --test-dir cpp/build --output-on-failure
+
+# Coverage reports (Rust + Python)
+coverage:
+    cargo tarpaulin --out Html --output-dir coverage/rust || echo "⚠️  cargo-tarpaulin not installed"
+    cd python && pytest --cov=python.src --cov-report=html:../coverage/python

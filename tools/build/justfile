@@ -1,0 +1,30 @@
+# tools/build — compile every tier.
+
+set shell := ["bash", "-c"]
+
+# Build all components
+all: rust python typescript crypto hft
+
+# Build Rust (release)
+rust:
+    cargo build --release
+
+# Build the Python package (maturin)
+python:
+    cd python && maturin develop --release
+
+# Build the TypeScript/Tauri app
+typescript:
+    cd typescript && npm run build
+
+# Build the Tauri desktop app
+tauri:
+    cd typescript && npm run tauri build
+
+# Build the Go crypto daemon
+crypto:
+    cd go && go build ./... || echo "⚠️  go module not initialised yet"
+
+# Build the C++ HFT daemon (CMake)
+hft:
+    cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Release && cmake --build cpp/build -j
