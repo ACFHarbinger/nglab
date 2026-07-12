@@ -14,8 +14,8 @@ mod helper   "tools/helper/justfile"
 mod dev      "tools/dev/justfile"
 mod build    "tools/build/justfile"
 mod test     "tools/test/justfile"
-mod quality  "tools/quality/justfile"
-mod run      "tools/run/justfile"
+mod validation  "tools/validation/justfile"
+mod command  "tools/command/justfile"
 mod docs     "tools/docs/justfile"
 mod bench    "tools/bench/justfile"
 mod crypto   "tools/crypto/justfile"
@@ -75,27 +75,27 @@ test-all:
 coverage:
     @just test::coverage
 
-# --- Quality (→ tools/quality) ---
+# --- Validation (→ tools/validation) ---
 
 # Format all code
 fmt:
-    @just quality::fmt
+    @just validation::fmt
 
 # Lint all code
 lint:
-    @just quality::lint
+    @just validation::lint
 
 # Auto-fix lint issues
 fix:
-    @just quality::fix
+    @just validation::fix
 
 # Audit dependencies
 audit:
-    @just quality::audit
+    @just validation::audit
 
 # Detect undefined behavior (Rust miri)
 detect-ub:
-    @just quality::detect-ub
+    @just validation::detect-ub
 
 # Quality gate: lint + all tests
 check: lint test-all
@@ -105,30 +105,30 @@ check: lint test-all
 pre-push: fmt lint test-all
     @echo "✅ Ready to push!"
 
-# --- Run (→ tools/run) ---
+# --- Command (→ tools/command) ---
 # Note: `dev`, `docs`, and `bench` are sub-module names, so the root shorthands
 # below use distinct names (serve / docs-gen / bench-run). The full sets are
-# `just run::dev`, `just docs::all`, `just bench::rust`.
+# `just command::dev`, `just docs::all`, `just bench::rust`.
 
 # Start the Tauri dev server
 serve:
-    @just run::dev
+    @just command::dev
 
 # Train an RL agent
 train MODEL="ppo":
-    @just run::train {{MODEL}}
+    @just command::train {{MODEL}}
 
 # Evaluate a trained agent
 evaluate CHECKPOINT:
-    @just run::evaluate {{CHECKPOINT}}
+    @just command::evaluate {{CHECKPOINT}}
 
 # Start the Jupyter notebook server
 notebook:
-    @just run::notebook
+    @just command::notebook
 
 # Generate mock trading data
 seed-data assets="BTC,ETH,SOL" days="7":
-    @just run::seed-data {{assets}} {{days}}
+    @just command::seed-data {{assets}} {{days}}
 
 # --- Docs & bench ---
 

@@ -1,4 +1,4 @@
-# tools/quality — formatting, linting, auditing.
+# tools/validation — formatting, linting, auditing.
 
 set shell := ["bash", "-c"]
 
