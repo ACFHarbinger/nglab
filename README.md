@@ -383,7 +383,7 @@ nglab/
 │   └── src-tauri/        # Rust backend for Tauri
 ├── android/              # 🤖 Android mobile app (Kotlin)
 │   └── src/              # App logic and UI
-├── deploy/               # 🚀 Deployment configs
+├── infrastructure/       # 🚀 Deployment configs
 │   ├── nginx/            # Nginx (Reverse Proxy)
 │   ├── k8s/              # Kubernetes (Overlays: dev, staging, prod)
 │   └── helm/             # Helm charts (Chart.yaml, values.yaml)
