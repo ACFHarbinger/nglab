@@ -1,4 +1,4 @@
-#include "nglab_hft/shm_metrics.hpp"
+#include "shm_metrics.hpp"
 
 #include <fcntl.h>     // shm_open, O_*
 #include <sys/mman.h>  // mmap, munmap, shm_unlink

@@ -13,7 +13,7 @@ memory** for zero-copy, asynchronous reading by the Rust backend.
 ```
 cpp/
 ├── CMakeLists.txt              # module env file (C++20, -O3 -march=native)
-├── include/nglab_hft/
+├── include/
 │   ├── order_book.hpp          # DOD (struct-of-arrays) order book
 │   └── shm_metrics.hpp         # shm_open/mmap seqlock metrics bridge
 ├── src/{order_book,shm_metrics,main}.cpp

@@ -1,7 +1,7 @@
 // Self-contained tests for the HFT core (no external framework, so ctest runs
 // offline). Returns non-zero on the first failure.
-#include "nglab_hft/order_book.hpp"
-#include "nglab_hft/shm_metrics.hpp"
+#include "order_book.hpp"
+#include "shm_metrics.hpp"
 
 #include <cstdio>
 #include <cstdlib>

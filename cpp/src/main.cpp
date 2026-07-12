@@ -9,8 +9,8 @@
 //   hft_daemon [--shm=/nglab_hft_metrics] [--iters=N] [--spin]
 //     --iters=N   publish N metric snapshots then exit (default 100)
 //     --spin      busy-spin forever (real hot-path mode; core-pin externally)
-#include "nglab_hft/order_book.hpp"
-#include "nglab_hft/shm_metrics.hpp"
+#include "order_book.hpp"
+#include "shm_metrics.hpp"
 
 #include <atomic>
 #include <chrono>
