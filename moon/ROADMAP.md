@@ -21,6 +21,7 @@ NGLab is a **polyglot trading architecture**. Each tier has a dedicated roadmap:
 | [Strategy Brain — Python](roadmaps/strategy_python.md) | Offline / Analytical (**Python**) | AI/ML models, quant strategies, prediction-weight export |
 | [Control Panel — TypeScript](roadmaps/frontend_typescript.md) | UI (**TypeScript**) | Thin consumer of data streams + execution triggers |
 | [Universal Schema — Protobuf](roadmaps/schema_protobuf.md) | Cross-boundary | `Order`/`Position`/`Tick` schemas, codegen for TS/Rust/Go/C++ |
+| [Code Quality & Human Understanding](roadmaps/code_quality.md) | Cross-cutting | Docs, naming, architecture cleanup, DX, testing, coverage targets |
 
 See [`ARCHITECTURE.md`](../docs/ARCHITECTURE.md) for the tier diagram and IPC boundaries.
 

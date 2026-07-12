@@ -13,7 +13,6 @@ Central index for NGLab's documentation. The master roadmap and per-module roadm
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common issues and diagnostics |
 | [TUTORIAL.md](TUTORIAL.md) | Developer encyclopedia — per-module deep dives |
 | [DEPENDENCIES.md](DEPENDENCIES.md) | Backend, frontend, and ML dependency inventory |
-| [IMPROVEMENT_GUIDE.md](IMPROVEMENT_GUIDE.md) | Refactoring and improvement playbook |
 | [CHANGELOG.md](CHANGELOG.md) | Release history (Keep a Changelog) |
 
 ## Architecture Decision Records (ADRs)
