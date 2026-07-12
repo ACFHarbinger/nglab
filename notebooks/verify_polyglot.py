@@ -1,3 +1,4 @@
+import os
 import glob
 
 import nbformat
@@ -36,4 +37,4 @@ def verify_notebooks(pattern):
 
 
 if __name__ == "__main__":
-    verify_notebooks("/home/pkhunter/Repositories/nglab/notebooks/*.ipynb")
+    verify_notebooks(os.path.expanduser("~/Repositories/nglab/notebooks/*.ipynb"))

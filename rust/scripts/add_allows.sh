@@ -1,7 +1,7 @@
 #!/bin/bash
 # Add allow attributes for remaining complex clippy warnings
 
-cd /home/pkhunter/Repositories/nglab/rust
+cd ~/Repositories/nglab/rust
 
 # moon/es.rs - Add allows for complex range loops
 sed -i '110i\        #[allow(clippy::needless_range_loop)]' src/moon/es.rs

@@ -20,7 +20,7 @@ warnings.filterwarnings(
 )
 
 # Add project root to path
-# /home/pkhunter/Repositories/nglab/conftest.py -> .parent is /home/pkhunter/Repositories/nglab
+# ~/Repositories/nglab/conftest.py -> .parent is ~/Repositories/nglab
 project_root = Path(__file__).resolve().parent
 sys.path.insert(0, str(project_root))
 

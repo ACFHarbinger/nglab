@@ -95,7 +95,9 @@ impl CredentialManager {
 
     /// Gets the default path for the credentials database in `assets/secrets/credentials.db`.
     pub fn get_default_path() -> AuthResult<PathBuf> {
-        let mut path = PathBuf::from("/home/pkhunter/Repositories/nglab");
+        let home = std::env::var("HOME").map_err(|e| AuthError::DatabaseError(e.to_string()))?;
+        let mut path = PathBuf::from(home);
+        path.push("Repositories/nglab");
         path.push("assets");
         path.push("secrets");
 
