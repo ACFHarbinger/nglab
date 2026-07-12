@@ -18,7 +18,8 @@ Central index for NGLab's documentation. The master roadmap and per-module roadm
 
 ## Architecture Decision Records (ADRs)
 
-Numbered ADRs (`0001`–`0012`, plus [`template.md`](template.md)) record the key technology choices —
+Numbered ADRs live in [`adr/`](adr/) (`0001`–`0012`; new ADRs start from [`template.md`](template.md))
+and record the key technology choices —
 Rust for simulation, PyO3 bindings, Tauri frontend, Gymnasium interface, SQLCipher, OpenTelemetry,
 and more.
 

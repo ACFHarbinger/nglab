@@ -1,0 +1,55 @@
+name: ✨ Feature Request
+description: Propose a new capability, respecting the polyglot language boundaries
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: NGLab enforces language boundaries. Crypto/exchange/concurrent-feed work is
+        **Go**; ultra-low-latency/HFT-venue work is **C++**; prediction markets + EVM stay **Rust**;
+        AI/ML stays **Python** (offline); the UI stays **TypeScript** (thin). See
+        [moon/ROADMAP.md](../../moon/ROADMAP.md).
+
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Target tier / language
+      options:
+        - Crypto Daemon (Go)
+        - HFT Native Loop (C++)
+        - Core Hub (Rust)
+        - Strategy Brain (Python)
+        - Control Panel (TypeScript)
+        - Universal Schema (Protobuf)
+        - Tooling / docs
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Note which module roadmap this extends (moon/roadmaps/).
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Boundary check
+      options:
+        - label: This proposal respects the language mandate for its tier (Go crypto / C++ HFT / Rust core / Python offline / TS thin).
+          required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

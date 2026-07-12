@@ -1,0 +1,61 @@
+name: 🐛 Bug Report
+description: Report a defect in NGLab (structured for humans and coding agents)
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. NGLab is a polyglot stack — telling us which tier is affected
+        speeds up triage a lot.
+
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Affected tier
+      description: Which part of the architecture?
+      options:
+        - Core Hub (Rust / Tauri)
+        - Crypto Daemon (Go)
+        - HFT Native Loop (C++)
+        - Strategy Brain (Python / ML)
+        - Control Panel (TypeScript / React)
+        - Universal Schema (Protobuf)
+        - IPC bridge (loopback / shared memory)
+        - Build / tooling (just, cmake, cargo, uv)
+        - Other / unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Expected vs actual behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Minimal steps / commands to reproduce.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, CPU, GPU/CUDA, and toolchain versions (rustc, go, c++/cmake, python, node).
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Backend logs, panics, or IPC errors (sanitize secrets).
+      render: shell

@@ -172,7 +172,7 @@ Start here! We have expanded our documentation to cover every aspect of the syst
 | **[ARCHITECTURE.md](docs/ARCHITECTURE.md)**       | **The System Blueprint.** High-level design, data flow diagrams, system boundaries, and deployment topology.                     | Architects, DevOps       |
 | **[DEVELOPMENT.md](docs/DEVELOPMENT.md)**         | **The Setup Guide.** IDE configuration, environment variables, local development, profiling, and debugging.                      | New Contributors         |
 | **[TESTING.md](docs/TESTING.md)**                 | **The Quality Guide.** Testing philosophy, coverage requirements, mocking strategies, and CI/CD integration.                     | All Engineers            |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)**       | **The Developer Handbook.** Code style, PR process, RFC workflow, and release procedures.                                        | Contributors             |
+| **[CONTRIBUTING.md](git/CONTRIBUTING.md)**       | **The Developer Handbook.** Code style, PR process, RFC workflow, and release procedures.                                        | Contributors             |
 | **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | **The Field Repair Manual.** Common issues, diagnostic steps, GPU/CUDA debugging, and ML troubleshooting.                        | Everyone                 |
 | **[ROADMAP.md](moon/ROADMAP.md)**                 | **The Roadmap.** Active tasks, feature requests, and the long-term vision for the platform.                                      | Project Managers         |
 | **[DEPENDENCIES.md](docs/DEPENDENCIES.md)**       | **The Supply Chain.** Comprehensive list of backend, frontend, and ML dependencies.                                              | All Engineers            |
@@ -552,7 +552,7 @@ bash scripts/cleanup.sh
 
 ## Contributing
 
-We welcome contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+We welcome contributions! Please read our [CONTRIBUTING.md](git/CONTRIBUTING.md) for guidelines on:
 
 - Code style and linting
 - Pull request process

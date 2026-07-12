@@ -2282,7 +2282,7 @@ This matrix shows which Python components call which Rust components:
 - [TESTING.md](TESTING.md) - Testing strategy
 - [TUTORIAL.md](TUTORIAL.md) - Developer encyclopedia
 - [AGENTS.md](AGENTS.md) - Agent taxonomy and policies
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [CONTRIBUTING.md](../git/CONTRIBUTING.md) - Contribution guidelines
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues and fixes
 - [ROADMAP.md](../moon/ROADMAP.md) - Development roadmap
 - [README.md](../README.md) - Getting started
