@@ -387,6 +387,12 @@ nglab/
 │   ├── nginx/            # Nginx (Reverse Proxy)
 │   ├── k8s/              # Kubernetes (Overlays: dev, staging, prod)
 │   └── helm/             # Helm charts (Chart.yaml, values.yaml)
+├── docker/               # 🐳 Docker files
+│   ├── Dockerfile        # Development image
+│   ├── Dockerfile.gpu    # GPU/CUDA image
+│   ├── Dockerfile.prod   # Production image
+│   ├── docker-compose.yml
+│   └── docker-compose.prod.yml
 ├── scripts/              # 🛠️ Utility scripts
 └── .github/              # CI/CD workflows
 ```
@@ -447,7 +453,7 @@ rm -rf env/.wsr
 
 ```bash
 # Build the image
-docker build -f Dockerfile.prod -t nglab:latest .
+docker build -f docker/Dockerfile.prod -t nglab:latest .
 
 # Run the container
 docker run --gpus all -p 8080:8080 nglab:latest
