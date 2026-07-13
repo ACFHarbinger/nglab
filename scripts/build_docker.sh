@@ -14,13 +14,13 @@ if docker buildx version >/dev/null 2>&1; then
       --load \
       --progress=plain \
       -t nglab:debug \
-      -f Dockerfile.prod .
+      -f docker/Dockerfile.prod .
 else
     echo "Using legacy Docker build (BuildKit enabled)..."
     DOCKER_BUILDKIT=1 docker build \
       --progress=plain \
       -t nglab:debug \
-      -f Dockerfile.prod .
+      -f docker/Dockerfile.prod .
 fi
 
 # 3. Test if the module is importable (Verification)

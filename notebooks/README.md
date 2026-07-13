@@ -98,7 +98,7 @@ print(torch.cuda.is_available())  # Should be True
 
 ## 🤝 Contributing
 
-Found an issue or want to improve a notebook? See [CONTRIBUTING.md](../CONTRIBUTING.md)
+Found an issue or want to improve a notebook? See [CONTRIBUTING.md](../git/CONTRIBUTING.md)
 
 ---
 
