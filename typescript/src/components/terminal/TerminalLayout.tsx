@@ -48,8 +48,9 @@ import { PortfolioAllocation } from "../portfolio/PortfolioAllocation";
 import { TrainingDashboard } from "../training/TrainingDashboard";
 import { usePaperTrading } from "../../hooks/usePaperTrading";
 import { PaperTradingDashboard } from "./PaperTradingDashboard";
+import { SettingsView } from "../settings/SettingsView";
 
-type Tab = "Trading" | "Analytics" | "Strategy" | "Backtest" | "Portfolio" | "Training" | "Paper";
+type Tab = "Trading" | "Analytics" | "Strategy" | "Backtest" | "Portfolio" | "Training" | "Paper" | "Settings";
 
 // Mock Data Generators
 const generateMockMarkets = () => [
@@ -651,6 +652,7 @@ export function TerminalLayout({
           <TabButton active={activeTab === "Portfolio"} onClick={() => setActiveTab("Portfolio")} label="Portfolio" />
           <TabButton active={activeTab === "Training"} onClick={() => setActiveTab("Training")} label="Training Pipeline" />
           <TabButton active={activeTab === "Paper"} onClick={() => setActiveTab("Paper")} label="Paper Trading" />
+          <TabButton active={activeTab === "Settings"} onClick={() => setActiveTab("Settings")} label="Settings" />
         </div>
 
         {/* Content Area */}
@@ -711,6 +713,12 @@ export function TerminalLayout({
           {activeTab === "Paper" && (
             <div className="absolute inset-0 z-20 w-full h-full bg-slate-950">
               <PaperTradingDashboard />
+            </div>
+          )}
+
+          {activeTab === "Settings" && (
+            <div className="absolute inset-0 z-20 w-full h-full bg-slate-950 overflow-y-auto">
+              <SettingsView />
             </div>
           )}
         </div>

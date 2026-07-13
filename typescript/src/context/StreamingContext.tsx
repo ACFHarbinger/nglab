@@ -19,6 +19,20 @@ import {
 const STORAGE_KEY = "nglab-global-streaming-enabled";
 
 /**
+ * Health statistics for the active stream.
+ */
+export interface StreamingStats {
+  /** Round-trip latency in milliseconds */
+  latencyMs: number;
+  /** Messages received per second */
+  msgsPerSec: number;
+  /** Connection status */
+  status: "connecting" | "connected" | "retrying" | "idle";
+  /** Human-readable status message */
+  statusMessage: string;
+}
+
+/**
  * Shape of the streaming context value.
  */
 export interface StreamingContextValue {
@@ -30,6 +44,10 @@ export interface StreamingContextValue {
   isLoggedIn: boolean;
   /** Setter for the login status */
   setIsLoggedIn: (isLoggedIn: boolean) => void;
+  /** Live health statistics for the stream */
+  stats: StreamingStats;
+  /** Setter for streaming stats */
+  setStats: (stats: StreamingStats | ((prev: StreamingStats) => StreamingStats)) => void;
 }
 
 /**
@@ -76,6 +94,13 @@ export function StreamingProvider({ children }: StreamingProviderProps) {
 
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
+  const [stats, setStats] = useState<StreamingStats>({
+    latencyMs: 0,
+    msgsPerSec: 0,
+    status: "idle",
+    statusMessage: "Ready to stream",
+  });
+
   // Persist to localStorage whenever the value changes
   useEffect(() => {
     try {
@@ -96,12 +121,15 @@ export function StreamingProvider({ children }: StreamingProviderProps) {
       setGlobalStreamingEnabled,
       isLoggedIn,
       setIsLoggedIn,
+      stats,
+      setStats,
     }),
     [
       isGlobalStreamingEnabled,
       setGlobalStreamingEnabled,
       isLoggedIn,
       setIsLoggedIn,
+      stats,
     ],
   );
 

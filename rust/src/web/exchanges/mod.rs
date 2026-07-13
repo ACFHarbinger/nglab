@@ -104,5 +104,7 @@ pub trait Exchange: Send + Sync {
 }
 
 pub mod binance;
+pub mod deribit;
+pub mod kraken;
 pub mod manager;
 pub mod polymarket_adapter;

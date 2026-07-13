@@ -57,148 +57,183 @@ pub async fn resolve_polymarket_token_ids(
     Ok((token_ids, metadata))
 }
 
-/// Runs the background loop for streaming prices from Polymarket.
+/// Events emitted by the streaming loop.
+#[derive(Serialize, Clone, Debug)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum StreamEvent {
+    /// New price update
+    Data { asset_id: String, price: f64 },
+    /// Periodic health/latency update
+    Health { latency_ms: u64, msgs_per_sec: f64 },
+    /// Status transition (connecting, connected, retrying)
+    Status { status: String, message: String },
+}
+
+/// Runs the background loop for streaming prices from Polymarket with reconnection support.
 pub async fn stream_polymarket_prices_loop<F>(
     token_ids: Vec<String>,
     ws_running: Arc<AtomicBool>,
-    on_update: F,
+    on_event: F,
 ) where
-    F: Fn(PolymarketPriceUpdate) + Send + Sync + 'static,
+    F: Fn(StreamEvent) + Send + Sync + 'static,
 {
     let url = "wss://ws-subscriptions-clob.polymarket.com/ws/market";
+    let mut retry_count = 0;
+    let max_backoff = 30; // seconds
+    let shared_on_event = Arc::new(on_event);
 
-    match connect_async(url).await {
-        Ok((ws_stream, _)) => {
-            eprintln!("✅ Connected to Polymarket WebSocket");
-            let (mut write, mut read) = ws_stream.split();
-            let (tx, mut rx) = tokio::sync::mpsc::channel::<Message>(32);
-            let send_running = ws_running.clone();
+    while ws_running.load(Ordering::SeqCst) {
+        if retry_count > 0 {
+            let backoff = (2u64.pow(retry_count - 1)).min(max_backoff);
+            (shared_on_event)(StreamEvent::Status {
+                status: "retrying".to_string(),
+                message: format!("Connection lost. Retrying in {}s...", backoff),
+            });
+            tokio::time::sleep(tokio::time::Duration::from_secs(backoff)).await;
+        }
 
-            // Sender Task
-            tokio::spawn(async move {
-                while send_running.load(Ordering::SeqCst) {
-                    if let Some(msg) = rx.recv().await {
-                        if let Err(e) = write.send(msg).await {
-                            eprintln!("❌ WS Send Error: {}", e);
+        (shared_on_event)(StreamEvent::Status {
+            status: "connecting".to_string(),
+            message: "Connecting to Polymarket...".to_string(),
+        });
+
+        match connect_async(url).await {
+            Ok((ws_stream, _)) => {
+                eprintln!("✅ Connected to Polymarket WebSocket");
+                (shared_on_event)(StreamEvent::Status {
+                    status: "connected".to_string(),
+                    message: "Streaming active".to_string(),
+                });
+                retry_count = 0;
+
+                let (mut write, mut read) = ws_stream.split();
+                let (tx, mut rx) = tokio::sync::mpsc::channel::<Message>(32);
+                let sender_running = ws_running.clone();
+
+                // Health/Latency state
+                let last_pong = Arc::new(tokio::sync::Mutex::new(std::time::Instant::now()));
+                let msg_count = Arc::new(std::sync::atomic::AtomicU64::new(0));
+
+                // Sender Task
+                tokio::spawn(async move {
+                    while sender_running.load(Ordering::SeqCst) {
+                        if let Some(msg) = rx.recv().await {
+                            if let Err(e) = write.send(msg).await {
+                                eprintln!("❌ WS Send Error: {}", e);
+                                break;
+                            }
+                        }
+                    }
+                });
+
+                // 1. Subscribe
+                let subscribe_msg = serde_json::json!({
+                    "type": "market",
+                    "assets_ids": token_ids,
+                });
+                let _ = tx
+                    .send(Message::Text(subscribe_msg.to_string().into()))
+                    .await;
+
+                // 2. Health Monitor Task
+                let health_tx = tx.clone();
+                let health_running = ws_running.clone();
+                let health_pong = last_pong.clone();
+                let health_count = msg_count.clone();
+                let health_on_event = shared_on_event.clone();
+
+                tokio::spawn(async move {
+                    let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(5));
+                    while health_running.load(Ordering::SeqCst) {
+                        interval.tick().await;
+
+                        // Send PING
+                        if (health_tx.send(Message::Ping(Vec::new().into())).await).is_err() {
                             break;
                         }
+
+                        // Calculate and Emit Health
+                        let count = health_count.swap(0, Ordering::SeqCst);
+                        let latency = health_pong.lock().await.elapsed().as_millis() as u64;
+
+                        (health_on_event)(StreamEvent::Health {
+                            latency_ms: if latency > 5000 { 0 } else { latency }, // simplistic ping/pong diff
+                            msgs_per_sec: count as f64 / 5.0,
+                        });
                     }
-                }
-                send_running.store(false, Ordering::SeqCst);
-            });
+                });
 
-            // 1. Subscribe
-            let subscribe_msg = serde_json::json!({
-                "type": "market",
-                "assets_ids": token_ids,
-            });
-            eprintln!("📡 Sending subscription: {}", subscribe_msg);
-            let _ = tx
-                .send(Message::Text(subscribe_msg.to_string().into()))
-                .await;
-
-            // 2. Latency/PING task
-            let ping_tx = tx.clone();
-            let ping_running = ws_running.clone();
-            tokio::spawn(async move {
-                while ping_running.load(Ordering::SeqCst) {
-                    tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
-                    if (ping_tx.send(Message::Text("PING".into())).await).is_err() {
-                        break;
-                    }
-                }
-            });
-
-            // 3. Listen loop
-            while ws_running.load(Ordering::SeqCst) {
-                if let Some(Ok(msg)) = read.next().await {
-                    match msg {
-                        Message::Text(text) => {
-                            if text != "PONG" {
-                                eprintln!("📨 Received WS message: {}", text);
-                            }
-
-                            if let Ok(value) = serde_json::from_str::<serde_json::Value>(&text) {
-                                let mut handled = false;
-
-                                // Format 0: Official Polymarket price_change event
-                                if let Some("price_change") =
-                                    value.get("event_type").and_then(|v| v.as_str())
-                                {
-                                    if let Some(price_changes) =
-                                        value.get("price_changes").and_then(|v| v.as_array())
+                // 3. Listen loop
+                let loop_on_event = shared_on_event.clone();
+                while ws_running.load(Ordering::SeqCst) {
+                    match read.next().await {
+                        Some(Ok(msg)) => {
+                            match msg {
+                                Message::Text(text) => {
+                                    msg_count.fetch_add(1, Ordering::SeqCst);
+                                    if let Ok(value) =
+                                        serde_json::from_str::<serde_json::Value>(&text)
                                     {
-                                        for change in price_changes {
-                                            let bid = parse_price_value(change.get("best_bid"));
-                                            let ask = parse_price_value(change.get("best_ask"));
-                                            let price_raw = parse_price_value(change.get("price"));
-
-                                            let price = match (bid, ask) {
-                                                (Some(b), Some(a)) => Some((b + a) / 2.0),
-                                                _ => price_raw,
-                                            };
-
-                                            if let (Some(p), Some(asset_id)) = (
-                                                price,
-                                                change.get("asset_id").and_then(|v| v.as_str()),
-                                            ) {
-                                                on_update(PolymarketPriceUpdate {
-                                                    asset_id: asset_id.to_string(),
-                                                    price: p,
-                                                });
-                                                handled = true;
+                                        let mut handled = false;
+                                        if let Some("price_change") =
+                                            value.get("event_type").and_then(|v| v.as_str())
+                                        {
+                                            if let Some(price_changes) = value
+                                                .get("price_changes")
+                                                .and_then(|v| v.as_array())
+                                            {
+                                                for change in price_changes {
+                                                    let bid =
+                                                        parse_price_value(change.get("best_bid"));
+                                                    let ask =
+                                                        parse_price_value(change.get("best_ask"));
+                                                    let price_raw =
+                                                        parse_price_value(change.get("price"));
+                                                    let price = match (bid, ask) {
+                                                        (Some(b), Some(a)) => Some((b + a) / 2.0),
+                                                        _ => price_raw,
+                                                    };
+                                                    if let (Some(p), Some(asset_id)) = (
+                                                        price,
+                                                        change
+                                                            .get("asset_id")
+                                                            .and_then(|v| v.as_str()),
+                                                    ) {
+                                                        (loop_on_event)(StreamEvent::Data {
+                                                            asset_id: asset_id.to_string(),
+                                                            price: p,
+                                                        });
+                                                        handled = true;
+                                                    }
+                                                }
                                             }
+                                        }
+                                        if !handled && text != "[]" && text != "PONG" {
+                                            // Handle other data formats or fallback
                                         }
                                     }
                                 }
-
-                                // Fallback Format 1: Generic array/object
-                                if !handled {
-                                    if let Some(arr) = value.as_array() {
-                                        for item in arr {
-                                            if let (Some(asset_id), Some(price)) = (
-                                                item.get("asset_id").and_then(|v| v.as_str()),
-                                                parse_price_value(item.get("price")),
-                                            ) {
-                                                on_update(PolymarketPriceUpdate {
-                                                    asset_id: asset_id.to_string(),
-                                                    price,
-                                                });
-                                                handled = true;
-                                            }
-                                        }
-                                    } else if let (Some(asset_id), Some(price)) = (
-                                        value.get("asset_id").and_then(|v| v.as_str()),
-                                        parse_price_value(value.get("price")),
-                                    ) {
-                                        on_update(PolymarketPriceUpdate {
-                                            asset_id: asset_id.to_string(),
-                                            price,
-                                        });
-                                        handled = true;
-                                    }
+                                Message::Pong(_) => {
+                                    *last_pong.lock().await = std::time::Instant::now();
                                 }
-
-                                if !handled && text != "[]" && text != "PONG" {
-                                    eprintln!("⚠️ Unhandled message format: {}", text);
-                                }
+                                Message::Close(_) => break,
+                                _ => {}
                             }
                         }
-                        Message::Ping(data) => {
-                            let _ = tx.send(Message::Pong(data)).await;
-                        }
-                        Message::Close(_) => break,
-                        _ => {}
+                        _ => break, // Connection dropped
                     }
-                } else {
+                }
+
+                // If we reach here, connection was lost or closed
+                if !ws_running.load(Ordering::SeqCst) {
                     break;
                 }
+                retry_count += 1;
             }
-            ws_running.store(false, Ordering::SeqCst);
-        }
-        Err(e) => {
-            eprintln!("❌ Failed to connect to Polymarket WS: {}", e);
-            ws_running.store(false, Ordering::SeqCst);
+            Err(e) => {
+                eprintln!("❌ Connection error: {}", e);
+                retry_count += 1;
+            }
         }
     }
 }

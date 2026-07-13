@@ -3,6 +3,7 @@
  */
 
 pub mod auth;
+pub mod datasets;
 pub mod exchanges;
 pub mod health;
 pub mod inference;

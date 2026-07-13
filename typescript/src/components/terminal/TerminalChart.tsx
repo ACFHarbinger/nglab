@@ -50,6 +50,15 @@ export function TerminalChart({
   // Keep track of indicator series to update/remove them
   const indicatorSeriesRefs = useRef<Map<string, ISeriesApi<"Line"> | ISeriesApi<"Area">>>(new Map());
 
+  // Early return for empty data to avoid undefined errors
+  if (!data || data.length === 0) {
+    return (
+      <div className="w-full h-full min-h-[300px] flex items-center justify-center text-slate-500">
+        Loading chart data...
+      </div>
+    );
+  }
+
   // Initialize Chart
   useEffect(() => {
     if (!chartContainerRef.current) return;

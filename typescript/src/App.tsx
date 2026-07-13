@@ -8,6 +8,11 @@ import PredictionTab from "./components/PredictionTab";
 import TrainingTab from "./components/TrainingTab";
 import NewsTab from "./components/NewsTab";
 import VaultTab from "./components/VaultTab";
+import ModelRegistryTab from "./components/models/ModelRegistryTab";
+import FeaturesTab from "./components/features/FeaturesTab";
+import DataManagerTab from "./components/data-manager/DataManagerTab";
+import PortfolioTab from "./components/portfolio/PortfolioTab";
+import AlternativeDataTab from "./components/alternative-data/AlternativeDataTab";
 import { AccountTab } from "./components/AccountTab";
 import { LoginModal } from "./components/LoginModal";
 import { FavoritesTab } from "./components/FavoritesTab";
@@ -22,6 +27,7 @@ import {
   LineChart,
   Download,
   Brain,
+  Database,
   Calculator,
   ArrowUpRight,
   LayoutDashboard,
@@ -35,6 +41,11 @@ import {
   Newspaper,
   ShieldCheck,
   AlertCircle,
+  Wand2,
+  HardDrive,
+  Briefcase,
+  Compass,
+  Radio,
 } from "lucide-react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
@@ -42,6 +53,7 @@ import { usePolymarket } from "./hooks/usePolymarket";
 import clsx from "clsx";
 import { TerminalLayout } from "./components/terminal/TerminalLayout";
 import { DashboardOverview } from "./components/dashboard/DashboardOverview";
+import { StreamStatusIndicator } from "./components/streaming/StreamStatusIndicator";
 
 /**
  * The root component of the NGLab application.
@@ -69,10 +81,17 @@ function App() {
     | "prediction"
     | "pricing"
     | "terminal"
+    | "terminal"
     | "training"
+    | "models"
+    | "features"
+    | "portfolio"
+    | "explorer"
+    | "altdata"
     | "news"
     | "vault"
     | "account"
+    | "data"
     | "favorites"
   >("dashboard");
 
@@ -223,15 +242,37 @@ function App() {
             </button>
 
             <button
-              onClick={() => setActiveTab("analysis")}
+              onClick={() => setActiveTab("portfolio")}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-                activeTab === "analysis"
+                activeTab === "portfolio"
                   ? "text-white bg-slate-800"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/50",
               )}
             >
-              <ShoppingCart size={16} /> Positions
+              <Briefcase size={16} /> Portfolio
+            </button>
+            <button
+              onClick={() => setActiveTab("explorer")}
+              className={clsx(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                activeTab === "explorer"
+                  ? "text-white bg-slate-800"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
+              )}
+            >
+              <Compass size={16} /> Explorer
+            </button>
+            <button
+              onClick={() => setActiveTab("altdata")}
+              className={clsx(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                activeTab === "altdata"
+                  ? "text-white bg-slate-800"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50",
+              )}
+            >
+              <Radio size={16} /> Alt Data
             </button>
             <button
               onClick={() => setActiveTab("favorites")}
@@ -300,6 +341,28 @@ function App() {
               <Calculator size={16} /> Pricing
             </button>
             <button
+                onClick={() => setActiveTab("models")}
+                className={clsx(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                activeTab === "models"
+                    ? "text-white bg-slate-800"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/50",
+                )}
+            >
+                <Database size={16} /> Models
+            </button>
+            <button
+                onClick={() => setActiveTab("features")}
+                className={clsx(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                activeTab === "features"
+                    ? "text-white bg-slate-800"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/50",
+                )}
+            >
+                <Wand2 size={16} /> Features
+            </button>
+            <button
               onClick={() => setActiveTab("training")}
               className={clsx(
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
@@ -309,6 +372,17 @@ function App() {
               )}
             >
               <GraduationCap size={16} /> Training
+            </button>
+            <button
+                onClick={() => setActiveTab("data")}
+                className={clsx(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                activeTab === "data"
+                    ? "text-white bg-slate-800"
+                    : "text-slate-400 hover:text-white hover:bg-slate-800/50",
+                )}
+            >
+                <HardDrive size={16} /> Data
             </button>
             <button
               onClick={() => setActiveTab("news")}
@@ -336,7 +410,9 @@ function App() {
         </div>
 
         {/* Right: Search + Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-6">
+          <StreamStatusIndicator />
+          
           {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -544,12 +620,16 @@ function App() {
               setActiveMarket={setActiveMarket}
             />
           </div>
-        ) : activeTab === "analysis" ? (
+        ) : activeTab === "portfolio" ? (
+          <PortfolioTab />
+        ) : activeTab === "explorer" ? (
           <AnalysisTab
             livePrices={livePrices}
             isStreaming={isStreaming}
             activeMarket={activeMarket}
           />
+        ) : activeTab === "altdata" ? (
+          <AlternativeDataTab />
         ) : activeTab === "prediction" ? (
           <PredictionTab
             livePrices={livePrices}
@@ -566,6 +646,12 @@ function App() {
             favorites={favorites}
             toggleFavorite={toggleFavorite}
           />
+        ) : activeTab === "data" ? (
+          <DataManagerTab />
+        ) : activeTab === "models" ? (
+          <ModelRegistryTab />
+        ) : activeTab === "features" ? (
+          <FeaturesTab />
         ) : activeTab === "training" ? (
           <TrainingTab />
         ) : activeTab === "news" ? (

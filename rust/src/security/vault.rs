@@ -81,7 +81,9 @@ impl VaultManager {
     pub fn get_default_path() -> Result<PathBuf, String> {
         // Relocate to assets/secrets in the project root
         // Using an absolute path for now as per project requirements
-        let mut path = PathBuf::from("/home/pkhunter/Repositories/nglab");
+        let home = std::env::var("HOME").map_err(|e| e.to_string())?;
+        let mut path = PathBuf::from(home);
+        path.push("Repositories/nglab");
         path.push("assets");
         path.push("secrets");
 

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { useStreamingGuard } from "./useStreamingGuard";
+import { useStreaming, StreamingStats } from "../context/StreamingContext";
 
 /**
  * @module hooks/usePolymarket
@@ -48,8 +48,9 @@ export function usePolymarket() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeMarket, setActiveMarket] = useState<MarketMetadata | null>(null);
 
-  // --- STREAMING GUARD: Get global streaming state ---
-  const { canStream, isGlobalStreamingEnabled } = useStreamingGuard();
+  // --- STREAMING GUARD: Get global streaming state and stats setter ---
+  const { isGlobalStreamingEnabled, isLoggedIn, setStats } = useStreaming();
+  const canStream = isGlobalStreamingEnabled && isLoggedIn;
 
   // Use a ref to track streaming state for stable callbacks
   const streamingRef = useRef(false);
@@ -65,10 +66,16 @@ export function usePolymarket() {
         .then(() => {
           setLivePrices({});
           setActiveMarket(null);
+          setStats({
+            latencyMs: 0,
+            msgsPerSec: 0,
+            status: "idle",
+            statusMessage: "Stream stopped",
+          });
         })
         .catch(console.error);
     }
-  }, [canStream]);
+  }, [canStream, setStats]);
 
   useEffect(() => {
     // --- STREAMING GUARD: Don't set up listener if streaming is gated ---
@@ -79,16 +86,29 @@ export function usePolymarket() {
     let unlisten: (() => void) | undefined;
 
     const setupListener = async () => {
-      console.log("📡 Setting up polymarket-price-update event listener...");
-      unlisten = await listen<{ asset_id: string; price: number }>(
-        "polymarket-price-update",
-        (event) => {
-          setLivePrices((prev) => ({
+      console.log("📡 Setting up polymarket-streaming-event listener...");
+      unlisten = await listen<any>("polymarket-streaming-event", (event) => {
+        const payload = event.payload;
+
+        if (payload.type === "data") {
+          setLivePrices((prev: Record<string, number>) => ({
             ...prev,
-            [event.payload.asset_id]: event.payload.price,
+            [payload.asset_id]: payload.price,
           }));
-        },
-      );
+        } else if (payload.type === "health") {
+          setStats((prev: StreamingStats) => ({
+            ...prev,
+            latencyMs: payload.latency_ms,
+            msgsPerSec: payload.msgs_per_sec,
+          }));
+        } else if (payload.type === "status") {
+          setStats((prev: StreamingStats) => ({
+            ...prev,
+            status: payload.status as any,
+            statusMessage: payload.message,
+          }));
+        }
+      });
       console.log("✓ Event listener setup complete");
     };
 
@@ -98,7 +118,7 @@ export function usePolymarket() {
       console.log("🔌 Cleaning up polymarket event listener");
       if (unlisten) unlisten();
     };
-  }, [canStream]);
+  }, [canStream, setStats]);
 
   const startStream = useCallback(
     async (marketSource: string, metadata?: MarketMetadata) => {

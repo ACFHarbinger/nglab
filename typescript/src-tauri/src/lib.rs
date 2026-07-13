@@ -13,8 +13,9 @@ use crate::commands::vault::VaultState;
 use crate::state::ArenaState;
 use nglab::simulation::gym::TradingEnv;
 use std::sync::atomic::AtomicBool;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex as StdMutex};
 use tauri::Manager;
+use tokio::sync::Mutex as TokioMutex;
 
 /**
  * Entry point for the Tauri application library.
@@ -28,10 +29,11 @@ pub fn run() {
     let env = TradingEnv::new(10000.0, 0.001, 30, 1000, false, Some(42));
 
     let state = ArenaState {
-        env: Mutex::new(env),
-        running: Mutex::new(false),
+        env: StdMutex::new(env),
+        running: StdMutex::new(false),
         ws_running: Arc::new(AtomicBool::new(false)),
         debug_mode: Arc::new(AtomicBool::new(false)),
+        active_model: StdMutex::new(None),
     };
 
     let paper_account = nglab::simulation::paper_trading::PaperAccount::load("paper_account.json")
@@ -43,10 +45,10 @@ pub fn run() {
         .manage(VaultState::default())
         .manage(commands::notifications::AlertState::default())
         .manage(state::PaperState {
-            account: Mutex::new(paper_account),
+            account: StdMutex::new(paper_account),
             active: Arc::new(AtomicBool::new(false)),
         })
-        .manage(Mutex::new(
+        .manage(TokioMutex::new(
             nglab::web::exchanges::manager::ExchangeManager::new(),
         ))
         .invoke_handler(tauri::generate_handler![
@@ -79,8 +81,12 @@ pub fn run() {
             commands::moon::run_prophet,
             commands::inference::list_trained_models,
             commands::inference::predict_trained_model,
+            commands::inference::set_active_model,
+            commands::inference::get_active_model,
             commands::inference::train_model,
             commands::inference::list_csv_columns,
+            commands::inference::get_model_details,
+            commands::inference::get_model_documentation,
             commands::auth::create_account,
             commands::auth::login,
             commands::auth::logout,
@@ -96,6 +102,7 @@ pub fn run() {
             commands::vault::remove_favorite,
             commands::vault::get_favorites,
             commands::integrations::save_polymarket_integration,
+            commands::integrations::save_exchange_integration,
             commands::integrations::list_integrations,
             commands::integrations::delete_integration,
             commands::integrations::get_trending_markets,
@@ -115,7 +122,10 @@ pub fn run() {
             commands::exchanges::get_active_exchange,
             commands::exchanges::set_active_exchange,
             commands::exchanges::search_exchange_markets,
-            commands::exchanges::get_exchange_market_data
+            commands::exchanges::get_exchange_market_data,
+            commands::exchanges::reconnect_exchanges,
+            commands::datasets::list_datasets,
+            commands::datasets::delete_dataset
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

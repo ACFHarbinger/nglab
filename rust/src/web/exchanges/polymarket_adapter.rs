@@ -110,12 +110,14 @@ impl Exchange for PolymarketAdapter {
         // In a real implementation we might want to return the handle.
         // But for the trait we'll just implement the loop.
 
-        stream_polymarket_prices_loop(symbols, running, move |update| {
-            on_update(super::PriceUpdate {
-                exchange: "Polymarket".to_string(),
-                symbol: update.asset_id,
-                price: update.price,
-            });
+        stream_polymarket_prices_loop(symbols, running, move |event| {
+            if let crate::web::streaming::StreamEvent::Data { asset_id, price } = event {
+                on_update(super::PriceUpdate {
+                    exchange: "Polymarket".to_string(),
+                    symbol: asset_id,
+                    price,
+                });
+            }
         })
         .await;
 

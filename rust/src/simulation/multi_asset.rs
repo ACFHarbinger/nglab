@@ -1,4 +1,10 @@
 use crate::errors::{ArenaError, ArenaResult};
+use rand::SeedableRng;
+use std::collections::HashMap;
+
+use crate::execution::AlgoManager;
+#[allow(unused_imports)]
+use crate::execution::{AlgoParams, AlgoType};
 use crate::simulation::gym::ActionType;
 use crate::simulation::orderbook::{OrderBook, Side, Trade};
 use crate::simulation::risk::{RiskManager, RiskStatus};
@@ -11,10 +17,6 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use rand::rngs::StdRng;
 use rand::Rng;
-use rand::SeedableRng;
-use std::collections::HashMap;
-
-use crate::execution::{AlgoManager, AlgoParams, AlgoType};
 
 /// Step response for multi-asset environments.
 pub struct MultiAssetStepResult {
@@ -646,7 +648,7 @@ mod tests {
         // NOTE: Currently AlgoManager does NOT bubble up trades to env positions/cash.
         // So checking env.positions won't work until we plug that gap.
         // For now, check the internal state of the algo (if possible) or just that it runs.
-        let executed_qty = env
+        let _executed_qty = env
             .algo_managers
             .get("BTC")
             .unwrap()

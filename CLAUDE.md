@@ -1,4 +1,5 @@
-# NGLab - Next Gen Laboratory
+[//]: # "Include the content from the master AGENTS file"
+[//]: # "Note: This is a pointer to the source of truth"
+[//]: # "Content from .agent/AGENTS.md"
 
-> [!IMPORTANT]
-> This documentation has been consolidated. Please refer to **[AGENTS.md](file:///home/pkhunter/Repositories/nglab/AGENTS.md)** for the primary developer guide, coding standards, and agent handbook.
+[Include .agent/AGENTS.md](.agent/AGENTS.md)

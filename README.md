@@ -6,7 +6,18 @@
 
 **A Comprehensive Multimodal Intelligence Framework for Quantitative Finance and Automated Gambling.**
 
+<a href="https://github.com/ACFHarbinger/nglab/actions/workflows/ci.yml"><img alt="CI Status" src="https://github.com/ACFHarbinger/nglab/actions/workflows/ci.yml/badge.svg"></a>
+<a href="https://codecov.io/gh/ACFHarbinger/nglab"><img alt="Codecov" src="https://codecov.io/gh/ACFHarbinger/nglab/branch/main/graph/badge.svg"></a>
+<img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
+<a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+<a href="https://github.com/astral-sh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json"></a>
+<br>
+<img alt="Python version" src="https://img.shields.io/badge/python-3.11-blue.svg">
+<img alt="Rust version" src="https://img.shields.io/badge/rust-1.80%2B-orange.svg">
+<img alt="Tauri version" src="https://img.shields.io/badge/Tauri-2.0-blue?logo=tauri&logoColor=white">
+<br>
 <a href="https://pytorch.org/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
+<a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL v3" src="https://img.shields.io/badge/License-AGPL_v3-blue.svg"></a>
 <a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/-Lightning-792ee5?logo=pytorchlightning&logoColor=white"></a>
 <a href="https://github.com/pytorch/rl"><img alt="base: TorchRL" src="https://img.shields.io/badge/base-TorchRL-red"></a>
 <a href="https://huggingface.co/transformers/"><img alt="Transformers" src="https://img.shields.io/badge/%F0%9F%A4%97%20Transformers-FFD21E"></a>
@@ -106,8 +117,17 @@
 <a href="https://www.sqlite.org/"><img alt="SQLite" src="https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white"></a>
 <a href="https://tokio.rs/"><img alt="Tokio" src="https://img.shields.io/badge/Tokio-Async-000000?logo=rust&logoColor=white"></a>
 <a href="https://serde.rs/"><img alt="Serde" src="https://img.shields.io/badge/Serde-Serialization-000000?logo=rust&logoColor=white"></a>
+
+</br>
+
 <a href="https://developer.nvidia.com/cuda-toolkit"><img alt="CUDA" src="https://img.shields.io/badge/CUDA-RTX_4080-76B900?logo=nvidia&logoColor=white"></a>
 <a href="https://developer.nvidia.com/cuda-toolkit"><img alt="CUDA" src="https://img.shields.io/badge/CUDA-RTX_3090ti-76B900?logo=nvidia&logoColor=white"></a>
+<a href="https://www.intel.com/"><img alt="Intel" src="https://img.shields.io/badge/Intel-0071C5?logo=intel&logoColor=white"></a>
+<a href="https://www.amd.com/"><img alt="AMD" src="https://img.shields.io/badge/AMD-ED1C24?logo=amd&logoColor=white"></a>
+<a href="https://www.apple.com/silicon/"><img alt="Apple Silicon" src="https://img.shields.io/badge/Apple_Silicon-000000?logo=apple&logoColor=white"></a>
+<a href="https://ubuntu.com/"><img alt="Ubuntu" src="https://img.shields.io/badge/Ubuntu-E95420?logo=ubuntu&logoColor=white"></a>
+<a href="https://kubuntu.org/"><img alt="Kubuntu" src="https://img.shields.io/badge/Kubuntu-0079C1?logo=kubuntu&logoColor=white"></a>
+<a href="https://www.microsoft.com/windows"><img alt="Windows" src="https://img.shields.io/badge/Windows-0078D6?logo=windows&logoColor=white"></a>
 
 </br>
 
@@ -144,35 +164,35 @@
 
 Start here! We have expanded our documentation to cover every aspect of the system.
 
-| Document | Description | Target Audience |
-| :--- | :--- | :--- |
-| **[TUTORIAL.md](TUTORIAL.md)** | **The Developer Encyclopedia.** Exhaustive deep dives into every module, code snippets, and implementation details. | Developers, Contributors |
-| **[Interactive Notebooks](notebooks/)** | **Hands-on Learning.** A series of 10 Jupyter notebooks covering architecture, RL training, and backtesting. | Everyone |
-| **[AGENTS.md](AGENTS.md)** | **The Strategy Handbook.** Classification of Agents (RL vs Heuristic), Policy Architectures (Mamba/CNN), and Observation Spaces. | Quants, Researchers |
-| **[ARCHITECTURE.md](ARCHITECTURE.md)** | **The System Blueprint.** High-level design, data flow diagrams, system boundaries, and deployment topology. | Architects, DevOps |
-| **[DEVELOPMENT.md](DEVELOPMENT.md)** | **The Setup Guide.** IDE configuration, environment variables, local development, profiling, and debugging. | New Contributors |
-| **[TESTING.md](TESTING.md)** | **The Quality Guide.** Testing philosophy, coverage requirements, mocking strategies, and CI/CD integration. | All Engineers |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)** | **The Developer Handbook.** Code style, PR process, RFC workflow, and release procedures. | Contributors |
-| **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | **The Field Repair Manual.** Common issues, diagnostic steps, GPU/CUDA debugging, and ML troubleshooting. | Everyone |
-| **[IMPROVEMENTS.md](IMPROVEMENTS.md)** | **The Roadmap.** Active tasks, feature requests, and the long-term vision for the platform. | Project Managers |
-
+| Document                                     | Description                                                                                                                      | Target Audience          |
+| :------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- | :----------------------- |
+| **[TUTORIAL.md](docs/TUTORIAL.md)**               | **The Developer Encyclopedia.** Exhaustive deep dives into every module, code snippets, and implementation details.              | Developers, Contributors |
+| **[Interactive Notebooks](notebooks/)**      | **Hands-on Learning.** A series of 10 Jupyter notebooks covering architecture, RL training, and backtesting.                     | Everyone                 |
+| **[AGENTS.md](AGENTS.md)**                   | **The Strategy Handbook.** Classification of Agents (RL vs Heuristic), Policy Architectures (Mamba/CNN), and Observation Spaces. | Quants, Researchers      |
+| **[ARCHITECTURE.md](docs/ARCHITECTURE.md)**       | **The System Blueprint.** High-level design, data flow diagrams, system boundaries, and deployment topology.                     | Architects, DevOps       |
+| **[DEVELOPMENT.md](docs/DEVELOPMENT.md)**         | **The Setup Guide.** IDE configuration, environment variables, local development, profiling, and debugging.                      | New Contributors         |
+| **[TESTING.md](docs/TESTING.md)**                 | **The Quality Guide.** Testing philosophy, coverage requirements, mocking strategies, and CI/CD integration.                     | All Engineers            |
+| **[CONTRIBUTING.md](git/CONTRIBUTING.md)**       | **The Developer Handbook.** Code style, PR process, RFC workflow, and release procedures.                                        | Contributors             |
+| **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | **The Field Repair Manual.** Common issues, diagnostic steps, GPU/CUDA debugging, and ML troubleshooting.                        | Everyone                 |
+| **[ROADMAP.md](moon/ROADMAP.md)**                 | **The Roadmap.** Active tasks, feature requests, and the long-term vision for the platform.                                      | Project Managers         |
+| **[DEPENDENCIES.md](docs/DEPENDENCIES.md)**       | **The Supply Chain.** Comprehensive list of backend, frontend, and ML dependencies.                                              | All Engineers            |
 
 ### 📓 Interactive Notebooks
 
 Experience NGLab hands-on through our curated tutorial series. Each notebook provides a deep dive into specific components with runnable code and real-time visualizations.
 
-| # | Topic | Key Concepts |
-|---|---|---|
-| 01 | [Quickstart Intro](notebooks/01_quickstart_introduction.ipynb) | Polyglot Architecture, Component Communication |
-| 02 | [Rust OrderBook](notebooks/02_rust_orderbook_basics.ipynb) | Matching Engine, Time-Price Priority, VaR |
-| 03 | [Trading Environment](notebooks/03_trading_environment.ipynb) | Gymnasium Interface, Step Lifecycle, Rewards |
-| 04 | [Forecasting](notebooks/04_time_series_forecasting.ipynb) | ARIMA, GARCH, RNN/Mamba Predictions |
-| 05 | [Deep Learning](notebooks/05_deep_learning_models.ipynb) | VAE Regime Detection, Dilated Convolutions |
-| 06 | [HPO Optimization](notebooks/06_hyperparameter_optimization.ipynb) | DEHB Algorithm, Successive Halving |
-| 07 | [RL Training](notebooks/07_reinforcement_learning_training.ipynb) | PPO Algorithm, Policy/Value Networks |
-| 08 | [Multi-Agent](notebooks/08_multi_agent_simulation.ipynb) | Strategic Emergence, Competitive Game Theory |
-| 09 | [Backtesting](notebooks/09_backtesting_framework.ipynb) | Slippage, Transaction Costs, Performance Metrics |
-| 10 | [Advanced Topics](notebooks/10_advanced_topics.ipynb) | Custom Reward Shaping, Probabilistic Ensembles |
+| #   | Topic                                                              | Key Concepts                                     |
+| --- | ------------------------------------------------------------------ | ------------------------------------------------ |
+| 01  | [Quickstart Intro](notebooks/01_quickstart_introduction.ipynb)     | Polyglot Architecture, Component Communication   |
+| 02  | [Rust OrderBook](notebooks/02_rust_orderbook_basics.ipynb)         | Matching Engine, Time-Price Priority, VaR        |
+| 03  | [Trading Environment](notebooks/03_trading_environment.ipynb)      | Gymnasium Interface, Step Lifecycle, Rewards     |
+| 04  | [Forecasting](notebooks/04_time_series_forecasting.ipynb)          | ARIMA, GARCH, RNN/Mamba Predictions              |
+| 05  | [Deep Learning](notebooks/05_deep_learning_models.ipynb)           | VAE Regime Detection, Dilated Convolutions       |
+| 06  | [HPO Optimization](notebooks/06_hyperparameter_optimization.ipynb) | DEHB Algorithm, Successive Halving               |
+| 07  | [RL Training](notebooks/07_reinforcement_learning_training.ipynb)  | PPO Algorithm, Policy/Value Networks             |
+| 08  | [Multi-Agent](notebooks/08_multi_agent_simulation.ipynb)           | Strategic Emergence, Competitive Game Theory     |
+| 09  | [Backtesting](notebooks/09_backtesting_framework.ipynb)            | Slippage, Transaction Costs, Performance Metrics |
+| 10  | [Advanced Topics](notebooks/10_advanced_topics.ipynb)              | Custom Reward Shaping, Probabilistic Ensembles   |
 
 > [!TIP]
 > Start with **[01_quickstart_introduction.ipynb](notebooks/01_quickstart_introduction.ipynb)** to verify your environment and understand the core data flow.
@@ -196,12 +216,12 @@ NGLAB isn't just a trading bot; it's an end-to-end research and execution arena 
 
 ### 🚀 Performance
 
-| Metric | Achievement |
-|--------|-------------|
-| **Order Matching** | < 100μs latency |
-| **Environment Steps** | > 20,000 steps/second |
-| **Data Bridge** | Zero-copy NumPy via PyO3 |
-| **UI Rendering** | Locked 60 FPS |
+| Metric                | Achievement              |
+| --------------------- | ------------------------ |
+| **Order Matching**    | < 100μs latency          |
+| **Environment Steps** | > 20,000 steps/second    |
+| **Data Bridge**       | Zero-copy NumPy via PyO3 |
+| **UI Rendering**      | Locked 60 FPS            |
 
 ### 🧠 Intelligence
 
@@ -263,15 +283,15 @@ just test
 
 NGLAB implements a modular pipeline system supporting diverse learning strategies:
 
-| Paradigm | Description | Use Case |
-|----------|-------------|----------|
-| **Reinforcement Learning** | Vectorized environments for portfolio optimization | Trading agent training |
-| **Supervised Learning** | High-precision forecasting and regression | Price prediction |
-| **Self-Supervised** | Latent representation learning using VAEs | Market regime detection |
-| **Unsupervised** | Clustering and anomaly detection | Outlier identification |
-| **Semi-Supervised** | Leveraging unlabeled data with sparse labels | Label-efficient learning |
-| **Meta-Learning** | Rapid adaptation via MAML | Market regime shifts |
-| **Online Learning** | Continuous adaptation to market drift | Live trading |
+| Paradigm                   | Description                                        | Use Case                 |
+| -------------------------- | -------------------------------------------------- | ------------------------ |
+| **Reinforcement Learning** | Vectorized environments for portfolio optimization | Trading agent training   |
+| **Supervised Learning**    | High-precision forecasting and regression          | Price prediction         |
+| **Self-Supervised**        | Latent representation learning using VAEs          | Market regime detection  |
+| **Unsupervised**           | Clustering and anomaly detection                   | Outlier identification   |
+| **Semi-Supervised**        | Leveraging unlabeled data with sparse labels       | Label-efficient learning |
+| **Meta-Learning**          | Rapid adaptation via MAML                          | Market regime shifts     |
+| **Online Learning**        | Continuous adaptation to market drift              | Live trading             |
 
 ---
 
@@ -283,25 +303,25 @@ We provide a vast library of models categorized into two primary families:
 
 Efficient, interpretable, and robust baseline models:
 
-| Category | Models |
-|----------|--------|
+| Category              | Models                                                        |
+| --------------------- | ------------------------------------------------------------- |
 | **Trees & Ensembles** | Random Forest, Gradient Boosting, XGBoost, LightGBM, CatBoost |
-| **Linear & Kernel** | Ridge, Lasso, ElasticNet, SVM |
-| **Probabilistic** | Naive Bayes, Bayesian Networks |
-| **Instance-based** | K-Nearest Neighbors (KNN) |
-| **Time Series** | ARIMA, GARCH, Exponential Smoothing, Prophet |
+| **Linear & Kernel**   | Ridge, Lasso, ElasticNet, SVM                                 |
+| **Probabilistic**     | Naive Bayes, Bayesian Networks                                |
+| **Instance-based**    | K-Nearest Neighbors (KNN)                                     |
+| **Time Series**       | ARIMA, GARCH, Exponential Smoothing, Prophet                  |
 
 ### 🧠 Deep Learning (Deep Models)
 
 Modern neural architectures specialized for sequence and multimodal data:
 
-| Category | Models |
-|----------|--------|
-| **Attention** | NS-Transformers, Multi-Head Attention |
-| **State Space** | Mamba (SSM), S4, Liquid Neural Networks |
-| **Recurrent** | LSTM, GRU, xLSTM |
-| **Generative** | VAE, TimeGAN, Diffusion U-Net, Flow-based |
-| **Advanced** | Neural ODE, PINN, DNC, SNN |
+| Category        | Models                                    |
+| --------------- | ----------------------------------------- |
+| **Attention**   | NS-Transformers, Multi-Head Attention     |
+| **State Space** | Mamba (SSM), S4, Liquid Neural Networks   |
+| **Recurrent**   | LSTM, GRU, xLSTM                          |
+| **Generative**  | VAE, TimeGAN, Diffusion U-Net, Flow-based |
+| **Advanced**    | Neural ODE, PINN, DNC, SNN                |
 
 ---
 
@@ -311,28 +331,28 @@ NGLAB leverages a diverse range of data sources for training and inference:
 
 ### 📈 Stock Market Data
 
-| Dataset | Description | Source |
-|---------|-------------|--------|
+| Dataset              | Description                       | Source                                                                     |
+| -------------------- | --------------------------------- | -------------------------------------------------------------------------- |
 | Stock Market Dataset | Stocks and ETFs from 1999 to 2020 | [Kaggle](https://www.kaggle.com/datasets/jacksoncrow/stock-market-dataset) |
-| S&P 500 | Historical index data | Yahoo Finance |
-| Crypto | Bitcoin, Ethereum tick data | Binance API |
+| S&P 500              | Historical index data             | Yahoo Finance                                                              |
+| Crypto               | Bitcoin, Ethereum tick data       | Binance API                                                                |
 
 ### 📰 Textual & Sentiment Data
 
-| Dataset | Description | Source |
-|---------|-------------|--------|
-| BBC News | News articles 2004-2005 | [UCD](http://mlg.ucd.ie/datasets/bbc.html) |
-| Australia News | News from 2003-2021 | [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/SYBGZL) |
-| World Politics | International news | [NewsData.io](https://newsdata.io/files/datasets/world-politics-news) |
-| Global News | Multi-source news | [Kaggle](https://www.kaggle.com/datasets/everydaycodings/global-news-dataset) |
-| Twitter/X | Social media sentiment | [Kaggle](https://www.kaggle.com/datasets/bhavikjikadara/tweets-dataset/data) |
+| Dataset        | Description             | Source                                                                                               |
+| -------------- | ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| BBC News       | News articles 2004-2005 | [UCD](http://mlg.ucd.ie/datasets/bbc.html)                                                           |
+| Australia News | News from 2003-2021     | [Harvard Dataverse](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/SYBGZL) |
+| World Politics | International news      | [NewsData.io](https://newsdata.io/files/datasets/world-politics-news)                                |
+| Global News    | Multi-source news       | [Kaggle](https://www.kaggle.com/datasets/everydaycodings/global-news-dataset)                        |
+| Twitter/X      | Social media sentiment  | [Kaggle](https://www.kaggle.com/datasets/bhavikjikadara/tweets-dataset/data)                         |
 
 ### 🎲 Prediction Markets
 
-| Dataset | Description | Source |
-|---------|-------------|--------|
+| Dataset    | Description                      | Source         |
+| ---------- | -------------------------------- | -------------- |
 | Polymarket | Real-time prediction market data | Polymarket API |
-| Metaculus | Historical forecasting data | Metaculus |
+| Metaculus  | Historical forecasting data      | Metaculus      |
 
 ---
 
@@ -363,10 +383,16 @@ nglab/
 │   └── src-tauri/        # Rust backend for Tauri
 ├── android/              # 🤖 Android mobile app (Kotlin)
 │   └── src/              # App logic and UI
-├── deploy/               # 🚀 Deployment configs
+├── infrastructure/       # 🚀 Deployment configs
 │   ├── nginx/            # Nginx (Reverse Proxy)
 │   ├── k8s/              # Kubernetes (Overlays: dev, staging, prod)
 │   └── helm/             # Helm charts (Chart.yaml, values.yaml)
+├── docker/               # 🐳 Docker files
+│   ├── Dockerfile        # Development image
+│   ├── Dockerfile.gpu    # GPU/CUDA image
+│   ├── Dockerfile.prod   # Production image
+│   ├── docker-compose.yml
+│   └── docker-compose.prod.yml
 ├── scripts/              # 🛠️ Utility scripts
 └── .github/              # CI/CD workflows
 ```
@@ -391,6 +417,7 @@ source .venv/bin/activate  # Linux/macOS
 ```
 
 To deactivate and/or delete the created virtual environment:
+
 ```bash
 deactivate
 rm -rf .venv
@@ -416,6 +443,7 @@ pip install -r env/pip_requirements.txt
 ```
 
 To deactivate and/or delete the created virtual environment:
+
 ```bash
 deactivate
 rm -rf env/.wsr
@@ -425,7 +453,7 @@ rm -rf env/.wsr
 
 ```bash
 # Build the image
-docker build -f Dockerfile.prod -t nglab:latest .
+docker build -f docker/Dockerfile.prod -t nglab:latest .
 
 # Run the container
 docker run --gpus all -p 8080:8080 nglab:latest
@@ -440,6 +468,7 @@ Choose your preferred interface to interact with the program!
 ### 🛠️ Terminal User Interface (TUI)
 
 Run the Rust-based CLI for high-performance operations:
+
 ```bash
 cargo run --bin nglab-cli
 ```
@@ -447,6 +476,7 @@ cargo run --bin nglab-cli
 ### 🖥️ Graphical User Interface (GUI)
 
 Run the TypeScript/Tauri GUI for a modern, cross-platform experience:
+
 ```bash
 cd typescript
 npm run tauri dev
@@ -455,6 +485,7 @@ npm run tauri dev
 ### 🐍 Python Scripts
 
 Run training and inference directly:
+
 ```bash
 # Train a PPO agent
 python python/src/pipeline/train_ppo.py
@@ -469,6 +500,7 @@ python python/src/pipeline/hpo/run_dehb.py
 ### 📊 Just Commands
 
 Use the task runner for common operations:
+
 ```bash
 just              # List all available commands
 just setup        # Full environment setup
@@ -507,20 +539,20 @@ bash scripts/cleanup.sh
 
 ## Performance Benchmarks
 
-| Component | Metric | Target | Achieved |
-|-----------|--------|--------|----------|
-| OrderBook Insert | Latency | < 1ms | ~0.1ms |
-| TradingEnv Step | Latency | < 1ms | ~0.5ms |
-| Order Matching | Throughput | > 10k ops/sec | ~50k ops/sec |
-| Memory Usage | RAM | < 100MB | ~50MB |
-| Model Forward | Latency | < 10ms | ~5ms (Mamba) |
-| Training Step | Latency | < 100ms | ~80ms |
+| Component        | Metric     | Target        | Achieved     |
+| ---------------- | ---------- | ------------- | ------------ |
+| OrderBook Insert | Latency    | < 1ms         | ~0.1ms       |
+| TradingEnv Step  | Latency    | < 1ms         | ~0.5ms       |
+| Order Matching   | Throughput | > 10k ops/sec | ~50k ops/sec |
+| Memory Usage     | RAM        | < 100MB       | ~50MB        |
+| Model Forward    | Latency    | < 10ms        | ~5ms (Mamba) |
+| Training Step    | Latency    | < 100ms       | ~80ms        |
 
 ---
 
 ## Contributing
 
-We welcome contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+We welcome contributions! Please read our [CONTRIBUTING.md](git/CONTRIBUTING.md) for guidelines on:
 
 - Code style and linting
 - Pull request process

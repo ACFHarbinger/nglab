@@ -45,9 +45,9 @@ pub async fn stream_polymarket_prices(
     };
 
     tauri::async_runtime::spawn(async move {
-        stream_polymarket_prices_loop(token_ids, ws_running, move |update| {
-            if let Err(e) = app_handle.emit("polymarket-price-update", &update) {
-                eprintln!("❌ Failed to emit price update: {}", e);
+        stream_polymarket_prices_loop(token_ids, ws_running, move |event| {
+            if let Err(e) = app_handle.emit("polymarket-streaming-event", &event) {
+                eprintln!("❌ Failed to emit streaming event: {}", e);
             }
         })
         .await;

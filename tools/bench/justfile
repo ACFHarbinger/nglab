@@ -1,0 +1,23 @@
+# tools/bench — benchmarking and profiling.
+
+set shell := ["bash", "-c"]
+
+# Run Rust benchmarks
+rust:
+    cargo bench
+
+# Profile a Rust benchmark with flamegraph
+profile BENCH="orderbook":
+    cargo flamegraph --bench {{BENCH}}
+
+# Profile a Python script with py-spy
+profile-python SCRIPT:
+    py-spy record -o profile.svg -- python {{SCRIPT}}
+
+# Micro-benchmark the C++ HFT hot path (Google Benchmark)
+hft:
+    cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Release -DNGLAB_BUILD_BENCH=ON && cmake --build cpp/build -j && ./cpp/build/hft_bench || echo "⚠️  bench target not built"
+
+# Benchmark the Go crypto daemon
+crypto:
+    cd go && go test -bench=. -benchmem ./... || echo "⚠️  go module not initialised yet"

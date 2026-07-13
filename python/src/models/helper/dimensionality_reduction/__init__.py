@@ -1,2 +1,0 @@
-
-"""Dimensionality reduction algorithms suite."""

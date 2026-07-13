@@ -307,7 +307,11 @@ export function MarketSidebar({
             <div className="absolute right-3 top-[26px] pointer-events-none">
               <ChevronDown size={12} className="text-slate-500" />
             </div>
-            {loadingExchanges && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />}
+            {loadingExchanges ? (
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+            ) : (
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" title="Connected" />
+            )}
           </div>
         </div>
 

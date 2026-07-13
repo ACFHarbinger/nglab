@@ -14,8 +14,17 @@ fn get_python_command() -> Command {
     }
 }
 
-/// Lists available trained machine learning models in the local directory.
-pub fn list_trained_models() -> Result<Vec<String>, String> {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ModelMetadata {
+    pub name: String,
+    pub filename: String,
+    pub size_bytes: u64,
+    pub modified_ts: u64,
+    pub architecture: String,
+}
+
+/// Lists available trained machine learning models in the local directory with metadata.
+pub fn list_trained_models() -> Result<Vec<ModelMetadata>, String> {
     let path = Path::new("../../model_weights");
     if !path.exists() {
         return Ok(vec![]);
@@ -26,13 +35,49 @@ pub fn list_trained_models() -> Result<Vec<String>, String> {
         for entry in entries.flatten() {
             let path = entry.path();
             if path.extension().is_some_and(|ext| ext == "pt") {
-                if let Some(name) = path.file_stem().and_then(|s| s.to_str()) {
-                    models.push(name.to_string());
+                if let Some(file_name) = path.file_name().and_then(|s| s.to_str()) {
+                    if let Ok(metadata) = path.metadata() {
+                        let size_bytes = metadata.len();
+                        let modified_ts = metadata
+                            .modified()
+                            .ok()
+                            .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                            .map(|d| d.as_secs())
+                            .unwrap_or(0);
+
+                        let name = path
+                            .file_stem()
+                            .and_then(|s| s.to_str())
+                            .unwrap_or("unknown")
+                            .to_string();
+
+                        // Heuristic for architecture
+                        let architecture = if name.contains("lstm") {
+                            "LSTM".to_string()
+                        } else if name.contains("transformer") {
+                            "Transformer".to_string()
+                        } else if name.contains("cnn") || name.contains("conv") {
+                            "CNN".to_string()
+                        } else if name.contains("mamba") {
+                            "Mamba".to_string()
+                        } else {
+                            "Neural Network".to_string()
+                        };
+
+                        models.push(ModelMetadata {
+                            name,
+                            filename: file_name.to_string(),
+                            size_bytes,
+                            modified_ts,
+                            architecture,
+                        });
+                    }
                 }
             }
         }
     }
-    models.sort();
+    // Sort by modified time descending (newest first)
+    models.sort_by(|a, b| b.modified_ts.cmp(&a.modified_ts));
     Ok(models)
 }
 
