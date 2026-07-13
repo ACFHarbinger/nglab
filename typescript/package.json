@@ -28,7 +28,7 @@
     "highcharts": "^12.4.0",
     "highcharts-react-official": "^3.2.3",
     "lightweight-charts": "^5.1.0",
-    "lucide-react": "^0.562.0",
+    "lucide-react": "^1.24.0",
     "nanoid": "^6.0.0",
     "papaparse": "^5.5.3",
     "react": "^19.1.0",
