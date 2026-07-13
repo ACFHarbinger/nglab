@@ -1,0 +1,5 @@
+// Go workspace for NGLab. The Crypto Daemon module lives in ./go.
+// (Repo-root Go env file; the module-level env file is go/go.mod.)
+go 1.26
+
+use ./go

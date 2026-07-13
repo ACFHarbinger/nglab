@@ -11,8 +11,8 @@ services:
 
   nglab-api:
     build:
-      context: .
-      dockerfile: Dockerfile.prod
+      context: ..
+      dockerfile: docker/Dockerfile.prod
       args:
         - PYTHON_VERSION=3.11
         - RUST_VERSION=1.83
@@ -79,8 +79,8 @@ services:
 
   nglab-api-gpu:
     build:
-      context: .
-      dockerfile: Dockerfile.gpu
+      context: ..
+      dockerfile: docker/Dockerfile.gpu
     image: nglab/api-gpu:${NGLAB_VERSION:-latest}
     ports:
       - "8001:8000"
@@ -313,9 +313,9 @@ services:
   nginx:
     image: nginx:1.25-alpine
     volumes:
-      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./deploy/ssl:/etc/nginx/ssl:ro
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./infrastructure/ssl:/etc/nginx/ssl:ro
     ports:
       - "80:80"
       - "443:443"

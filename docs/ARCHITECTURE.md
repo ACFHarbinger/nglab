@@ -40,7 +40,7 @@ A quick reference to where the logic lives.
 | `/rust`       | **Simulation**   | Matching Engine, Risk, Gym Env | Tokio, PyO3, Serde             |
 | `/python`     | **Intelligence** | Models, Agents, Training Loops | PyTorch, Hydra, Optuna         |
 | `/typescript` | **Interface**    | GUI, Charts, Commands          | React 19, Tauri 2.0, Vite      |
-| `/deploy`     | **Ops**          | CI/CD, Docker, Kubernetes      | GitHub Actions, Docker Compose |
+| `/infrastructure`     | **Ops**          | CI/CD, Docker, Kubernetes      | GitHub Actions, Docker Compose |
 | `/scripts`    | **Tools**        | Setup, Benchmarks, Maintenance | Bash, Just                     |
 
 ---
@@ -836,7 +836,7 @@ graph TB
 ### Kustomize Overlay Structure
 
 ```
-deploy/k8s/
+infrastructure/k8s/
 ├── base/                    # Shared configurations
 │   ├── deployment.yaml      # API and worker deployments
 │   ├── service.yaml         # Service definitions
@@ -864,13 +864,13 @@ deploy/k8s/
 
 ```bash
 # Deploy to development
-kubectl apply -k deploy/k8s/overlays/dev
+kubectl apply -k infrastructure/k8s/overlays/dev
 
 # Deploy to staging
-kubectl apply -k deploy/k8s/overlays/staging
+kubectl apply -k infrastructure/k8s/overlays/staging
 
 # Deploy to production
-kubectl apply -k deploy/k8s/overlays/prod
+kubectl apply -k infrastructure/k8s/overlays/prod
 
 # Check deployment status
 kubectl get pods -n nglab -w
@@ -2282,10 +2282,10 @@ This matrix shows which Python components call which Rust components:
 - [TESTING.md](TESTING.md) - Testing strategy
 - [TUTORIAL.md](TUTORIAL.md) - Developer encyclopedia
 - [AGENTS.md](AGENTS.md) - Agent taxonomy and policies
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [CONTRIBUTING.md](../git/CONTRIBUTING.md) - Contribution guidelines
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Common issues and fixes
-- [ROADMAP.md](ROADMAP.md) - Development roadmap
-- [README.md](README.md) - Getting started
+- [ROADMAP.md](../moon/ROADMAP.md) - Development roadmap
+- [README.md](../README.md) - Getting started
 
 ---
 

@@ -1,0 +1,25 @@
+# tools/crypto — Go Crypto Daemon (Tier 2 / Warm Path).
+#
+# All crypto market-data, exchange, and concurrent-feed logic is Go.
+
+set shell := ["bash", "-c"]
+
+# Build the crypto daemon
+build:
+    cd go && go build -o build/crypto-daemon ./cmd/crypto-daemon
+
+# Run the crypto daemon on a dynamic loopback port (Rust normally supplies --port)
+run PORT="54321":
+    cd go && go run ./cmd/crypto-daemon --port={{PORT}}
+
+# Test (race detector on — concurrency is the whole point)
+test:
+    cd go && go test -race ./...
+
+# Vet + format
+lint:
+    cd go && gofmt -l . && go vet ./...
+
+# Tidy the module graph
+tidy:
+    cd go && go mod tidy

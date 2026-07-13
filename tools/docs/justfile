@@ -1,0 +1,18 @@
+# tools/docs — API documentation generation.
+
+set shell := ["bash", "-c"]
+
+# Generate consolidated API docs (Rust + Python)
+all:
+    @mkdir -p docs/rust docs/python
+    cargo doc --no-deps
+    cd python && pdoc --html --output-dir ../docs/python python.src
+    @echo "✅ Docs in target/doc (Rust) and docs/python"
+
+# Rust API docs only
+rust:
+    cargo doc --no-deps --open
+
+# Go crypto daemon docs
+crypto:
+    cd go && go doc ./... || echo "⚠️  go module not initialised yet"

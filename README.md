@@ -166,16 +166,16 @@ Start here! We have expanded our documentation to cover every aspect of the syst
 
 | Document                                     | Description                                                                                                                      | Target Audience          |
 | :------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- | :----------------------- |
-| **[TUTORIAL.md](TUTORIAL.md)**               | **The Developer Encyclopedia.** Exhaustive deep dives into every module, code snippets, and implementation details.              | Developers, Contributors |
+| **[TUTORIAL.md](docs/TUTORIAL.md)**               | **The Developer Encyclopedia.** Exhaustive deep dives into every module, code snippets, and implementation details.              | Developers, Contributors |
 | **[Interactive Notebooks](notebooks/)**      | **Hands-on Learning.** A series of 10 Jupyter notebooks covering architecture, RL training, and backtesting.                     | Everyone                 |
 | **[AGENTS.md](AGENTS.md)**                   | **The Strategy Handbook.** Classification of Agents (RL vs Heuristic), Policy Architectures (Mamba/CNN), and Observation Spaces. | Quants, Researchers      |
-| **[ARCHITECTURE.md](ARCHITECTURE.md)**       | **The System Blueprint.** High-level design, data flow diagrams, system boundaries, and deployment topology.                     | Architects, DevOps       |
-| **[DEVELOPMENT.md](DEVELOPMENT.md)**         | **The Setup Guide.** IDE configuration, environment variables, local development, profiling, and debugging.                      | New Contributors         |
-| **[TESTING.md](TESTING.md)**                 | **The Quality Guide.** Testing philosophy, coverage requirements, mocking strategies, and CI/CD integration.                     | All Engineers            |
-| **[CONTRIBUTING.md](CONTRIBUTING.md)**       | **The Developer Handbook.** Code style, PR process, RFC workflow, and release procedures.                                        | Contributors             |
-| **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | **The Field Repair Manual.** Common issues, diagnostic steps, GPU/CUDA debugging, and ML troubleshooting.                        | Everyone                 |
-| **[ROADMAP.md](ROADMAP.md)**                 | **The Roadmap.** Active tasks, feature requests, and the long-term vision for the platform.                                      | Project Managers         |
-| **[DEPENDENCIES.md](DEPENDENCIES.md)**       | **The Supply Chain.** Comprehensive list of backend, frontend, and ML dependencies.                                              | All Engineers            |
+| **[ARCHITECTURE.md](docs/ARCHITECTURE.md)**       | **The System Blueprint.** High-level design, data flow diagrams, system boundaries, and deployment topology.                     | Architects, DevOps       |
+| **[DEVELOPMENT.md](docs/DEVELOPMENT.md)**         | **The Setup Guide.** IDE configuration, environment variables, local development, profiling, and debugging.                      | New Contributors         |
+| **[TESTING.md](docs/TESTING.md)**                 | **The Quality Guide.** Testing philosophy, coverage requirements, mocking strategies, and CI/CD integration.                     | All Engineers            |
+| **[CONTRIBUTING.md](git/CONTRIBUTING.md)**       | **The Developer Handbook.** Code style, PR process, RFC workflow, and release procedures.                                        | Contributors             |
+| **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** | **The Field Repair Manual.** Common issues, diagnostic steps, GPU/CUDA debugging, and ML troubleshooting.                        | Everyone                 |
+| **[ROADMAP.md](moon/ROADMAP.md)**                 | **The Roadmap.** Active tasks, feature requests, and the long-term vision for the platform.                                      | Project Managers         |
+| **[DEPENDENCIES.md](docs/DEPENDENCIES.md)**       | **The Supply Chain.** Comprehensive list of backend, frontend, and ML dependencies.                                              | All Engineers            |
 
 ### 📓 Interactive Notebooks
 
@@ -383,10 +383,16 @@ nglab/
 │   └── src-tauri/        # Rust backend for Tauri
 ├── android/              # 🤖 Android mobile app (Kotlin)
 │   └── src/              # App logic and UI
-├── deploy/               # 🚀 Deployment configs
+├── infrastructure/       # 🚀 Deployment configs
 │   ├── nginx/            # Nginx (Reverse Proxy)
 │   ├── k8s/              # Kubernetes (Overlays: dev, staging, prod)
 │   └── helm/             # Helm charts (Chart.yaml, values.yaml)
+├── docker/               # 🐳 Docker files
+│   ├── Dockerfile        # Development image
+│   ├── Dockerfile.gpu    # GPU/CUDA image
+│   ├── Dockerfile.prod   # Production image
+│   ├── docker-compose.yml
+│   └── docker-compose.prod.yml
 ├── scripts/              # 🛠️ Utility scripts
 └── .github/              # CI/CD workflows
 ```
@@ -447,7 +453,7 @@ rm -rf env/.wsr
 
 ```bash
 # Build the image
-docker build -f Dockerfile.prod -t nglab:latest .
+docker build -f docker/Dockerfile.prod -t nglab:latest .
 
 # Run the container
 docker run --gpus all -p 8080:8080 nglab:latest
@@ -546,7 +552,7 @@ bash scripts/cleanup.sh
 
 ## Contributing
 
-We welcome contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+We welcome contributions! Please read our [CONTRIBUTING.md](git/CONTRIBUTING.md) for guidelines on:
 
 - Code style and linting
 - Pull request process

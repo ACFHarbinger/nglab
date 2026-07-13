@@ -1,0 +1,26 @@
+# tools/hft — C++ HFT Native Loop (Tier 1 / Hot Path).
+#
+# All ultra-low-latency execution is C++. IPC to Rust is shared memory only.
+
+set shell := ["bash", "-c"]
+
+build_dir := "cpp/build"
+
+# Configure + build (release, native arch)
+build:
+    cmake -S cpp -B {{build_dir}} -DCMAKE_BUILD_TYPE=Release
+    cmake --build {{build_dir}} -j
+
+# Run the HFT daemon (writes metrics into shared memory for the Rust reader)
+run *args:
+    ./{{build_dir}}/hft_daemon {{args}}
+
+# Configure + build + run tests
+test:
+    cmake -S cpp -B {{build_dir}} -DCMAKE_BUILD_TYPE=Debug
+    cmake --build {{build_dir}} -j
+    ctest --test-dir {{build_dir}} --output-on-failure
+
+# Clean the CMake build tree
+clean:
+    rm -rf {{build_dir}}

@@ -42,8 +42,10 @@ NGLab is a specialized Multimodal Deep Reinforcement Learning platform for finan
 
 ```text
 nglab/
-├── rust/                   # Core Rust simulation engine
-├── python/                 # RL training & strategy layer
+├── rust/                   # Tier 0: Core hub — Tauri backend, prediction markets, EVM (Alloy), lifecycle mgmt
+├── go/                     # Tier 2: Crypto Daemon — exchange WS feeds, JSON-RPC nodes, loopback IPC to Rust
+├── cpp/                    # Tier 1: HFT Native Loop — sub-µs execution, DOD matching, shared-memory IPC
+├── python/                 # Offline: Strategy brain — RL training & quant strategies
 │   └── src/
 │       ├── configs/        # Domain-organized dataclass configs
 │       ├── envs/           # Gym environments (Rust wrappers & fallbacks)
@@ -52,9 +54,36 @@ nglab/
 │       ├── pipeline/       # Training loops & Lightning modules
 │       ├── cli/            # Custom CLI module
 │       └── utils/          # Profiling, configuration, registries
-├── typescript/             # Tauri/React dashboard
-└── docs/                   # ADRs and technical documentation
+├── typescript/             # UI: Thin Tauri/React control panel
+├── proto/                  # Universal Protobuf schema (Order/Position/Tick) → codegen for all langs
+├── moon/                   # Master ROADMAP.md + per-module roadmaps/
+├── docs/                   # ADRs (adr/) and technical documentation
+├── git/                    # CONTRIBUTING.md + codecov.yaml
+└── tools/                  # Per-domain justfile sub-modules (imported by the root justfile)
 ```
+
+---
+
+## Polyglot Language Boundaries (STRICT — enforced)
+
+NGLab is a multi-tiered polyglot architecture. Each concern has a mandated language; do not
+cross these boundaries when adding or migrating code.
+
+| Concern | Language | Tier / Path | IPC to Rust |
+| :--- | :--- | :--- | :--- |
+| Crypto market data, exchange connections, concurrent trading feeds | **Go** | Tier 2, `go/` | Loopback `127.0.0.1:<dynamic --port>` (Protobuf frames) |
+| Ultra-low-latency execution, raw order-book matching, HFT venues | **C++** | Tier 1, `cpp/` | **Shared memory** (`shm_open`/`mmap`), zero-copy — **no sockets** |
+| Prediction markets, EVM monitoring (Alloy), state, `#[tauri::command]`, lifecycle | **Rust** | Tier 0, `rust/` | — (owns/monitors the Go + C++ binaries) |
+| AI/ML models, quant strategies (offline only) | **Python** | `python/` | Writes weight arrays / JSON configs for hot-reload |
+| UI: stream consumer + execution triggers (no business logic) | **TypeScript** | `typescript/` | Consumes Rust `#[tauri::command]`/events |
+| Cross-boundary structs (`Order`, `Position`, `Tick`) | **Protobuf** | `proto/` | Codegen for TS/Rust/Go/C++ |
+
+**Rules of thumb:**
+- New crypto/exchange/feed logic → **Go**. New sub-µs/HFT logic → **C++**. Never add these to Rust.
+- Rust spins up, monitors, and restarts the Go and C++ binaries (`std::process::Command` / Tauri Shell).
+- Python never sits on the live hot path.
+- C++ IPC is RAM-only (shared memory); Go IPC is the loopback server.
+- See [`moon/roadmaps/`](../moon/roadmaps/) for each tier's roadmap.
 
 ---
 
@@ -77,6 +106,24 @@ nglab/
 
 - `npm run tauri dev` - Start Tauri development environment
 - `npm run tauri build` - Build production executable
+
+### Crypto Daemon (Go)
+
+- `just crypto::build` - Build the crypto daemon
+- `just crypto::run 54321` - Run on a loopback port (Rust normally supplies `--port`)
+- `just crypto::test` - Test with the race detector (`go test -race`)
+
+### HFT Native Loop (C++)
+
+- `just hft::build` - Configure + build (CMake, release)
+- `just hft::run` - Run the daemon (writes metrics into shared memory)
+- `just hft::test` - Build + `ctest`
+
+### Cross-cutting (just)
+
+- `just help` - List every recipe across all `tools/` sub-modules
+- `just build-all` / `just test-all` - Build/test every tier
+- `just check` - Lint + all tests
 
 ---
 

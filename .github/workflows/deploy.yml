@@ -30,7 +30,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # CRITICAL: Convert repository name to lowercase to satisfy Docker requirements
       - name: Prepare Image Name
@@ -58,7 +58,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.prod
+          file: docker/Dockerfile.prod
           platforms: linux/amd64
           push: true
           tags: ${{ env.REGISTRY }}/${{ steps.prep.outputs.image_name }}:latest
@@ -73,7 +73,7 @@ jobs:
     environment: production
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Kubeconfig
         run: |
           mkdir -p ~/.kube
@@ -82,9 +82,9 @@ jobs:
         run: |
           # Ensure we use lowercase here as well
           IMAGE_NAME_LC=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
-          helm upgrade --install nglab-prod ./deploy/helm/nglab \
+          helm upgrade --install nglab-prod ./infrastructure/helm/nglab \
             --namespace nglab-prod --create-namespace \
             --set image.repository=${{ env.REGISTRY }}/$IMAGE_NAME_LC \
             --set image.tag=latest \
-            --values ./deploy/helm/nglab/values.yaml \
+            --values ./infrastructure/helm/nglab/values.yaml \
             --wait --timeout=10m

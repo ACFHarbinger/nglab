@@ -42,8 +42,8 @@ Please be respectful and constructive in all interactions. We aim to foster an o
 - [ ] Run `just test` (verify environment works)
 - [ ] Run `just build-python` (build Rust extension)
 - [ ] Browse issues labeled `good first issue`
-- [ ] Read [DEVELOPMENT.md](DEVELOPMENT.md) for IDE setup
-- [ ] Read [TESTING.md](TESTING.md) for testing guidelines
+- [ ] Read [DEVELOPMENT.md](../docs/DEVELOPMENT.md) for IDE setup
+- [ ] Read [TESTING.md](../docs/TESTING.md) for testing guidelines
 - [ ] Join the community Discord (link in README)
 
 **Estimated time**: 30 minutes
@@ -597,9 +597,9 @@ nglab/
 
 ## Additional Resources
 
-- **Architecture**: See [ARCHITECTURE.md](ARCHITECTURE.md) for system design
-- **Tutorial**: See [TUTORIAL.md](TUTORIAL.md) for developer encyclopedia
-- **Troubleshooting**: See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues
+- **Architecture**: See [ARCHITECTURE.md](../docs/ARCHITECTURE.md) for system design
+- **Tutorial**: See [TUTORIAL.md](../docs/TUTORIAL.md) for developer encyclopedia
+- **Troubleshooting**: See [TROUBLESHOOTING.md](../docs/TROUBLESHOOTING.md) for common issues
 - **API Docs**: Run `just docs` to generate documentation
 - **Task Runner**: Run `just` to see all available commands
 
