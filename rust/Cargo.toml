@@ -58,7 +58,7 @@ ts-rs = { version = "10.0.0", features = ["serde-compat"] }
 # Authentication
 argon2 = { version = "0.5", features = ["std"] }
 password-hash = { version = "0.5", features = ["rand_core"] }
-rusqlite = { version = "0.32", features = ["bundled-sqlcipher"] }
+rusqlite = { version = "0.37", features = ["bundled-sqlcipher"] }
 zeroize = { version = "1.8", features = ["derive"] }
 prometheus = "0.13"
 once_cell = "1.20"
