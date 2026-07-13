@@ -1,0 +1,49 @@
+[workspace]
+name = "nglab"
+version = "0.2.5"
+description = "Polyglot quantitative-trading platform: Rust core, Go crypto daemon, C++ HFT loop, Python strategy brain, TypeScript control panel"
+authors = ["ACFHarbinger"]
+channels = ["conda-forge", "pytorch"]
+platforms = ["linux-64"]
+
+# ---------------------------------------------------------------------------
+# General cross-tier toolchain + dependencies. Language-specific package
+# managers still own their trees (cargo, uv, npm, go); pixi provides the shared
+# compilers/runtimes and the Protobuf toolchain used across all four languages.
+# ---------------------------------------------------------------------------
+[dependencies]
+# Language runtimes / toolchains
+python       = "3.11.*"
+rust         = ">=1.80"
+go           = ">=1.22"          # Crypto Daemon (go/)
+nodejs       = "20.*"            # TypeScript/Tauri frontend
+
+# C++ HFT toolchain (cpp/)
+cmake        = ">=3.20"
+ninja        = "*"
+cxx-compiler = "*"
+
+# Universal schema: Protobuf codegen for Rust/Go/C++/TS
+protobuf     = "*"               # provides protoc
+just         = "*"               # task runner (root justfile → tools/)
+
+# Shared scientific stack (also declared per-tier; here for notebooks/ad-hoc use)
+numpy        = ">=1.24"
+pandas       = ">=2.0"
+matplotlib   = ">=3.7"
+
+[pypi-dependencies]
+# The Python strategy brain manages its own env via uv (python/pyproject.toml);
+# nothing extra is pinned here to avoid drift.
+
+[tasks]
+# Thin wrappers over the root justfile so `pixi run <x>` also works.
+setup     = "just setup"
+build-all = "just build-all"
+test-all  = "just test-all"
+lint      = "just lint"
+crypto    = "just crypto::build"
+hft       = "just hft::build"
+
+[environments]
+default = { solve-group = "default" }

@@ -2,7 +2,47 @@
 
 <a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: AGPL v3" src="https://img.shields.io/badge/License-AGPL_v3-blue.svg"></a>
 
-This document outlines feature improvements for NGLab, focusing exclusively on backend and frontend capabilities. Each section includes actionable items with complexity and impact ratings.
+This document is the **master roadmap** for NGLab. It covers cross-cutting product features; the
+per-module engineering roadmaps live under [`moon/roadmaps/`](roadmaps/).
+
+Completed items are moved to [`docs/CHANGELOG.md`](../docs/CHANGELOG.md).
+
+---
+
+## Module Roadmaps
+
+NGLab is a **polyglot trading architecture**. Each tier has a dedicated roadmap:
+
+| Roadmap | Tier / Language | Scope |
+| :--- | :--- | :--- |
+| [Crypto Daemon — Go](roadmaps/crypto_go.md) | Tier 2 / Warm Path (**Go**) | Exchange WebSocket feeds, JSON-RPC nodes, concurrent crypto trading, loopback IPC to Rust |
+| [HFT Native Loop — C++](roadmaps/hft_cpp.md) | Tier 1 / Hot Path (**C++**) | Sub-microsecond execution, DOD order-book matching, shared-memory IPC |
+| [Core Hub — Rust](roadmaps/core_rust.md) | Tier 0 / Control (**Rust**) | Tauri backend, prediction markets, EVM/Alloy monitoring, binary lifecycle management |
+| [Strategy Brain — Python](roadmaps/strategy_python.md) | Offline / Analytical (**Python**) | AI/ML models, quant strategies, prediction-weight export |
+| [Control Panel — TypeScript](roadmaps/frontend_typescript.md) | UI (**TypeScript**) | Thin consumer of data streams + execution triggers |
+| [Universal Schema — Protobuf](roadmaps/schema_protobuf.md) | Cross-boundary | `Order`/`Position`/`Tick` schemas, codegen for TS/Rust/Go/C++ |
+| [Code Quality & Human Understanding](roadmaps/code_quality.md) | Cross-cutting | Docs, naming, architecture cleanup, DX, testing, coverage targets |
+
+See [`ARCHITECTURE.md`](../docs/ARCHITECTURE.md) for the tier diagram and IPC boundaries.
+
+---
+
+## Polyglot Migration (Priority 0)
+
+The highest-priority track: extract Crypto and HFT logic out of Rust into the tiers where they
+belong, per the migration directives.
+
+| # | Item | Direction | Roadmap |
+| :--- | :--- | :--- | :--- |
+| M.1 | Migrate crypto trading logic, exchange WS feeds, JSON-RPC node connections | Rust → **Go** | [crypto_go.md](roadmaps/crypto_go.md) |
+| M.2 | Go loopback server on `127.0.0.1`, dynamic `--port` handshake from Rust | New (Go) | [crypto_go.md §2](roadmaps/crypto_go.md) |
+| M.3 | Migrate sub-µs execution loops, raw order-book matching, Tier-1 logic | Rust → **C++** | [hft_cpp.md](roadmaps/hft_cpp.md) |
+| M.4 | C++ shared-memory (`shm_open`/`mmap`) metrics bridge (zero-copy) | New (C++) | [hft_cpp.md §2](roadmaps/hft_cpp.md) |
+| M.5 | Protobuf universal schema + codegen for TS/Rust/Go/C++ | New | [schema_protobuf.md](roadmaps/schema_protobuf.md) |
+| M.6 | Rust lifecycle manager spins up/monitors/restarts Go + C++ binaries | Rust | [core_rust.md](roadmaps/core_rust.md) |
+
+**Enforcement:** all future crypto/exchange/concurrent-feed work is **Go**; all future
+ultra-low-latency/HFT-venue work is **C++**; prediction markets + EVM stay **native Rust**.
 
 ---
 
