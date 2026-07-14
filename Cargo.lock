@@ -6207,7 +6207,7 @@ dependencies = [
  "numpy",
  "once_cell",
  "opentelemetry 0.31.0",
- "opentelemetry-otlp 0.27.0",
+ "opentelemetry-otlp",
  "opentelemetry_sdk 0.27.1",
  "password-hash",
  "prometheus",

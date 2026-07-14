@@ -14,6 +14,8 @@
 <br>
 <img alt="Python version" src="https://img.shields.io/badge/python-3.11-blue.svg">
 <img alt="Rust version" src="https://img.shields.io/badge/rust-1.80%2B-orange.svg">
+<img alt="Go version" src="https://img.shields.io/badge/go-1.26-blue.svg">
+<img alt="C++ version" src="https://img.shields.io/badge/C++-20-blue.svg">
 <img alt="Tauri version" src="https://img.shields.io/badge/Tauri-2.0-blue?logo=tauri&logoColor=white">
 <br>
 <a href="https://pytorch.org/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
@@ -67,14 +69,18 @@
 
 <a href="https://www.python.org/"><img alt="Python" src="https://img.shields.io/badge/Python-3.11-3776ab?logo=python&logoColor=white"></a>
 <a href="https://www.rust-lang.org/"><img alt="Rust" src="https://img.shields.io/badge/Rust-000000?logo=rust&logoColor=white"></a>
+<a href="https://go.dev/"><img alt="Go" src="https://img.shields.io/badge/Go-00ADD8?logo=go&logoColor=white"></a>
+<a href="https://isocpp.org/"><img alt="C++" src="https://img.shields.io/badge/C++-00599C?logo=c%2B%2B&logoColor=white"></a>
 <a href="https://www.typescriptlang.org/"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white"></a>
 <a href="https://kotlinlang.org/"><img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white"></a>
 <a href="https://developer.android.com/"><img alt="Android" src="https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white"></a>
 <a href="https://react.dev/"><img alt="React" src="https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black"></a>
 <a href="https://tauri.app/"><img alt="Tauri" src="https://img.shields.io/badge/Tauri-FFC131?logo=tauri&logoColor=white"></a>
 <a href="https://pyo3.rs/"><img alt="PyO3" src="https://img.shields.io/badge/PyO3-Bridge-3776AB?logo=rust&logoColor=white"></a>
+<a href="https://docs.rs/ts-rs"><img alt="ts-rs" src="https://img.shields.io/badge/ts--rs-TypeGen-3178C6?logo=typescript&logoColor=white"></a>
 <a href="https://maturin.rs/"><img alt="Maturin" src="https://img.shields.io/badge/Maturin-Build-E57300?logo=rust&logoColor=white"></a>
 <a href="https://vitejs.dev/"><img alt="Vite" src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white"></a>
+<a href="https://protobuf.dev/"><img alt="Protobuf" src="https://img.shields.io/badge/Protobuf-Schema-000000?logo=protobuf&logoColor=white"></a>
 
 </br>
 
@@ -82,8 +88,11 @@
 <a href="https://kubernetes.io/"><img alt="Kubernetes" src="https://img.shields.io/badge/Kubernetes-326CE5?logo=kubernetes&logoColor=white"></a>
 <a href="https://helm.sh/"><img alt="Helm" src="https://img.shields.io/badge/Helm-0F1628?logo=helm&logoColor=white"></a>
 <a href="https://github.com/astral-sh/uv"><img alt="uv" src="https://img.shields.io/badge/managed%20by-uv-261230.svg"></a>
+<a href="https://pixi.sh/"><img alt="Pixi" src="https://img.shields.io/badge/Pixi-Toolchain-FA1071?logo=conda&logoColor=white"></a>
 <a href="https://github.com/casey/just"><img alt="Just" src="https://img.shields.io/badge/Just-000000?logo=just&logoColor=white"></a>
 <a href="https://doc.rust-lang.org/cargo/"><img alt="Cargo" src="https://img.shields.io/badge/Cargo-E57300?logo=rust&logoColor=white"></a>
+<a href="https://cmake.org/"><img alt="CMake" src="https://img.shields.io/badge/CMake-064F8C?logo=cmake&logoColor=white"></a>
+<a href="https://ninja-build.org/"><img alt="Ninja" src="https://img.shields.io/badge/Ninja-Build-000000?logo=ninja&logoColor=white"></a>
 <a href="https://www.gnu.org/software/make/"><img alt="Makefile" src="https://img.shields.io/badge/Makefile-000000?logo=gnu&logoColor=white"></a>
 <a href="https://gradle.org/"><img alt="Gradle" src="https://img.shields.io/badge/Gradle-02303A?logo=gradle&logoColor=white"></a>
 <a href="https://www.npmjs.com/"><img alt="NPM" src="https://img.shields.io/badge/NPM-CB3837?logo=npm&logoColor=white"></a>
@@ -95,6 +104,8 @@
 <a href="https://aws.amazon.com/"><img alt="AWS" src="https://img.shields.io/badge/AWS-232F3E?logo=amazon-aws&logoColor=white"></a>
 <a href="https://cloud.google.com/"><img alt="GCP" src="https://img.shields.io/badge/GCP-4285F4?logo=google-cloud&logoColor=white"></a>
 <a href="https://pytest.org/"><img alt="Pytest" src="https://img.shields.io/badge/Pytest-0A9EDC?logo=pytest&logoColor=white"></a>
+<a href="https://go.dev/doc/tutorial/add-a-test"><img alt="Go Test" src="https://img.shields.io/badge/Go%20Test-race-00ADD8?logo=go&logoColor=white"></a>
+<a href="https://cmake.org/cmake/help/latest/manual/ctest.1.html"><img alt="CTest" src="https://img.shields.io/badge/CTest-C%2B%2B-064F8C?logo=cmake&logoColor=white"></a>
 <a href="https://vitest.dev/"><img alt="Vitest" src="https://img.shields.io/badge/Vitest-6E9F18?logo=vitest&logoColor=white"></a>
 <a href="https://www.cypress.io/"><img alt="Cypress" src="https://img.shields.io/badge/Cypress-17202C?logo=cypress&logoColor=white"></a>
 <a href="https://eslint.org/"><img alt="ESLint" src="https://img.shields.io/badge/ESLint-4B3263?logo=eslint&logoColor=white"></a>
@@ -117,6 +128,8 @@
 <a href="https://www.sqlite.org/"><img alt="SQLite" src="https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white"></a>
 <a href="https://tokio.rs/"><img alt="Tokio" src="https://img.shields.io/badge/Tokio-Async-000000?logo=rust&logoColor=white"></a>
 <a href="https://serde.rs/"><img alt="Serde" src="https://img.shields.io/badge/Serde-Serialization-000000?logo=rust&logoColor=white"></a>
+<a href="https://ratatui.rs/"><img alt="Ratatui" src="https://img.shields.io/badge/Ratatui-TUI-000000?logo=rust&logoColor=white"></a>
+<a href="https://grpc.io/"><img alt="gRPC" src="https://img.shields.io/badge/gRPC-IPC-244C5A?logo=grpc&logoColor=white"></a>
 
 </br>
 
