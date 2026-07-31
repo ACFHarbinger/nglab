@@ -2,14 +2,14 @@ ipykernel==6.25
 matplotlib==3.7
 numpy==1.24
 pandas==2.0
-torch==2.0
-pytorch-lightning==2.0
+torch==2.13.0
+pytorch-lightning==2.6.1
 requests==2.31
 scipy==1.10
 torchmetrics==0.11
 tqdm==4.65
 wandb==0.15
 yfinance==0.2.66
-pip==23.3
+pip==26.1.2
 tensorboard_logger==0.1
 torch-tb-profiler==0.4.3
