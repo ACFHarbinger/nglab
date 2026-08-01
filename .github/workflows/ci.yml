@@ -20,7 +20,7 @@ jobs:
       - name: Run Python Coverage
         run: uv run pytest --cov=python/src --cov-report=xml:python-coverage.xml
       - name: Upload Python Coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: ./python-coverage.xml
           flags: python
@@ -51,7 +51,7 @@ jobs:
         run: cargo tarpaulin --out Xml --output-dir target/tarpaulin
         
       - name: Upload Rust Coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: ./target/tarpaulin/cobertura.xml
           flags: rust
@@ -70,7 +70,7 @@ jobs:
           npm install
           npm run test -- --coverage
       - name: Upload TypeScript Coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v7
         with:
           files: ./typescript/coverage/clover.xml
           flags: typescript
