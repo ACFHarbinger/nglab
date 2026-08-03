@@ -1,3 +1,28 @@
+This project is dual-licensed under an open-core model.
+
+  1. FREE / OPEN SOURCE USE — GNU AGPL-3.0
+     You may use, modify, and distribute this software free of charge under
+     the terms of the GNU Affero General Public License v3.0 (reproduced in
+     full below). This track is intended for hobbyists, students,
+     researchers, non-profits, and any other use that can comply with the
+     AGPL's copyleft and network source-disclosure obligations (see
+     Section 13 of the license below).
+
+  2. COMMERCIAL USE — paid license required
+     If you want to use this software in a way the AGPL does not permit
+     without releasing your source — for example, embedding it in a
+     proprietary product, offering it as a closed-source hosted/SaaS
+     service, or otherwise using it commercially without complying with the
+     AGPL's obligations — you must obtain a separate commercial license.
+     See LICENSE.txt in this repository, or contact ACFHarbinger
+     <afonso.fernandes100@gmail.com>, for commercial licensing terms and
+     pricing.
+
+Copyright (c) 2026 ACFHarbinger. All rights reserved except as granted
+under the license terms below.
+
+------------------------------------------------------------------------
+
 # GNU AFFERO GENERAL PUBLIC LICENSE
 
 Version 3, 19 November 2007

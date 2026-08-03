@@ -3,7 +3,7 @@ name = "nglab"
 version = "0.1.0"
 description = "A Multimodal Deep Reinforcement Learning bot to assist you in all your gambling (stock market) needs. Application-level Python dependencies now live in the python/ (machine-learning-zoo) workspace member rather than here — see python/pyproject.toml."
 readme = "README.md"
-license = "AGPL-3.0-only"
+license = "AGPL-3.0-or-later"
 requires-python = ">=3.11, <3.13"
 dependencies = []
 
