@@ -489,7 +489,7 @@ dependencies = [
  "arrow-schema",
  "chrono",
  "half",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "lexical-core",
  "memchr",
  "num",
@@ -2447,7 +2447,7 @@ dependencies = [
  "chrono",
  "half",
  "hashbrown 0.14.5",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "libc",
  "log",
  "object_store",
@@ -2588,7 +2588,7 @@ dependencies = [
  "datafusion-functions-aggregate-common",
  "datafusion-functions-window-common",
  "datafusion-physical-expr-common",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "paste",
  "serde_json",
  "sqlparser",
@@ -2602,7 +2602,7 @@ checksum = "6d155ccbda29591ca71a1344dd6bed26c65a4438072b400df9db59447f590bb6"
 dependencies = [
  "arrow",
  "datafusion-common",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "itertools 0.14.0",
  "paste",
 ]
@@ -2759,7 +2759,7 @@ dependencies = [
  "datafusion-expr",
  "datafusion-expr-common",
  "datafusion-physical-expr",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "itertools 0.14.0",
  "log",
  "regex",
@@ -2781,7 +2781,7 @@ dependencies = [
  "datafusion-physical-expr-common",
  "half",
  "hashbrown 0.14.5",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "itertools 0.14.0",
  "log",
  "parking_lot",
@@ -2860,7 +2860,7 @@ dependencies = [
  "futures",
  "half",
  "hashbrown 0.14.5",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "itertools 0.14.0",
  "log",
  "parking_lot",
@@ -2920,7 +2920,7 @@ dependencies = [
  "bigdecimal",
  "datafusion-common",
  "datafusion-expr",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "log",
  "regex",
  "sqlparser",
@@ -4534,7 +4534,7 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "http",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "slab",
  "tokio",
  "tokio-util",
@@ -4602,6 +4602,12 @@ dependencies = [
  "equivalent",
  "foldhash 0.2.0",
 ]
+
+[[package]]
+name = "hashbrown"
+version = "0.17.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
 
 [[package]]
 name = "hashlink"
@@ -5089,12 +5095,12 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.13.0"
+version = "2.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7714e70437a7dc3ac8eb7e6f8df75fd8eb422675fc7678aff7364301092b1017"
+checksum = "d466e9454f08e4a911e14806c24e16fba1b4c121d1ea474396f396069cf949d9"
 dependencies = [
  "equivalent",
- "hashbrown 0.16.1",
+ "hashbrown 0.17.1",
  "serde",
  "serde_core",
 ]
@@ -5485,7 +5491,7 @@ checksum = "02cb977175687f33fa4afa0c95c112b987ea1443e5a51c8f8ff27dc618270cc2"
 dependencies = [
  "cssparser",
  "html5ever",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "selectors",
 ]
 
@@ -6088,7 +6094,7 @@ dependencies = [
  "half",
  "hashbrown 0.16.1",
  "hexf-parse",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "libm",
  "log",
  "num-traits",
@@ -6217,7 +6223,7 @@ dependencies = [
  "crossterm",
  "csv",
  "futures-util",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "ndarray 0.17.2",
  "numpy",
  "once_cell",
@@ -7447,7 +7453,7 @@ checksum = "8701b58ea97060d5e5b155d383a69952a60943f0e6dfe30b04c287beb0b27455"
 dependencies = [
  "fixedbitset 0.5.7",
  "hashbrown 0.15.5",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "serde",
 ]
 
@@ -7678,7 +7684,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "740ebea15c5d1428f910cd1a5f52cebf8d25006245ed8ade92702f4943d91e07"
 dependencies = [
  "base64 0.22.1",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "quick-xml 0.38.4",
  "serde",
  "time",
@@ -7719,7 +7725,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df4eb835a4a2e81afc05cf7519590ca5839e60d10a5229c7caa8eb517ed42e9b"
 dependencies = [
  "byteorder",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "peg",
 ]
 
@@ -8819,7 +8825,7 @@ dependencies = [
  "arrow",
  "crossbeam",
  "image",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "itertools 0.14.0",
  "mcap",
  "memmap2 0.9.9",
@@ -9008,7 +9014,7 @@ dependencies = [
  "arrow",
  "document-features",
  "emath",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "itertools 0.14.0",
  "nohash-hasher",
  "parking_lot",
@@ -9610,7 +9616,7 @@ dependencies = [
  "glam",
  "half",
  "image",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "infer 0.16.0",
  "itertools 0.14.0",
  "macaw",
@@ -10273,7 +10279,7 @@ dependencies = [
  "half",
  "home",
  "image",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "itertools 0.14.0",
  "linked-hash-map",
  "macaw",
@@ -10573,7 +10579,7 @@ dependencies = [
  "crossbeam",
  "document-features",
  "env_filter",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "indicatif",
  "itertools 0.14.0",
  "log",
@@ -10805,7 +10811,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -11229,7 +11235,7 @@ dependencies = [
  "chrono",
  "hex",
  "indexmap 1.9.3",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "schemars 0.9.0",
  "schemars 1.2.0",
  "serde_core",
@@ -12670,7 +12676,7 @@ version = "0.9.11+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3afc9a848309fe1aaffaed6e1546a7a14de1f935dc9d89d32afd9a44bab7c46"
 dependencies = [
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "serde_core",
  "serde_spanned 1.0.4",
  "toml_datetime 0.7.5+spec-1.1.0",
@@ -12703,7 +12709,7 @@ version = "0.19.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b5bb770da30e5cbfde35a2d7b9b8a2c4b8ef89548a7a6aeab5c9a576e3e7421"
 dependencies = [
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "toml_datetime 0.6.3",
  "winnow 0.5.40",
 ]
@@ -12714,7 +12720,7 @@ version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "396e4d48bbb2b7554c944bde63101b5ae446cff6ec4a24227428f15eb72ef338"
 dependencies = [
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "serde",
  "serde_spanned 0.6.9",
  "toml_datetime 0.6.3",
@@ -12727,7 +12733,7 @@ version = "0.23.10+spec-1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "84c8b9f757e028cee9fa244aea147aab2a9ec09d5325a9b01e0a49730c2b5269"
 dependencies = [
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "toml_datetime 0.7.5+spec-1.1.0",
  "toml_parser",
  "winnow 0.7.14",
@@ -12842,7 +12848,7 @@ checksum = "ebe5ef63511595f1344e2d5cfa636d973292adc0eec1f0ad45fae9f0851ab1d4"
 dependencies = [
  "futures-core",
  "futures-util",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "pin-project-lite",
  "slab",
  "sync_wrapper",
@@ -13934,7 +13940,7 @@ dependencies = [
  "cfg_aliases",
  "document-features",
  "hashbrown 0.16.1",
- "indexmap 2.13.0",
+ "indexmap 2.14.0",
  "log",
  "naga",
  "once_cell",
