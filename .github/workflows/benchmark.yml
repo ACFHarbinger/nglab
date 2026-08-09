@@ -52,7 +52,7 @@ jobs:
           fi
 
       - name: Upload New Benchmark Result
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-baseline
           path: benchmark_result.json
@@ -68,7 +68,7 @@ jobs:
           cargo bench -- --baseline main
 
       - name: Upload results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-results
           path: rust/target/criterion/
