@@ -836,7 +836,7 @@ graph TB
 ### Kustomize Overlay Structure
 
 ```
-infrastructure/k8s/
+infrastructure/global/k8s/
 ├── base/                    # Shared configurations
 │   ├── deployment.yaml      # API and worker deployments
 │   ├── service.yaml         # Service definitions
@@ -864,13 +864,13 @@ infrastructure/k8s/
 
 ```bash
 # Deploy to development
-kubectl apply -k infrastructure/k8s/overlays/dev
+kubectl apply -k infrastructure/global/k8s/overlays/dev
 
 # Deploy to staging
-kubectl apply -k infrastructure/k8s/overlays/staging
+kubectl apply -k infrastructure/global/k8s/overlays/staging
 
 # Deploy to production
-kubectl apply -k infrastructure/k8s/overlays/prod
+kubectl apply -k infrastructure/global/k8s/overlays/prod
 
 # Check deployment status
 kubectl get pods -n nglab -w
