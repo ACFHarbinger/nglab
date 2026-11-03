@@ -10,6 +10,6 @@ torchmetrics==0.11
 tqdm==4.65
 wandb==0.15
 yfinance==0.2.66
-pip==26.1.2
+pip==26.3
 tensorboard_logger==0.1
 torch-tb-profiler==0.4.3
