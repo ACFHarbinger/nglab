@@ -25,17 +25,17 @@
     "@tauri-apps/plugin-opener": "^2",
     "@types/papaparse": "^5.5.2",
     "clsx": "^2.1.1",
-    "highcharts": "^13.0.0",
+    "highcharts": "^13.1.1",
     "highcharts-react-official": "^3.2.3",
     "lightweight-charts": "^5.1.0",
     "lucide-react": "^1.24.0",
-    "nanoid": "^6.0.0",
+    "nanoid": "^6.0.2",
     "papaparse": "^5.5.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "recharts": "^3.7.0",
     "tailwind-merge": "^3.4.0",
-    "zod": "^4.3.5"
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
@@ -51,14 +51,14 @@
     "autoprefixer": "^10.4.23",
     "cypress": "^15.20.0",
     "eslint": "^10.7.0",
-    "postcss": "^8.5.23",
+    "postcss": "^8.5.24",
     "jsdom": "^30.0.1",
     "start-server-and-test": "^3.0.11",
     "tailwindcss": "^4.1.18",
     "typedoc": "^0.28.20",
     "typescript": "~7.0.2",
     "typescript-eslint": "^8.66.0",
-    "vite": "^8.1.4",
+    "vite": "^8.2.4",
     "vitest": "^5.0.0"
   }
 }
