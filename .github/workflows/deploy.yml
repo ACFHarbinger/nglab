@@ -82,9 +82,9 @@ jobs:
         run: |
           # Ensure we use lowercase here as well
           IMAGE_NAME_LC=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
-          helm upgrade --install nglab-prod ./infrastructure/helm/nglab \
+          helm upgrade --install nglab-prod ./infrastructure/global/helm/nglab \
             --namespace nglab-prod --create-namespace \
             --set image.repository=${{ env.REGISTRY }}/$IMAGE_NAME_LC \
             --set image.tag=latest \
-            --values ./infrastructure/helm/nglab/values.yaml \
+            --values ./infrastructure/global/helm/nglab/values.yaml \
             --wait --timeout=10m
