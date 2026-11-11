@@ -52,7 +52,7 @@
     "cypress": "^15.20.0",
     "eslint": "^10.7.0",
     "postcss": "^8.5.24",
-    "jsdom": "^30.0.1",
+    "jsdom": "^31.0.0",
     "start-server-and-test": "^3.0.11",
     "tailwindcss": "^4.1.18",
     "typedoc": "^0.28.20",
