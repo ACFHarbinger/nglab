@@ -4,10 +4,10 @@ numpy==1.24
 pandas==2.0
 torch==2.13.0
 pytorch-lightning==2.6.1
-requests==2.31
+requests==2.33.0
 scipy==1.10
 torchmetrics==0.11
-tqdm==4.65
+tqdm==4.70.1
 wandb==0.15
 yfinance==0.2.66
 pip==26.3
